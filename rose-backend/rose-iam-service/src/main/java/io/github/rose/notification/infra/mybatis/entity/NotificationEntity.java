@@ -1,0 +1,40 @@
+package io.github.rose.notification.infra.mybatis.entity;
+
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.github.rose.notification.domain.value.NotificationChannelType;
+import io.github.rose.notification.domain.value.NotificationStatus;
+import io.github.rose.notification.domain.value.TargetType;
+import io.github.rose.notification.infra.mybatis.typehandler.NotificationChannelTypeHandler;
+import io.github.rose.notification.infra.mybatis.typehandler.NotificationStatusTypeHandler;
+import io.github.rose.notification.infra.mybatis.typehandler.TargetTypeTypeHandler;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+/**
+ * Notification 持久化对象
+ */
+@Data
+@TableName("notification")
+public class NotificationEntity {
+    private String id;
+    private String tenantId;
+    private String channelId;
+    private String templateId;
+    private String target;
+    @TableField(typeHandler = TargetTypeTypeHandler.class)
+    private TargetType targetType;
+    private String content;
+    @TableField(typeHandler = NotificationStatusTypeHandler.class)
+    private NotificationStatus status;
+    @TableField(typeHandler = NotificationChannelTypeHandler.class)
+    private NotificationChannelType channelType;
+    private String failReason;
+    private LocalDateTime sendTime;
+    private LocalDateTime readTime;
+    private int retryCount;
+    private String traceId;
+    private String requestId;
+
+}

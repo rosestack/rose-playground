@@ -1,0 +1,10 @@
+### 用户注册
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser1",
+  "password": "testpass123",
+  "email": "testuser@example.com",
+  "phone": "13800000000"
+}

@@ -1,0 +1,8 @@
+### 用户登录
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser1",
+  "password": "testpass123"
+}
