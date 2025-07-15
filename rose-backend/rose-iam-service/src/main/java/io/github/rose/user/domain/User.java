@@ -1,7 +1,7 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.common.model.BaseAddressTenant;
-import lombok.Getter;
+import io.github.rose.common.model.BaseTenantWithExtra;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -12,8 +12,8 @@ import java.io.Serializable;
  * withTenant
  * withUserSource
  */
-@Getter
-public class User extends BaseAddressTenant<Long> implements Serializable {
+@Data
+public class User extends BaseTenantWithExtra<Long> implements Serializable {
     /**
      * 用户名，唯一
      */
@@ -118,35 +118,4 @@ public class User extends BaseAddressTenant<Long> implements Serializable {
      * 状态上次修改时间
      */
     private String statusChangedTime;
-
-    public User(Long id) {
-        super(id);
-    }
-
-    public User(User data) {
-        super(data);
-        //set data
-        this.username = data.getUsername();
-        this.name = data.getName();
-        this.nickname = data.getNickname();
-        this.avatar = data.getAvatar();
-        this.gender = data.getGender();
-        this.email = data.getEmail();
-        this.phone = data.getPhone();
-        this.phoneCountryCode = data.getPhoneCountryCode();
-        this.emailVerified = data.getEmailVerified();
-        this.phoneVerified = data.getPhoneVerified();
-        this.status = data.getStatus();
-        this.birthdate = data.getBirthdate();
-        this.familyName = data.getFamilyName();
-        this.middleName = data.getMiddleName();
-        this.givenName = data.getGivenName();
-        this.identityNumber = data.getIdentityNumber();
-        this.registerSource = data.getRegisterSource();
-        this.userSourceType = data.getUserSourceType();
-        this.userSourceId = data.getUserSourceId();
-        this.externalId = data.getExternalId();
-        this.customerId = data.getCustomerId();
-        this.statusChangedTime = data.getStatusChangedTime();
-    }
 }
