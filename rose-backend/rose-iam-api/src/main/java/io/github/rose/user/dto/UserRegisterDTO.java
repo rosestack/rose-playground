@@ -1,8 +1,9 @@
 package io.github.rose.user.dto;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class UserRegisterDTO {
     @NotBlank(message = "用户名不能为空")

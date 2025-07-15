@@ -1,40 +1,50 @@
 services:
-  mysql:
+  rose-mysql:
     image: mysql:8
     container_name: rose-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rose123456
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: rose
+      MYSQL_ROOT_PASSWORD: rose123456
     ports:
       - "3306:3306"
     command:
-      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
     volumes:
       - ./rose-server/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
 
-  redis:
-    image: redis:6.2
+  rose-redis:
+    image: redis:6
     container_name: rose-redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DATABASE: 0
+      REDIS_TIMEOUT: 10s
     ports:
       - "6379:6379"
     restart: always
-    command: [ "redis-server", "--appendonly", "yes" ]
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
 
-  rabbitmq:
+  rose-rabbitmq:
     image: rabbitmq:3.12-management
     container_name: rose-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"
       - "15672:15672"
     restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
 
-  mailhog:
+
+  rose-mailhog:
     image: mailhog/mailhog:v1.0.1
-    container_name: mailhog
+    container_name: rose-mailhog
     ports:
       - "1025:1025"
       - "8025:8025"

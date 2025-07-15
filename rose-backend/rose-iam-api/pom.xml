@@ -14,25 +14,11 @@
     <name>rose-iam-api</name>
     <description>Demo project for Spring Boot</description>
 
-    <properties>
-        <java.version>8</java.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.github.rosestack</groupId>
             <artifactId>rose-common</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
     </dependencies>
 </project>

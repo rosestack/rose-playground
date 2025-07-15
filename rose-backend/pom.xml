@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version>
+        <version>3.5.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -32,15 +32,30 @@
     </scm>
 
     <properties>
-        <java.version>8</java.version>
     </properties>
 
     <modules>
         <module>rose-common</module>
         <module>rose-iam-api</module>
         <module>rose-iam-service</module>
+        <module>rose-notification-service</module>
+        <module>rose-security-spring-boot-starter</module>
         <module>rose-server</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
