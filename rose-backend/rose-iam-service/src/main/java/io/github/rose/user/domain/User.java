@@ -1,6 +1,5 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.common.model.BaseAddressTenant;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -13,7 +12,7 @@ import java.io.Serializable;
  * withUserSource
  */
 @Getter
-public class User extends BaseAddressTenant<Long> implements Serializable {
+public class User extends AddressTenant<Long> implements Serializable {
     /**
      * 用户名，唯一
      */

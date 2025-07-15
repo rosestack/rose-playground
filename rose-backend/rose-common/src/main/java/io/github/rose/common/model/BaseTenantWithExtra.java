@@ -22,15 +22,15 @@ public abstract class BaseTenantWithExtra<ID extends Serializable> extends BaseA
     @ToString.Exclude
     protected byte[] extraBytes;
 
-    public BaseTenantWithExtra(ID id) {
-        super(id);
-    }
-
-    public BaseTenantWithExtra(BaseTenantWithExtra<ID> data) {
-        super(data);
-        this.tenantId = data.getTenantId();
-        setExtra(data.getExtra());
-    }
+//    public BaseTenantWithExtra(ID id) {
+//        super(id);
+//    }
+//
+//    public BaseTenantWithExtra(BaseTenantWithExtra<ID> data) {
+//        super(data);
+//        this.tenantId = data.getTenantId();
+//        setExtra(data.getExtra());
+//    }
 
     @Override
     public JsonNode getExtra() {

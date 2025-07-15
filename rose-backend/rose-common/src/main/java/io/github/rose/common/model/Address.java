@@ -1,22 +1,6 @@
 package io.github.rose.common.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.io.Serializable;
-
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public abstract class BaseAddress<ID extends Serializable> extends BaseAudit<ID> {
-
-    public BaseAddress(ID id) {
-        super(id);
-    }
-
-    public BaseAddress(BaseAudit<ID> data) {
-        super(data);
-    }
-
+public abstract class Address {
     /**
      * 所在国家
      */
