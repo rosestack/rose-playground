@@ -1,6 +1,6 @@
 package io.github.rose.common.exception;
 
-import io.github.rose.common.Result;
+import io.github.rose.common.util.Result;
 import io.github.rose.common.util.MessageUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

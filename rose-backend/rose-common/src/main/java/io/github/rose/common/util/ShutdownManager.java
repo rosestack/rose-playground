@@ -1,6 +1,5 @@
-package io.github.rose.common.support;
+package io.github.rose.common.util;
 
-import io.github.rose.common.util.ThreadUtils;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

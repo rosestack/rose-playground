@@ -1,4 +1,4 @@
-package io.github.rose.common;
+package io.github.rose.common.util;
 
 import java.util.List;
 

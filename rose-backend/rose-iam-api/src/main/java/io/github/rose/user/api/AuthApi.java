@@ -1,6 +1,6 @@
 package io.github.rose.user.api;
 
-import io.github.rose.common.Result;
+import io.github.rose.common.util.Result;
 import io.github.rose.user.dto.UserLoginDTO;
 import io.github.rose.user.dto.UserRegisterDTO;
 import io.github.rose.user.vo.LoginVO;

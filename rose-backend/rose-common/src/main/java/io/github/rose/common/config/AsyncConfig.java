@@ -1,11 +1,10 @@
 package io.github.rose.common.config;
 
 import io.github.rose.common.exception.BusinessException;
-import io.github.rose.common.support.ShutdownManager;
+import io.github.rose.common.util.ShutdownManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
