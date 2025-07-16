@@ -131,7 +131,7 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     }
 
     protected static Set<Locale> resolveLocales(Set<Locale> supportedLocales) {
-        Set<Locale> resolvedLocales = new TreeSet<>();
+        Set<Locale> resolvedLocales = new LinkedHashSet<>();
         for (Locale supportedLocale : supportedLocales) {
             addLocale(resolvedLocales, supportedLocale);
             for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
@@ -172,30 +172,10 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
         return derivedLocales;
     }
 
-    /**
-     * 解析和格式化消息
-     *
-     * <p>性能优化策略：</p>
-     * <ul>
-     *   <li>修复了原有bug：MessageFormat.format(args) 而不是 format(message, args)</li>
-     *   <li>使用缓存避免重复创建MessageFormat实例</li>
-     *   <li>无参数时直接返回原消息</li>
-     *   <li>快速占位符检测</li>
-     * </ul>
-     *
-     * @param message 消息模板
-     * @param args    格式化参数
-     * @return 格式化后的消息
-     */
     protected String resolveMessage(String message, Object... args) {
         return MESSAGE_FORMAT_CACHE.formatMessage(message, getLocale(), args);
     }
 
-    /**
-     * 传统的MessageFormat实现（用于性能对比）
-     *
-     * @deprecated 性能较差，仅用于基准测试
-     */
     @Deprecated
     protected String resolveMessageLegacy(String message, Object... args) {
         if (args == null || args.length == 0) {

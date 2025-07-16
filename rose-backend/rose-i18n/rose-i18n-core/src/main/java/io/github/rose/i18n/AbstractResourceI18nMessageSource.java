@@ -67,6 +67,9 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     @Nullable
     @Override
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
+        if (localizedResourceMessages == null) {
+            return emptyMap();
+        }
         Map<String, String> messageMap = localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
 
         Map<String, String> messages = new HashMap<>();
@@ -82,6 +85,9 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     @Nullable
     @Override
     public Map<String, String> getAllMessages(Locale locale) {
+        if (localizedResourceMessages == null) {
+            return emptyMap();
+        }
         return localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
     }
 
@@ -129,8 +135,10 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     }
 
     protected final void clearAllMessages() {
-        this.localizedResourceMessages.clear();
-        this.localizedResourceMessages = null;
+        if (this.localizedResourceMessages != null) {
+            this.localizedResourceMessages.clear();
+        }
+        this.localizedResourceMessages = emptyMap();
     }
 
     private void validateMessages(Map<String, String> messages, String resourceName) {
@@ -164,6 +172,9 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
 
     @Nullable
     public final Map<String, String> getMessages(Locale locale) {
+        if (localizedResourceMessages == null) {
+            return emptyMap();
+        }
         String resource = getResource(locale);
         return localizedResourceMessages.get(resource);
     }
