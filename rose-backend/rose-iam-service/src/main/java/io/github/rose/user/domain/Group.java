@@ -4,8 +4,6 @@ import io.github.rose.common.model.BaseTenantWithExtra;
 import io.github.rose.common.model.HasCodeNameDescription;
 import lombok.Data;
 
-import java.util.Map;
-
 @Data
 public class Group extends BaseTenantWithExtra<Long> implements HasCodeNameDescription {
     /**

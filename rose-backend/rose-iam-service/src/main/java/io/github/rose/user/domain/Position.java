@@ -4,8 +4,6 @@ import io.github.rose.common.model.BaseTenantWithExtra;
 import io.github.rose.common.model.HasCodeNameDescription;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 public class Position extends BaseTenantWithExtra<Long> implements HasCodeNameDescription {
     /**

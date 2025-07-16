@@ -2,7 +2,6 @@
 package io.github.rose.security.auth.rest;
 
 import io.github.rose.common.util.ServletUtils;
-import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import ua_parser.Client;

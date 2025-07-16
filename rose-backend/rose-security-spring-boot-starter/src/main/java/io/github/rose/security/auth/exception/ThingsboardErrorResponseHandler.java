@@ -15,6 +15,7 @@
  */
 package io.github.rose.security.auth.exception;
 
+import io.github.rose.common.exception.RateLimitException;
 import io.github.rose.common.util.JacksonUtil;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -134,8 +135,8 @@ public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHand
                     } else {
                         handleThingsboardException((ThingsboardException) exception, response);
                     }
-                } else if (exception instanceof TbRateLimitsException) {
-                    handleRateLimitException(response, (TbRateLimitsException) exception);
+                } else if (exception instanceof RateLimitException) {
+                    handleRateLimitException(response, (RateLimitException) exception);
                 } else if (exception instanceof AccessDeniedException) {
                     handleAccessDeniedException(response);
                 } else if (exception instanceof AuthenticationException) {
@@ -172,7 +173,7 @@ public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHand
         JacksonUtil.writeValue(response.getWriter(), ThingsboardErrorResponse.of(thingsboardException.getMessage(), errorCode, status));
     }
 
-    private void handleRateLimitException(HttpServletResponse response, TbRateLimitsException exception) throws IOException {
+    private void handleRateLimitException(HttpServletResponse response, RateLimitException exception) throws IOException {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         String message = "Too many requests for current " + null + "!";
         JacksonUtil.writeValue(response.getWriter(),

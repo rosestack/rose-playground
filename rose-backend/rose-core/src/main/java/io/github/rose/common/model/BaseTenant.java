@@ -2,7 +2,6 @@ package io.github.rose.common.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
 
 import java.io.Serializable;

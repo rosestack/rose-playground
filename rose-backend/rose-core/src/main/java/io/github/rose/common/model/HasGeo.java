@@ -1,7 +1,5 @@
 package io.github.rose.common.model;
 
-import java.io.Serializable;
-
 public interface HasGeo {
 
     /**

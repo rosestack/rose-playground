@@ -35,6 +35,7 @@
     </properties>
 
     <modules>
+        <module>rose-core</module>
         <module>rose-common</module>
         <module>rose-iam-api</module>
         <module>rose-iam-service</module>

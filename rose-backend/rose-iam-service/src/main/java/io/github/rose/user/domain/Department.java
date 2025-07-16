@@ -4,8 +4,6 @@ import io.github.rose.common.model.BaseTenantWithExtra;
 import io.github.rose.common.model.HasCodeNameDescription;
 import lombok.Data;
 
-import java.util.Map;
-
 /**
  * B2E场景，可以新增组织或者部门，部门需要挂在组织下面
  * B2B场景，新增用户池时，自动创建一个用户池名称的组织
