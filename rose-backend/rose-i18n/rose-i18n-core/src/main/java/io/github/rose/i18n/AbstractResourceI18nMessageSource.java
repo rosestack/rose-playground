@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  */
 public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMessageSource implements ResourceI18nMessageSource {
     protected static final MessageFormatCache MESSAGE_FORMAT_CACHE = new MessageFormatCache();
-
+    public static final String RESOURCE_PATH_PATTERN = "META-INF/i18n/%s/";
     public static final String DEFAULT_RESOURCE_NAME_PREFIX = "i18n_messages_";
 
     // path -> messages
