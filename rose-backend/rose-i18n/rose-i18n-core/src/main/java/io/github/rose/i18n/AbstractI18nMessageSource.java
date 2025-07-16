@@ -1,7 +1,5 @@
 package io.github.rose.i18n;
 
-import org.springframework.context.i18n.LocaleContextHolder;
-
 import java.util.Locale;
 import java.util.Objects;
 
@@ -18,7 +16,7 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     public final String getMessage(String code, Locale locale, Object... args) {
         String message = null;
         if (code != null) {
-            message = doGetMessage(code, locale, locale, args);
+            message = doGetMessage(code, locale, args);
         }
         return message;
     }
@@ -35,7 +33,8 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     }
 
     protected Locale doGetLocale() {
-        return LocaleContextHolder.getLocale();
+        // 默认实现返回 null，实际使用 getDefaultLocale
+        return null;
     }
 
     protected abstract String doGetMessage(String code, Locale locale, Object... args);

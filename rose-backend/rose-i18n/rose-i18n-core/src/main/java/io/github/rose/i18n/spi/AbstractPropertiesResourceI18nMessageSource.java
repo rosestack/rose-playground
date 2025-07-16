@@ -42,7 +42,16 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
 
     @Override
     protected String getResourceName(Locale locale) {
-        return DEFAULT_RESOURCE_NAME_PREFIX + locale + DEFAULT_RESOURCE_NAME_SUFFIX;
+        StringBuilder sb = new StringBuilder(DEFAULT_RESOURCE_NAME_PREFIX);
+        sb.append(locale.getLanguage().toLowerCase());
+        if (!locale.getCountry().isEmpty()) {
+            sb.append("_").append(locale.getCountry().toUpperCase());
+        }
+        if (!locale.getVariant().isEmpty()) {
+            sb.append("_").append(locale.getVariant());
+        }
+        sb.append(DEFAULT_RESOURCE_NAME_SUFFIX);
+        return sb.toString();
     }
 
     protected Properties loadProperties(String resource) throws IOException {

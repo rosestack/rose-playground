@@ -7,9 +7,6 @@ import io.github.rose.i18n.spi.EmptyI18nMessageSource;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -64,17 +61,18 @@ public abstract class I18nUtils {
         if (fileName.equals("i18n_messages.properties")) {
             return Locale.getDefault();
         }
-        int start = fileName.indexOf('_');
-        int end = fileName.lastIndexOf('.');
-        if (start != -1 && end != -1 && end > start) {
-            String localeStr = fileName.substring(start + 1, end);
+        // 去除前缀和后缀
+        String prefix = "i18n_messages_";
+        String suffix = ".properties";
+        if (fileName.startsWith(prefix) && fileName.endsWith(suffix)) {
+            String localeStr = fileName.substring(prefix.length(), fileName.length() - suffix.length());
             String[] parts = localeStr.split("_");
             if (parts.length == 1) {
-                return null;
+                return new Locale(parts[0]);
             } else if (parts.length == 2) {
-                return new Locale(parts[1]);
+                return new Locale(parts[0], parts[1]);
             } else if (parts.length == 3) {
-                return new Locale(parts[1], parts[2]);
+                return new Locale(parts[0], parts[1], parts[2]);
             }
         }
         return null;

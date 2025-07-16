@@ -23,8 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ClassPathPropertiesResourceI18nMessageSource extends AbstractPropertiesResourceI18nMessageSource {
 
-    protected static final String RESOURCE_PATH_PATTERN = "META-INF/i18n/%s/";
-
     /**
      * 缓存已发现的 Locale，避免重复扫描
      */
@@ -36,8 +34,9 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
 
     @Override
     protected List<Reader> loadPropertiesResources(String resource) throws IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        Enumeration<URL> resources = classLoader.getResources(resource);
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        String fullResourcePath = getBasePath() + resource;
+        Enumeration<URL> resources = classLoader.getResources(fullResourcePath);
         List<Reader> propertiesResources = new LinkedList<>();
         while (resources.hasMoreElements()) {
             URL url = resources.nextElement();
@@ -55,10 +54,12 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
     @Override
     public Set<Locale> getSupportedLocales() {
         Set<Locale> locales = cachedLocales.get();
-        if (locales != null) return locales;
+        if (locales != null) {
+            return locales;
+        }
         Set<Locale> discovered = new LinkedHashSet<>();
         String basePath = getBasePath();
-        ClassLoader classLoader = getClass().getClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
             Enumeration<URL> resources = classLoader.getResources(basePath);
             while (resources.hasMoreElements()) {
