@@ -26,7 +26,7 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
     }
 
     protected String getResource(String resourceName) {
-        return String.format(RESOURCE_PATH_PATTERN, getSource()) + resourceName;
+        return getBastPath() + resourceName;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
     @Override
     public Set<Locale> getSupportedLocales() {
         Set<Locale> locales = new LinkedHashSet<>();
-        String basePath = String.format(RESOURCE_PATH_PATTERN, getSource());
+        String basePath = getBastPath();
         ClassLoader classLoader = getClass().getClassLoader();
         try {
             Enumeration<URL> resources = classLoader.getResources(basePath);
@@ -73,6 +73,10 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
         return locales.isEmpty() ? Collections.singleton(Locale.getDefault()) : locales;
     }
 
+    private String getBastPath() {
+        return String.format(RESOURCE_PATH_PATTERN, getSource());
+    }
+
     /**
      * 解析文件名中的 Locale，例如 i18n_messages_zh_CN.properties -> zh_CN
      */
@@ -84,11 +88,11 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
             String localeStr = fileName.substring(start + 1, end);
             String[] parts = localeStr.split("_");
             if (parts.length == 1) {
-                return new Locale(parts[0]);
+                return null;
             } else if (parts.length == 2) {
-                return new Locale(parts[0], parts[1]);
+                return new Locale(parts[1]);
             } else if (parts.length == 3) {
-                return new Locale(parts[0], parts[1], parts[2]);
+                return new Locale(parts[1], parts[2]);
             }
         }
         return null;

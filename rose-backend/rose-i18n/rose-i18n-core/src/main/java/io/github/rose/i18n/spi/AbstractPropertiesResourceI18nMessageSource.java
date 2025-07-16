@@ -39,11 +39,6 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
         return messages == null ? emptyMap() : unmodifiableMap(messages);
     }
 
-    public Properties loadProperties(Locale locale) throws IOException {
-        String resource = getResource(locale);
-        return loadProperties(resource);
-    }
-
     public Properties loadProperties(String resource) throws IOException {
         List<Reader> propertiesResources = loadPropertiesResources(resource);
         if (propertiesResources == null || propertiesResources.isEmpty()) {
@@ -58,8 +53,6 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
 
         return properties;
     }
-
-    protected abstract String getResource(String resourceName);
 
     protected abstract List<Reader> loadPropertiesResources(String resource) throws IOException;
 }

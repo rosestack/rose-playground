@@ -204,14 +204,14 @@ class ClassPathPropertiesResourceI18nMessageSourceTest extends AbstractI18nTest 
     @DisplayName("测试获取所有消息")
     void testGetAllMessages() {
         // 测试获取所有中文消息
-        Map<String, String> allChineseMessages = messageSource.getAllMessages(Locale.SIMPLIFIED_CHINESE);
+        Map<String, String> allChineseMessages = messageSource.getMessages(Locale.SIMPLIFIED_CHINESE);
         assertNotNull(allChineseMessages);
         assertTrue(allChineseMessages.size() > 0);
         assertTrue(allChineseMessages.containsKey("test.message"));
         assertTrue(allChineseMessages.containsKey("test.common.save"));
         
         // 测试获取所有英文消息
-        Map<String, String> allEnglishMessages = messageSource.getAllMessages(Locale.ENGLISH);
+        Map<String, String> allEnglishMessages = messageSource.getMessages(Locale.ENGLISH);
         assertNotNull(allEnglishMessages);
         assertTrue(allEnglishMessages.size() > 0);
         assertTrue(allEnglishMessages.containsKey("test.message"));
@@ -389,7 +389,7 @@ class ClassPathPropertiesResourceI18nMessageSourceTest extends AbstractI18nTest 
         for (int i = 0; i < 100; i++) {
             messageSource.getMessage("test.message", Locale.ENGLISH);
             messageSource.getMessage("test.greeting", Locale.SIMPLIFIED_CHINESE, "用户" + i);
-            messageSource.getAllMessages(Locale.ENGLISH);
+            messageSource.getMessages(Locale.ENGLISH);
         }
         
         long endTime = System.currentTimeMillis();
@@ -409,8 +409,8 @@ class ClassPathPropertiesResourceI18nMessageSourceTest extends AbstractI18nTest 
             () -> assertTrue(messageSource.getSupportedLocales().size() >= 2),
             () -> assertNotNull(messageSource.getMessage("test.message", Locale.ENGLISH)),
             () -> assertNotNull(messageSource.getMessage("test.message", Locale.SIMPLIFIED_CHINESE)),
-            () -> assertTrue(messageSource.getAllMessages(Locale.ENGLISH).size() > 0),
-            () -> assertTrue(messageSource.getAllMessages(Locale.SIMPLIFIED_CHINESE).size() > 0),
+            () -> assertTrue(messageSource.getMessages(Locale.ENGLISH).size() > 0),
+            () -> assertTrue(messageSource.getMessages(Locale.SIMPLIFIED_CHINESE).size() > 0),
             () -> assertDoesNotThrow(() -> messageSource.toString())
         );
     }

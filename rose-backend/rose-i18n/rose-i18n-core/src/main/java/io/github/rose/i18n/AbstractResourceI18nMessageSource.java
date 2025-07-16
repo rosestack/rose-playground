@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
@@ -30,7 +31,8 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
      */
     public static final String DEFAULT_RESOURCE_NAME_SUFFIX = ".properties";
 
-    private volatile Map<String, Map<String, String>> localizedResourceMessages = emptyMap();
+    // path -> messages
+    private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
 
     public AbstractResourceI18nMessageSource(String source) {
         super(source);
@@ -39,35 +41,39 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     @Override
     public void init() {
         requireNonNull(this.source, "The 'source' attribute must be assigned before initialization!");
-        initialize();
+
+        Set<Locale> supportedLocales = getSupportedLocales();
+        if (supportedLocales == null || supportedLocales.isEmpty()) {
+            throw new IllegalStateException(this.getClass() + ".getSupportedLocales() Methods cannot return an empty list of locales!");
+        }
+
+        for (Locale resolveLocale : supportedLocales) {
+            String resource = getResource(resolveLocale);
+            initializeResource(resource);
+        }
     }
 
     @Override
     public void initializeResource(String resource) {
-        initializeResources(singleton(resource));
+        requireNonNull(resource, "The 'resource' attribute must be assigned before initialization!");
+        Map<String, String> messages = loadMessages(resource);
+        this.localizedResourceMessages.put(resource, messages);
     }
 
     @Override
-    public void initializeResources(Iterable<String> resources) {
-        synchronized (this) {
-            // Copy the current messages and initialized resources
-            Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(this.localizedResourceMessages);
-            initializeResources(resources, localizedResourceMessages);
-            // Exchange the field
-            this.localizedResourceMessages = localizedResourceMessages;
-        }
+    public Set<String> getInitializeResources() {
+        return localizedResourceMessages.keySet();
     }
 
     @Override
     public void destroy() {
-        clearAllMessages();
+        if (this.localizedResourceMessages != null) {
+            this.localizedResourceMessages.clear();
+        }
     }
 
     @Override
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
-        if (localizedResourceMessages == null) {
-            return emptyMap();
-        }
         Map<String, String> messageMap = localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
 
         Map<String, String> messages = new HashMap<>();
@@ -81,19 +87,16 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     }
 
     @Override
-    public Map<String, String> getAllMessages(Locale locale) {
-        if (localizedResourceMessages == null) {
-            return emptyMap();
-        }
+    public Map<String, String> getMessages(Locale locale) {
         return localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
     }
 
     @Override
-    protected String getInternalMessage(String code, String resolvedCode, Locale locale, Locale resolvedLocale, Object[] args) {
+    protected String doGetMessage(String code, Locale locale, Object[] args) {
         String message = null;
-        Map<String, String> messages = getMessages(resolvedLocale);
+        Map<String, String> messages = getMessages(locale);
         if (messages != null) {
-            String messagePattern = messages.get(resolvedCode);
+            String messagePattern = messages.get(code);
             if (messagePattern != null) {
                 message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, locale, args);
             }
@@ -101,34 +104,7 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
         return message;
     }
 
-    /**
-     * Initialization
-     */
-    protected final void initialize() {
-        Set<Locale> supportedLocales = getSupportedLocales();
-        assertSupportedLocales(supportedLocales);
-        Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(supportedLocales.size());
-        for (Locale resolveLocale : I18nUtils.resolveLocales(supportedLocales)) {
-            String resource = getResource(resolveLocale);
-            initializeResource(resource, localizedResourceMessages);
-        }
-        this.localizedResourceMessages = localizedResourceMessages;
-    }
-
-    private void assertSupportedLocales(Set<Locale> supportedLocales) {
-        if (supportedLocales == null || supportedLocales.isEmpty()) {
-            throw new IllegalStateException(this.getClass() + ".getSupportedLocales() Methods cannot return an empty list of locales!");
-        }
-    }
-
-    protected final void clearAllMessages() {
-        if (this.localizedResourceMessages != null) {
-            this.localizedResourceMessages.clear();
-        }
-        this.localizedResourceMessages = emptyMap();
-    }
-
-    public String getResource(Locale locale) {
+    protected String getResource(Locale locale) {
         String resourceName = buildResourceName(locale);
         return getResource(resourceName);
     }
@@ -141,38 +117,6 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
 
     protected abstract Map<String, String> loadMessages(String resource);
 
-    public final Map<String, String> getMessages(Locale locale) {
-        if (localizedResourceMessages == null) {
-            return emptyMap();
-        }
-        String resource = getResource(locale);
-        return localizedResourceMessages.get(resource);
-    }
-
-    private void initializeResources(Iterable<String> resources, Map<String, Map<String, String>> localizedResourceMessages) {
-        for (String resource : resources) {
-            initializeResource(resource, localizedResourceMessages);
-        }
-    }
-
-    private void initializeResource(String resource, Map<String, Map<String, String>> localizedResourceMessages) {
-        Map<String, String> messages = loadMessages(resource);
-        if (messages == null) {
-            return;
-        }
-
-        // Override the localized message if present
-        localizedResourceMessages.put(resource, messages);
-    }
-
-    public Map<String, Map<String, String>> getLocalizedResourceMessages() {
-        return unmodifiableMap(this.localizedResourceMessages);
-    }
-
-    @Override
-    public Set<String> getInitializeResources() {
-        return localizedResourceMessages.keySet();
-    }
 
     @Override
     public String toString() {

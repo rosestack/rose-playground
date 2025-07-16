@@ -14,14 +14,14 @@ public interface I18nMessageSource extends Prioritized {
 
     @Nullable
     default String getMessage(String code, Object... args) {
-        return getMessage(code, Locale.getDefault(), args);
+        return getMessage(code, getLocale(), args);
     }
 
     @Nullable
     Map<String, String> getMessages(Set<String> codes, Locale locale);
 
     @Nullable
-    Map<String, String> getAllMessages(Locale locale);
+    Map<String, String> getMessages(Locale locale);
 
     @Nonnull
     default Set<Locale> getSupportedLocales() {

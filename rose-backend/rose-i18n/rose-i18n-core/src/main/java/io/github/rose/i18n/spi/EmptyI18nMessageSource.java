@@ -32,7 +32,7 @@ public class EmptyI18nMessageSource implements I18nMessageSource {
     }
 
     @Override
-    public Map<String, String> getAllMessages(Locale locale) {
+    public Map<String, String> getMessages(Locale locale) {
         return Map.of();
     }
 

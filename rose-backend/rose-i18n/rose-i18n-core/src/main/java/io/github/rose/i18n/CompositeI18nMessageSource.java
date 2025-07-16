@@ -58,9 +58,9 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
 
     @Nullable
     @Override
-    public Map<String, String> getAllMessages(Locale locale) {
+    public Map<String, String> getMessages(Locale locale) {
         for (I18nMessageSource source : serviceMessageSources) {
-            Map<String, String> sourceMessages = source.getAllMessages(locale);
+            Map<String, String> sourceMessages = source.getMessages(locale);
             if (sourceMessages != null) {
                 return sourceMessages;
             }

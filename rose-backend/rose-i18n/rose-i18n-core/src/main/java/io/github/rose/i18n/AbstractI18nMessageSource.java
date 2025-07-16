@@ -1,5 +1,7 @@
 package io.github.rose.i18n;
 
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
@@ -13,34 +15,17 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     }
 
     @Override
-    public void init() {
-    }
-
-    @Override
-    public void destroy() {
-    }
-
-    @Override
-    public final String getMessage(String code, Object... args) {
-        return I18nMessageSource.super.getMessage(code, args);
-    }
-
-    @Override
     public final String getMessage(String code, Locale locale, Object... args) {
         String message = null;
         if (code != null) {
-            String resolvedCode = resolveMessageCode(code);
-            if (resolvedCode != null) {
-                Locale resolvedLocale = resolveLocale(locale);
-                message = getInternalMessage(code, resolvedCode, locale, resolvedLocale, args);
-            }
+            message = doGetMessage(code, locale, locale, args);
         }
         return message;
     }
 
     @Override
     public final Locale getLocale() {
-        Locale locale = getInternalLocale();
+        Locale locale = doGetLocale();
         return locale == null ? getDefaultLocale() : locale;
     }
 
@@ -49,17 +34,9 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
         return source;
     }
 
-    protected Locale getInternalLocale() {
-        return null;
+    protected Locale doGetLocale() {
+        return LocaleContextHolder.getLocale();
     }
 
-    protected String resolveMessageCode(String code) {
-        return code;
-    }
-
-    protected Locale resolveLocale(Locale locale) {
-        return locale;
-    }
-
-    protected abstract String getInternalMessage(String code, String resolvedCode, Locale locale, Locale resolvedLocale, Object... args);
+    protected abstract String doGetMessage(String code, Locale locale, Object... args);
 }
