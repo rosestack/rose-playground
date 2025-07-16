@@ -15,8 +15,8 @@
  */
 package io.github.rose.security.auth.exception;
 
-import io.github.rose.common.exception.RateLimitException;
-import io.github.rose.common.util.JacksonUtil;
+import io.github.rose.core.exception.RateLimitException;
+import io.github.rose.core.util.JacksonUtil;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

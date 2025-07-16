@@ -1,6 +1,6 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.common.model.BaseTenantWithExtra;
+import io.github.rose.core.model.BaseTenantWithExtra;
 import lombok.Data;
 
 import java.io.Serializable;

@@ -1,6 +1,6 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.common.model.BaseAudit;
+import io.github.rose.core.model.BaseAudit;
 import lombok.Data;
 
 @Data

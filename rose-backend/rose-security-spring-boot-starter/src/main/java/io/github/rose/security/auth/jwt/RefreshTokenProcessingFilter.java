@@ -1,7 +1,7 @@
 
 package io.github.rose.security.auth.jwt;
 
-import io.github.rose.common.util.JacksonUtil;
+import io.github.rose.core.util.JacksonUtil;
 import io.github.rose.security.auth.RefreshAuthenticationToken;
 import io.github.rose.security.auth.exception.AuthMethodNotSupportedException;
 import io.github.rose.security.model.token.RawAccessJwtToken;

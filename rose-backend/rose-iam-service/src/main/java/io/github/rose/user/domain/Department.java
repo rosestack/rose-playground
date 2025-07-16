@@ -1,7 +1,7 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.common.model.BaseTenantWithExtra;
-import io.github.rose.common.model.HasCodeNameDescription;
+import io.github.rose.core.model.BaseTenantWithExtra;
+import io.github.rose.core.model.HasCodeNameDescription;
 import lombok.Data;
 
 /**

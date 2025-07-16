@@ -1,6 +1,6 @@
 package io.github.rose.log;
 
-import io.github.rose.common.model.HasName;
+import io.github.rose.core.model.HasName;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 

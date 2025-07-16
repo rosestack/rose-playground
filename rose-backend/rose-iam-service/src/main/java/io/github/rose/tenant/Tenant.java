@@ -1,7 +1,7 @@
 package io.github.rose.tenant;
 
-import io.github.rose.common.model.BaseAuditWithExtra;
-import io.github.rose.common.model.HasCodeNameDescription;
+import io.github.rose.core.model.BaseAuditWithExtra;
+import io.github.rose.core.model.HasCodeNameDescription;
 import lombok.Data;
 
 @Data

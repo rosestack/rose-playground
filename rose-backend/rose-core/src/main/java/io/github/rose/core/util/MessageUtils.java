@@ -1,0 +1,29 @@
+package io.github.rose.core.util;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+
+/**
+ * 获取i18n资源文件
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class MessageUtils {
+
+    private static final MessageSource MESSAGE_SOURCE = SpringContextUtils.getBean(MessageSource.class);
+
+    /**
+     * 根据消息键和参数获取消息 委托给spring messageSource
+     *
+     * @param code 消息键
+     * @param args 参数
+     * @return 获取国际化翻译值
+     */
+    public static String getMessage(String code, Object... args) {
+        if (MESSAGE_SOURCE != null) {
+            return MESSAGE_SOURCE.getMessage(code, args, LocaleContextHolder.getLocale());
+        }
+        return FormatUtils.format(code, args);
+    }
+}

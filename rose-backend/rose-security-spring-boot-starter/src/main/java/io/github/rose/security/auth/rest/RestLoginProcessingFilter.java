@@ -1,7 +1,7 @@
 
 package io.github.rose.security.auth.rest;
 
-import io.github.rose.common.util.JacksonUtil;
+import io.github.rose.core.util.JacksonUtil;
 import io.github.rose.security.auth.exception.AuthMethodNotSupportedException;
 import io.github.rose.security.model.LoginRequest;
 import io.github.rose.security.model.UserPrincipal;

@@ -1,6 +1,6 @@
 package io.github.rose.notification.application.service;
 
-import io.github.rose.common.exception.BusinessException;
+import io.github.rose.core.exception.BusinessException;
 import io.github.rose.notice.NoticeService;
 import io.github.rose.notice.SendRequest;
 import io.github.rose.notice.SendResult;

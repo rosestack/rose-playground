@@ -15,7 +15,7 @@
  */
 package io.github.rose.security.auth.rest;
 
-import io.github.rose.common.util.JacksonUtil;
+import io.github.rose.core.util.JacksonUtil;
 import io.github.rose.security.model.JwtPair;
 import io.github.rose.security.model.SecurityUser;
 import io.github.rose.security.model.token.JwtTokenFactory;
