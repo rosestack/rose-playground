@@ -1,17 +1,27 @@
 package io.github.rose.i18n;
 
-import org.springframework.core.OrderComparator;
+import io.github.rose.core.lang.Prioritized;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.ServiceLoader;
 
 /**
  * MessageSource 管理类，支持自动发现、组合、动态注册与优先级排序。
+ * <p>
+ * 提供统一的消息源管理、组合与生命周期管理。
  */
-public class MessageSourceManager {
-    private static final List<MessageSource> sources = new CopyOnWriteArrayList<>();
+public final class MessageSourceManager {
+    /**
+     * SPI 发现的消息源列表
+     */
+    private static final List<MessageSource> SOURCES = new CopyOnWriteArrayList<>();
+    /**
+     * 组合消息源单例
+     */
     private static volatile CompositeMessageSource instance;
+
+    private MessageSourceManager() {
+    }
 
     static {
         reloadAndDiscover();
@@ -21,7 +31,7 @@ public class MessageSourceManager {
      * 初始化所有已注册消息源
      */
     public static void init() {
-        for (MessageSource source : sources) {
+        for (MessageSource source : SOURCES) {
             source.init();
         }
     }
@@ -30,7 +40,7 @@ public class MessageSourceManager {
      * 销毁所有已注册消息源
      */
     public static void destroy() {
-        for (MessageSource source : sources) {
+        for (MessageSource source : SOURCES) {
             source.destroy();
         }
     }
@@ -41,10 +51,10 @@ public class MessageSourceManager {
     public static void reloadAndDiscover() {
         List<MessageSource> discovered = new ArrayList<>();
         ServiceLoader.load(MessageSource.class).forEach(discovered::add);
-        OrderComparator.sort(discovered);
-        sources.clear();
-        sources.addAll(discovered);
-        instance = new CompositeMessageSource(sources);
+        discovered.sort(Comparator.comparingInt(Prioritized::getPriority));
+        SOURCES.clear();
+        SOURCES.addAll(discovered);
+        instance = new CompositeMessageSource(SOURCES);
         init(); // 自动初始化
     }
 
@@ -52,24 +62,24 @@ public class MessageSourceManager {
      * 动态注册一个消息源
      */
     public static void registerSource(MessageSource source) {
-        sources.add(source);
-        OrderComparator.sort(sources);
-        instance = new CompositeMessageSource(sources);
+        SOURCES.add(source);
+        SOURCES.sort(Comparator.comparingInt(Prioritized::getPriority));
+        instance = new CompositeMessageSource(SOURCES);
     }
 
     /**
      * 动态移除一个消息源
      */
     public static void unregisterSource(MessageSource source) {
-        sources.remove(source);
-        instance = new CompositeMessageSource(sources);
+        SOURCES.remove(source);
+        instance = new CompositeMessageSource(SOURCES);
     }
 
     /**
      * 获取所有已注册的消息源（有序）
      */
     public static List<MessageSource> getRegisteredSources() {
-        return Collections.unmodifiableList(sources);
+        return Collections.unmodifiableList(SOURCES);
     }
 
     /**

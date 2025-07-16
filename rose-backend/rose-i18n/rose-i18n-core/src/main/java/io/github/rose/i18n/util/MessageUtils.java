@@ -7,31 +7,25 @@ import java.util.Locale;
 
 /**
  * Message Utilities class
+ * <p>
+ * 提供国际化消息解析、占位符处理等工具方法。
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public abstract class MessageUtils {
-
-    /**
-     * Message Code pattern prefix
-     */
+public final class MessageUtils {
+    /** 消息占位符前缀 */
     public static final String MESSAGE_PATTERN_PREFIX = "{";
-
-    /**
-     * Message Code pattern suffix
-     */
+    /** 消息占位符后缀 */
     public static final String MESSAGE_PATTERN_SUFFIX = "}";
 
-    private MessageUtils() {
-    }
+    private MessageUtils() {}
 
     /**
-     * Get I18n Message
-     *
-     * @param messagePattern Message or Message Pattern
-     * @param args           the arguments of Message Pattern
-     * @return Internationalized Message returns the original message if it exists
+     * 获取国际化消息（自动获取当前 Locale）
+     * @param messagePattern 消息或消息占位符
+     * @param args           占位符参数
+     * @return 国际化消息，若无则返回原文
      */
     public static String getLocalizedMessage(String messagePattern, Object... args) {
         MessageSource messageSource = MessageSourceManager.getInstance();
@@ -39,9 +33,16 @@ public abstract class MessageUtils {
         return getLocalizedMessage(messagePattern, locale, args);
     }
 
+    /**
+     * 获取国际化消息（指定 Locale）
+     * @param messagePattern 消息或消息占位符
+     * @param locale         区域
+     * @param args           占位符参数
+     * @return 国际化消息，若无则返回原文
+     */
     public static String getLocalizedMessage(String messagePattern, Locale locale, Object... args) {
         if (messagePattern == null) return null;
-        String messageCode = resolveMessageCode(messagePattern);
+        String messageCode = extractMessageCode(messagePattern);
         if (messageCode == null) return messagePattern;
 
         MessageSource messageSource = MessageSourceManager.getInstance();
@@ -55,7 +56,12 @@ public abstract class MessageUtils {
                 : messagePattern;
     }
 
-    public static String resolveMessageCode(String messagePattern) {
+    /**
+     * 解析消息占位符，提取 code
+     * @param messagePattern 消息模式
+     * @return code 或 null
+     */
+    public static String extractMessageCode(String messagePattern) {
         if (messagePattern == null) return null;
         int start = messagePattern.indexOf(MESSAGE_PATTERN_PREFIX);
         int end = messagePattern.indexOf(MESSAGE_PATTERN_SUFFIX, start + 1);

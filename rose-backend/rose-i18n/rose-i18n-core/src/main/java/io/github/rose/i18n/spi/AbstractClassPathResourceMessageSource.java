@@ -4,17 +4,21 @@ import io.github.rose.i18n.AbstractResourceMessageSource;
 import io.github.rose.i18n.MessageException;
 import io.github.rose.i18n.util.I18nUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.JarFile;
 
 /**
  * 抽象 classpath 资源型国际化消息源，封装 Locale 自动发现、资源加载、基础路径等通用逻辑。
  * 子类只需实现 getResourceSuffixes() 和 loadMessages(String resource)。
  */
 public abstract class AbstractClassPathResourceMessageSource extends AbstractResourceMessageSource {
+    protected static final String FILE_PROTOCOL = "file";
+    protected static final String JAR_PROTOCOL = "jar";
     private final AtomicReference<Set<Locale>> cachedLocales = new AtomicReference<>();
 
     public AbstractClassPathResourceMessageSource(String source) {
@@ -54,14 +58,14 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
             Enumeration<URL> resources = classLoader.getResources(basePath);
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
-                if ("file".equals(url.getProtocol())) {
-                    java.io.File dir = new java.io.File(url.toURI());
+                if (FILE_PROTOCOL.equals(url.getProtocol())) {
+                    File dir = new File(url.toURI());
                     discovered.addAll(I18nUtils.findLocalesInDirectory(dir, getResourceSuffixes()));
-                } else if ("jar".equals(url.getProtocol())) {
+                } else if (JAR_PROTOCOL.equals(url.getProtocol())) {
                     String jarPath = url.getPath();
                     String[] parts = jarPath.split("!/");
                     if (parts.length == 2) {
-                        try (java.util.jar.JarFile jar = new java.util.jar.JarFile(parts[0].replaceFirst("^file:/+", "/"))) {
+                        try (JarFile jar = new JarFile(parts[0].replaceFirst("^file:/+", "/"))) {
                             discovered.addAll(I18nUtils.findLocalesInJar(jar, basePath, getResourceSuffixes()));
                         }
                     }
