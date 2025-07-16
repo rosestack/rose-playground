@@ -1,11 +1,13 @@
 package io.github.rose.i18n;
 
-import io.github.rose.core.util.FormatUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.rose.i18n.util.MessageFormatCache;
+
+import java.text.MessageFormat;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
@@ -24,6 +26,11 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
 
     private Locale defaultLocale;
 
+    /**
+     * 消息格式化缓存，提升性能
+     */
+    private static final MessageFormatCache MESSAGE_FORMAT_CACHE = new MessageFormatCache();
+
     public AbstractI18nMessageSource(String source) {
         requireNonNull(source, "'source' argument must not be null");
         this.source = source;
@@ -36,6 +43,9 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
 
     @Override
     public void destroy() {
+        // 清理缓存
+        MESSAGE_FORMAT_CACHE.clearAllCache();
+        log.debug("Source '{}' destroyed and cleared MessageFormat cache", source);
     }
 
     @Override
@@ -162,8 +172,36 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
         return derivedLocales;
     }
 
+    /**
+     * 解析和格式化消息
+     *
+     * <p>性能优化策略：</p>
+     * <ul>
+     *   <li>修复了原有bug：MessageFormat.format(args) 而不是 format(message, args)</li>
+     *   <li>使用缓存避免重复创建MessageFormat实例</li>
+     *   <li>无参数时直接返回原消息</li>
+     *   <li>快速占位符检测</li>
+     * </ul>
+     *
+     * @param message 消息模板
+     * @param args    格式化参数
+     * @return 格式化后的消息
+     */
     protected String resolveMessage(String message, Object... args) {
-        // Using FormatUtils#format, future subclasses may re-implement formatting
-        return FormatUtils.format(message, args);
+        return MESSAGE_FORMAT_CACHE.formatMessage(message, getLocale(), args);
+    }
+
+    /**
+     * 传统的MessageFormat实现（用于性能对比）
+     *
+     * @deprecated 性能较差，仅用于基准测试
+     */
+    @Deprecated
+    protected String resolveMessageLegacy(String message, Object... args) {
+        if (args == null || args.length == 0) {
+            return message;
+        }
+        MessageFormat messageFormat = new MessageFormat(message, getLocale());
+        return messageFormat.format(args);
     }
 }

@@ -3,9 +3,9 @@ package io.github.rose.i18n.util;
 import io.github.rose.i18n.AbstractI18nTest;
 import io.github.rose.i18n.spi.ClassPathPropertiesResourceI18nMessageSource;
 import io.github.rose.i18n.spi.EmptyI18nMessageSource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * {@link I18nUtils} Test

@@ -17,32 +17,32 @@
 package io.github.rose.i18n;
 
 import io.github.rose.i18n.util.I18nUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Locale;
 
 /**
- * Abstract Spring Test
+ * Abstract I18n Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
 public abstract class AbstractI18nTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         // Set the simplified Chinese as the default Locale
         Locale.setDefault(Locale.SIMPLIFIED_CHINESE);
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         I18nUtils.destroyI18nMessageSource();
     }
 
-    @After
+    @AfterEach
     public void after() {
         I18nUtils.destroyI18nMessageSource();
     }

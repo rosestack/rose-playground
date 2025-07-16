@@ -18,11 +18,6 @@ public interface I18nMessageSource extends Prioritized {
     }
 
     @Nullable
-    default String getMessage(String code, Locale locale) {
-        return getMessage(code, null, locale);
-    }
-
-    @Nullable
     Map<String, String> getMessages(Set<String> codes, Locale locale);
 
     @Nullable
@@ -30,7 +25,7 @@ public interface I18nMessageSource extends Prioritized {
 
     @Nonnull
     default Set<Locale> getSupportedLocales() {
-        return new TreeSet<>(Arrays.asList(getDefaultLocale(), Locale.ENGLISH));
+        return new LinkedHashSet<>(Arrays.asList(getDefaultLocale(), Locale.ENGLISH));
     }
 
     @Nonnull
