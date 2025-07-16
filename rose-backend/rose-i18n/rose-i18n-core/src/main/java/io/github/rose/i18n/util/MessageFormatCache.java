@@ -41,53 +41,22 @@ public class MessageFormatCache {
      * @return 格式化后的消息
      */
     public String formatMessage(String message, Locale locale, Object... args) {
-        if (message == null) {
-            return null;
-        }
-        
-        // 优化1: 如果没有参数，直接返回原消息（Spring 的策略）
-        if (args == null || args.length == 0) {
-            return message;
-        }
-        
-        // 优化2: 快速检查是否包含占位符
-        if (!containsPlaceholders(message)) {
-            return message;
-        }
-        
-        // 优化3: 从缓存获取或创建 MessageFormat
-        MessageFormat messageFormat = getMessageFormat(message, locale);
-        
+        if (message == null) return null;
+        if (args == null || args.length == 0) return message;
+        if (!hasPlaceholders(message)) return message;
+        MessageFormat format = getMessageFormat(message, locale);
         try {
-            // 优化4: 使用实例方法而不是静态方法
-            return messageFormat.format(args);
+            return format.format(args);
         } catch (Exception e) {
-            // 格式化失败，降级返回原消息
             return message;
         }
     }
-    
+
     /**
-     * 快速检查消息是否包含 MessageFormat 占位符
+     * 判断消息是否包含 MessageFormat 占位符（如 {0}）
      */
-    private boolean containsPlaceholders(String message) {
-        // 简单但有效的检查：查找 {数字} 模式
-        int length = message.length();
-        for (int i = 0; i < length - 2; i++) {
-            if (message.charAt(i) == '{') {
-                for (int j = i + 1; j < length; j++) {
-                    char ch = message.charAt(j);
-                    if (ch == '}') {
-                        // 找到了 {xxx} 模式
-                        return true;
-                    } else if (!Character.isDigit(ch) && ch != ',' && ch != ' ') {
-                        // 非标准占位符，跳过
-                        break;
-                    }
-                }
-            }
-        }
-        return false;
+    private boolean hasPlaceholders(String message) {
+        return message.contains("{") && message.contains("}");
     }
     
     /**
@@ -144,7 +113,7 @@ public class MessageFormatCache {
      */
     public void warmupCache(Map<String, String> messages, Locale locale) {
         messages.forEach((code, message) -> {
-            if (containsPlaceholders(message)) {
+            if (hasPlaceholders(message)) {
                 getMessageFormat(message, locale);
             }
         });

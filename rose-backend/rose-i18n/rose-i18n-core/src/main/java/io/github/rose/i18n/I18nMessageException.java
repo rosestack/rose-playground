@@ -7,30 +7,27 @@ import java.util.StringJoiner;
 
 public class I18nMessageException extends RuntimeException {
 
-    private final String message;
+    private final String rawMessage;
     private final Object[] args;
 
-    public I18nMessageException(String message, Object... args) {
-        this.message = message;
+    public I18nMessageException(String rawMessage, Object... args) {
+        this.rawMessage = rawMessage;
         this.args = args;
     }
 
     @Override
     public String getMessage() {
-        return message;
+        return rawMessage;
     }
 
     @Override
     public String getLocalizedMessage() {
-        return MessageUtils.getLocalizedMessage(message, args);
+        return MessageUtils.getLocalizedMessage(rawMessage, args);
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", I18nMessageException.class.getSimpleName() + "[", "]")
-                .add("message='" + message + "'")
-                .add("args=" + Arrays.toString(args))
-                .add("localized message='" + getLocalizedMessage() + "'")
-                .toString();
+        return String.format("%s[message='%s', args=%s, localized='%s']",
+                getClass().getSimpleName(), rawMessage, Arrays.toString(args), getLocalizedMessage());
     }
 }

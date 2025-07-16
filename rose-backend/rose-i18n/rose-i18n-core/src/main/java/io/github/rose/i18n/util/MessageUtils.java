@@ -1,6 +1,7 @@
 package io.github.rose.i18n.util;
 
 import io.github.rose.i18n.I18nMessageSource;
+import io.github.rose.i18n.util.I18nUtils;
 
 import java.util.Locale;
 
@@ -39,31 +40,19 @@ public abstract class MessageUtils {
     }
 
     public static String getLocalizedMessage(String messagePattern, Locale locale, Object... args) {
-        if (messagePattern == null) {
-            return null;
-        }
-
+        if (messagePattern == null) return null;
         String messageCode = resolveMessageCode(messagePattern);
-
-        if (messageCode == null) {
-            // Message code not found, return original pattern
-            return messagePattern;
-        }
+        if (messageCode == null) return messagePattern;
 
         I18nMessageSource i18nMessageSource = I18nUtils.i18nMessageSource();
         String localizedMessage = i18nMessageSource.getMessage(messageCode, locale, args);
         if (localizedMessage != null && !localizedMessage.isBlank()) {
-            // found localized message
-        } else {
-            int afterDotIndex = messageCode.indexOf(".") + 1;
-            if (afterDotIndex > 0 && afterDotIndex < messageCode.length()) {
-                localizedMessage = messageCode.substring(afterDotIndex);
-            } else {
-                localizedMessage = messagePattern;
-            }
+            return localizedMessage;
         }
-
-        return localizedMessage;
+        int afterDotIndex = messageCode.indexOf('.') + 1;
+        return (afterDotIndex > 0 && afterDotIndex < messageCode.length())
+                ? messageCode.substring(afterDotIndex)
+                : messagePattern;
     }
 
     public static String resolveMessageCode(String messagePattern) {

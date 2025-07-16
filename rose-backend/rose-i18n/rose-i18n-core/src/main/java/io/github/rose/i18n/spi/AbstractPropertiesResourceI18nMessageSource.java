@@ -2,6 +2,7 @@ package io.github.rose.i18n.spi;
 
 
 import io.github.rose.i18n.AbstractResourceI18nMessageSource;
+import io.github.rose.i18n.I18nMessageException;
 import io.github.rose.i18n.I18nMessageSource;
 
 import java.io.IOException;
@@ -27,37 +28,31 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected final Map<String, String> loadMessages(String resource) {
-        Map<String, String> messages = null;
         try {
             Properties properties = loadProperties(resource);
-            if (properties != null && !properties.isEmpty()) {
-                messages = new HashMap<>(properties.size());
-                messages.putAll((Map) properties);
-            }
+            if (properties == null || properties.isEmpty()) return emptyMap();
+            Map<String, String> messages = new HashMap<>(properties.size());
+            messages.putAll((Map) properties);
+            return unmodifiableMap(messages);
         } catch (IOException e) {
-            throw new RuntimeException("Source '" + source + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
+            throw new I18nMessageException("Source '" + source + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
         }
-        return messages == null ? emptyMap() : unmodifiableMap(messages);
     }
 
     @Override
     protected String getResourceName(Locale locale) {
-        StringBuilder sb = new StringBuilder(DEFAULT_RESOURCE_NAME_PREFIX);
-        sb.append(locale.getLanguage().toLowerCase());
-        if (!locale.getCountry().isEmpty()) {
-            sb.append("_").append(locale.getCountry().toUpperCase());
-        }
-        if (!locale.getVariant().isEmpty()) {
-            sb.append("_").append(locale.getVariant());
-        }
-        sb.append(DEFAULT_RESOURCE_NAME_SUFFIX);
-        return sb.toString();
+        // e.g. i18n_messages_zh_CN.properties
+        return String.format("%s%s%s%s%s", DEFAULT_RESOURCE_NAME_PREFIX,
+                locale.getLanguage().toLowerCase(),
+                locale.getCountry().isEmpty() ? "" : "_" + locale.getCountry().toUpperCase(),
+                locale.getVariant().isEmpty() ? "" : "_" + locale.getVariant(),
+                DEFAULT_RESOURCE_NAME_SUFFIX);
     }
 
     protected Properties loadProperties(String resource) throws IOException {
         List<Reader> propertiesResources = loadPropertiesResources(resource);
         if (propertiesResources == null || propertiesResources.isEmpty()) {
-            return null;
+            return new Properties();
         }
         Properties properties = new Properties();
         for (Reader propertiesResource : propertiesResources) {
@@ -65,7 +60,6 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
                 properties.load(reader);
             }
         }
-
         return properties;
     }
 
