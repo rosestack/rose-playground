@@ -17,7 +17,7 @@ class MessageUtilsTest extends AbstractI18nTest {
 
     @BeforeEach
     public void before() {
-        messageSource = new ClassPathPropertiesResourceMessageSource("test");
+        messageSource = new ClassPathPropertiesResourceMessageSource("properties");
         messageSource.init();
         assertNotNull(MessageSourceManager.getInstance(), "MessageSource should be initialized");
     }

@@ -1,6 +1,6 @@
-package io.github.rose.i18n;
+package io.github.rose.i18n.spi;
 
-import io.github.rose.i18n.spi.ClassPathPropertiesResourceMessageSource;
+import io.github.rose.i18n.MessageSourceManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ class ClassPathPropertiesResourceMessageSourceTest {
     @BeforeEach
     void setUp() {
         MessageSourceManager.destroy();
-        messageSource = new ClassPathPropertiesResourceMessageSource("test");
+        messageSource = new ClassPathPropertiesResourceMessageSource("properties");
         messageSource.init();
     }
 
