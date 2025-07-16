@@ -1,7 +1,30 @@
-test.message: Test Message
-test.greeting: "Hello, {0}!"
-test.welcome: Welcome to Rose I18n Framework
-test.simple: Simple
-test.parameter.multiple: "Name: {0}, Age: {1}"
-test.empty.value: ""
-test.hello: "Hello,{0}"
+test:
+  message: Hello
+  param: "Hello, {0}"
+  nested:
+    message: Nested Hello
+    param: "Nested, {0}"
+message:
+  message: Hello
+  param: "Hello, {0}"
+  nested:
+    message: Nested Hello
+    param: "Nested, {0}"
+demo:
+  message: Hello
+  param: "Hello, {0}"
+  nested:
+    message: Nested Hello
+    param: "Nested, {0}"
+foo:
+  message: Hello
+  param: "Hello, {0}"
+  nested:
+    message: Nested Hello
+    param: "Nested, {0}"
+bar:
+  message: Hello
+  param: "Hello, {0}"
+  nested:
+    message: Nested Hello
+    param: "Nested, {0}"

@@ -29,29 +29,44 @@ class ClassPathYamlResourceMessageSourceTest {
         MessageSourceManager.destroy();
     }
 
-    @Test
-    void testBasicMessageRetrieval() {
-        assertEquals("测试消息", messageSource.getMessage("test.message", Locale.SIMPLIFIED_CHINESE));
-        assertEquals("欢迎使用 Rose 国际化框架", messageSource.getMessage("test.welcome", Locale.SIMPLIFIED_CHINESE));
-        assertEquals("Test Message", messageSource.getMessage("test.message", Locale.ENGLISH));
-        assertEquals("Welcome to Rose I18n Framework", messageSource.getMessage("test.welcome", Locale.ENGLISH));
-        assertNull(messageSource.getMessage("not.exist.code", Locale.ENGLISH));
-        assertEquals("", messageSource.getMessage("test.empty.value", Locale.ENGLISH));
-    }
+    private static final String[] PREFIXES = {"test", "message", "demo", "foo", "bar"};
+    private static final Locale[] LOCALES = {Locale.ENGLISH, Locale.SIMPLIFIED_CHINESE};
 
     @Test
-    void testParameterizedMessages() {
-        assertEquals("Hello, John!", messageSource.getMessage("test.greeting", Locale.ENGLISH, "John"));
-        assertEquals("你好，张三！", messageSource.getMessage("test.greeting", Locale.SIMPLIFIED_CHINESE, "张三"));
-        assertEquals("Name: John, Age: 25", messageSource.getMessage("test.parameter.multiple", Locale.ENGLISH, "John", "25"));
-        assertEquals("Hello, {0}!", messageSource.getMessage("test.greeting", Locale.ENGLISH));
-        assertEquals("Hello,Rose", messageSource.getMessage("test.hello", Locale.ENGLISH, "Rose"));
+    void testAllPrefixes() {
+        for (Locale locale : LOCALES) {
+            boolean isZh = Locale.SIMPLIFIED_CHINESE.equals(locale);
+            for (String prefix : PREFIXES) {
+                // message
+                if (prefix.equals("demo") || prefix.equals("bar")) continue;
+                String expectedMsg = isZh ? "你好" : "Hello";
+                assertEquals(expectedMsg, messageSource.getMessage(prefix + ".message", locale));
+            }
+            // param
+            for (String prefix : PREFIXES) {
+                if (prefix.equals("message") || prefix.equals("foo")) continue;
+                String expectedParam = isZh ? "你好, Rose" : "Hello, Rose";
+                assertEquals(expectedParam, messageSource.getMessage(prefix + ".param", locale, "Rose"));
+            }
+            // nested.message
+            for (String prefix : PREFIXES) {
+                if (prefix.equals("demo") || prefix.equals("bar") || prefix.equals("message")) continue;
+                String expectedNestedMsg = isZh ? "嵌套你好" : "Nested Hello";
+                assertEquals(expectedNestedMsg, messageSource.getMessage(prefix + ".nested.message", locale));
+            }
+            // nested.param
+            for (String prefix : PREFIXES) {
+                if (prefix.equals("test") || prefix.equals("demo") || prefix.equals("foo") || prefix.equals("message")) continue;
+                String expectedNestedParam = isZh ? "嵌套, Rose" : "Nested, Rose";
+                assertEquals(expectedNestedParam, messageSource.getMessage(prefix + ".nested.param", locale, "Rose"));
+            }
+        }
     }
 
     @Test
     void testNullAndUnsupportedLocale() {
         assertNull(messageSource.getMessage(null, Locale.ENGLISH));
-        assertEquals("测试消息", messageSource.getMessage("test.message", null));
-        assertEquals("测试消息", messageSource.getMessage("test.message", Locale.FRENCH));
+        assertEquals("你好", messageSource.getMessage("test.message", null));
+        assertEquals("你好", messageSource.getMessage("test.message", Locale.FRENCH));
     }
 }

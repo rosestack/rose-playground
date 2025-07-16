@@ -1,11 +1,16 @@
-test.message: 测试消息
-test.greeting: "你好，{0}！"
-test.welcome: 欢迎使用 Rose 国际化框架
-test.error.validation: "验证错误：{0}"
-test.common.save: 保存
-test.simple: 简单
-test.parameter.single: "参数：{0}"
-test.parameter.multiple: "姓名：{0}，年龄：{1}"
-test.empty.value: ""
-test.a: 测试-a
-test.hello: "您好,{0}"
+test:
+  message: 你好
+  param: "你好, {0}"
+  nested:
+    message: 嵌套你好
+    param: "嵌套, {0}"
+message:
+  message: 你好
+demo:
+  param: "你好, {0}"
+foo:
+  nested:
+    message: 嵌套你好
+bar:
+  nested:
+    param: "嵌套, {0}"

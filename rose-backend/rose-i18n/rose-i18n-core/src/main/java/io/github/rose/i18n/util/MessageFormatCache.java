@@ -11,22 +11,33 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Caches parsed MessageFormat instances to avoid repeated parsing and improve performance.</p>
  */
 public final class MessageFormatCache {
-    /** Cache structure: Locale -> (MessagePattern -> MessageFormat) */
+    /**
+     * Cache structure: Locale -> (MessagePattern -> MessageFormat)
+     */
     private final Map<Locale, Map<String, MessageFormat>> messageFormatCache = new ConcurrentHashMap<>();
-    /** Cache size limit per locale to prevent memory leaks */
+    /**
+     * Cache size limit per locale to prevent memory leaks
+     */
     private static final int MAX_CACHE_SIZE_PER_LOCALE = 256;
 
     /**
      * Format a message.
+     *
      * @param message message template
-     * @param locale locale
-     * @param args arguments
+     * @param locale  locale
+     * @param args    arguments
      * @return formatted message
      */
     public String formatMessage(String message, Locale locale, Object... args) {
-        if (message == null) return null;
-        if (args == null || args.length == 0) return message;
-        if (!hasPlaceholders(message)) return message;
+        if (message == null) {
+            return null;
+        }
+        if (args == null || args.length == 0) {
+            return message;
+        }
+        if (!hasPlaceholders(message)) {
+            return message;
+        }
         MessageFormat format = getMessageFormat(message, locale);
         try {
             return format.format(args);
@@ -47,7 +58,7 @@ public final class MessageFormatCache {
      */
     private MessageFormat getMessageFormat(String message, Locale locale) {
         Map<String, MessageFormat> localeCache = messageFormatCache.computeIfAbsent(
-            locale, k -> new ConcurrentHashMap<>()
+                locale, k -> new ConcurrentHashMap<>()
         );
         if (localeCache.size() >= MAX_CACHE_SIZE_PER_LOCALE) {
             localeCache.clear();

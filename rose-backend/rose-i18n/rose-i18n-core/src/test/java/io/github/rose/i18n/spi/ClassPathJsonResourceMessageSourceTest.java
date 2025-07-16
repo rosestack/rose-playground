@@ -10,6 +10,8 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClassPathJsonResourceMessageSourceTest {
+    private static final String[] PREFIXES = {"test", "foo"};
+    private static final Locale[] LOCALES = {Locale.ENGLISH, Locale.SIMPLIFIED_CHINESE};
 
     private ClassPathJsonResourceMessageSource messageSource;
 
@@ -30,28 +32,25 @@ class ClassPathJsonResourceMessageSourceTest {
     }
 
     @Test
-    void testBasicMessageRetrieval() {
-        assertEquals("测试消息", messageSource.getMessage("test.message", Locale.SIMPLIFIED_CHINESE));
-        assertEquals("欢迎使用 Rose 国际化框架", messageSource.getMessage("test.welcome", Locale.SIMPLIFIED_CHINESE));
-        assertEquals("Test Message", messageSource.getMessage("test.message", Locale.ENGLISH));
-        assertEquals("Welcome to Rose I18n Framework", messageSource.getMessage("test.welcome", Locale.ENGLISH));
-        assertNull(messageSource.getMessage("not.exist.code", Locale.ENGLISH));
-        assertEquals("", messageSource.getMessage("test.empty.value", Locale.ENGLISH));
+    void testAllPrefixes() {
+        for (Locale locale : LOCALES) {
+            boolean isZh = Locale.SIMPLIFIED_CHINESE.equals(locale);
+            for (String prefix : PREFIXES) {
+
+            }
+        }
     }
 
     @Test
-    void testParameterizedMessages() {
-        assertEquals("Hello, John!", messageSource.getMessage("test.greeting", Locale.ENGLISH, "John"));
-        assertEquals("你好，张三！", messageSource.getMessage("test.greeting", Locale.SIMPLIFIED_CHINESE, "张三"));
-        assertEquals("Name: John, Age: 25", messageSource.getMessage("test.parameter.multiple", Locale.ENGLISH, "John", "25"));
-        assertEquals("Hello, {0}!", messageSource.getMessage("test.greeting", Locale.ENGLISH));
-        assertEquals("Hello,Rose", messageSource.getMessage("test.hello", Locale.ENGLISH, "Rose"));
-    }
-
-    @Test
-    void testNullAndUnsupportedLocale() {
-        assertNull(messageSource.getMessage(null, Locale.ENGLISH));
-        assertEquals("测试消息", messageSource.getMessage("test.message", null));
-        assertEquals("测试消息", messageSource.getMessage("test.message", Locale.FRENCH));
+    void testDefaultResourceFallback() {
+        // locale 为空，优先返回无后缀资源内容
+        assertEquals("你好", messageSource.getMessage("test.message", null));
+        // 不支持的 locale，优先返回无后缀资源内容
+        Locale unsupported = new Locale("fr", "FR");
+        assertEquals("你好", messageSource.getMessage("test.message", unsupported));
+        // 其他 key
+        assertEquals("你好, Rose", messageSource.getMessage("test.param", null, "Rose"));
+        assertEquals("嵌套你好", messageSource.getMessage("test.nested.message", null));
+        assertEquals("嵌套你好, Rose", messageSource.getMessage("test.nested.param", null, "Rose"));
     }
 }

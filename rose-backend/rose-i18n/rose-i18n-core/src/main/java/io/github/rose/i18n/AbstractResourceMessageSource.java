@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
+import io.github.rose.i18n.LocaleResolver;
+
 /**
  * Abstract Resource {@link MessageSource} Class
  *
@@ -37,17 +39,24 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         Set<Locale> supportedLocales = getSupportedLocales();
         Assert.assertNotEmpty(supportedLocales, "supportedLocales must not be null");
 
+        // 先加载所有 locale 资源
         for (Locale locale : supportedLocales) {
             String resourceName = getResourceName(locale);
             initializeResource(resourceName);
         }
+        // 最后加载无后缀兜底资源，且不覆盖已存在的 key
+        String defaultResourceName = getResourceName(null);
+        initializeResource(defaultResourceName);
     }
 
     @Override
     public void initializeResource(String resourceName) {
         requireNonNull(resourceName, "The 'resource' attribute must be assigned before initialization!");
-        Map<String, String> messages = loadMessages(resourceName);
-        this.localizedResourceMessages.put(getKey(resourceName), messages);
+        String key = getKey(resourceName);
+        if (!this.localizedResourceMessages.containsKey(key)) {
+            Map<String, String> messages = loadMessages(resourceName);
+            this.localizedResourceMessages.put(key, messages);
+        }
     }
 
     @Override
@@ -62,62 +71,77 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         }
     }
 
-    @Override
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
         Map<String, String> messageMap = localizedResourceMessages.getOrDefault(getKey(getResourceName(locale)), emptyMap());
-
-        Map<String, String> messages = new HashMap<>();
+        if (codes == null || codes.isEmpty()) return messageMap;
+        Map<String, String> result = new HashMap<>();
         for (String code : codes) {
-            String sourceMessages = messageMap.get(code);
-            if (sourceMessages != null) {
-                messages.put(code, sourceMessages);
+            if (messageMap.containsKey(code)) {
+                result.put(code, messageMap.get(code));
             }
         }
-        return messages;
+        return result;
     }
 
-    @Override
     public Map<String, String> getMessages(Locale locale) {
+        if (locale == null) {
+            // 只查 generic 资源，不再 fallback 到默认 locale
+            return localizedResourceMessages.getOrDefault(getKey(getResourceName(null)), emptyMap());
+        }
         return localizedResourceMessages.getOrDefault(getKey(getResourceName(locale)), emptyMap());
+    }
+
+    public boolean isSupportedLocale(Locale locale) {
+        if (locale == null) return false;
+        return localizedResourceMessages.containsKey(getKey(getResourceName(locale)));
     }
 
     @Override
     protected String doGetMessage(String code, Locale locale, Object[] args) {
+        if (locale == null) {
+            locale = getDefaultLocale();
+        }
         String message = null;
         // 1. 完整 locale
         Map<String, String> messages = getMessages(locale);
-        if (messages != null) {
-            String messagePattern = messages.get(code);
-            if (messagePattern != null) {
-                message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, locale, args);
-                if (message != null) return message;
+        String messagePattern = messages != null ? messages.get(code) : null;
+        if (messagePattern != null) {
+            message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, locale, args);
+            if (message != null) {
+                return message;
             }
         }
         // 2. 仅 language（如 zh_CN -> zh）
         if (locale != null && !locale.getCountry().isEmpty()) {
             Locale languageOnly = new Locale(locale.getLanguage());
             messages = getMessages(languageOnly);
-            if (messages != null) {
-                String messagePattern = messages.get(code);
-                if (messagePattern != null) {
-                    message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, languageOnly, args);
-                    if (message != null) return message;
+            messagePattern = messages != null ? messages.get(code) : null;
+            if (messagePattern != null) {
+                message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, languageOnly, args);
+                if (message != null) {
+                    return message;
                 }
             }
         }
-        // 3. 默认 locale
-        Locale defaultLocale = getDefaultLocale();
-        if (defaultLocale != null && !defaultLocale.equals(locale)) {
-            messages = getMessages(defaultLocale);
-            if (messages != null) {
-                String messagePattern = messages.get(code);
-                if (messagePattern != null) {
-                    message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, defaultLocale, args);
-                    if (message != null) return message;
-                }
+        // 3. generic（无后缀）
+        Map<String, String> genericMessages = getMessages(null);
+        String genericPattern = genericMessages != null ? genericMessages.get(code) : null;
+        if (genericPattern != null) {
+            message = MESSAGE_FORMAT_CACHE.formatMessage(genericPattern, getDefaultLocale(), args);
+            if (message != null) {
+                return message;
             }
         }
-        // 4. fallback: null
+        // 4. fallback 到默认 locale
+        Locale def = getDefaultLocale();
+        Map<String, String> defMessages = getMessages(def);
+        String defPattern = defMessages != null ? defMessages.get(code) : null;
+        if (defPattern != null) {
+            message = MESSAGE_FORMAT_CACHE.formatMessage(defPattern, def, args);
+            if (message != null) {
+                return message;
+            }
+        }
         return null;
     }
 

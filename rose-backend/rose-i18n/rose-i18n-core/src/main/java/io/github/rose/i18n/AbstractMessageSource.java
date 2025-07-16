@@ -1,15 +1,23 @@
 package io.github.rose.i18n;
 
+import io.github.rose.core.util.ServletUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import java.util.Locale;
 import java.util.Objects;
 
 
 public abstract class AbstractMessageSource implements MessageSource {
     protected final String source;
+    protected LocaleResolver localeResolver = new DefaultLocaleResolver();
 
     public AbstractMessageSource(String source) {
         Objects.requireNonNull(source, "'source' argument must not be null");
         this.source = source;
+    }
+
+    public void setLocaleResolver(LocaleResolver localeResolver) {
+        this.localeResolver = localeResolver;
     }
 
     @Override
@@ -23,18 +31,13 @@ public abstract class AbstractMessageSource implements MessageSource {
 
     @Override
     public final Locale getLocale() {
-        Locale locale = doGetLocale();
+        Locale locale = localeResolver.resolveLocale(ServletUtils.getRequest());
         return locale == null ? getDefaultLocale() : locale;
     }
 
     @Override
     public final String getSource() {
         return source;
-    }
-
-    protected Locale doGetLocale() {
-        // 默认实现返回 null，实际使用 getDefaultLocale
-        return null;
     }
 
     protected abstract String doGetMessage(String code, Locale locale, Object... args);

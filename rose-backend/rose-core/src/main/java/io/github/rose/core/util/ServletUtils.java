@@ -74,14 +74,22 @@ public class ServletUtils {
      * 获取request
      */
     public static HttpServletRequest getRequest() {
-        return getRequestAttributes().getRequest();
+        ServletRequestAttributes requestAttributes = getRequestAttributes();
+        if (requestAttributes == null) {
+            return null;
+        }
+        return requestAttributes.getRequest();
     }
 
     /**
      * 获取response
      */
     public static HttpServletResponse getResponse() {
-        return getRequestAttributes().getResponse();
+        ServletRequestAttributes requestAttributes = getRequestAttributes();
+        if (requestAttributes == null) {
+            return null;
+        }
+        return requestAttributes.getResponse();
     }
 
     /**

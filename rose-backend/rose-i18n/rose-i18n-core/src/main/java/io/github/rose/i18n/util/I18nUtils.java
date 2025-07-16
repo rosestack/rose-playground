@@ -109,8 +109,11 @@ public final class I18nUtils {
         File[] files = dir.listFiles((d, name) -> Arrays.stream(suffixes).anyMatch(name::endsWith));
         if (files != null) {
             for (File file : files) {
-                Locale locale = parseLocaleFromFileName(file.getName(), suffixes);
-                if (locale != null) locales.add(locale);
+                String localeStr = extractLocaleString(file.getName(), DEFAULT_RESOURCE_NAME_PREFIX, suffixes);
+                if (localeStr != null && !localeStr.isEmpty()) {
+                    Locale locale = parseLocale(localeStr);
+                    if (locale != null) locales.add(locale);
+                }
             }
         }
         return locales;
@@ -127,8 +130,11 @@ public final class I18nUtils {
             String name = entry.getName();
             if (name.startsWith(basePath) && Arrays.stream(suffixes).anyMatch(name::endsWith)) {
                 String fileName = name.substring(name.lastIndexOf('/') + 1);
-                Locale locale = parseLocaleFromFileName(fileName, suffixes);
-                if (locale != null) locales.add(locale);
+                String localeStr = extractLocaleString(fileName, DEFAULT_RESOURCE_NAME_PREFIX, suffixes);
+                if (localeStr != null && !localeStr.isEmpty()) {
+                    Locale locale = parseLocale(localeStr);
+                    if (locale != null) locales.add(locale);
+                }
             }
         }
         return locales;
