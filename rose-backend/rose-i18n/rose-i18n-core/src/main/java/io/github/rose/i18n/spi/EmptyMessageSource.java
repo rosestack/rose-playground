@@ -1,16 +1,16 @@
 package io.github.rose.i18n.spi;
 
-import io.github.rose.i18n.I18nMessageSource;
+import io.github.rose.i18n.MessageSource;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-public class EmptyI18nMessageSource implements I18nMessageSource {
+public class EmptyMessageSource implements MessageSource {
 
-    public static final EmptyI18nMessageSource INSTANCE = new EmptyI18nMessageSource();
+    public static final EmptyMessageSource INSTANCE = new EmptyMessageSource();
 
-    private EmptyI18nMessageSource() {
+    private EmptyMessageSource() {
     }
 
     @Override

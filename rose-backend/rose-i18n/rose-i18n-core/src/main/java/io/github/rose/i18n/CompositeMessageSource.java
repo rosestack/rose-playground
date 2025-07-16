@@ -12,29 +12,29 @@ import java.util.function.Consumer;
 
 import static io.github.rose.core.collection.ListUtils.forEach;
 
-public class CompositeI18nMessageSource implements ReloadableResourceI18nMessageSource {
+public class CompositeMessageSource implements ReloadableResourceMessageSource {
 
-    private static final Logger logger = LoggerFactory.getLogger(CompositeI18nMessageSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(CompositeMessageSource.class);
 
-    private List<? extends I18nMessageSource> serviceMessageSources;
+    private List<? extends MessageSource> serviceMessageSources;
 
-    public CompositeI18nMessageSource() {
+    public CompositeMessageSource() {
         this.serviceMessageSources = Collections.emptyList();
     }
 
-    public CompositeI18nMessageSource(List<? extends I18nMessageSource> serviceMessageSources) {
+    public CompositeMessageSource(List<? extends MessageSource> serviceMessageSources) {
         setServiceMessageSources(serviceMessageSources);
     }
 
     @Override
     public void init() {
-        forEach(this.serviceMessageSources, I18nMessageSource::init);
+        forEach(this.serviceMessageSources, MessageSource::init);
     }
 
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
         String message = null;
-        for (I18nMessageSource serviceMessageSource : serviceMessageSources) {
+        for (MessageSource serviceMessageSource : serviceMessageSources) {
             message = serviceMessageSource.getMessage(code, locale, args);
             if (message != null) {
                 break;
@@ -47,7 +47,7 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
     @Override
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
         Map<String, String> messages = new HashMap<>();
-        for (I18nMessageSource source : serviceMessageSources) {
+        for (MessageSource source : serviceMessageSources) {
             Map<String, String> sourceMessages = source.getMessages(codes, locale);
             if (sourceMessages != null) {
                 messages.putAll(sourceMessages);
@@ -59,7 +59,7 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
     @Nullable
     @Override
     public Map<String, String> getMessages(Locale locale) {
-        for (I18nMessageSource source : serviceMessageSources) {
+        for (MessageSource source : serviceMessageSources) {
             Map<String, String> sourceMessages = source.getMessages(locale);
             if (sourceMessages != null) {
                 return sourceMessages;
@@ -71,15 +71,15 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
     @Nonnull
     @Override
     public Locale getLocale() {
-        I18nMessageSource serviceMessageSource = getFirstServiceMessageSource();
+        MessageSource serviceMessageSource = getFirstServiceMessageSource();
         return serviceMessageSource == null ? getDefaultLocale() : serviceMessageSource.getLocale();
     }
 
     @Nonnull
     @Override
     public Locale getDefaultLocale() {
-        I18nMessageSource serviceMessageSource = getFirstServiceMessageSource();
-        return serviceMessageSource == null ? ReloadableResourceI18nMessageSource.super.getDefaultLocale() : serviceMessageSource.getLocale();
+        MessageSource serviceMessageSource = getFirstServiceMessageSource();
+        return serviceMessageSource == null ? ReloadableResourceMessageSource.super.getDefaultLocale() : serviceMessageSource.getLocale();
     }
 
     @Nonnull
@@ -99,17 +99,17 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
     }
 
     public Set<Locale> getDefaultSupportedLocales() {
-        return ReloadableResourceI18nMessageSource.super.getSupportedLocales();
+        return ReloadableResourceMessageSource.super.getSupportedLocales();
     }
 
     @Override
     public String getSource() {
-        return ReloadableResourceI18nMessageSource.super.getSource();
+        return ReloadableResourceMessageSource.super.getSource();
     }
 
-    public void setServiceMessageSources(List<? extends I18nMessageSource> serviceMessageSources) {
-        List<? extends I18nMessageSource> oldServiceMessageSources = this.serviceMessageSources;
-        List<I18nMessageSource> newServiceMessageSources = new ArrayList<>(serviceMessageSources);
+    public void setServiceMessageSources(List<? extends MessageSource> serviceMessageSources) {
+        List<? extends MessageSource> oldServiceMessageSources = this.serviceMessageSources;
+        List<MessageSource> newServiceMessageSources = new ArrayList<>(serviceMessageSources);
         OrderComparator.sort(newServiceMessageSources);
         if (oldServiceMessageSources != null) {
             oldServiceMessageSources.clear();
@@ -120,7 +120,7 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
 
     @Override
     public void reload(Iterable<String> changedResources) {
-        iterate(ReloadableResourceI18nMessageSource.class, reloadableResourceServiceMessageSource -> {
+        iterate(ReloadableResourceMessageSource.class, reloadableResourceServiceMessageSource -> {
             if (reloadableResourceServiceMessageSource.canReload(changedResources)) {
                 reloadableResourceServiceMessageSource.reload(changedResources);
             }
@@ -139,7 +139,7 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
 
     @Override
     public void initializeResources(Iterable<String> resources) {
-        iterate(ReloadableResourceI18nMessageSource.class, resourceServiceMessageSource -> {
+        iterate(ReloadableResourceMessageSource.class, resourceServiceMessageSource -> {
             resourceServiceMessageSource.initializeResources(resources);
         });
     }
@@ -147,7 +147,7 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
     @Override
     public Set<String> getInitializeResources() {
         Set<String> resources = new LinkedHashSet<>();
-        iterate(ReloadableResourceI18nMessageSource.class, resourceServiceMessageSource -> {
+        iterate(ReloadableResourceMessageSource.class, resourceServiceMessageSource -> {
             resources.addAll(resourceServiceMessageSource.getInitializeResources());
         });
         return Collections.unmodifiableSet(resources);
@@ -155,34 +155,34 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
 
     @Override
     public Charset getEncoding() {
-        return ReloadableResourceI18nMessageSource.super.getEncoding();
+        return ReloadableResourceMessageSource.super.getEncoding();
     }
 
     /**
-     * Get the read-only list of the composited {@link I18nMessageSource}
+     * Get the read-only list of the composited {@link MessageSource}
      *
      * @return non-null
      */
     @Nonnull
-    public List<I18nMessageSource> getServiceMessageSources() {
+    public List<MessageSource> getServiceMessageSources() {
         return Collections.unmodifiableList(serviceMessageSources);
     }
 
     @Override
     public void destroy() {
-        List<? extends I18nMessageSource> serviceMessageSources = this.serviceMessageSources;
-        forEach(serviceMessageSources, I18nMessageSource::destroy);
+        List<? extends MessageSource> serviceMessageSources = this.serviceMessageSources;
+        forEach(serviceMessageSources, MessageSource::destroy);
         serviceMessageSources.clear();
     }
 
     @Override
     public String toString() {
-        return "CompositeI18nMessageSource{" +
+        return "CompositeMessageSource{" +
                 "serviceMessageSources=" + serviceMessageSources +
                 '}';
     }
 
-    private I18nMessageSource getFirstServiceMessageSource() {
+    private MessageSource getFirstServiceMessageSource() {
         return this.serviceMessageSources.isEmpty() ? null : this.serviceMessageSources.get(0);
     }
 
@@ -193,7 +193,7 @@ public class CompositeI18nMessageSource implements ReloadableResourceI18nMessage
                 .forEach(consumer);
     }
 
-    private <T> void iterate(Consumer<I18nMessageSource> consumer) {
+    private <T> void iterate(Consumer<MessageSource> consumer) {
         this.serviceMessageSources.forEach(consumer);
     }
 }

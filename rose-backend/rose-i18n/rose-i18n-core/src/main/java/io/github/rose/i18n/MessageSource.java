@@ -6,7 +6,7 @@ import jakarta.annotation.Nullable;
 
 import java.util.*;
 
-public interface I18nMessageSource extends Prioritized {
+public interface MessageSource extends Prioritized {
     String COMMON_SOURCE = "common";
 
     @Nullable

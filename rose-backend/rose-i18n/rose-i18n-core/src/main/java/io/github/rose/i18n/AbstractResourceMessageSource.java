@@ -13,12 +13,12 @@ import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Abstract Resource {@link I18nMessageSource} Class
+ * Abstract Resource {@link MessageSource} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMessageSource implements ResourceI18nMessageSource {
+public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource {
     protected static final MessageFormatCache MESSAGE_FORMAT_CACHE = new MessageFormatCache();
     public static final String RESOURCE_PATH_PATTERN = "META-INF/i18n/%s/";
     public static final String DEFAULT_RESOURCE_NAME_PREFIX = "i18n_messages_";
@@ -26,7 +26,7 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     // path -> messages
     private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
 
-    public AbstractResourceI18nMessageSource(String source) {
+    public AbstractResourceMessageSource(String source) {
         super(source);
     }
 

@@ -4,10 +4,10 @@ import java.util.Locale;
 import java.util.Objects;
 
 
-public abstract class AbstractI18nMessageSource implements I18nMessageSource {
+public abstract class AbstractMessageSource implements MessageSource {
     protected final String source;
 
-    public AbstractI18nMessageSource(String source) {
+    public AbstractMessageSource(String source) {
         Objects.requireNonNull(source, "'source' argument must not be null");
         this.source = source;
     }

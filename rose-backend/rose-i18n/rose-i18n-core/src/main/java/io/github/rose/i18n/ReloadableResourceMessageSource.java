@@ -2,7 +2,7 @@ package io.github.rose.i18n;
 
 import java.util.Set;
 
-public interface ReloadableResourceI18nMessageSource extends ResourceI18nMessageSource {
+public interface ReloadableResourceMessageSource extends ResourceMessageSource {
 
     /**
      * Reload if {@link #canReload(String)} returns <code>true</code>,

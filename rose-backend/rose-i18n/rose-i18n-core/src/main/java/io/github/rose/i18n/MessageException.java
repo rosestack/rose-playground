@@ -3,14 +3,13 @@ package io.github.rose.i18n;
 import io.github.rose.i18n.util.MessageUtils;
 
 import java.util.Arrays;
-import java.util.StringJoiner;
 
-public class I18nMessageException extends RuntimeException {
+public class MessageException extends RuntimeException {
 
     private final String rawMessage;
     private final Object[] args;
 
-    public I18nMessageException(String rawMessage, Object... args) {
+    public MessageException(String rawMessage, Object... args) {
         this.rawMessage = rawMessage;
         this.args = args;
     }

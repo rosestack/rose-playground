@@ -1,5 +1,7 @@
 package io.github.rose.i18n.spi;
 
+import io.github.rose.i18n.MessageException;
+
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
@@ -9,11 +11,11 @@ import java.util.Map;
  * 从 classpath 下 META-INF/i18n/{source}/ 目录读取 yaml/yml 文件的国际化消息加载实现。
  * 支持 file 和 jar 协议，自动发现所有支持的 Locale。
  */
-public class ClassPathYamlResourceI18nMessageSource extends AbstractClassPathResourceI18nMessageSource {
+public class ClassPathYamlResourceMessageSource extends AbstractClassPathResourceMessageSource {
     private static final String[] YAML_SUFFIXES = {".yaml", ".yml"};
     private final org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
 
-    public ClassPathYamlResourceI18nMessageSource(String source) {
+    public ClassPathYamlResourceMessageSource(String source) {
         super(source);
     }
 
@@ -40,7 +42,7 @@ public class ClassPathYamlResourceI18nMessageSource extends AbstractClassPathRes
                 }
             }
         } catch (Exception e) {
-            throw new io.github.rose.i18n.I18nMessageException("Failed to load yaml resource: " + resource, e);
+            throw new MessageException("Failed to load yaml resource: " + resource, e);
         }
         return messages;
     }

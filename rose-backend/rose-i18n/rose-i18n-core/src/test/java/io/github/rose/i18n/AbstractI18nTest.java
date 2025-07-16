@@ -16,7 +16,6 @@
  */
 package io.github.rose.i18n;
 
-import io.github.rose.i18n.util.I18nUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,11 +38,11 @@ public abstract class AbstractI18nTest {
 
     @BeforeEach
     public void before() {
-        I18nMessageSourceManager.destroy();
+        MessageSourceManager.destroy();
     }
 
     @AfterEach
     public void after() {
-        I18nMessageSourceManager.destroy();
+        MessageSourceManager.destroy();
     }
 }

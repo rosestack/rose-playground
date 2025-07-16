@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Set;
 
-public interface ResourceI18nMessageSource extends I18nMessageSource {
+public interface ResourceMessageSource extends MessageSource {
 
     /**
      * Initializes the resource

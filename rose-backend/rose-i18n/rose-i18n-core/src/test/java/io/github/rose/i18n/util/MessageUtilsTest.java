@@ -1,8 +1,8 @@
 package io.github.rose.i18n.util;
 
 import io.github.rose.i18n.AbstractI18nTest;
-import io.github.rose.i18n.I18nMessageSourceManager;
-import io.github.rose.i18n.spi.ClassPathPropertiesResourceI18nMessageSource;
+import io.github.rose.i18n.MessageSourceManager;
+import io.github.rose.i18n.spi.ClassPathPropertiesResourceMessageSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MessageUtilsTest extends AbstractI18nTest {
 
-    private ClassPathPropertiesResourceI18nMessageSource messageSource;
+    private ClassPathPropertiesResourceMessageSource messageSource;
 
     @BeforeEach
     public void before() {
-        messageSource = new ClassPathPropertiesResourceI18nMessageSource("test");
+        messageSource = new ClassPathPropertiesResourceMessageSource("test");
         messageSource.init();
-        assertNotNull(I18nMessageSourceManager.getComposite(), "MessageSource should be initialized");
+        assertNotNull(MessageSourceManager.getInstance(), "MessageSource should be initialized");
     }
 
     @AfterEach
@@ -28,7 +28,7 @@ class MessageUtilsTest extends AbstractI18nTest {
             messageSource.destroy();
             messageSource = null;
         }
-        I18nMessageSourceManager.destroy();
+        MessageSourceManager.destroy();
     }
 
     @Test

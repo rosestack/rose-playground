@@ -1,13 +1,12 @@
 package io.github.rose.i18n.spi;
 
-import io.github.rose.i18n.AbstractResourceI18nMessageSource;
-import io.github.rose.i18n.I18nMessageException;
+import io.github.rose.i18n.AbstractResourceMessageSource;
+import io.github.rose.i18n.MessageException;
 import io.github.rose.i18n.util.I18nUtils;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -15,10 +14,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * 抽象 classpath 资源型国际化消息源，封装 Locale 自动发现、资源加载、基础路径等通用逻辑。
  * 子类只需实现 getResourceSuffixes() 和 loadMessages(String resource)。
  */
-public abstract class AbstractClassPathResourceI18nMessageSource extends AbstractResourceI18nMessageSource {
+public abstract class AbstractClassPathResourceMessageSource extends AbstractResourceMessageSource {
     private final AtomicReference<Set<Locale>> cachedLocales = new AtomicReference<>();
 
-    public AbstractClassPathResourceI18nMessageSource(String source) {
+    public AbstractClassPathResourceMessageSource(String source) {
         super(source);
     }
 
@@ -69,7 +68,7 @@ public abstract class AbstractClassPathResourceI18nMessageSource extends Abstrac
                 }
             }
         } catch (Exception e) {
-            throw new I18nMessageException("Failed to discover supported locales in " + basePath, e);
+            throw new MessageException("Failed to discover supported locales in " + basePath, e);
         }
         if (discovered.isEmpty()) discovered.add(Locale.getDefault());
         cachedLocales.set(discovered);

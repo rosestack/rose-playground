@@ -1,24 +1,22 @@
 package io.github.rose.i18n;
 
-import io.github.rose.i18n.spi.ClassPathPropertiesResourceI18nMessageSource;
-import io.github.rose.i18n.util.I18nUtils;
+import io.github.rose.i18n.spi.ClassPathPropertiesResourceMessageSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ClassPathPropertiesResourceI18nMessageSourceTest {
+class ClassPathPropertiesResourceMessageSourceTest {
 
-    private ClassPathPropertiesResourceI18nMessageSource messageSource;
+    private ClassPathPropertiesResourceMessageSource messageSource;
 
     @BeforeEach
     void setUp() {
-        I18nMessageSourceManager.destroy();
-        messageSource = new ClassPathPropertiesResourceI18nMessageSource("test");
+        MessageSourceManager.destroy();
+        messageSource = new ClassPathPropertiesResourceMessageSource("test");
         messageSource.init();
     }
 
@@ -28,7 +26,7 @@ class ClassPathPropertiesResourceI18nMessageSourceTest {
             messageSource.destroy();
             messageSource = null;
         }
-        I18nMessageSourceManager.destroy();
+        MessageSourceManager.destroy();
     }
 
     @Test

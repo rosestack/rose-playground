@@ -1,8 +1,7 @@
 package io.github.rose.i18n.util;
 
-import io.github.rose.i18n.I18nMessageSource;
-import io.github.rose.i18n.I18nMessageSourceManager;
-import io.github.rose.i18n.util.I18nUtils;
+import io.github.rose.i18n.MessageSource;
+import io.github.rose.i18n.MessageSourceManager;
 
 import java.util.Locale;
 
@@ -33,12 +32,10 @@ public abstract class MessageUtils {
      * @param messagePattern Message or Message Pattern
      * @param args           the arguments of Message Pattern
      * @return Internationalized Message returns the original message if it exists
-     * @deprecated 推荐直接使用 I18nMessageSourceManager.getComposite() 获取消息源
      */
-    @Deprecated
     public static String getLocalizedMessage(String messagePattern, Object... args) {
-        I18nMessageSource i18nMessageSource = I18nMessageSourceManager.getComposite();
-        Locale locale = i18nMessageSource.getLocale();
+        MessageSource messageSource = MessageSourceManager.getInstance();
+        Locale locale = messageSource.getLocale();
         return getLocalizedMessage(messagePattern, locale, args);
     }
 
@@ -47,8 +44,8 @@ public abstract class MessageUtils {
         String messageCode = resolveMessageCode(messagePattern);
         if (messageCode == null) return messagePattern;
 
-        I18nMessageSource i18nMessageSource = I18nMessageSourceManager.getComposite();
-        String localizedMessage = i18nMessageSource.getMessage(messageCode, locale, args);
+        MessageSource messageSource = MessageSourceManager.getInstance();
+        String localizedMessage = messageSource.getMessage(messageCode, locale, args);
         if (localizedMessage != null && !localizedMessage.isBlank()) {
             return localizedMessage;
         }
