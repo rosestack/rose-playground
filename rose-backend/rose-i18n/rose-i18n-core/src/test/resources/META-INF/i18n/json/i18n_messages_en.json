@@ -1,18 +1,18 @@
 {
   "test": {
-    "message": "Default Hello",
-    "param": "Default Hello, {0}",
+    "message": "Hello",
+    "param": "Hello, {0}",
     "nested": {
-      "message": "Default Nested Hello",
-      "param": "Default Nested, {0}"
+      "message": "Hello Nested",
+      "param": "Hello Nested, {0}"
     }
   },
   "foo": {
-    "message": "Default Hello",
-    "param": "Default Hello, {0}",
+    "message": "Hello",
+    "param": "Hello, {0}",
     "nested": {
-      "message": "Default Nested Hello",
-      "param": "Default Nested Hello, {0}"
+      "message": "Hello Nested",
+      "param": "Hello Nested, {0}"
     }
   }
 }

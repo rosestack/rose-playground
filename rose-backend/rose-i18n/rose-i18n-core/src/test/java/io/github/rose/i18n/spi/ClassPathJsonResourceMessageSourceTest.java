@@ -36,14 +36,16 @@ class ClassPathJsonResourceMessageSourceTest {
         for (Locale locale : LOCALES) {
             boolean isZh = Locale.SIMPLIFIED_CHINESE.equals(locale);
             for (String prefix : PREFIXES) {
-
+                assertEquals(isZh ? "你好" : "Hello", messageSource.getMessage(prefix + ".message", locale));
+                assertEquals(isZh ? "你好, " + prefix : "Hello, " + prefix, messageSource.getMessage(prefix + ".param", locale, prefix));
+                assertEquals(isZh ? "你好嵌套" : "Hello Nested", messageSource.getMessage(prefix + ".nested.message", locale, null));
+                assertEquals(isZh ? "你好嵌套, " + prefix : "Hello Nested, " + prefix, messageSource.getMessage(prefix + ".nested.param", locale, prefix));
             }
         }
     }
 
     @Test
     void testDefaultResourceFallback() {
-        // locale 为空，优先返回无后缀资源内容
         assertEquals("你好", messageSource.getMessage("test.message", null));
         // 不支持的 locale，优先返回无后缀资源内容
         Locale unsupported = new Locale("fr", "FR");
