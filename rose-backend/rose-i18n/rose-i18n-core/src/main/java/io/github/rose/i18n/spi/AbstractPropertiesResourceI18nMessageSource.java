@@ -4,16 +4,11 @@ package io.github.rose.i18n.spi;
 import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.AbstractResourceI18nMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
@@ -36,7 +31,7 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
         Map<String, String> messages = null;
         try {
             Properties properties = loadAllProperties(resource);
-            if (!MapUtils.isEmpty(properties)) {
+            if (!ObjectUtils.isEmpty(properties)) {
                 messages = new HashMap<>(properties.size());
                 messages.putAll((Map) properties);
             }
@@ -54,7 +49,7 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
     public Properties loadAllProperties(String resource) throws IOException {
         List<Reader> propertiesResources = loadAllPropertiesResources(resource);
         log.debug("Source '{}' loads {} Properties Resources['{}']", source, propertiesResources.size(), resource);
-        if (CollectionUtils.isEmpty(propertiesResources)) {
+        if (ObjectUtils.isEmpty(propertiesResources)) {
             return null;
         }
         Properties properties = new Properties();
