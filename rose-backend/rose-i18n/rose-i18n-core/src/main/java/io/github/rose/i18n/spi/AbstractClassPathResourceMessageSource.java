@@ -86,6 +86,6 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
      */
     @Override
     protected String getResourceName(Locale locale) {
-        return I18nUtils.getResourceNameByLocale(locale, getResourceSuffixes()[0]);
+        return I18nUtils.getResourceNameByLocale(locale);
     }
 } 

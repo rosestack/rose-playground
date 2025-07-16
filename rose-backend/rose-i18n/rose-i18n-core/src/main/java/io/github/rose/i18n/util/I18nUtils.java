@@ -169,29 +169,29 @@ public final class I18nUtils {
      * 按 Locale 生成资源文件名（如 i18n_messages_zh_CN.yaml），支持自定义前缀
      *
      * @param locale 区域
-     * @param suffix 后缀
      * @param prefix 前缀
      * @return 文件名
      */
-    public static String getResourceNameByLocale(Locale locale, String suffix, String prefix) {
+    public static String getResourceNameByLocale(Locale locale, String prefix) {
         StringBuilder base = new StringBuilder(prefix).append(locale.getLanguage().toLowerCase());
         if (!locale.getCountry().isEmpty()) base.append("_").append(locale.getCountry().toUpperCase());
         if (!locale.getVariant().isEmpty()) base.append("_").append(locale.getVariant());
-        return base + suffix;
+        return base.toString();
     }
 
     /**
      * 按 Locale 生成资源文件名（如 i18n_messages_zh_CN.yaml），使用默认前缀
      */
-    public static String getResourceNameByLocale(Locale locale, String suffix) {
-        return getResourceNameByLocale(locale, suffix, DEFAULT_RESOURCE_NAME_PREFIX);
+    public static String getResourceNameByLocale(Locale locale) {
+        return getResourceNameByLocale(locale, DEFAULT_RESOURCE_NAME_PREFIX);
     }
 
     /**
      * Recursively flattens a nested map into dot-separated keys.
-     * @param source the source map (possibly nested)
+     *
+     * @param source    the source map (possibly nested)
      * @param parentKey the prefix for keys (empty for root)
-     * @param result the result map to fill with flattened keys
+     * @param result    the result map to fill with flattened keys
      */
     @SuppressWarnings("unchecked")
     public static void flattenMap(Map<String, Object> source, String parentKey, Map<String, String> result) {

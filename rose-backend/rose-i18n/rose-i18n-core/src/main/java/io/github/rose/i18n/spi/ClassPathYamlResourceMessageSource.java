@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 /**
  * Loads i18n messages from yaml/yml files under META-INF/i18n/{source}/ in the classpath.
