@@ -1,12 +1,18 @@
 package io.github.rose.i18n.spi;
 
-import io.github.rose.i18n.MessageException;
-
+import io.github.rose.i18n.MessageSourceException;
 import java.io.Reader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
+/**
+ * 从 classpath 下 META-INF/i18n/{source}/ 目录读取 properties 文件的国际化消息加载实现。
+ * 支持 file 和 jar 协议，自动发现所有支持的 Locale。
+ */
 public class ClassPathPropertiesResourceMessageSource extends AbstractClassPathResourceMessageSource {
-    private static final String[] PROPERTIES_SUFFIX = {".properties"};
+    private static final String[] PROPERTIES_SUFFIXES = {".properties"};
 
     public ClassPathPropertiesResourceMessageSource(String source) {
         super(source);
@@ -14,26 +20,26 @@ public class ClassPathPropertiesResourceMessageSource extends AbstractClassPathR
 
     @Override
     protected String[] getResourceSuffixes() {
-        return PROPERTIES_SUFFIX;
+        return PROPERTIES_SUFFIXES;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected Map<String, String> loadMessages(String resource) {
+        Map<String, String> messages = new HashMap<>();
         try {
-            Properties properties = new Properties();
             List<Reader> readers = loadResourceReaders(resource);
             for (Reader reader : readers) {
                 try (reader) {
-                    properties.load(reader);
+                    Properties props = new Properties();
+                    props.load(reader);
+                    for (String key : props.stringPropertyNames()) {
+                        messages.put(key, props.getProperty(key));
+                    }
                 }
             }
-            if (properties.isEmpty()) return Collections.emptyMap();
-            Map<String, String> messages = new HashMap<>(properties.size());
-            messages.putAll((Map) properties);
-            return Collections.unmodifiableMap(messages);
         } catch (Exception e) {
-            throw new MessageException("Source '" + getSource() + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
+            throw new MessageSourceException("Source '" + getSource() + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
         }
+        return messages;
     }
 }

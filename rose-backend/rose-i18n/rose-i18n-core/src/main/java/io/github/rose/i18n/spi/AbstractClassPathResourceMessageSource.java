@@ -1,7 +1,7 @@
 package io.github.rose.i18n.spi;
 
 import io.github.rose.i18n.AbstractResourceMessageSource;
-import io.github.rose.i18n.MessageException;
+import io.github.rose.i18n.MessageSourceException;
 import io.github.rose.i18n.util.I18nUtils;
 
 import java.io.File;
@@ -72,7 +72,7 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
                 }
             }
         } catch (Exception e) {
-            throw new MessageException("Failed to discover supported locales in " + basePath, e);
+            throw new MessageSourceException("Failed to discover supported locales in " + basePath, e);
         }
         if (discovered.isEmpty()) discovered.add(Locale.getDefault());
         cachedLocales.set(discovered);

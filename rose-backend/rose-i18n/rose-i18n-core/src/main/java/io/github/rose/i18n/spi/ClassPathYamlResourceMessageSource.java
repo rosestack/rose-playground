@@ -1,11 +1,11 @@
 package io.github.rose.i18n.spi;
 
-import io.github.rose.i18n.MessageException;
-
+import io.github.rose.i18n.MessageSourceException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * 从 classpath 下 META-INF/i18n/{source}/ 目录读取 yaml/yml 文件的国际化消息加载实现。
@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class ClassPathYamlResourceMessageSource extends AbstractClassPathResourceMessageSource {
     private static final String[] YAML_SUFFIXES = {".yaml", ".yml"};
-    private final org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
+    private static final Yaml YAML = new Yaml();
 
     public ClassPathYamlResourceMessageSource(String source) {
         super(source);
@@ -31,7 +31,7 @@ public class ClassPathYamlResourceMessageSource extends AbstractClassPathResourc
             List<Reader> readers = loadResourceReaders(resource);
             for (Reader reader : readers) {
                 try (reader) {
-                    Object data = yaml.load(reader);
+                    Object data = YAML.load(reader);
                     if (data instanceof Map<?, ?> map) {
                         for (Map.Entry<?, ?> entry : map.entrySet()) {
                             if (entry.getKey() != null && entry.getValue() != null) {
@@ -42,7 +42,7 @@ public class ClassPathYamlResourceMessageSource extends AbstractClassPathResourc
                 }
             }
         } catch (Exception e) {
-            throw new MessageException("Failed to load yaml resource: " + resource, e);
+            throw new MessageSourceException("Failed to load yaml resource: " + resource, e);
         }
         return messages;
     }

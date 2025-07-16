@@ -15,21 +15,23 @@ import static io.github.rose.i18n.AbstractResourceMessageSource.DEFAULT_RESOURCE
 /**
  * Internationalization Utilities class
  * <p>
- * 提供 Locale 解析、资源扫描、资源加载等通用工具方法。
- * 支持 properties/yaml/yml 等多格式，便于扩展。
+ * Provides locale parsing, resource scanning, resource loading, etc.
+ * Supports properties/yaml/yml and is easy to extend.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
 public final class I18nUtils {
 
-    private I18nUtils() {}
+    private I18nUtils() {
+    }
 
     /**
-     * 解析文件名中的 Locale，支持多种后缀（如 .properties, .yaml, .yml）
-     * @param fileName 文件名
-     * @param suffixes 支持的后缀
-     * @return 解析出的 Locale，未识别返回默认 Locale
+     * Parse the locale from a file name, supporting multiple suffixes (e.g. .properties, .yaml, .yml)
+     *
+     * @param fileName file name
+     * @param suffixes supported suffixes
+     * @return parsed Locale, or default Locale if not recognized
      */
     public static Locale parseLocaleFromFileName(String fileName, String... suffixes) {
         String localeStr = extractLocaleString(fileName, DEFAULT_RESOURCE_NAME_PREFIX, suffixes);
@@ -37,22 +39,39 @@ public final class I18nUtils {
     }
 
     /**
-     * 提取文件名中的 locale 字符串部分
+     * Extract the locale string part from a file name.
+     *
+     * @param fileName the file name
+     * @param prefix   the resource name prefix
+     * @param suffixes supported suffixes
+     * @return locale string, empty string for standard resource name, null if not recognized
      */
     private static String extractLocaleString(String fileName, String prefix, String... suffixes) {
+        if (fileName == null || prefix == null || suffixes == null) {
+            return null;
+        }
+        // 1. Resource name with locale, e.g. i18n_messages_zh_CN.properties
         for (String suffix : suffixes) {
             if (fileName.startsWith(prefix) && fileName.endsWith(suffix)) {
-                return fileName.substring(prefix.length(), fileName.length() - suffix.length());
+                int start = prefix.length();
+                int end = fileName.length() - suffix.length();
+                if (end > start) {
+                    return fileName.substring(start, end);
+                }
             }
         }
-        if ((DEFAULT_RESOURCE_NAME_PREFIX + "properties").equals(fileName) || Arrays.stream(suffixes).anyMatch(s -> (DEFAULT_RESOURCE_NAME_PREFIX.substring(0, DEFAULT_RESOURCE_NAME_PREFIX.length() - 1) + s).equals(fileName))) {
-            return ""; // 默认 locale
+        // 2. Standard resource name (no locale), e.g. i18n_messages.properties
+        for (String suffix : suffixes) {
+            String standardName = prefix.substring(0, prefix.length() - 1) + suffix;
+            if (fileName.equals(standardName)) {
+                return "";
+            }
         }
         return null;
     }
 
     /**
-     * 将字符串解析为 Locale
+     * Parse a string to Locale
      */
     private static Locale parseLocale(String localeStr) {
         if (localeStr == null || localeStr.isEmpty()) return Locale.getDefault();
@@ -67,7 +86,8 @@ public final class I18nUtils {
 
     /**
      * 扫描目录或 jar 包下所有指定后缀的文件，发现所有 Locale
-     * @param root 目录或 jar 文件
+     *
+     * @param root     目录或 jar 文件
      * @param basePath jar 包下的基础路径（目录扫描可为 null）
      * @param suffixes 支持的后缀
      * @return 发现的 Locale 集合
@@ -116,11 +136,12 @@ public final class I18nUtils {
 
     /**
      * 按后缀批量加载资源 Reader，支持自定义 ClassLoader
-     * @param basePath 资源基础路径
+     *
+     * @param basePath     资源基础路径
      * @param resourceBase 资源名（不含后缀）
-     * @param suffixes 支持的后缀
-     * @param encoding 字符集
-     * @param classLoader 类加载器
+     * @param suffixes     支持的后缀
+     * @param encoding     字符集
+     * @param classLoader  类加载器
      * @return Reader 列表
      * @throws IOException 读取异常
      */
@@ -146,6 +167,7 @@ public final class I18nUtils {
 
     /**
      * 按 Locale 生成资源文件名（如 i18n_messages_zh_CN.yaml），支持自定义前缀
+     *
      * @param locale 区域
      * @param suffix 后缀
      * @param prefix 前缀

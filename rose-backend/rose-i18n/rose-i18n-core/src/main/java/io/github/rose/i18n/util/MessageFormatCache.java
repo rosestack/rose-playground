@@ -8,33 +8,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 高性能 MessageFormat 缓存工具类
- * 
- * <p>该类实现了类似 Spring Framework ResourceBundleMessageSource 的优化策略：</p>
- * <ul>
- *   <li>缓存已解析的 MessageFormat 实例</li>
- *   <li>避免无参数消息的 MessageFormat 创建</li>
- *   <li>支持多级缓存（按 Locale 分组）</li>
- *   <li>线程安全</li>
- * </ul>
- * 
- * @author Rose Framework
- * @since 1.0.0
+ * <p>缓存已解析的 MessageFormat 实例，避免重复解析，提升性能。</p>
  */
-public class MessageFormatCache {
-    
-    /**
-     * 缓存结构: Locale -> (MessagePattern -> MessageFormat)
-     */
+public final class MessageFormatCache {
+    /** 缓存结构: Locale -> (MessagePattern -> MessageFormat) */
     private final Map<Locale, Map<String, MessageFormat>> messageFormatCache = new ConcurrentHashMap<>();
-    
-    /**
-     * 缓存大小限制，防止内存泄漏
-     */
+    /** 缓存大小限制，防止内存泄漏 */
     private static final int MAX_CACHE_SIZE_PER_LOCALE = 256;
-    
+
     /**
      * 格式化消息
-     * 
      * @param message 消息模板
      * @param locale 区域设置
      * @param args 参数
@@ -58,7 +41,7 @@ public class MessageFormatCache {
     private boolean hasPlaceholders(String message) {
         return message.contains("{") && message.contains("}");
     }
-    
+
     /**
      * 获取缓存的 MessageFormat 实例
      */
@@ -66,39 +49,32 @@ public class MessageFormatCache {
         Map<String, MessageFormat> localeCache = messageFormatCache.computeIfAbsent(
             locale, k -> new ConcurrentHashMap<>()
         );
-        
+        if (localeCache.size() >= MAX_CACHE_SIZE_PER_LOCALE) {
+            localeCache.clear();
+        }
         return localeCache.computeIfAbsent(message, pattern -> {
-            // 检查缓存大小限制
-            if (localeCache.size() >= MAX_CACHE_SIZE_PER_LOCALE) {
-                // 可以实现 LRU 清理策略，这里简单清空
-                localeCache.clear();
-            }
-            
             try {
-                MessageFormat messageFormat = new MessageFormat(pattern, locale);
-                return messageFormat;
+                return new MessageFormat(pattern, locale);
             } catch (Exception e) {
-                // 返回一个简单的格式器作为降级
                 return new MessageFormat(pattern, Locale.ROOT);
             }
         });
     }
-    
+
     /**
      * 清理指定 Locale 的缓存
      */
     public void clearCache(Locale locale) {
-        Map<String, MessageFormat> removed = messageFormatCache.remove(locale);
-        // 清理指定 Locale 的缓存，无日志
+        messageFormatCache.remove(locale);
     }
-    
+
     /**
      * 清理所有缓存
      */
     public void clearAllCache() {
         messageFormatCache.clear();
     }
-    
+
     /**
      * 获取缓存统计信息
      */
@@ -107,7 +83,7 @@ public class MessageFormatCache {
         messageFormatCache.forEach((locale, cache) -> stats.put(locale, cache.size()));
         return stats;
     }
-    
+
     /**
      * 预热缓存（可选）
      */
