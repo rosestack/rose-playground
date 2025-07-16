@@ -44,6 +44,7 @@ class ClassPathYamlResourceMessageSourceTest {
         }
     }
 
+
     @Test
     void testDefaultResourceFallback() {
         assertEquals("你好", messageSource.getMessage("test.message", null));
