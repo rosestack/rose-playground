@@ -42,8 +42,8 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
     /**
      * Batch load resources as Readers by suffix.
      */
-    protected List<Reader> loadResourceReaders(String resource) throws IOException {
-        return I18nUtils.loadResources(getBasePath(), resource, getResourceSuffixes(), getEncoding());
+    protected List<Reader> loadResourceReaders(String resourceName) throws IOException {
+        return I18nUtils.loadResources(getBasePath(), resourceName, getResourceSuffixes(), getEncoding());
     }
 
     /**

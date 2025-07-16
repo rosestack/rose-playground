@@ -138,21 +138,25 @@ public final class I18nUtils {
      * 按后缀批量加载资源 Reader，支持自定义 ClassLoader
      *
      * @param basePath     资源基础路径
-     * @param resourceBase 资源名（不含后缀）
+     * @param resourceName 资源名（不含后缀）
      * @param suffixes     支持的后缀
      * @param encoding     字符集
      * @param classLoader  类加载器
      * @return Reader 列表
      * @throws IOException 读取异常
      */
-    public static List<Reader> loadResources(String basePath, String resourceBase, String[] suffixes, Charset encoding, ClassLoader classLoader) throws IOException {
+    public static List<Reader> loadResources(String basePath, String resourceName, String[] suffixes, Charset encoding, ClassLoader classLoader) throws IOException {
         List<Reader> readers = new ArrayList<>();
+        Set<String> loadedResources = new HashSet<>();
         for (String suffix : suffixes) {
-            String fullResourcePath = basePath + resourceBase + suffix;
-            Enumeration<URL> resources = classLoader.getResources(fullResourcePath);
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                readers.add(new InputStreamReader(url.openStream(), encoding));
+            String fullResourcePath = basePath + resourceName + suffix;
+            if (!loadedResources.contains(fullResourcePath)) {
+                Enumeration<URL> resources = classLoader.getResources(fullResourcePath);
+                while (resources.hasMoreElements()) {
+                    URL url = resources.nextElement();
+                    readers.add(new InputStreamReader(url.openStream(), encoding));
+                    loadedResources.add(fullResourcePath);
+                }
             }
         }
         return readers;
@@ -161,8 +165,8 @@ public final class I18nUtils {
     /**
      * 按后缀批量加载资源 Reader，使用当前线程的 ClassLoader
      */
-    public static List<Reader> loadResources(String basePath, String resourceBase, String[] suffixes, Charset encoding) throws IOException {
-        return loadResources(basePath, resourceBase, suffixes, encoding, Thread.currentThread().getContextClassLoader());
+    public static List<Reader> loadResources(String basePath, String resourceName, String[] suffixes, Charset encoding) throws IOException {
+        return loadResources(basePath, resourceName, suffixes, encoding, Thread.currentThread().getContextClassLoader());
     }
 
     /**

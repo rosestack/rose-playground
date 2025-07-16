@@ -35,17 +35,17 @@ public class ClassPathJsonResourceMessageSource extends AbstractClassPathResourc
     }
 
     @Override
-    protected Map<String, String> loadMessages(String resource) {
+    protected Map<String, String> loadMessages(String resourceName) {
         Map<String, String> messages = new HashMap<>();
         try {
-            List<Reader> readers = I18nUtils.loadResources(getBasePath(), resource, getResourceSuffixes(), getEncoding());
+            List<Reader> readers = I18nUtils.loadResources(getBasePath(), resourceName, getResourceSuffixes(), getEncoding());
             for (Reader reader : readers) {
                 Map<String, Object> map = OBJECT_MAPPER.readValue(reader, Map.class);
                 I18nUtils.flattenMap(map, "", messages);
                 reader.close();
             }
         } catch (Exception e) {
-            throw new MessageException("Failed to load json resource: " + resource, e);
+            throw new MessageException("Failed to load json resource: " + resourceName, e);
         }
         return messages;
     }

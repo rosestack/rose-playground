@@ -1,6 +1,7 @@
 package io.github.rose.i18n.spi;
 
 import io.github.rose.i18n.MessageException;
+
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -25,10 +26,10 @@ public class ClassPathPropertiesResourceMessageSource extends AbstractClassPathR
     }
 
     @Override
-    protected Map<String, String> loadMessages(String resource) {
+    protected Map<String, String> loadMessages(String resourceName) {
         Map<String, String> messages = new HashMap<>();
         try {
-            List<Reader> readers = loadResourceReaders(resource);
+            List<Reader> readers = loadResourceReaders(resourceName);
             for (Reader reader : readers) {
                 try (reader) {
                     Properties props = new Properties();
@@ -39,7 +40,7 @@ public class ClassPathPropertiesResourceMessageSource extends AbstractClassPathR
                 }
             }
         } catch (Exception e) {
-            throw new MessageException("Source '" + getSource() + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
+            throw new MessageException("Source '" + getSource() + "' Messages Properties Resource[" + resourceName + "] loading is failed", e);
         }
         return messages;
     }

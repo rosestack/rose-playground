@@ -29,19 +29,19 @@ public class ClassPathYamlResourceMessageSource extends AbstractClassPathResourc
     }
 
     @Override
-    protected Map<String, String> loadMessages(String resource) {
+    protected Map<String, String> loadMessages(String resourceName) {
         Map<String, String> messages = new HashMap<>();
         try {
-            List<Reader> readers = I18nUtils.loadResources(getBasePath(), resource, getResourceSuffixes(), getEncoding());
+            List<Reader> readers = I18nUtils.loadResources(getBasePath(), resourceName, YAML_SUFFIXES, getEncoding());
             for (Reader reader : readers) {
-                Object loaded = YAML.load(reader);
-                if (loaded instanceof Map) {
-                    I18nUtils.flattenMap((Map<String, Object>) loaded, "", messages);
+                Object loadedObj = YAML.load(reader);
+                if (loadedObj instanceof Map) {
+                    I18nUtils.flattenMap((Map<String, Object>) loadedObj, "", messages);
                 }
                 reader.close();
             }
         } catch (Exception e) {
-            throw new MessageException("Failed to load yaml resource: " + resource, e);
+            throw new MessageException("Failed to load yaml resource: " + resourceName, e);
         }
         return messages;
     }

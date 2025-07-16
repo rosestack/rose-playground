@@ -127,7 +127,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     protected abstract String getResourceName(Locale locale);
 
-    protected abstract Map<String, String> loadMessages(String resource);
+    protected abstract Map<String, String> loadMessages(String resourceName);
 
     @Override
     public String toString() {
