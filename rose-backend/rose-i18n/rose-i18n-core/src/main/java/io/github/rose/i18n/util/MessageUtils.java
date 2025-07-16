@@ -1,12 +1,11 @@
 package io.github.rose.i18n.util;
 
-import io.github.rose.i18n.MessageSource;
+import io.github.rose.i18n.I18nMessageSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
-import static io.github.rose.i18n.util.I18nUtils.messageSource;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.substringBetween;
 
@@ -41,8 +40,8 @@ public abstract class MessageUtils {
      * @return Internationalized Message returns the original message if it exists
      */
     public static String getLocalizedMessage(String messagePattern, Object... args) {
-        MessageSource MessageSource = messageSource();
-        Locale locale = MessageSource.getLocale();
+        I18nMessageSource i18nMessageSource = I18nUtils.i18nMessageSource();
+        Locale locale = i18nMessageSource.getLocale();
         return getLocalizedMessage(messagePattern, locale, args);
     }
 
@@ -88,8 +87,8 @@ public abstract class MessageUtils {
             return messagePattern;
         }
 
-        MessageSource MessageSource = messageSource();
-        String localizedMessage = MessageSource.getMessage(messageCode, locale, args);
+        I18nMessageSource i18nMessageSource = I18nUtils.i18nMessageSource();
+        String localizedMessage = i18nMessageSource.getMessage(messageCode, locale, args);
         if (isNotBlank(localizedMessage)) {
             logger.debug("Message Pattern ['{}'] corresponds to Locale ['{}'] with MessageSage:'{}'", messagePattern, locale, localizedMessage);
         } else {

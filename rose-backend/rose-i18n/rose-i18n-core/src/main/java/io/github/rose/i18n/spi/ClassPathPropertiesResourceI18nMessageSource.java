@@ -1,31 +1,29 @@
-package io.github.rose.i18n.impl;
+package io.github.rose.i18n.spi;
 
 import io.github.rose.core.util.FormatUtils;
-import io.github.rose.i18n.MessageSource;
+import io.github.rose.i18n.I18nMessageSource;
+import jakarta.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-
+import java.util.*;
 
 /**
- * Default {@link MessageSource} Class
+ * Default {@link I18nMessageSource} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public class ClassPathPropertiesMessageSource extends AbstractPropertiesResourceMessageSource {
+public class ClassPathPropertiesResourceI18nMessageSource extends AbstractPropertiesResourceI18nMessageSource {
 
     /**
      * Resource path pattern
      */
     protected static final String RESOURCE_LOCATION_PATTERN = "META-INF/i18n/{}/{}";
 
-    public ClassPathPropertiesMessageSource(String source) {
+    public ClassPathPropertiesResourceI18nMessageSource(String source) {
         super(source);
     }
 

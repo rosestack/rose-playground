@@ -1,22 +1,25 @@
 package io.github.rose.i18n;
 
+import io.github.rose.core.util.FormatUtils;
 import jakarta.annotation.Nullable;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
-import static io.github.rose.core.util.FormatUtils.format;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Abstract Resource {@link MessageSource} Class
+ * Abstract Resource {@link I18nMessageSource} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource {
+public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMessageSource implements ResourceI18nMessageSource {
 
     /**
      * The default prefix of message resource name
@@ -30,7 +33,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     private volatile Map<String, Map<String, String>> localizedResourceMessages = emptyMap();
 
-    public AbstractResourceMessageSource(String source) {
+    public AbstractResourceI18nMessageSource(String source) {
         super(source);
     }
 
@@ -61,6 +64,27 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         clearAllMessages();
     }
 
+    @Nullable
+    @Override
+    public Map<String, String> getMessages(Set<String> codes, Locale locale) {
+        Map<String, String> messageMap = localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
+
+        Map<String, String> messages = new HashMap<>();
+        for (String code : codes) {
+            String sourceMessages = messageMap.get(code);
+            if (sourceMessages != null) {
+                messages.put(code, sourceMessages);
+            }
+        }
+        return messages;
+    }
+
+    @Nullable
+    @Override
+    public Map<String, String> getAllMessages(Locale locale) {
+        return localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
+    }
+
     protected String resolveMessageCode(String code) {
         if (code.startsWith(codePrefix)) { // The complete Message code
             return code;
@@ -86,7 +110,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
      * Initialization
      */
     protected final void initialize() {
-        List<Locale> supportedLocales = getSupportedLocales();
+        Set<Locale> supportedLocales = getSupportedLocales();
         assertSupportedLocales(supportedLocales);
         Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(supportedLocales.size());
         for (Locale resolveLocale : supportedLocales) {
@@ -95,12 +119,12 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         }
         // Exchange the field
         this.localizedResourceMessages = localizedResourceMessages;
-        logger.debug("Source '{}' Initialization is completed , localizedResourceMessages : {}", source, localizedResourceMessages);
+        log.debug("Source '{}' Initialization is completed , localizedResourceMessages : {}", source, localizedResourceMessages);
     }
 
-    private void assertSupportedLocales(List<Locale> supportedLocales) {
+    private void assertSupportedLocales(Set<Locale> supportedLocales) {
         if (CollectionUtils.isEmpty(supportedLocales)) {
-            throw new IllegalStateException(format("{}.getSupportedLocales() Methods cannot return an empty list of locales!", this.getClass()));
+            throw new IllegalStateException(FormatUtils.format("{}.getSupportedLocales() Methods cannot return an empty list of locales!", this.getClass()));
         }
     }
 
@@ -119,7 +143,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     private void validateMessageCodePrefix(String code, String resourceName) {
         if (!code.startsWith(codePrefix)) {
-            throw new IllegalStateException(format("Source '{}' Message Resource[name : '{}'] code '{}' must start with '{}'",
+            throw new IllegalStateException(FormatUtils.format("Source '{}' Message Resource[name : '{}'] code '{}' must start with '{}'",
                     source, resourceName, code, codePrefix));
         }
     }
@@ -152,7 +176,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     private void initializeResource(String resource, Map<String, Map<String, String>> localizedResourceMessages) {
         Map<String, String> messages = loadMessages(resource);
-        logger.debug("Source '{}' loads the resource['{}'] messages : {}", source, resource, messages);
+        log.debug("Source '{}' loads the resource['{}'] messages : {}", source, resource, messages);
 
         if (messages == null) {
             return;
@@ -165,8 +189,8 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     protected void logMessage(String code, String resolvedCode, Locale locale, Locale resolvedLocale, Object[] args,
                               String messagePattern, String message) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Source '{}' gets Message[code : '{}' , resolvedCode : '{}' , locale : '{}' , resolvedLocale : '{}', args : '{}' , pattern : '{}'] : '{}'",
+        if (log.isDebugEnabled()) {
+            log.debug("Source '{}' gets Message[code : '{}' , resolvedCode : '{}' , locale : '{}' , resolvedLocale : '{}', args : '{}' , pattern : '{}'] : '{}'",
                     source, code, resolvedCode, locale, resolvedLocale, ArrayUtils.toString(args), messagePattern, message);
         }
     }

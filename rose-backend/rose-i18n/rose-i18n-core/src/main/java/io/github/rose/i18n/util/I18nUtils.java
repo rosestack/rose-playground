@@ -1,8 +1,8 @@
 package io.github.rose.i18n.util;
 
-import io.github.rose.i18n.CompositeMessageSource;
-import io.github.rose.i18n.impl.EmptyMessageSource;
-import io.github.rose.i18n.MessageSource;
+import io.github.rose.i18n.CompositeI18nMessageSource;
+import io.github.rose.i18n.I18nMessageSource;
+import io.github.rose.i18n.spi.EmptyI18nMessageSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,41 +21,41 @@ public abstract class I18nUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(I18nUtils.class);
 
-    private static volatile MessageSource messageSource;
+    private static volatile I18nMessageSource i18nMessageSource;
 
-    public static MessageSource messageSource() {
-        if (messageSource == null) {
-            logger.warn("MessageSource is not initialized, EmptyMessageSource will be used");
-            return EmptyMessageSource.INSTANCE;
+    public static I18nMessageSource i18nMessageSource() {
+        if (i18nMessageSource == null) {
+            logger.warn("i18nMessageSource is not initialized, EmptyI18nMessageSource will be used");
+            return EmptyI18nMessageSource.INSTANCE;
         }
-        return messageSource;
+        return i18nMessageSource;
     }
 
-    public static void setMessageSource(MessageSource MessageSource) {
-        I18nUtils.messageSource = MessageSource;
-        logger.debug("I18nUtils.MessageSource is initialized : {}", MessageSource);
+    public static void setI18nMessageSource(I18nMessageSource i18nMessageSource) {
+        I18nUtils.i18nMessageSource = i18nMessageSource;
+        logger.debug("I18nUtils.i18nMessageSource is initialized : {}", i18nMessageSource);
     }
 
-    public static void destroyMessageSource() {
-        messageSource = null;
-        logger.debug("MessageSource is destroyed");
+    public static void destroyI18nMessageSource() {
+        i18nMessageSource = null;
+        logger.debug("i18nMessageSource is destroyed");
     }
 
-    public static List<MessageSource> findAllMessageSources(MessageSource MessageSource) {
-        List<MessageSource> allMessageSources = new LinkedList<>();
-        initMessageSources(MessageSource, allMessageSources);
-        return unmodifiableList(allMessageSources);
+    public static List<I18nMessageSource> findAllI18nMessageSources(I18nMessageSource i18nMessageSource) {
+        List<I18nMessageSource> allI18nMessageSources = new LinkedList<>();
+        initI18nMessageSources(i18nMessageSource, allI18nMessageSources);
+        return unmodifiableList(allI18nMessageSources);
     }
 
-    public static void initMessageSources(MessageSource MessageSource,
-                                                 List<MessageSource> allMessageSources) {
-        if (MessageSource instanceof CompositeMessageSource) {
-            CompositeMessageSource compositeMessageSource = (CompositeMessageSource) MessageSource;
-            for (MessageSource subMessageSource : compositeMessageSource.getMessageSources()) {
-                initMessageSources(subMessageSource, allMessageSources);
+    public static void initI18nMessageSources(I18nMessageSource serviceMessageSource,
+                                              List<I18nMessageSource> allI18nMessageSources) {
+        if (serviceMessageSource instanceof CompositeI18nMessageSource) {
+            CompositeI18nMessageSource compositeI18nMessageSource = (CompositeI18nMessageSource) serviceMessageSource;
+            for (I18nMessageSource subI18nMessageSource : compositeI18nMessageSource.getServiceMessageSources()) {
+                initI18nMessageSources(subI18nMessageSource, allI18nMessageSources);
             }
         } else {
-            allMessageSources.add(MessageSource);
+            allI18nMessageSources.add(serviceMessageSource);
         }
     }
 }

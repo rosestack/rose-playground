@@ -2,13 +2,7 @@ package io.github.rose.i18n;
 
 import java.util.Set;
 
-/**
- * Reloadable {@link ResourceMessageSource}
- *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
- * @since 1.0.0
- */
-public interface ReloadableResourceMessageSource extends ResourceMessageSource {
+public interface ReloadableResourceI18nMessageSource extends ResourceI18nMessageSource {
 
     /**
      * Reload if {@link #canReload(String)} returns <code>true</code>,
@@ -23,7 +17,8 @@ public interface ReloadableResourceMessageSource extends ResourceMessageSource {
     /**
      * Reload if {@link #canReload(Iterable)} returns <code>true</code>,
      * The calling {@link #initializeResources(Iterable)} as default
-     * @param changedResources  Changes in the resources
+     *
+     * @param changedResources Changes in the resources
      */
     default void reload(Iterable<String> changedResources) {
         initializeResources(changedResources);

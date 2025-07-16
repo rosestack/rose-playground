@@ -5,13 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Set;
 
-/**
- * Resource {@link MessageSource}
- *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
- * @since 1.0.0
- */
-public interface ResourceMessageSource extends MessageSource {
+public interface ResourceI18nMessageSource extends I18nMessageSource {
 
     /**
      * Initializes the resource

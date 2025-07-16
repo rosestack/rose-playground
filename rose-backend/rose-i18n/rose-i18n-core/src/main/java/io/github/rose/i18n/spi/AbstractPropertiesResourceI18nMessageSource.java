@@ -1,11 +1,11 @@
-package io.github.rose.i18n.impl;
+package io.github.rose.i18n.spi;
 
 
 import io.github.rose.core.util.FormatUtils;
-import io.github.rose.i18n.AbstractResourceMessageSource;
-import io.github.rose.i18n.MessageSource;
+import io.github.rose.i18n.AbstractResourceI18nMessageSource;
+import io.github.rose.i18n.I18nMessageSource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -19,14 +19,14 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 
 /**
- * {@link Properties} Resource {@link MessageSource} Class
+ * {@link Properties} Resource {@link I18nMessageSource} Class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-public abstract class AbstractPropertiesResourceMessageSource extends AbstractResourceMessageSource {
+public abstract class AbstractPropertiesResourceI18nMessageSource extends AbstractResourceI18nMessageSource {
 
-    public AbstractPropertiesResourceMessageSource(String source) {
+    public AbstractPropertiesResourceI18nMessageSource(String source) {
         super(source);
     }
 
@@ -53,8 +53,8 @@ public abstract class AbstractPropertiesResourceMessageSource extends AbstractRe
 
     public Properties loadAllProperties(String resource) throws IOException {
         List<Reader> propertiesResources = loadAllPropertiesResources(resource);
-        logger.debug("Source '{}' loads {} Properties Resources['{}']", source, propertiesResources.size(), resource);
-        if (ObjectUtils.isEmpty(propertiesResources)) {
+        log.debug("Source '{}' loads {} Properties Resources['{}']", source, propertiesResources.size(), resource);
+        if (CollectionUtils.isEmpty(propertiesResources)) {
             return null;
         }
         Properties properties = new Properties();
@@ -63,7 +63,8 @@ public abstract class AbstractPropertiesResourceMessageSource extends AbstractRe
                 properties.load(reader);
             }
         }
-        logger.debug("Source '{}' loads all Properties Resources[name :{}] : {}", source, resource, properties);
+
+        log.debug("Source '{}' loads all Properties Resources[name :{}] : {}", source, resource, properties);
         return properties;
     }
 

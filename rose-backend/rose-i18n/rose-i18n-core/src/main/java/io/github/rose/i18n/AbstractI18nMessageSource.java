@@ -1,44 +1,30 @@
 package io.github.rose.i18n;
 
 import io.github.rose.core.util.FormatUtils;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-/**
- * Abstract {@link MessageSource}
- *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
- * @since 1.0.0
- */
-public abstract class AbstractMessageSource implements MessageSource {
+public abstract class AbstractI18nMessageSource implements I18nMessageSource {
+    protected static final Logger log = LoggerFactory.getLogger(AbstractI18nMessageSource.class);
 
-    /*
-     * Message Source separator
-     */
     protected static final String SOURCE_SEPARATOR = ".";
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final String source;
 
     protected final String codePrefix;
 
-    private List<Locale> supportedLocales;
+    private Set<Locale> supportedLocales;
 
     private Locale defaultLocale;
 
-    public AbstractMessageSource(String source) {
+    public AbstractI18nMessageSource(String source) {
         requireNonNull(source, "'source' argument must not be null");
         this.source = source;
         this.codePrefix = source + SOURCE_SEPARATOR;
@@ -54,7 +40,7 @@ public abstract class AbstractMessageSource implements MessageSource {
 
     @Override
     public final String getMessage(String code, Object... args) {
-        return MessageSource.super.getMessage(code, args);
+        return I18nMessageSource.super.getMessage(code, args);
     }
 
     @Override
@@ -70,6 +56,7 @@ public abstract class AbstractMessageSource implements MessageSource {
         return message;
     }
 
+    @Nonnull
     @Override
     public final Locale getLocale() {
         Locale locale = getInternalLocale();
@@ -92,16 +79,16 @@ public abstract class AbstractMessageSource implements MessageSource {
         if (defaultLocale != null) {
             return defaultLocale;
         }
-        return MessageSource.super.getDefaultLocale();
+        return I18nMessageSource.super.getDefaultLocale();
     }
 
     @Nonnull
     @Override
-    public final List<Locale> getSupportedLocales() {
+    public final Set<Locale> getSupportedLocales() {
         if (supportedLocales != null) {
             return supportedLocales;
         }
-        return MessageSource.super.getSupportedLocales();
+        return I18nMessageSource.super.getSupportedLocales();
     }
 
     @Override
@@ -111,12 +98,12 @@ public abstract class AbstractMessageSource implements MessageSource {
 
     public void setDefaultLocale(Locale defaultLocale) {
         this.defaultLocale = defaultLocale;
-        logger.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
+        log.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
     }
 
-    public void setSupportedLocales(List<Locale> supportedLocales) {
+    public void setSupportedLocales(Set<Locale> supportedLocales) {
         this.supportedLocales = resolveLocales(supportedLocales);
-        logger.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
+        log.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
     }
 
     protected String resolveMessageCode(String code) {
@@ -133,18 +120,18 @@ public abstract class AbstractMessageSource implements MessageSource {
         return getSupportedLocales().contains(locale);
     }
 
-    protected static List<Locale> resolveLocales(List<Locale> supportedLocales) {
-        List<Locale> resolvedLocales = new LinkedList<>();
+    protected static Set<Locale> resolveLocales(Set<Locale> supportedLocales) {
+        Set<Locale> resolvedLocales = new TreeSet<>();
         for (Locale supportedLocale : supportedLocales) {
             addLocale(resolvedLocales, supportedLocale);
             for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
                 addLocale(resolvedLocales, derivedLocale);
             }
         }
-        return unmodifiableList(resolvedLocales);
+        return Collections.unmodifiableSet(resolvedLocales);
     }
 
-    protected static void addLocale(List<Locale> locales, Locale locale) {
+    protected static void addLocale(Set<Locale> locales, Locale locale) {
         if (!locales.contains(locale)) {
             locales.add(locale);
         }
@@ -155,11 +142,11 @@ public abstract class AbstractMessageSource implements MessageSource {
         String region = locale.getCountry();
         String variant = locale.getVariant();
 
-        boolean hasRegion = StringUtils.isNotBlank(region);
-        boolean hasVariant = StringUtils.isNotBlank(variant);
+        boolean hasRegion = isNotBlank(region);
+        boolean hasVariant = isNotBlank(variant);
 
         if (!hasRegion && !hasVariant) {
-            return emptyList();
+            return Collections.emptyList();
         }
 
         List<Locale> derivedLocales = new LinkedList<>();
@@ -175,10 +162,8 @@ public abstract class AbstractMessageSource implements MessageSource {
         return derivedLocales;
     }
 
-
     protected String resolveMessage(String message, Object... args) {
         // Using FormatUtils#format, future subclasses may re-implement formatting
         return FormatUtils.format(message, args);
     }
-
 }
