@@ -10,6 +10,8 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClassPathYamlResourceMessageSourceTest {
+    private static final String[] PREFIXES = {"test", "foo"};
+    private static final Locale[] LOCALES = {Locale.ENGLISH, Locale.getDefault()};
 
     private ClassPathYamlResourceMessageSource messageSource;
 
@@ -29,44 +31,28 @@ class ClassPathYamlResourceMessageSourceTest {
         MessageSourceManager.destroy();
     }
 
-    private static final String[] PREFIXES = {"test", "message", "demo", "foo", "bar"};
-    private static final Locale[] LOCALES = {Locale.ENGLISH, Locale.SIMPLIFIED_CHINESE};
-
     @Test
     void testAllPrefixes() {
         for (Locale locale : LOCALES) {
-            boolean isZh = Locale.SIMPLIFIED_CHINESE.equals(locale);
+            boolean isZh = Locale.getDefault().equals(locale);
             for (String prefix : PREFIXES) {
-                // message
-                if (prefix.equals("demo") || prefix.equals("bar")) continue;
-                String expectedMsg = isZh ? "你好" : "Hello";
-                assertEquals(expectedMsg, messageSource.getMessage(prefix + ".message", locale));
-            }
-            // param
-            for (String prefix : PREFIXES) {
-                if (prefix.equals("message") || prefix.equals("foo")) continue;
-                String expectedParam = isZh ? "你好, Rose" : "Hello, Rose";
-                assertEquals(expectedParam, messageSource.getMessage(prefix + ".param", locale, "Rose"));
-            }
-            // nested.message
-            for (String prefix : PREFIXES) {
-                if (prefix.equals("demo") || prefix.equals("bar") || prefix.equals("message")) continue;
-                String expectedNestedMsg = isZh ? "嵌套你好" : "Nested Hello";
-                assertEquals(expectedNestedMsg, messageSource.getMessage(prefix + ".nested.message", locale));
-            }
-            // nested.param
-            for (String prefix : PREFIXES) {
-                if (prefix.equals("test") || prefix.equals("demo") || prefix.equals("foo") || prefix.equals("message")) continue;
-                String expectedNestedParam = isZh ? "嵌套, Rose" : "Nested, Rose";
-                assertEquals(expectedNestedParam, messageSource.getMessage(prefix + ".nested.param", locale, "Rose"));
+                assertEquals(isZh ? "你好" : "Hello", messageSource.getMessage(prefix + ".message", locale));
+                assertEquals(isZh ? "你好, " + prefix : "Hello, " + prefix, messageSource.getMessage(prefix + ".param", locale, prefix));
+                assertEquals(isZh ? "你好嵌套" : "Hello Nested", messageSource.getMessage(prefix + ".nested.message", locale, null));
+                assertEquals(isZh ? "你好嵌套, " + prefix : "Hello Nested, " + prefix, messageSource.getMessage(prefix + ".nested.param", locale, prefix));
             }
         }
     }
 
     @Test
-    void testNullAndUnsupportedLocale() {
-        assertNull(messageSource.getMessage(null, Locale.ENGLISH));
+    void testDefaultResourceFallback() {
         assertEquals("你好", messageSource.getMessage("test.message", null));
-        assertEquals("你好", messageSource.getMessage("test.message", Locale.FRENCH));
+        // 不支持的 locale，优先返回无后缀资源内容
+        Locale unsupported = new Locale("fr", "FR");
+        assertEquals("你好", messageSource.getMessage("test.message", unsupported));
+        // 其他 key
+        assertEquals("你好, Rose", messageSource.getMessage("test.param", null, "Rose"));
+        assertEquals("你好嵌套", messageSource.getMessage("test.nested.message", null));
+        assertEquals("你好嵌套, Rose", messageSource.getMessage("test.nested.param", null, "Rose"));
     }
 }

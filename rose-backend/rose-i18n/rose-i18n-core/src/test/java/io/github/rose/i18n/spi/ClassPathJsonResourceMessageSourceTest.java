@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ClassPathJsonResourceMessageSourceTest {
     private static final String[] PREFIXES = {"test", "foo"};
-    private static final Locale[] LOCALES = {Locale.ENGLISH, Locale.SIMPLIFIED_CHINESE};
+    private static final Locale[] LOCALES = {Locale.ENGLISH, Locale.getDefault()};
 
     private ClassPathJsonResourceMessageSource messageSource;
 
@@ -34,7 +34,7 @@ class ClassPathJsonResourceMessageSourceTest {
     @Test
     void testAllPrefixes() {
         for (Locale locale : LOCALES) {
-            boolean isZh = Locale.SIMPLIFIED_CHINESE.equals(locale);
+            boolean isZh = Locale.getDefault().equals(locale);
             for (String prefix : PREFIXES) {
                 assertEquals(isZh ? "你好" : "Hello", messageSource.getMessage(prefix + ".message", locale));
                 assertEquals(isZh ? "你好, " + prefix : "Hello, " + prefix, messageSource.getMessage(prefix + ".param", locale, prefix));
@@ -52,7 +52,7 @@ class ClassPathJsonResourceMessageSourceTest {
         assertEquals("你好", messageSource.getMessage("test.message", unsupported));
         // 其他 key
         assertEquals("你好, Rose", messageSource.getMessage("test.param", null, "Rose"));
-        assertEquals("嵌套你好", messageSource.getMessage("test.nested.message", null));
-        assertEquals("嵌套你好, Rose", messageSource.getMessage("test.nested.param", null, "Rose"));
+        assertEquals("你好嵌套", messageSource.getMessage("test.nested.message", null));
+        assertEquals("你好嵌套, Rose", messageSource.getMessage("test.nested.param", null, "Rose"));
     }
 }

@@ -98,49 +98,63 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     @Override
     protected String doGetMessage(String code, Locale locale, Object[] args) {
-        if (locale == null) {
-            locale = getDefaultLocale();
-        }
         String message = null;
+        Map<String, String> messages;
+        String messagePattern;
         // 1. 完整 locale
-        Map<String, String> messages = getMessages(locale);
-        String messagePattern = messages != null ? messages.get(code) : null;
-        if (messagePattern != null) {
-            message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, locale, args);
-            if (message != null) {
-                return message;
+        if (locale != null) {
+            messages = getMessages(locale);
+            messagePattern = messages != null ? messages.get(code) : null;
+            if (messagePattern != null) {
+                message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, locale, args);
+                if (message != null) return message;
             }
-        }
-        // 2. 仅 language（如 zh_CN -> zh）
-        if (locale != null && !locale.getCountry().isEmpty()) {
+            // 2. language + script
+            if (!locale.getScript().isEmpty()) {
+                Locale langScript = new Locale.Builder()
+                        .setLanguage(locale.getLanguage())
+                        .setScript(locale.getScript())
+                        .build();
+                messages = getMessages(langScript);
+                messagePattern = messages != null ? messages.get(code) : null;
+                if (messagePattern != null) {
+                    message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, langScript, args);
+                    if (message != null) return message;
+                }
+            }
+            // 3. language + country
+            if (!locale.getCountry().isEmpty()) {
+                Locale langCountry = new Locale(locale.getLanguage(), locale.getCountry());
+                messages = getMessages(langCountry);
+                messagePattern = messages != null ? messages.get(code) : null;
+                if (messagePattern != null) {
+                    message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, langCountry, args);
+                    if (message != null) return message;
+                }
+            }
+            // 4. language only
             Locale languageOnly = new Locale(locale.getLanguage());
             messages = getMessages(languageOnly);
             messagePattern = messages != null ? messages.get(code) : null;
             if (messagePattern != null) {
                 message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, languageOnly, args);
-                if (message != null) {
-                    return message;
-                }
+                if (message != null) return message;
             }
         }
-        // 3. generic（无后缀）
+        // 5. generic（无后缀）
         Map<String, String> genericMessages = getMessages(null);
         String genericPattern = genericMessages != null ? genericMessages.get(code) : null;
         if (genericPattern != null) {
             message = MESSAGE_FORMAT_CACHE.formatMessage(genericPattern, getDefaultLocale(), args);
-            if (message != null) {
-                return message;
-            }
+            if (message != null) return message;
         }
-        // 4. fallback 到默认 locale
+        // 6. fallback 到默认 locale
         Locale def = getDefaultLocale();
         Map<String, String> defMessages = getMessages(def);
         String defPattern = defMessages != null ? defMessages.get(code) : null;
         if (defPattern != null) {
             message = MESSAGE_FORMAT_CACHE.formatMessage(defPattern, def, args);
-            if (message != null) {
-                return message;
-            }
+            if (message != null) return message;
         }
         return null;
     }

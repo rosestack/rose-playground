@@ -1,16 +1,12 @@
 test:
   message: Hello
-  param: "Hello, {0}"
+  param: Hello, {0}
   nested:
-    message: Nested Hello
-    param: "Nested, {0}"
-message:
-  message: Hello
-demo:
-  param: "Hello, {0}"
+    message: Hello Nested
+    param: Hello Nested, {0}
 foo:
+  message: Hello
+  param: Hello, {0}
   nested:
-    message: Nested Hello
-bar:
-  nested:
-    param: "Nested, {0}"
+    message: Hello Nested
+    param: Hello Nested, {0}

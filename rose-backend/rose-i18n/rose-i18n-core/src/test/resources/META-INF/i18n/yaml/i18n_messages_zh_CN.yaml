@@ -1,30 +1,12 @@
 test:
-  message: 你好
+  message: "你好"
   param: "你好, {0}"
   nested:
-    message: 嵌套你好
-    param: "嵌套, {0}"
-message:
-  message: 你好
-  param: "你好, {0}"
-  nested:
-    message: 嵌套你好
-    param: "嵌套, {0}"
-demo:
-  message: 你好
-  param: "你好, {0}"
-  nested:
-    message: 嵌套你好
-    param: "嵌套, {0}"
+    message: "你好嵌套"
+    param: "你好嵌套, {0}"
 foo:
-  message: 你好
+  message: "你好"
   param: "你好, {0}"
   nested:
-    message: 嵌套你好
-    param: "嵌套, {0}"
-bar:
-  message: 你好
-  param: "你好, {0}"
-  nested:
-    message: 嵌套你好
-    param: "嵌套, {0}"
+    message: "你好嵌套"
+    param: "你好嵌套, {0}"
