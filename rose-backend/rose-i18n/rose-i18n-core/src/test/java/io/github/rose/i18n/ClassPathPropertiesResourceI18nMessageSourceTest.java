@@ -17,7 +17,7 @@ class ClassPathPropertiesResourceI18nMessageSourceTest {
 
     @BeforeEach
     void setUp() {
-        I18nUtils.destroyI18nMessageSource();
+        I18nMessageSourceManager.destroy();
         messageSource = new ClassPathPropertiesResourceI18nMessageSource("test");
         messageSource.init();
     }
@@ -28,7 +28,7 @@ class ClassPathPropertiesResourceI18nMessageSourceTest {
             messageSource.destroy();
             messageSource = null;
         }
-        I18nUtils.destroyI18nMessageSource();
+        I18nMessageSourceManager.destroy();
     }
 
     @Test

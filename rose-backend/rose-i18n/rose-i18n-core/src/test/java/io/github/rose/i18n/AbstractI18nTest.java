@@ -39,11 +39,11 @@ public abstract class AbstractI18nTest {
 
     @BeforeEach
     public void before() {
-        I18nUtils.destroyI18nMessageSource();
+        I18nMessageSourceManager.destroy();
     }
 
     @AfterEach
     public void after() {
-        I18nUtils.destroyI18nMessageSource();
+        I18nMessageSourceManager.destroy();
     }
 }

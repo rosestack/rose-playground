@@ -1,19 +1,14 @@
 package io.github.rose.i18n.util;
 
 import io.github.rose.i18n.AbstractI18nTest;
+import io.github.rose.i18n.I18nMessageSourceManager;
 import io.github.rose.i18n.spi.ClassPathPropertiesResourceI18nMessageSource;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
-import static io.github.rose.i18n.util.I18nUtils.setI18nMessageSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MessageUtilsTest extends AbstractI18nTest {
@@ -24,8 +19,7 @@ class MessageUtilsTest extends AbstractI18nTest {
     public void before() {
         messageSource = new ClassPathPropertiesResourceI18nMessageSource("test");
         messageSource.init();
-        setI18nMessageSource(messageSource);
-        assertNotNull(I18nUtils.i18nMessageSource(), "MessageSource should be initialized");
+        assertNotNull(I18nMessageSourceManager.getComposite(), "MessageSource should be initialized");
     }
 
     @AfterEach
@@ -34,7 +28,7 @@ class MessageUtilsTest extends AbstractI18nTest {
             messageSource.destroy();
             messageSource = null;
         }
-        I18nUtils.destroyI18nMessageSource();
+        I18nMessageSourceManager.destroy();
     }
 
     @Test
