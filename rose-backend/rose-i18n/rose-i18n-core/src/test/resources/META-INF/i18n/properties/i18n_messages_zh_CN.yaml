@@ -1,9 +1,0 @@
-hello: 你好
-user:
-  login: 登录
-  logout: 登出
-special:
-  dash-key: 含有-的值
-  under_score: 含有下划线的值
-  number123: 数字123
-  'quoted.key': 带引号的key 

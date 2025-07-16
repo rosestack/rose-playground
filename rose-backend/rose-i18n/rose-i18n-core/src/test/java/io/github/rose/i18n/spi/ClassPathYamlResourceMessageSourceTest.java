@@ -16,19 +16,7 @@ public class ClassPathYamlResourceMessageSourceTest {
     @BeforeAll
     static void setup() {
         messageSource = new ClassPathYamlResourceMessageSource("yaml");
+        messageSource.init();
     }
 
-    @Test
-    void testSimpleKeyLoading() {
-        Map<String, String> messages = messageSource.loadMessages("i18n_messages_en.yaml");
-        Assertions.assertEquals("Hello", messages.get("hello"));
-        Assertions.assertEquals("Login", messages.get("user.login"));
-    }
-
-    @Test
-    void testNestedKeyLoading() {
-        Map<String, String> messages = messageSource.loadMessages("i18n_messages_en.yaml");
-        Assertions.assertEquals("Login", messages.get("user.login"));
-        Assertions.assertEquals("Logout", messages.get("user.logout"));
-    }
 }

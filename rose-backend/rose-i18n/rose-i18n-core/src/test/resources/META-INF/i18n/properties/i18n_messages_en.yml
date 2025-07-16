@@ -1,9 +1,0 @@
-hello: Hello-YML
-user:
-  login: Login-YML
-  logout: Logout-YML
-special:
-  dash-key: Value-With-Dash-YML
-  under_score: Value_With_Underscore_YML
-  number123: Value123YML
-  'quoted.key': QuotedKeyYML 

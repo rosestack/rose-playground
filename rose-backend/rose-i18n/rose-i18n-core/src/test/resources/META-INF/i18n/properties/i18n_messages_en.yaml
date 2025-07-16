@@ -1,9 +1,0 @@
-hello: Hello
-user:
-  login: Login
-  logout: Logout
-special:
-  dash-key: Value-With-Dash
-  under_score: Value_With_Underscore
-  number123: Value123
-  'quoted.key': QuotedKey 
