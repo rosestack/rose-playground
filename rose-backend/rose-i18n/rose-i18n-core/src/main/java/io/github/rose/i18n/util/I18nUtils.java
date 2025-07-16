@@ -3,11 +3,13 @@ package io.github.rose.i18n.util;
 import io.github.rose.i18n.CompositeI18nMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spi.EmptyI18nMessageSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -19,13 +21,10 @@ import static java.util.Collections.unmodifiableList;
  */
 public abstract class I18nUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(I18nUtils.class);
-
     private static volatile I18nMessageSource i18nMessageSource;
 
     public static I18nMessageSource i18nMessageSource() {
         if (i18nMessageSource == null) {
-            logger.warn("i18nMessageSource is not initialized, EmptyI18nMessageSource will be used");
             return EmptyI18nMessageSource.INSTANCE;
         }
         return i18nMessageSource;
@@ -33,12 +32,10 @@ public abstract class I18nUtils {
 
     public static void setI18nMessageSource(I18nMessageSource i18nMessageSource) {
         I18nUtils.i18nMessageSource = i18nMessageSource;
-        logger.debug("I18nUtils.i18nMessageSource is initialized : {}", i18nMessageSource);
     }
 
     public static void destroyI18nMessageSource() {
         i18nMessageSource = null;
-        logger.debug("i18nMessageSource is destroyed");
     }
 
     public static List<I18nMessageSource> findAllI18nMessageSources(I18nMessageSource i18nMessageSource) {
@@ -57,5 +54,56 @@ public abstract class I18nUtils {
         } else {
             allI18nMessageSources.add(serviceMessageSource);
         }
+    }
+
+    /**
+     * 解析支持的 Locale 列表，包含派生 Locale
+     */
+    public static Set<Locale> resolveLocales(Set<Locale> supportedLocales) {
+        Set<Locale> resolvedLocales = new LinkedHashSet<>();
+        for (Locale supportedLocale : supportedLocales) {
+            addLocale(resolvedLocales, supportedLocale);
+            for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
+                addLocale(resolvedLocales, derivedLocale);
+            }
+        }
+        return Collections.unmodifiableSet(resolvedLocales);
+    }
+
+    /**
+     * 添加 Locale 到集合，避免重复
+     */
+    public static void addLocale(Set<Locale> locales, Locale locale) {
+        if (!locales.contains(locale)) {
+            locales.add(locale);
+        }
+    }
+
+    /**
+     * 获取 Locale 派生列表（如 zh_CN -> zh）
+     */
+    public static List<Locale> resolveDerivedLocales(Locale locale) {
+        String language = locale.getLanguage();
+        String region = locale.getCountry();
+        String variant = locale.getVariant();
+
+        boolean hasRegion = region != null && !region.isEmpty();
+        boolean hasVariant = variant != null && !variant.isEmpty();
+
+        if (!hasRegion && !hasVariant) {
+            return Collections.emptyList();
+        }
+
+        List<Locale> derivedLocales = new LinkedList<>();
+
+        if (hasVariant) {
+            derivedLocales.add(new Locale(language, region));
+        }
+
+        if (hasRegion) {
+            derivedLocales.add(new Locale(language));
+        }
+
+        return derivedLocales;
     }
 }

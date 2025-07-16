@@ -1,8 +1,5 @@
 package io.github.rose.i18n.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -24,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.0.0
  */
 public class MessageFormatCache {
-    
-    private static final Logger logger = LoggerFactory.getLogger(MessageFormatCache.class);
     
     /**
      * 缓存结构: Locale -> (MessagePattern -> MessageFormat)
@@ -67,8 +62,8 @@ public class MessageFormatCache {
             // 优化4: 使用实例方法而不是静态方法
             return messageFormat.format(args);
         } catch (Exception e) {
-            logger.warn("Failed to format message '{}' with args {}: {}", message, args, e.getMessage());
-            return message; // 降级返回原消息
+            // 格式化失败，降级返回原消息
+            return message;
         }
     }
     
@@ -106,20 +101,14 @@ public class MessageFormatCache {
         return localeCache.computeIfAbsent(message, pattern -> {
             // 检查缓存大小限制
             if (localeCache.size() >= MAX_CACHE_SIZE_PER_LOCALE) {
-                logger.warn("MessageFormat cache for locale '{}' reached maximum size ({}), " +
-                           "consider reviewing message patterns", locale, MAX_CACHE_SIZE_PER_LOCALE);
                 // 可以实现 LRU 清理策略，这里简单清空
                 localeCache.clear();
             }
             
             try {
                 MessageFormat messageFormat = new MessageFormat(pattern, locale);
-                logger.debug("Created and cached MessageFormat for pattern '{}' and locale '{}'", 
-                           pattern, locale);
                 return messageFormat;
             } catch (Exception e) {
-                logger.error("Failed to create MessageFormat for pattern '{}' and locale '{}': {}", 
-                           pattern, locale, e.getMessage());
                 // 返回一个简单的格式器作为降级
                 return new MessageFormat(pattern, Locale.ROOT);
             }
@@ -131,21 +120,14 @@ public class MessageFormatCache {
      */
     public void clearCache(Locale locale) {
         Map<String, MessageFormat> removed = messageFormatCache.remove(locale);
-        if (removed != null) {
-            logger.debug("Cleared MessageFormat cache for locale '{}', removed {} entries", 
-                       locale, removed.size());
-        }
+        // 清理指定 Locale 的缓存，无日志
     }
     
     /**
      * 清理所有缓存
      */
     public void clearAllCache() {
-        int totalRemoved = messageFormatCache.values().stream()
-                .mapToInt(Map::size)
-                .sum();
         messageFormatCache.clear();
-        logger.debug("Cleared all MessageFormat cache, removed {} entries", totalRemoved);
     }
     
     /**
@@ -161,15 +143,10 @@ public class MessageFormatCache {
      * 预热缓存（可选）
      */
     public void warmupCache(Map<String, String> messages, Locale locale) {
-        logger.debug("Warming up MessageFormat cache for locale '{}' with {} messages", 
-                   locale, messages.size());
-        
         messages.forEach((code, message) -> {
             if (containsPlaceholders(message)) {
                 getMessageFormat(message, locale);
             }
         });
-        
-        logger.debug("Cache warmup completed for locale '{}'", locale);
     }
 }

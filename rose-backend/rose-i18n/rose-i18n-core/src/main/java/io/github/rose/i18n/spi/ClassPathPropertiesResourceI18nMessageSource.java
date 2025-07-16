@@ -1,8 +1,6 @@
 package io.github.rose.i18n.spi;
 
-import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.I18nMessageSource;
-import jakarta.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,11 +26,11 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
     }
 
     protected String getResource(String resourceName) {
-        return FormatUtils.format(RESOURCE_LOCATION_PATTERN, getSource(), resourceName);
+        return String.format(RESOURCE_LOCATION_PATTERN.replace("{}", "%s"), getSource(), resourceName);
     }
 
     @Override
-    protected List<Reader> loadAllPropertiesResources(String resource) throws IOException {
+    protected List<Reader> loadPropertiesResources(String resource) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         Enumeration<URL> resources = classLoader.getResources(resource);
         List<Reader> propertiesResources = new LinkedList<>();

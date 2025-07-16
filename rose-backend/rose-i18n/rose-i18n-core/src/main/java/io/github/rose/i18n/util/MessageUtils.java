@@ -1,13 +1,8 @@
 package io.github.rose.i18n.util;
 
 import io.github.rose.i18n.I18nMessageSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.substringBetween;
 
 /**
  * Message Utilities class
@@ -16,8 +11,6 @@ import static org.apache.commons.lang3.StringUtils.substringBetween;
  * @since 1.0.0
  */
 public abstract class MessageUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(MessageUtils.class);
 
     /**
      * Message Code pattern prefix
@@ -53,14 +46,14 @@ public abstract class MessageUtils {
         String messageCode = resolveMessageCode(messagePattern);
 
         if (messageCode == null) {
-            logger.debug("Message code not found in messagePattern'{}", messagePattern);
+            // Message code not found, return original pattern
             return messagePattern;
         }
 
         I18nMessageSource i18nMessageSource = I18nUtils.i18nMessageSource();
         String localizedMessage = i18nMessageSource.getMessage(messageCode, locale, args);
-        if (isNotBlank(localizedMessage)) {
-            logger.debug("Message Pattern ['{}'] corresponds to Locale ['{}'] with MessageSage:'{}'", messagePattern, locale, localizedMessage);
+        if (localizedMessage != null && !localizedMessage.isBlank()) {
+            // found localized message
         } else {
             int afterDotIndex = messageCode.indexOf(".") + 1;
             if (afterDotIndex > 0 && afterDotIndex < messageCode.length()) {
@@ -68,14 +61,18 @@ public abstract class MessageUtils {
             } else {
                 localizedMessage = messagePattern;
             }
-            logger.debug("No Message['{}'] found for Message Pattern ['{}'], returned: {}", messagePattern, locale, localizedMessage);
         }
 
         return localizedMessage;
     }
 
     public static String resolveMessageCode(String messagePattern) {
-        String messageCode = substringBetween(messagePattern, MESSAGE_PATTERN_PREFIX, MESSAGE_PATTERN_SUFFIX);
-        return messageCode;
+        if (messagePattern == null) return null;
+        int start = messagePattern.indexOf(MESSAGE_PATTERN_PREFIX);
+        int end = messagePattern.indexOf(MESSAGE_PATTERN_SUFFIX, start + 1);
+        if (start != -1 && end != -1 && end > start) {
+            return messagePattern.substring(start + 1, end);
+        }
+        return null;
     }
 }

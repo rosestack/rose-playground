@@ -1,10 +1,8 @@
 package io.github.rose.i18n.spi;
 
 
-import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.AbstractResourceI18nMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -30,26 +28,25 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
     protected final Map<String, String> loadMessages(String resource) {
         Map<String, String> messages = null;
         try {
-            Properties properties = loadAllProperties(resource);
-            if (!ObjectUtils.isEmpty(properties)) {
+            Properties properties = loadProperties(resource);
+            if (properties != null && !properties.isEmpty()) {
                 messages = new HashMap<>(properties.size());
                 messages.putAll((Map) properties);
             }
         } catch (IOException e) {
-            throw new RuntimeException(FormatUtils.format("Source '{}' Messages Properties Resource[name : {}] loading is failed", source, resource), e);
+            throw new RuntimeException("Source '" + source + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
         }
         return messages == null ? emptyMap() : unmodifiableMap(messages);
     }
 
-    public Properties loadAllProperties(Locale locale) throws IOException {
+    public Properties loadProperties(Locale locale) throws IOException {
         String resource = getResource(locale);
-        return loadAllProperties(resource);
+        return loadProperties(resource);
     }
 
-    public Properties loadAllProperties(String resource) throws IOException {
-        List<Reader> propertiesResources = loadAllPropertiesResources(resource);
-        log.debug("Source '{}' loads {} Properties Resources['{}']", source, propertiesResources.size(), resource);
-        if (ObjectUtils.isEmpty(propertiesResources)) {
+    public Properties loadProperties(String resource) throws IOException {
+        List<Reader> propertiesResources = loadPropertiesResources(resource);
+        if (propertiesResources == null || propertiesResources.isEmpty()) {
             return null;
         }
         Properties properties = new Properties();
@@ -59,11 +56,10 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
             }
         }
 
-        log.debug("Source '{}' loads all Properties Resources[name :{}] : {}", source, resource, properties);
         return properties;
     }
 
     protected abstract String getResource(String resourceName);
 
-    protected abstract List<Reader> loadAllPropertiesResources(String resource) throws IOException;
+    protected abstract List<Reader> loadPropertiesResources(String resource) throws IOException;
 }

@@ -1,21 +1,11 @@
 package io.github.rose.i18n;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.github.rose.i18n.util.MessageFormatCache;
-
 import java.text.MessageFormat;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public abstract class AbstractI18nMessageSource implements I18nMessageSource {
-    protected static final Logger log = LoggerFactory.getLogger(AbstractI18nMessageSource.class);
-
     protected static final String SOURCE_SEPARATOR = ".";
 
     protected final String source;
@@ -23,13 +13,6 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     protected final String codePrefix;
 
     private Set<Locale> supportedLocales;
-
-    private Locale defaultLocale;
-
-    /**
-     * 消息格式化缓存，提升性能
-     */
-    private static final MessageFormatCache MESSAGE_FORMAT_CACHE = new MessageFormatCache();
 
     public AbstractI18nMessageSource(String source) {
         requireNonNull(source, "'source' argument must not be null");
@@ -43,9 +26,6 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
 
     @Override
     public void destroy() {
-        // 清理缓存
-        MESSAGE_FORMAT_CACHE.clearAllCache();
-        log.debug("Source '{}' destroyed and cleared MessageFormat cache", source);
     }
 
     @Override
@@ -66,33 +46,16 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
         return message;
     }
 
-    @Nonnull
     @Override
     public final Locale getLocale() {
         Locale locale = getInternalLocale();
         return locale == null ? getDefaultLocale() : locale;
     }
 
-    /**
-     * Get the internal {@link Locale}
-     *
-     * @return the internal {@link Locale}
-     */
-    @Nullable
     protected Locale getInternalLocale() {
         return null;
     }
 
-    @Nonnull
-    @Override
-    public final Locale getDefaultLocale() {
-        if (defaultLocale != null) {
-            return defaultLocale;
-        }
-        return I18nMessageSource.super.getDefaultLocale();
-    }
-
-    @Nonnull
     @Override
     public final Set<Locale> getSupportedLocales() {
         if (supportedLocales != null) {
@@ -115,63 +78,4 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     }
 
     protected abstract String getInternalMessage(String code, String resolvedCode, Locale locale, Locale resolvedLocale, Object... args);
-
-    protected boolean supports(Locale locale) {
-        return getSupportedLocales().contains(locale);
-    }
-
-    protected static Set<Locale> resolveLocales(Set<Locale> supportedLocales) {
-        Set<Locale> resolvedLocales = new LinkedHashSet<>();
-        for (Locale supportedLocale : supportedLocales) {
-            addLocale(resolvedLocales, supportedLocale);
-            for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
-                addLocale(resolvedLocales, derivedLocale);
-            }
-        }
-        return Collections.unmodifiableSet(resolvedLocales);
-    }
-
-    protected static void addLocale(Set<Locale> locales, Locale locale) {
-        if (!locales.contains(locale)) {
-            locales.add(locale);
-        }
-    }
-
-    protected static List<Locale> resolveDerivedLocales(Locale locale) {
-        String language = locale.getLanguage();
-        String region = locale.getCountry();
-        String variant = locale.getVariant();
-
-        boolean hasRegion = isNotBlank(region);
-        boolean hasVariant = isNotBlank(variant);
-
-        if (!hasRegion && !hasVariant) {
-            return Collections.emptyList();
-        }
-
-        List<Locale> derivedLocales = new LinkedList<>();
-
-        if (hasVariant) {
-            derivedLocales.add(new Locale(language, region));
-        }
-
-        if (hasRegion) {
-            derivedLocales.add(new Locale(language));
-        }
-
-        return derivedLocales;
-    }
-
-    protected String resolveMessage(String message, Object... args) {
-        return MESSAGE_FORMAT_CACHE.formatMessage(message, getLocale(), args);
-    }
-
-    @Deprecated
-    protected String resolveMessageLegacy(String message, Object... args) {
-        if (args == null || args.length == 0) {
-            return message;
-        }
-        MessageFormat messageFormat = new MessageFormat(message, getLocale());
-        return messageFormat.format(args);
-    }
 }
