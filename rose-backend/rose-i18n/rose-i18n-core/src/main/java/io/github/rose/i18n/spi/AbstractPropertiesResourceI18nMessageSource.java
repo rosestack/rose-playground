@@ -18,6 +18,7 @@ import static java.util.Collections.unmodifiableMap;
  * @since 1.0.0
  */
 public abstract class AbstractPropertiesResourceI18nMessageSource extends AbstractResourceI18nMessageSource {
+    public static final String DEFAULT_RESOURCE_NAME_SUFFIX = ".properties";
 
     public AbstractPropertiesResourceI18nMessageSource(String source) {
         super(source);
@@ -39,7 +40,12 @@ public abstract class AbstractPropertiesResourceI18nMessageSource extends Abstra
         return messages == null ? emptyMap() : unmodifiableMap(messages);
     }
 
-    public Properties loadProperties(String resource) throws IOException {
+    @Override
+    protected String getResourceName(Locale locale) {
+        return DEFAULT_RESOURCE_NAME_PREFIX + locale + DEFAULT_RESOURCE_NAME_SUFFIX;
+    }
+
+    protected Properties loadProperties(String resource) throws IOException {
         List<Reader> propertiesResources = loadPropertiesResources(resource);
         if (propertiesResources == null || propertiesResources.isEmpty()) {
             return null;

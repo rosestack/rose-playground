@@ -3,14 +3,14 @@ package io.github.rose.i18n;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.Locale;
+import java.util.Objects;
 
-import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractI18nMessageSource implements I18nMessageSource {
     protected final String source;
 
     public AbstractI18nMessageSource(String source) {
-        requireNonNull(source, "'source' argument must not be null");
+        Objects.requireNonNull(source, "'source' argument must not be null");
         this.source = source;
     }
 

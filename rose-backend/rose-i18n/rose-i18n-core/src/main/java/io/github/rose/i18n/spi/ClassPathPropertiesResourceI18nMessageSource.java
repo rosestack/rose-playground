@@ -1,6 +1,7 @@
 package io.github.rose.i18n.spi;
 
 import io.github.rose.i18n.I18nMessageSource;
+import io.github.rose.i18n.util.I18nUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,18 +16,10 @@ import java.util.*;
  * @since 1.0.0
  */
 public class ClassPathPropertiesResourceI18nMessageSource extends AbstractPropertiesResourceI18nMessageSource {
-
-    /**
-     * Resource path pattern
-     */
     protected static final String RESOURCE_PATH_PATTERN = "META-INF/i18n/%s/";
 
     public ClassPathPropertiesResourceI18nMessageSource(String source) {
         super(source);
-    }
-
-    protected String getResource(String resourceName) {
-        return getBastPath() + resourceName;
     }
 
     @Override
@@ -58,7 +51,7 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
                         for (java.io.File file : files) {
                             String fileName = file.getName();
                             // 解析 Locale
-                            Locale locale = parseLocaleFromFileName(fileName);
+                            Locale locale = I18nUtils.parseLocaleFromFileName(fileName);
                             if (locale != null) {
                                 locales.add(locale);
                             }
@@ -75,26 +68,5 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
 
     private String getBastPath() {
         return String.format(RESOURCE_PATH_PATTERN, getSource());
-    }
-
-    /**
-     * 解析文件名中的 Locale，例如 i18n_messages_zh_CN.properties -> zh_CN
-     */
-    private Locale parseLocaleFromFileName(String fileName) {
-        // 假设文件名格式为 i18n_messages_xx[_YY].properties
-        int start = fileName.indexOf('_');
-        int end = fileName.lastIndexOf('.');
-        if (start != -1 && end != -1 && end > start) {
-            String localeStr = fileName.substring(start + 1, end);
-            String[] parts = localeStr.split("_");
-            if (parts.length == 1) {
-                return null;
-            } else if (parts.length == 2) {
-                return new Locale(parts[1]);
-            } else if (parts.length == 3) {
-                return new Locale(parts[1], parts[2]);
-            }
-        }
-        return null;
     }
 }

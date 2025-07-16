@@ -1,16 +1,16 @@
 package io.github.rose.i18n;
 
+import io.github.rose.core.util.Assert;
+import io.github.rose.i18n.util.MessageFormatCache;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
-
-import io.github.rose.i18n.util.I18nUtils;
-import io.github.rose.i18n.util.MessageFormatCache;
 
 /**
  * Abstract Resource {@link I18nMessageSource} Class
@@ -21,15 +21,7 @@ import io.github.rose.i18n.util.MessageFormatCache;
 public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMessageSource implements ResourceI18nMessageSource {
     protected static final MessageFormatCache MESSAGE_FORMAT_CACHE = new MessageFormatCache();
 
-    /**
-     * The default prefix of message resource name
-     */
     public static final String DEFAULT_RESOURCE_NAME_PREFIX = "i18n_messages_";
-
-    /**
-     * The default suffix of message resource name
-     */
-    public static final String DEFAULT_RESOURCE_NAME_SUFFIX = ".properties";
 
     // path -> messages
     private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
@@ -40,24 +32,22 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
 
     @Override
     public void init() {
-        requireNonNull(this.source, "The 'source' attribute must be assigned before initialization!");
+        Assert.assertNotNull(this.source, "The 'source' attribute must be assigned before initialization!");
 
         Set<Locale> supportedLocales = getSupportedLocales();
-        if (supportedLocales == null || supportedLocales.isEmpty()) {
-            throw new IllegalStateException(this.getClass() + ".getSupportedLocales() Methods cannot return an empty list of locales!");
-        }
+        Assert.assertNotEmpty(supportedLocales, "supportedLocales must not be null");
 
-        for (Locale resolveLocale : supportedLocales) {
-            String resource = getResource(resolveLocale);
-            initializeResource(resource);
+        for (Locale locale : supportedLocales) {
+            String resourceName = getResourceName(locale);
+            initializeResource(resourceName);
         }
     }
 
     @Override
-    public void initializeResource(String resource) {
-        requireNonNull(resource, "The 'resource' attribute must be assigned before initialization!");
-        Map<String, String> messages = loadMessages(resource);
-        this.localizedResourceMessages.put(resource, messages);
+    public void initializeResource(String resourceName) {
+        requireNonNull(resourceName, "The 'resource' attribute must be assigned before initialization!");
+        Map<String, String> messages = loadMessages(resourceName);
+        this.localizedResourceMessages.put(getKey(resourceName), messages);
     }
 
     @Override
@@ -74,7 +64,7 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
 
     @Override
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
-        Map<String, String> messageMap = localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
+        Map<String, String> messageMap = localizedResourceMessages.getOrDefault(getKey(getResourceName(locale)), emptyMap());
 
         Map<String, String> messages = new HashMap<>();
         for (String code : codes) {
@@ -88,7 +78,7 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
 
     @Override
     public Map<String, String> getMessages(Locale locale) {
-        return localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
+        return localizedResourceMessages.getOrDefault(getKey(getResourceName(locale)), emptyMap());
     }
 
     @Override
@@ -104,19 +94,13 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
         return message;
     }
 
-    protected String getResource(Locale locale) {
-        String resourceName = buildResourceName(locale);
-        return getResource(resourceName);
+    private String getKey(String resourceName) {
+        return source + "/" + resourceName;
     }
 
-    protected String buildResourceName(Locale locale) {
-        return DEFAULT_RESOURCE_NAME_PREFIX + locale + DEFAULT_RESOURCE_NAME_SUFFIX;
-    }
-
-    protected abstract String getResource(String resourceName);
+    protected abstract String getResourceName(Locale locale);
 
     protected abstract Map<String, String> loadMessages(String resource);
-
 
     @Override
     public String toString() {
