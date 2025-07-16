@@ -1,15 +1,16 @@
 package io.github.rose.i18n.spi;
 
-import io.github.rose.i18n.MessageSourceException;
+import io.github.rose.i18n.MessageException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 /**
- * 从 classpath 下 META-INF/i18n/{source}/ 目录读取 properties 文件的国际化消息加载实现。
- * 支持 file 和 jar 协议，自动发现所有支持的 Locale。
+ * Loads i18n messages from properties files under META-INF/i18n/{source}/ in the classpath.
+ * Supports both file and jar protocols, and automatically discovers all supported Locales.
  */
 public class ClassPathPropertiesResourceMessageSource extends AbstractClassPathResourceMessageSource {
     private static final String[] PROPERTIES_SUFFIXES = {".properties"};
@@ -38,7 +39,7 @@ public class ClassPathPropertiesResourceMessageSource extends AbstractClassPathR
                 }
             }
         } catch (Exception e) {
-            throw new MessageSourceException("Source '" + getSource() + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
+            throw new MessageException("Source '" + getSource() + "' Messages Properties Resource[name : " + resource + "] loading is failed", e);
         }
         return messages;
     }

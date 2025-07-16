@@ -1,7 +1,7 @@
 package io.github.rose.i18n.spi;
 
 import io.github.rose.i18n.AbstractResourceMessageSource;
-import io.github.rose.i18n.MessageSourceException;
+import io.github.rose.i18n.MessageException;
 import io.github.rose.i18n.util.I18nUtils;
 
 import java.io.File;
@@ -13,8 +13,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarFile;
 
 /**
- * 抽象 classpath 资源型国际化消息源，封装 Locale 自动发现、资源加载、基础路径等通用逻辑。
- * 子类只需实现 getResourceSuffixes() 和 loadMessages(String resource)。
+ * Abstract classpath resource-based message source.
+ * <p>
+ * Encapsulates locale auto-discovery, resource loading, and base path logic for classpath resources.
+ * Subclasses only need to implement getResourceSuffixes() and loadMessages(String resource).
  */
 public abstract class AbstractClassPathResourceMessageSource extends AbstractResourceMessageSource {
     protected static final String FILE_PROTOCOL = "file";
@@ -26,26 +28,26 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
     }
 
     /**
-     * 子类需提供支持的资源后缀（如 .properties/.yaml/.yml）
+     * Subclasses need to provide supported resource suffixes (e.g., .properties/.yaml/.yml).
      */
     protected abstract String[] getResourceSuffixes();
 
     /**
-     * 获取 classpath 下资源基础路径
+     * Get the base path for classpath resources.
      */
     protected String getBasePath() {
         return String.format(RESOURCE_PATH_PATTERN, getSource());
     }
 
     /**
-     * 按后缀批量加载资源 Reader
+     * Batch load resources as Readers by suffix.
      */
     protected List<Reader> loadResourceReaders(String resource) throws IOException {
         return I18nUtils.loadResources(getBasePath(), resource, getResourceSuffixes(), getEncoding());
     }
 
     /**
-     * 统一 Locale 自动发现逻辑
+     * Unified locale auto-discovery logic.
      */
     @Override
     public Set<Locale> getSupportedLocales() {
@@ -72,7 +74,7 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
                 }
             }
         } catch (Exception e) {
-            throw new MessageSourceException("Failed to discover supported locales in " + basePath, e);
+            throw new MessageException("Failed to discover supported locales in " + basePath, e);
         }
         if (discovered.isEmpty()) discovered.add(Locale.getDefault());
         cachedLocales.set(discovered);
@@ -80,7 +82,7 @@ public abstract class AbstractClassPathResourceMessageSource extends AbstractRes
     }
 
     /**
-     * 统一资源命名逻辑，取第一个后缀为主
+     * Unified resource naming logic, taking the first suffix as the primary.
      */
     @Override
     protected String getResourceName(Locale locale) {

@@ -10,13 +10,11 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static io.github.rose.i18n.AbstractResourceMessageSource.DEFAULT_RESOURCE_NAME_PREFIX;
-
 /**
- * Internationalization Utilities class
+ * Internationalization Utilities class.
  * <p>
- * Provides locale parsing, resource scanning, resource loading, etc.
- * Supports properties/yaml/yml and is easy to extend.
+ * Provides locale parsing, resource scanning, resource loading, and other common utility methods.
+ * Supports properties/yaml/yml formats and is easy to extend.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0

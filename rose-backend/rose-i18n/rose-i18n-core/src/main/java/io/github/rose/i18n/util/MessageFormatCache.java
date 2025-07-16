@@ -7,21 +7,21 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 高性能 MessageFormat 缓存工具类
- * <p>缓存已解析的 MessageFormat 实例，避免重复解析，提升性能。</p>
+ * High-performance MessageFormat cache utility.
+ * <p>Caches parsed MessageFormat instances to avoid repeated parsing and improve performance.</p>
  */
 public final class MessageFormatCache {
-    /** 缓存结构: Locale -> (MessagePattern -> MessageFormat) */
+    /** Cache structure: Locale -> (MessagePattern -> MessageFormat) */
     private final Map<Locale, Map<String, MessageFormat>> messageFormatCache = new ConcurrentHashMap<>();
-    /** 缓存大小限制，防止内存泄漏 */
+    /** Cache size limit per locale to prevent memory leaks */
     private static final int MAX_CACHE_SIZE_PER_LOCALE = 256;
 
     /**
-     * 格式化消息
-     * @param message 消息模板
-     * @param locale 区域设置
-     * @param args 参数
-     * @return 格式化后的消息
+     * Format a message.
+     * @param message message template
+     * @param locale locale
+     * @param args arguments
+     * @return formatted message
      */
     public String formatMessage(String message, Locale locale, Object... args) {
         if (message == null) return null;
@@ -36,14 +36,14 @@ public final class MessageFormatCache {
     }
 
     /**
-     * 判断消息是否包含 MessageFormat 占位符（如 {0}）
+     * Check if a message contains MessageFormat placeholders (e.g., {0}).
      */
     private boolean hasPlaceholders(String message) {
         return message.contains("{") && message.contains("}");
     }
 
     /**
-     * 获取缓存的 MessageFormat 实例
+     * Get a cached MessageFormat instance.
      */
     private MessageFormat getMessageFormat(String message, Locale locale) {
         Map<String, MessageFormat> localeCache = messageFormatCache.computeIfAbsent(
@@ -62,21 +62,21 @@ public final class MessageFormatCache {
     }
 
     /**
-     * 清理指定 Locale 的缓存
+     * Clear cache for a specific Locale.
      */
     public void clearCache(Locale locale) {
         messageFormatCache.remove(locale);
     }
 
     /**
-     * 清理所有缓存
+     * Clear all caches.
      */
     public void clearAllCache() {
         messageFormatCache.clear();
     }
 
     /**
-     * 获取缓存统计信息
+     * Get cache statistics.
      */
     public Map<Locale, Integer> getCacheStats() {
         Map<Locale, Integer> stats = new HashMap<>();
@@ -85,7 +85,7 @@ public final class MessageFormatCache {
     }
 
     /**
-     * 预热缓存（可选）
+     * Warm up cache (optional).
      */
     public void warmupCache(Map<String, String> messages, Locale locale) {
         messages.forEach((code, message) -> {

@@ -1,52 +1,51 @@
 package io.github.rose.i18n;
 
-import io.github.rose.core.lang.Prioritized;
-
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ServiceLoader;
+
+import io.github.rose.i18n.MessageSource;
+import io.github.rose.i18n.CompositeMessageSource;
+import io.github.rose.core.lang.Prioritized;
 
 /**
- * MessageSource 管理类，支持自动发现、组合、动态注册与优先级排序。
+ * MessageSource manager.
  * <p>
- * 提供统一的消息源管理、组合与生命周期管理。
+ * Supports automatic discovery, composition, dynamic registration, and priority sorting of message sources.
+ * Provides unified management, composition, and lifecycle management for message sources.
  */
 public final class MessageSourceManager {
-    /**
-     * SPI 发现的消息源列表
-     */
+    /** List of message sources discovered via SPI */
     private static final List<MessageSource> SOURCES = new CopyOnWriteArrayList<>();
-    /**
-     * 组合消息源单例
-     */
-    private static volatile CompositeMessageSource instance;
+    /** Singleton instance of the composite message source */
+    private static volatile CompositeMessageSource compositeInstance;
 
-    private MessageSourceManager() {
-    }
+    private MessageSourceManager() {}
 
     static {
         reloadAndDiscover();
     }
 
     /**
-     * 初始化所有已注册消息源
+     * Initialize all registered message sources.
      */
-    public static void init() {
+    public static void initializeSources() {
         for (MessageSource source : SOURCES) {
             source.init();
         }
     }
 
     /**
-     * 销毁所有已注册消息源
+     * Destroy all registered message sources.
      */
-    public static void destroy() {
+    public static void destroySources() {
         for (MessageSource source : SOURCES) {
             source.destroy();
         }
     }
 
     /**
-     * 通过 SPI 自动发现并注册所有 MessageSource 实现
+     * Automatically discover and register all MessageSource implementations via SPI.
      */
     public static void reloadAndDiscover() {
         List<MessageSource> discovered = new ArrayList<>();
@@ -54,38 +53,38 @@ public final class MessageSourceManager {
         discovered.sort(Comparator.comparingInt(Prioritized::getPriority));
         SOURCES.clear();
         SOURCES.addAll(discovered);
-        instance = new CompositeMessageSource(SOURCES);
-        init(); // 自动初始化
+        compositeInstance = new CompositeMessageSource(SOURCES);
+        initializeSources(); // Auto-initialize
     }
 
     /**
-     * 动态注册一个消息源
+     * Dynamically register a message source.
      */
     public static void registerSource(MessageSource source) {
         SOURCES.add(source);
         SOURCES.sort(Comparator.comparingInt(Prioritized::getPriority));
-        instance = new CompositeMessageSource(SOURCES);
+        compositeInstance = new CompositeMessageSource(SOURCES);
     }
 
     /**
-     * 动态移除一个消息源
+     * Dynamically remove a message source.
      */
     public static void unregisterSource(MessageSource source) {
         SOURCES.remove(source);
-        instance = new CompositeMessageSource(SOURCES);
+        compositeInstance = new CompositeMessageSource(SOURCES);
     }
 
     /**
-     * 获取所有已注册的消息源（有序）
+     * Get all registered message sources (ordered).
      */
     public static List<MessageSource> getRegisteredSources() {
         return Collections.unmodifiableList(SOURCES);
     }
 
     /**
-     * 获取自动组合的消息源（优先级排序）
+     * Get the automatically composed message source (priority sorted).
      */
     public static MessageSource getInstance() {
-        return instance;
+        return compositeInstance;
     }
 }

@@ -6,26 +6,26 @@ import io.github.rose.i18n.MessageSourceManager;
 import java.util.Locale;
 
 /**
- * Message Utilities class
+ * Message utility class.
  * <p>
- * 提供国际化消息解析、占位符处理等工具方法。
+ * Provides internationalized message parsing, placeholder handling, and related utilities.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
 public final class MessageUtils {
-    /** 消息占位符前缀 */
+    /** Message placeholder prefix */
     public static final String MESSAGE_PATTERN_PREFIX = "{";
-    /** 消息占位符后缀 */
+    /** Message placeholder suffix */
     public static final String MESSAGE_PATTERN_SUFFIX = "}";
 
     private MessageUtils() {}
 
     /**
-     * 获取国际化消息（自动获取当前 Locale）
-     * @param messagePattern 消息或消息占位符
-     * @param args           占位符参数
-     * @return 国际化消息，若无则返回原文
+     * Get the localized message (auto-detect current Locale).
+     * @param messagePattern message or message placeholder
+     * @param args           placeholder arguments
+     * @return localized message, or original text if not found
      */
     public static String getLocalizedMessage(String messagePattern, Object... args) {
         MessageSource messageSource = MessageSourceManager.getInstance();
@@ -34,11 +34,11 @@ public final class MessageUtils {
     }
 
     /**
-     * 获取国际化消息（指定 Locale）
-     * @param messagePattern 消息或消息占位符
-     * @param locale         区域
-     * @param args           占位符参数
-     * @return 国际化消息，若无则返回原文
+     * Get the localized message (specify Locale).
+     * @param messagePattern message or message placeholder
+     * @param locale         locale
+     * @param args           placeholder arguments
+     * @return localized message, or original text if not found
      */
     public static String getLocalizedMessage(String messagePattern, Locale locale, Object... args) {
         if (messagePattern == null) return null;
@@ -57,9 +57,9 @@ public final class MessageUtils {
     }
 
     /**
-     * 解析消息占位符，提取 code
-     * @param messagePattern 消息模式
-     * @return code 或 null
+     * Parse message placeholder, extract code.
+     * @param messagePattern message pattern
+     * @return code or null
      */
     public static String extractMessageCode(String messagePattern) {
         if (messagePattern == null) return null;
