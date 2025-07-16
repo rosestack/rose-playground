@@ -84,14 +84,41 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
     @Override
     protected String doGetMessage(String code, Locale locale, Object[] args) {
         String message = null;
+        // 1. 完整 locale
         Map<String, String> messages = getMessages(locale);
         if (messages != null) {
             String messagePattern = messages.get(code);
             if (messagePattern != null) {
                 message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, locale, args);
+                if (message != null) return message;
             }
         }
-        return message;
+        // 2. 仅 language（如 zh_CN -> zh）
+        if (locale != null && !locale.getCountry().isEmpty()) {
+            Locale languageOnly = new Locale(locale.getLanguage());
+            messages = getMessages(languageOnly);
+            if (messages != null) {
+                String messagePattern = messages.get(code);
+                if (messagePattern != null) {
+                    message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, languageOnly, args);
+                    if (message != null) return message;
+                }
+            }
+        }
+        // 3. 默认 locale
+        Locale defaultLocale = getDefaultLocale();
+        if (defaultLocale != null && !defaultLocale.equals(locale)) {
+            messages = getMessages(defaultLocale);
+            if (messages != null) {
+                String messagePattern = messages.get(code);
+                if (messagePattern != null) {
+                    message = MESSAGE_FORMAT_CACHE.formatMessage(messagePattern, defaultLocale, args);
+                    if (message != null) return message;
+                }
+            }
+        }
+        // 4. fallback: null
+        return null;
     }
 
     private String getKey(String resourceName) {
