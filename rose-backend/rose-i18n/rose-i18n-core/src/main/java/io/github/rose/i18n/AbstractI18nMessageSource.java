@@ -106,16 +106,6 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
         return source;
     }
 
-    public void setDefaultLocale(Locale defaultLocale) {
-        this.defaultLocale = defaultLocale;
-        log.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
-    }
-
-    public void setSupportedLocales(Set<Locale> supportedLocales) {
-        this.supportedLocales = resolveLocales(supportedLocales);
-        log.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
-    }
-
     protected String resolveMessageCode(String code) {
         return code;
     }
