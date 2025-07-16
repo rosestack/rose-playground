@@ -1,8 +1,6 @@
 package io.github.rose.i18n.spi;
 
 import io.github.rose.i18n.I18nMessageSource;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import java.util.Locale;
 import java.util.Map;
@@ -28,19 +26,16 @@ public class EmptyI18nMessageSource implements I18nMessageSource {
         return null;
     }
 
-    @Nullable
     @Override
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
         return Map.of();
     }
 
-    @Nullable
     @Override
     public Map<String, String> getAllMessages(Locale locale) {
         return Map.of();
     }
 
-    @Nonnull
     @Override
     public Locale getLocale() {
         return getDefaultLocale();
@@ -49,5 +44,10 @@ public class EmptyI18nMessageSource implements I18nMessageSource {
     @Override
     public String getSource() {
         return "Empty";
+    }
+
+    @Override
+    public Set<Locale> getSupportedLocales() {
+        return Set.of(getDefaultLocale());
     }
 }

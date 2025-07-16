@@ -19,14 +19,14 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
     /**
      * Resource path pattern
      */
-    protected static final String RESOURCE_LOCATION_PATTERN = "META-INF/i18n/{}/{}";
+    protected static final String RESOURCE_PATH_PATTERN = "META-INF/i18n/%s/";
 
     public ClassPathPropertiesResourceI18nMessageSource(String source) {
         super(source);
     }
 
     protected String getResource(String resourceName) {
-        return String.format(RESOURCE_LOCATION_PATTERN.replace("{}", "%s"), getSource(), resourceName);
+        return String.format(RESOURCE_PATH_PATTERN, getSource()) + resourceName;
     }
 
     @Override
@@ -39,5 +39,58 @@ public class ClassPathPropertiesResourceI18nMessageSource extends AbstractProper
             propertiesResources.add(new InputStreamReader(url.openStream(), getEncoding()));
         }
         return propertiesResources;
+    }
+
+    @Override
+    public Set<Locale> getSupportedLocales() {
+        Set<Locale> locales = new LinkedHashSet<>();
+        String basePath = String.format(RESOURCE_PATH_PATTERN, getSource());
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            Enumeration<URL> resources = classLoader.getResources(basePath);
+            while (resources.hasMoreElements()) {
+                URL dirUrl = resources.nextElement();
+                // 只处理 file 协议
+                if ("file".equals(dirUrl.getProtocol())) {
+                    java.io.File dir = new java.io.File(dirUrl.toURI());
+                    java.io.File[] files = dir.listFiles((d, name) -> name.endsWith(".properties"));
+                    if (files != null) {
+                        for (java.io.File file : files) {
+                            String fileName = file.getName();
+                            // 解析 Locale
+                            Locale locale = parseLocaleFromFileName(fileName);
+                            if (locale != null) {
+                                locales.add(locale);
+                            }
+                        }
+                    }
+                }
+                // 可扩展：支持 jar 包内资源
+            }
+        } catch (Exception e) {
+            // ignore or log
+        }
+        return locales.isEmpty() ? Collections.singleton(Locale.getDefault()) : locales;
+    }
+
+    /**
+     * 解析文件名中的 Locale，例如 i18n_messages_zh_CN.properties -> zh_CN
+     */
+    private Locale parseLocaleFromFileName(String fileName) {
+        // 假设文件名格式为 i18n_messages_xx[_YY].properties
+        int start = fileName.indexOf('_');
+        int end = fileName.lastIndexOf('.');
+        if (start != -1 && end != -1 && end > start) {
+            String localeStr = fileName.substring(start + 1, end);
+            String[] parts = localeStr.split("_");
+            if (parts.length == 1) {
+                return new Locale(parts[0]);
+            } else if (parts.length == 2) {
+                return new Locale(parts[0], parts[1]);
+            } else if (parts.length == 3) {
+                return new Locale(parts[0], parts[1], parts[2]);
+            }
+        }
+        return null;
     }
 }

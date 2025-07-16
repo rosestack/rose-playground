@@ -88,13 +88,6 @@ public abstract class AbstractResourceI18nMessageSource extends AbstractI18nMess
         return localizedResourceMessages.getOrDefault(getResource(locale), emptyMap());
     }
 
-    protected String resolveMessageCode(String code) {
-        if (code.startsWith(codePrefix)) { // The complete Message code
-            return code;
-        }
-        return codePrefix + code;
-    }
-
     @Override
     protected String getInternalMessage(String code, String resolvedCode, Locale locale, Locale resolvedLocale, Object[] args) {
         String message = null;

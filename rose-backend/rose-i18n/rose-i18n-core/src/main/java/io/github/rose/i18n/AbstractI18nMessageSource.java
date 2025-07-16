@@ -1,23 +1,15 @@
 package io.github.rose.i18n;
 
-import java.text.MessageFormat;
-import java.util.*;
+import java.util.Locale;
 
 import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractI18nMessageSource implements I18nMessageSource {
-    protected static final String SOURCE_SEPARATOR = ".";
-
     protected final String source;
-
-    protected final String codePrefix;
-
-    private Set<Locale> supportedLocales;
 
     public AbstractI18nMessageSource(String source) {
         requireNonNull(source, "'source' argument must not be null");
         this.source = source;
-        this.codePrefix = source + SOURCE_SEPARATOR;
     }
 
     @Override
@@ -52,21 +44,13 @@ public abstract class AbstractI18nMessageSource implements I18nMessageSource {
         return locale == null ? getDefaultLocale() : locale;
     }
 
-    protected Locale getInternalLocale() {
-        return null;
-    }
-
-    @Override
-    public final Set<Locale> getSupportedLocales() {
-        if (supportedLocales != null) {
-            return supportedLocales;
-        }
-        return I18nMessageSource.super.getSupportedLocales();
-    }
-
     @Override
     public final String getSource() {
         return source;
+    }
+
+    protected Locale getInternalLocale() {
+        return null;
     }
 
     protected String resolveMessageCode(String code) {
