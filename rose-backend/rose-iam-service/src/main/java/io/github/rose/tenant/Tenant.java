@@ -1,7 +1,12 @@
 package io.github.rose.tenant;
 
+<<<<<<< HEAD
 import io.github.rose.core.model.BaseAuditWithExtra;
 import io.github.rose.core.model.HasCodeNameDescription;
+=======
+import io.github.rose.common.model.BaseAuditWithExtra;
+import io.github.rose.common.model.HasCodeNameDescription;
+>>>>>>> f6bb42d (refactor: 调整基础模型结构，移除租户相关字段，新增地理地址与身份源模型，优化审计基类实现)
 import lombok.Data;
 
 @Data
