@@ -7,20 +7,6 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/**
- * MessageFormat 性能测试
- *
- * <p>对比不同的MessageFormat实现策略的性能差异：</p>
- * <ul>
- *   <li>原始方法：每次创建新的MessageFormat实例</li>
- *   <li>优化方法：使用缓存的MessageFormat实例</li>
- *   <li>字符串拼接：简单场景下的替代方案</li>
- * </ul>
- *
- * @author Rose Framework
- * @since 1.0.0
- */
-@DisplayName("MessageFormat 性能测试")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MessageFormatPerformanceTest {
 
