@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import static io.github.rose.i18n.AbstractResourceMessageSource.DEFAULT_RESOURCE_NAME_PREFIX;
+
 /**
  * Internationalization Utilities class.
  * <p>
@@ -183,5 +185,24 @@ public final class I18nUtils {
      */
     public static String getResourceNameByLocale(Locale locale, String suffix) {
         return getResourceNameByLocale(locale, suffix, DEFAULT_RESOURCE_NAME_PREFIX);
+    }
+
+    /**
+     * Recursively flattens a nested map into dot-separated keys.
+     * @param source the source map (possibly nested)
+     * @param parentKey the prefix for keys (empty for root)
+     * @param result the result map to fill with flattened keys
+     */
+    @SuppressWarnings("unchecked")
+    public static void flattenMap(Map<String, Object> source, String parentKey, Map<String, String> result) {
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
+            String key = parentKey == null || parentKey.isEmpty() ? entry.getKey() : parentKey + "." + entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof Map) {
+                flattenMap((Map<String, Object>) value, key, result);
+            } else if (value != null) {
+                result.put(key, value.toString());
+            }
+        }
     }
 }

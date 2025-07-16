@@ -1,12 +1,9 @@
 package io.github.rose.i18n;
 
+import io.github.rose.core.lang.Prioritized;
+
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.ServiceLoader;
-
-import io.github.rose.i18n.MessageSource;
-import io.github.rose.i18n.CompositeMessageSource;
-import io.github.rose.core.lang.Prioritized;
 
 /**
  * MessageSource manager.
@@ -29,7 +26,7 @@ public final class MessageSourceManager {
     /**
      * Initialize all registered message sources.
      */
-    public static void initializeSources() {
+    public static void init() {
         for (MessageSource source : SOURCES) {
             source.init();
         }
@@ -38,7 +35,7 @@ public final class MessageSourceManager {
     /**
      * Destroy all registered message sources.
      */
-    public static void destroySources() {
+    public static void destroy() {
         for (MessageSource source : SOURCES) {
             source.destroy();
         }
@@ -54,7 +51,7 @@ public final class MessageSourceManager {
         SOURCES.clear();
         SOURCES.addAll(discovered);
         compositeInstance = new CompositeMessageSource(SOURCES);
-        initializeSources(); // Auto-initialize
+        init(); // Auto-initialize
     }
 
     /**
