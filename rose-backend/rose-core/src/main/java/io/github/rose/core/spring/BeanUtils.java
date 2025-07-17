@@ -1,12 +1,12 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
+import io.github.rose.core.util.ClassUtils;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.*;
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.rose.core.util.BeanFactoryUtils.asBeanDefinitionRegistry;
-import static io.github.rose.core.util.BeanFactoryUtils.asConfigurableBeanFactory;
 import static org.springframework.beans.factory.BeanFactoryUtils.beanNamesForTypeIncludingAncestors;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.generateBeanName;
@@ -52,7 +50,7 @@ public class BeanUtils {
     }
 
     public static void invokeAwareInterfaces(Object bean, BeanFactory beanFactory) {
-        invokeAwareInterfaces(bean, beanFactory, asConfigurableBeanFactory(beanFactory));
+        invokeAwareInterfaces(bean, beanFactory, BeanFactoryUtils.asConfigurableBeanFactory(beanFactory));
     }
 
     public static void invokeAwareInterfaces(Object bean, ConfigurableBeanFactory beanFactory) {
@@ -75,7 +73,7 @@ public class BeanUtils {
 
     static void invokeBeanNameAware(Object bean, BeanFactory beanFactory) {
         if (bean instanceof BeanNameAware beanNameAware) {
-            BeanDefinitionRegistry registry = asBeanDefinitionRegistry(beanFactory);
+            BeanDefinitionRegistry registry = BeanFactoryUtils.asBeanDefinitionRegistry(beanFactory);
             BeanDefinition beanDefinition = rootBeanDefinition(bean.getClass()).getBeanDefinition();
             String beanName = generateBeanName(beanDefinition, registry);
             beanNameAware.setBeanName(beanName);
@@ -103,7 +101,7 @@ public class BeanUtils {
 
         invokeBeanFactoryAwareInterfaces(bean, beanFactory, beanFactory);
 
-        BeanPostProcessor beanPostProcessor = io.github.rose.core.util.ApplicationContextUtils.getApplicationContextAwareProcessor(beanFactory);
+        BeanPostProcessor beanPostProcessor = ApplicationContextUtils.getApplicationContextAwareProcessor(beanFactory);
 
         if (beanPostProcessor != null) {
             beanPostProcessor.postProcessBeforeInitialization(bean, "");
@@ -130,7 +128,7 @@ public class BeanUtils {
     }
 
     public static <T> List<T> getSortedBeans(ListableBeanFactory beanFactory, Class<T> type) {
-        Map<String, T> beansOfType = BeanFactoryUtils.beansOfTypeIncludingAncestors(beanFactory, type);
+        Map<String, T> beansOfType = org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors(beanFactory, type);
         List<T> beansList = new ArrayList(beansOfType.values());
         AnnotationAwareOrderComparator.sort(beansList);
         return Collections.unmodifiableList(beansList);
@@ -152,7 +150,7 @@ public class BeanUtils {
         T bean = null;
 
         try {
-            bean = includingAncestors ? BeanFactoryUtils.beanOfTypeIncludingAncestors(beanFactory, beanClass) : beanFactory.getBean(beanClass);
+            bean = includingAncestors ? org.springframework.beans.factory.BeanFactoryUtils.beanOfTypeIncludingAncestors(beanFactory, beanClass) : beanFactory.getBean(beanClass);
         } catch (Exception e) {
             if (log.isErrorEnabled()) {
                 log.error(e.getMessage(), e);

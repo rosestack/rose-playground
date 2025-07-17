@@ -1,6 +1,6 @@
 package io.github.rose.i18n.spring.beans;
 
-import io.github.rose.core.util.BeanUtils;
+import io.github.rose.core.spring.BeanUtils;
 import io.github.rose.core.util.ClassLoaderUtils;
 import io.github.rose.i18n.spring.context.MessageSourceAdapter;
 import org.slf4j.Logger;

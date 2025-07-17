@@ -24,14 +24,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import java.lang.annotation.*;
+import java.util.Locale;
 
+import static io.github.rose.i18n.AbstractResourceMessageSource.DEFAULT_RESOURCE_NAME;
 import static io.github.rose.i18n.I18nMessageSource.COMMON_SOURCE;
 
 /**
  * Enables the extension for Spring Internationalisation.
  * <p>
  * The feature could be disabled by the Spring property if
- * {@link I18nConstants#ENABLED_PROPERTY_NAME "microsphere.i18n.enabled"} is <code>false</code>
+ * {@link I18nConstants#ENABLED_PROPERTY_NAME "rose.i18n.enabled"} is <code>false</code>
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @see I18nImportBeanDefinitionRegistrar
@@ -52,7 +54,7 @@ public @interface EnableI18n {
      * Spring Bean will be registered.
      * <p>
      * Besides the attribute value, the sources will be extended from the Spring property whose name is
-     * {@link I18nConstants#SOURCES_PROPERTY_NAME "microsphere.i18n.sources"}.
+     * {@link I18nConstants#SOURCES_PROPERTY_NAME "rose.i18n.sources"}.
      * <p>
      * Finally, all sourced {@link I18nMessageSource} Spring Beans as the members will be composited into
      * a Primary Spring Bean named {@link I18nConstants#I18N_MESSAGE_SOURCE_BEAN_NAME "serviceMessageSource"}.
@@ -72,4 +74,10 @@ public @interface EnableI18n {
      * @see MessageSource
      */
     boolean exposeMessageSource() default true;
+
+    String basename() default DEFAULT_RESOURCE_NAME;
+
+    String defaultLocale() default "en";
+
+    String[] supportedLocales() default {"en", "zh_CN"};
 }

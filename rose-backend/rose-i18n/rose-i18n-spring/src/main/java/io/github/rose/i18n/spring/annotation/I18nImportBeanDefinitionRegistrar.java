@@ -16,7 +16,7 @@
  */
 package io.github.rose.i18n.spring.annotation;
 
-import io.github.rose.core.util.BeanRegistrar;
+import io.github.rose.core.spring.BeanRegistrar;
 import io.github.rose.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rose.i18n.spring.I18nConstants;
 import io.github.rose.i18n.spring.beans.I18nBeanPostProcessor;
@@ -124,7 +124,7 @@ public class I18nImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
     private boolean isEnabled() {
         String propertyName = I18nConstants.ENABLED_PROPERTY_NAME;
         boolean enabled = environment.getProperty(propertyName, boolean.class, I18nConstants.DEFAULT_ENABLED);
-        logger.debug("Microsphere i18n is {} , cased by the Spring property[name : '{}', default value : '{}']",
+        logger.debug("Rose i18n is {} , cased by the Spring property[name : '{}', default value : '{}']",
                 enabled ? "enabled" : "disabled",
                 propertyName,
                 I18nConstants.DEFAULT_ENABLED);

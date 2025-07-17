@@ -1,5 +1,6 @@
 package io.github.rose.i18n.spring.beans;
 
+import io.github.rose.core.spring.BeanUtils;
 import io.github.rose.i18n.AbstractMessageSource;
 import io.github.rose.i18n.CompositeMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
@@ -27,7 +28,6 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.github.rose.core.util.BeanUtils.invokeAwareInterfaces;
 import static io.github.rose.i18n.spring.I18nConstants.DEFAULT_LOCALE_PROPERTY_NAME;
 import static io.github.rose.i18n.spring.I18nConstants.SUPPORTED_LOCALES_PROPERTY_NAME;
 import static io.github.rose.i18n.util.I18nUtils.findAllMessageSources;
@@ -130,7 +130,7 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
             AbstractMessageSource serviceMessageSource = (AbstractMessageSource) instantiateClass(constructor, source);
             serviceMessageSources.add(serviceMessageSource);
 
-            invokeAwareInterfaces(serviceMessageSource, context);
+            BeanUtils.invokeAwareInterfaces(serviceMessageSource, context);
 
             serviceMessageSource.setDefaultLocale(defaultLocale);
             serviceMessageSource.setSupportedLocales(supportedLocales);

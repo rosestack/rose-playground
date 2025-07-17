@@ -1,4 +1,4 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import io.github.rose.core.util.ClassLoaderUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;

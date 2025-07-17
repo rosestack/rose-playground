@@ -1,4 +1,4 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;

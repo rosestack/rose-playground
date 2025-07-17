@@ -1,5 +1,6 @@
-package io.github.rose.i18n.spring.beans;
+package io.github.rose.i18n.spring;
 
+import io.github.rose.i18n.spring.beans.I18nMessageSourceFactoryBean;
 import org.springframework.context.annotation.Bean;
 
 /**

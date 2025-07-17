@@ -1,12 +1,13 @@
 package io.github.rose.i18n;
 
+import io.github.rose.core.lang.Prioritized;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import java.util.Locale;
 import java.util.Set;
 
-public interface I18nMessageSource extends Lifecycle {
+public interface I18nMessageSource extends Lifecycle, Prioritized {
     String COMMON_SOURCE = "common";
 
     @Nullable

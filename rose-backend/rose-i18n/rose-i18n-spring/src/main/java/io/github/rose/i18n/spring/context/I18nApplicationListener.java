@@ -1,6 +1,6 @@
 package io.github.rose.i18n.spring.context;
 
-import io.github.rose.core.util.BeanUtils;
+import io.github.rose.core.spring.BeanUtils;
 import io.github.rose.core.util.ClassLoaderUtils;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spring.I18nConstants;

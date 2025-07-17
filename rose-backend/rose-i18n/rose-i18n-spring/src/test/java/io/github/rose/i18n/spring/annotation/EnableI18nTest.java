@@ -2,7 +2,7 @@ package io.github.rose.i18n.spring.annotation;
 
 import io.github.rose.i18n.AbstractSpringTest;
 import io.github.rose.i18n.I18nMessageSource;
-import io.github.rose.i18n.spring.beans.TestServiceMessageSourceConfiguration;
+import io.github.rose.i18n.spring.TestServiceMessageSourceConfiguration;
 import io.github.rose.i18n.util.I18nUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

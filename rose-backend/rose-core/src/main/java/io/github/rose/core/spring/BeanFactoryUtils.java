@@ -1,4 +1,4 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
 import jakarta.annotation.Nullable;
 import org.apache.commons.collections4.CollectionUtils;

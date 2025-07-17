@@ -1,5 +1,6 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
+import io.github.rose.core.util.ClassLoaderUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -11,8 +12,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.SpringVersion;
 
 import java.util.List;
-
-import static io.github.rose.core.util.BeanFactoryUtils.getBeanPostProcessors;
 
 /**
  * TODO Comment
@@ -46,7 +45,7 @@ public class ApplicationContextUtils {
      */
     @Nullable
     public static BeanPostProcessor getApplicationContextAwareProcessor(BeanFactory beanFactory) {
-        List<BeanPostProcessor> beanPostProcessors = getBeanPostProcessors(beanFactory);
+        List<BeanPostProcessor> beanPostProcessors = BeanFactoryUtils.getBeanPostProcessors(beanFactory);
         BeanPostProcessor applicationContextAwareProcessor = null;
         for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
             if (beanPostProcessor.getClass().equals(APPLICATION_CONTEXT_AWARE_PROCESSOR_CLASS)) {

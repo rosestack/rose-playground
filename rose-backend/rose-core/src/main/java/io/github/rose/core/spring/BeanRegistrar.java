@@ -1,6 +1,7 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
 import java.beans.Introspector;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -98,10 +99,10 @@ public abstract class BeanRegistrar {
         int count = 0;
         ClassLoader classLoader = registry.getClass().getClassLoader();
 
-        for(int i = 0; i < factoryClasses.length; ++i) {
+        for (int i = 0; i < factoryClasses.length; ++i) {
             Class<?> factoryClass = factoryClasses[i];
 
-            for(String factoryImplClassName : SpringFactoriesLoader.loadFactoryNames(factoryClass, classLoader)) {
+            for (String factoryImplClassName : SpringFactoriesLoader.loadFactoryNames(factoryClass, classLoader)) {
                 Class<?> factoryImplClass = ClassUtils.resolveClassName(factoryImplClassName, classLoader);
                 String beanName = Introspector.decapitalize(ClassUtils.getShortName(factoryImplClassName));
                 if (registerInfrastructureBean(registry, beanName, factoryImplClass)) {

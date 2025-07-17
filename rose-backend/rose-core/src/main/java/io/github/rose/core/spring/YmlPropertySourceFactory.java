@@ -1,4 +1,4 @@
-package io.github.rose.core.util;
+package io.github.rose.core.spring;
 
 
 import org.apache.commons.lang3.StringUtils;
