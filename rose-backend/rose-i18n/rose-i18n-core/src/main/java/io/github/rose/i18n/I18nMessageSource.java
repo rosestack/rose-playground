@@ -10,11 +10,7 @@ public interface I18nMessageSource extends Lifecycle {
     String COMMON_SOURCE = "common";
 
     @Nullable
-    String getMessage(String code, Locale locale, String defaultMessage, Object... args);
-
-    default String getMessage(String code, Locale locale, Object... args) {
-        return getMessage(code, args, null, locale);
-    }
+    String getMessage(String code, Locale locale, Object... args);
 
     default String getMessage(String code, Object... args) {
         return getMessage(code, getLocale(), args);

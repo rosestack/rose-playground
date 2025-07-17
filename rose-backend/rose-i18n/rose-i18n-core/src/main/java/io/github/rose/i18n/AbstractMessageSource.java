@@ -36,7 +36,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
     }
 
     @Override
-    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
+    public String getMessage(String code, Locale locale,  Object... args) {
         String msg = this.getMessageInternal(code, locale, args);
         if (msg != null) {
             return msg;
@@ -45,7 +45,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         if (msg != null) {
             return msg;
         }
-        return defaultMessage;
+        return null;
     }
 
     @Nullable

@@ -1,6 +1,7 @@
 package io.github.rose.i18n;
 
 import jakarta.annotation.Nonnull;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -29,12 +30,16 @@ public class CachingI18nMessageSource implements I18nMessageSource {
     }
 
     @Override
-    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
-        CacheKey key = new CacheKey(code, defaultMessage, locale, args);
+    public String getMessage(String code, Locale locale, Object... args) {
+        CacheKey key = new CacheKey(code, locale, args);
         String cached = cache.get(key);
-        if (cached != null) return cached;
-        String value = delegate.getMessage(code, args, defaultMessage, locale);
-        cache.put(key, value);
+        if (cached != null) {
+            return cached;
+        }
+        String value = delegate.getMessage(code, locale, args);
+        if (value != null) {
+            cache.put(key, value);
+        }
         return value;
     }
 
@@ -54,16 +59,15 @@ public class CachingI18nMessageSource implements I18nMessageSource {
         cache.clear();
     }
 
+    @ToString
     private static class CacheKey {
         private final String code;
         private final Object[] args;
-        private final String defaultMessage;
         private final Locale locale;
 
-        CacheKey(String code, String defaultMessage, Locale locale, Object... args) {
+        CacheKey(String code, Locale locale, Object... args) {
             this.code = code;
             this.args = args != null ? Arrays.copyOf(args, args.length) : null;
-            this.defaultMessage = defaultMessage;
             this.locale = locale;
         }
 
@@ -74,13 +78,12 @@ public class CachingI18nMessageSource implements I18nMessageSource {
             CacheKey that = (CacheKey) o;
             return Objects.equals(code, that.code)
                     && Arrays.deepEquals(args, that.args)
-                    && Objects.equals(defaultMessage, that.defaultMessage)
                     && Objects.equals(locale, that.locale);
         }
 
         @Override
         public int hashCode() {
-            int result = Objects.hash(code, defaultMessage, locale);
+            int result = Objects.hash(code, locale);
             result = 31 * result + Arrays.deepHashCode(args);
             return result;
         }

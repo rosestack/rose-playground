@@ -32,10 +32,10 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     }
 
     @Override
-    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
+    public String getMessage(String code, Locale locale, Object... args) {
         String message = null;
         for (I18nMessageSource serviceMessageSource : messageSources) {
-            message = serviceMessageSource.getMessage(code, args, defaultMessage, locale);
+            message = serviceMessageSource.getMessage(code, locale, args);
             if (message != null) {
                 break;
             }

@@ -51,8 +51,8 @@ public class DelegatingServiceMessageSource implements ReloadedResourceMessageSo
     }
 
     @Override
-    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
-        return delegate.getMessage(code, locale, defaultMessage, args);
+    public String getMessage(String code, Locale locale, Object... args) {
+        return delegate.getMessage(code, locale, args);
     }
 
     @Nonnull

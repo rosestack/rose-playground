@@ -9,7 +9,7 @@ public class EmptyMessageSource implements I18nMessageSource {
     public static final EmptyMessageSource INSTANCE = new EmptyMessageSource();
 
     @Override
-    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
+    public String getMessage(String code, Locale locale, Object... args) {
         return null;
     }
 
