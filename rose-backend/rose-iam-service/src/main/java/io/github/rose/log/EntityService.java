@@ -1,10 +1,6 @@
 package io.github.rose.log;
 
-<<<<<<< HEAD
 import io.github.rose.core.model.*;
-=======
-import io.github.rose.common.model.*;
->>>>>>> f6bb42d (refactor: 调整基础模型结构，移除租户相关字段，新增地理地址与身份源模型，优化审计基类实现)
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;

@@ -1,11 +1,7 @@
 package io.github.rose.user.domain;
 
-<<<<<<< HEAD
 import io.github.rose.core.model.BaseTenantWithExtra;
 import lombok.Data;
-=======
-import lombok.Getter;
->>>>>>> f6bb42d (refactor: 调整基础模型结构，移除租户相关字段，新增地理地址与身份源模型，优化审计基类实现)
 
 import java.io.Serializable;
 
@@ -16,13 +12,8 @@ import java.io.Serializable;
  * withTenant
  * withUserSource
  */
-<<<<<<< HEAD
 @Data
 public class User extends BaseTenantWithExtra<Long> implements Serializable {
-=======
-@Getter
-public class User extends AddressTenant<Long> implements Serializable {
->>>>>>> f6bb42d (refactor: 调整基础模型结构，移除租户相关字段，新增地理地址与身份源模型，优化审计基类实现)
     /**
      * 用户名，唯一
      */

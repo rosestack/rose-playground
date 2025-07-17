@@ -29,53 +29,13 @@ import java.util.Locale;
  */
 public interface I18nMessageSource {
 
-    /**
-     * 获取消息（带参数和默认值）
-     *
-     * <p>参数顺序与Spring MessageSource保持一致</p>
-     *
-     * @param code 消息键
-     * @param args 消息参数，可为null
-     * @param defaultMessage 默认消息，当找不到消息时返回
-     * @param locale 语言环境
-     * @return 格式化后的消息
-     */
     String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
 
-    /**
-     * 获取消息（带参数）
-     *
-     * <p>参数顺序与Spring MessageSource保持一致</p>
-     *
-     * @param code 消息键
-     * @param args 消息参数，可为null
-     * @param locale 语言环境
-     * @return 格式化后的消息
-     * @throws I18nMessageNotFoundException 当消息不存在时抛出
-     */
-    String getMessage(String code, Object[] args, Locale locale) throws I18nMessageNotFoundException;
-
-    /**
-     * 获取简单消息（无参数）
-     *
-     * @param code 消息键
-     * @param locale 语言环境
-     * @return 消息内容
-     * @throws I18nMessageNotFoundException 当消息不存在时抛出
-     */
-    default String getSimpleMessage(String code, Locale locale) throws I18nMessageNotFoundException {
-        return getMessage(code, null, locale);
+    default String getMessage(String code, Object[] args, Locale locale) {
+        return getMessage(code, args, null, locale);
     }
 
-    /**
-     * 获取简单消息（带默认值）
-     *
-     * @param code 消息键
-     * @param defaultMessage 默认消息
-     * @param locale 语言环境
-     * @return 消息内容
-     */
-    default String getSimpleMessage(String code, String defaultMessage, Locale locale) {
-        return getMessage(code, null, defaultMessage, locale);
+    default String getMessage(String code, Locale locale) {
+        return getMessage(code, null, locale);
     }
 }
