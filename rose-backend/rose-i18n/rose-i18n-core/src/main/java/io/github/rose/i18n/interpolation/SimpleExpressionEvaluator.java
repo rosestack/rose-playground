@@ -3,15 +3,13 @@ package io.github.rose.i18n.interpolation;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
  * 简单表达式评估器
- * 
- * <p>无依赖的简单表达式评估器，支持基本的属性访问和方法调用。
- * 不需要任何外部依赖，作为默认的表达式评估器。</p>
- * 
+ *
+ * <p>无依赖的简单表达式评估器，支持基本的属性访问和方法调用。</p>
+ *
  * <p>支持的语法：</p>
  * <ul>
  *   <li>属性访问：user.name, user.profile.email</li>
@@ -19,14 +17,7 @@ import java.util.regex.Pattern;
  *   <li>数组/集合访问：users[0], map['key']</li>
  *   <li>简单的空值检查：user.name != null</li>
  * </ul>
- * 
- * <p>不支持的语法：</p>
- * <ul>
- *   <li>条件表达式：user.age >= 18 ? 'adult' : 'minor'</li>
- *   <li>算术运算：price * quantity</li>
- *   <li>逻辑运算：user.active && user.verified</li>
- * </ul>
- * 
+ *
  * @author Rose Framework Team
  * @since 1.0.0
  */
@@ -34,27 +25,6 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
     private static final Pattern SIMPLE_PROPERTY_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_.\\[\\]'\"()]*$");
     private static final Pattern COMPLEX_EXPRESSION_PATTERN = Pattern.compile(".*[+\\-*/>=<&|!?:].*");
-    
-    private final Map<String, Method> methodCache = new ConcurrentHashMap<>();
-    private final boolean cacheEnabled;
-    private long hitCount = 0;
-    private long missCount = 0;
-
-    /**
-     * 默认构造函数，启用缓存
-     */
-    public SimpleExpressionEvaluator() {
-        this(true);
-    }
-
-    /**
-     * 构造函数
-     * 
-     * @param cacheEnabled 是否启用方法缓存
-     */
-    public SimpleExpressionEvaluator(boolean cacheEnabled) {
-        this.cacheEnabled = cacheEnabled;
-    }
 
     @Override
     public Object evaluate(String expression, Map<String, Object> variables, Locale locale) {
@@ -69,49 +39,11 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    @Override
-    public boolean supports(String expression) {
-        if (expression == null) {
-            return false;
-        }
-        
-        // 支持简单的属性访问，不支持复杂表达式
-        return SIMPLE_PROPERTY_PATTERN.matcher(expression).matches() && 
-               !COMPLEX_EXPRESSION_PATTERN.matcher(expression).matches();
-    }
-
-    @Override
-    public String getName() {
-        return "SimpleExpressionEvaluator";
-    }
-
-    @Override
-    public int getPriority() {
-        return 100; // 低优先级，作为后备选择
-    }
-
-    @Override
-    public boolean isAvailable() {
-        return true; // 总是可用，无外部依赖
-    }
-
-    @Override
-    public void clearCache() {
-        methodCache.clear();
-        hitCount = 0;
-        missCount = 0;
-    }
-
-    @Override
-    public CacheStatistics getCacheStatistics() {
-        return new CacheStatistics(methodCache.size(), hitCount, missCount);
-    }
-
     /**
      * 评估表达式
-     * 
+     *
      * @param expression 表达式
-     * @param variables 变量映射
+     * @param variables  变量映射
      * @return 评估结果
      */
     private Object evaluateExpression(String expression, Map<String, Object> variables) {
@@ -121,7 +53,7 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
             Object value = evaluatePropertyPath(propertyPath, variables);
             return value != null;
         }
-        
+
         if (expression.contains(" == null")) {
             String propertyPath = expression.replace(" == null", "").trim();
             Object value = evaluatePropertyPath(propertyPath, variables);
@@ -134,15 +66,15 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
     /**
      * 评估属性路径
-     * 
+     *
      * @param propertyPath 属性路径，如 user.name, user.getName(), users[0]
-     * @param variables 变量映射
+     * @param variables    变量映射
      * @return 属性值
      */
     private Object evaluatePropertyPath(String propertyPath, Map<String, Object> variables) {
         String[] parts = propertyPath.split("\\.");
         Object current = variables.get(parts[0]);
-        
+
         if (current == null) {
             return null;
         }
@@ -159,9 +91,9 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
     /**
      * 评估属性部分
-     * 
+     *
      * @param object 对象
-     * @param part 属性部分，如 name, getName(), [0], ['key']
+     * @param part   属性部分，如 name, getName(), [0], ['key']
      * @return 属性值
      */
     private Object evaluatePropertyPart(Object object, String part) {
@@ -180,7 +112,7 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
             if (part.contains("[") && part.endsWith("]")) {
                 String propertyName = part.substring(0, part.indexOf('['));
                 String indexStr = part.substring(part.indexOf('[') + 1, part.length() - 1);
-                
+
                 Object collection = propertyName.isEmpty() ? object : getProperty(object, propertyName);
                 return getIndexedValue(collection, indexStr);
             }
@@ -194,8 +126,8 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
     /**
      * 获取属性值
-     * 
-     * @param object 对象
+     *
+     * @param object       对象
      * @param propertyName 属性名
      * @return 属性值
      */
@@ -222,8 +154,8 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
     /**
      * 调用方法
-     * 
-     * @param object 对象
+     *
+     * @param object     对象
      * @param methodName 方法名
      * @return 方法返回值
      */
@@ -233,22 +165,7 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
         }
 
         try {
-            String cacheKey = object.getClass().getName() + "." + methodName;
-            Method method;
-            
-            if (cacheEnabled) {
-                method = methodCache.get(cacheKey);
-                if (method != null) {
-                    hitCount++;
-                } else {
-                    missCount++;
-                    method = object.getClass().getMethod(methodName);
-                    methodCache.put(cacheKey, method);
-                }
-            } else {
-                method = object.getClass().getMethod(methodName);
-            }
-
+            Method method = object.getClass().getMethod(methodName);
             return method.invoke(object);
         } catch (Exception e) {
             return null;
@@ -257,9 +174,9 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
     /**
      * 获取索引值
-     * 
+     *
      * @param collection 集合或数组
-     * @param indexStr 索引字符串
+     * @param indexStr   索引字符串
      * @return 索引对应的值
      */
     private Object getIndexedValue(Object collection, String indexStr) {
@@ -279,12 +196,12 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 
             // 处理数字索引
             int index = Integer.parseInt(indexStr);
-            
+
             if (collection instanceof java.util.List) {
                 java.util.List<?> list = (java.util.List<?>) collection;
                 return index >= 0 && index < list.size() ? list.get(index) : null;
             }
-            
+
             if (collection.getClass().isArray()) {
                 Object[] array = (Object[]) collection;
                 return index >= 0 && index < array.length ? array[index] : null;

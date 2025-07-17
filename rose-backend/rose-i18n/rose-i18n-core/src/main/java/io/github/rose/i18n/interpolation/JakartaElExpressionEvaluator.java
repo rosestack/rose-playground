@@ -1,23 +1,17 @@
 package io.github.rose.i18n.interpolation;
 
 import jakarta.el.*;
+
 import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Jakarta EL表达式评估器
  *
  * <p>基于Jakarta EL API的表达式评估器实现，支持完整的EL表达式语法。
- * 具体的EL实现由容器提供（如Tomcat、Jetty、Spring Boot等）。</p>
- *
- * <p>常见的EL实现提供者：</p>
- * <ul>
- *   <li>Tomcat: org.apache.tomcat.embed:tomcat-embed-el</li>
- *   <li>Jetty: org.eclipse.jetty:jetty-el</li>
- *   <li>Glassfish: org.glassfish:jakarta.el</li>
- *   <li>Eclipse Expressly: org.eclipse.expressly:expressly</li>
- * </ul>
+ * 具体的EL实现由容器提供。</p>
  *
  * <p>支持的语法：</p>
  * <ul>
@@ -36,25 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
 
     private final ExpressionFactory expressionFactory;
-    private final Map<String, ValueExpression> expressionCache = new ConcurrentHashMap<>();
-    private final boolean cacheEnabled;
-    private long hitCount = 0;
-    private long missCount = 0;
 
     /**
-     * 默认构造函数，启用表达式缓存
+     * 默认构造函数
      */
     public JakartaElExpressionEvaluator() {
-        this(true);
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param cacheEnabled 是否启用表达式缓存
-     */
-    public JakartaElExpressionEvaluator(boolean cacheEnabled) {
-        this.cacheEnabled = cacheEnabled;
         try {
             this.expressionFactory = ExpressionFactory.newInstance();
         } catch (Exception e) {
@@ -90,44 +70,6 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    @Override
-    public boolean supports(String expression) {
-        // 支持所有表达式，但优先级较高
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return "JakartaElExpressionEvaluator";
-    }
-
-    @Override
-    public int getPriority() {
-        return 10; // 高优先级
-    }
-
-    @Override
-    public boolean isAvailable() {
-        try {
-            Class.forName("jakarta.el.ExpressionFactory");
-            return expressionFactory != null;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void clearCache() {
-        expressionCache.clear();
-        hitCount = 0;
-        missCount = 0;
-    }
-
-    @Override
-    public CacheStatistics getCacheStatistics() {
-        return new CacheStatistics(expressionCache.size(), hitCount, missCount);
-    }
-
     /**
      * 创建EL上下文
      * 
@@ -155,7 +97,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
     }
 
     /**
-     * 获取值表达式（带缓存）
+     * 获取值表达式
      *
      * @param expression EL表达式
      * @param elContext EL上下文
@@ -163,24 +105,8 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
      */
     private ValueExpression getValueExpression(String expression, ELContext elContext) {
         String fullExpression = "${" + expression + "}";
-
-        if (cacheEnabled) {
-            // 缓存表达式模板，但每次都用新的上下文创建
-            String cacheKey = expression;
-            if (expressionCache.containsKey(cacheKey)) {
-                hitCount++;
-            } else {
-                missCount++;
-            }
-            // 注意：不能缓存ValueExpression，因为它包含了特定的ELContext
-            // 每次都需要重新创建，以确保使用正确的变量值
-        }
-
         return expressionFactory.createValueExpression(elContext, fullExpression, Object.class);
     }
-
-
-
     /**
      * 简单的EL上下文实现
      */
