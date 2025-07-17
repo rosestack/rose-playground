@@ -1,39 +1,33 @@
 package io.github.rose.i18n;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import io.github.rose.i18n.spi.I18nMessageChangeListener;
 import io.github.rose.i18n.util.I18nResourceUtils;
 
 /**
  * 装饰器：为 I18nMessageSource 添加消息监听能力，并自动监听文件变化。
  */
-public class ObservableI18nMessageSource implements I18nMessageSource {
-    private final I18nMessageSource delegate;
-    private final List<I18nMessageChangeListener> listeners = new CopyOnWriteArrayList<>();
+public class ObservableI18nMessageSource implements ReloadedResourceMessageSource {
+    private final ReloadedResourceMessageSource delegate;
+    private final List<MessageSourceChangeListener> listeners = new CopyOnWriteArrayList<>();
     private final List<Path> watchPaths = new ArrayList<>();
     private WatchService watchService;
     private Thread watchThread;
     private volatile boolean running = false;
 
-    public ObservableI18nMessageSource(I18nMessageSource delegate) {
+    public ObservableI18nMessageSource(ReloadedResourceMessageSource delegate) {
         this.delegate = delegate;
-
-        if (delegate instanceof ReloadedMessageSource) {
-            ReloadedMessageSource resourceMessageSource = (ReloadedMessageSource) delegate;
-            watchPaths.add(Paths.get(resourceMessageSource.getResourceDir()));
-        }
+        delegate.getInitializeResources().forEach(resource -> watchPaths.add(Path.of(resource)));
     }
 
-    public void addListener(I18nMessageChangeListener listener) {
+    public void addListener(MessageSourceChangeListener listener) {
         listeners.add(listener);
     }
 
-    public void removeListener(I18nMessageChangeListener listener) {
+    public void removeListener(MessageSourceChangeListener listener) {
         listeners.remove(listener);
     }
 
@@ -82,7 +76,7 @@ public class ObservableI18nMessageSource implements I18nMessageSource {
                     Path changed = dir.resolve((Path) event.context());
                     if (watchPaths.contains(changed)) {
                         // 通知所有监听器
-                        for (I18nMessageChangeListener listener : listeners) {
+                        for (MessageSourceChangeListener listener : listeners) {
                             listener.onMessagesReloaded(I18nResourceUtils.parseLocale(changed.toFile().getName()), this); // locale 可根据实际实现传递
                         }
                     }
@@ -116,5 +110,15 @@ public class ObservableI18nMessageSource implements I18nMessageSource {
     @Override
     public void destroy() {
         stopWatching();
+    }
+
+    @Override
+    public void initializeResource(String resource) {
+        delegate.initializeResource(resource);
+    }
+
+    @Override
+    public Set<String> getInitializeResources() {
+        return delegate.getInitializeResources();
     }
 }

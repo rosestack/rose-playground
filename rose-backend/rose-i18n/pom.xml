@@ -16,6 +16,7 @@
 
     <modules>
         <module>rose-i18n-core</module>
+        <module>rose-i18n-spring</module>
     </modules>
 
 </project>

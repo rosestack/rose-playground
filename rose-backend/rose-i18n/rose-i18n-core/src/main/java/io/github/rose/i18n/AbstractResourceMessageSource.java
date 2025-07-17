@@ -1,40 +1,42 @@
 package io.github.rose.i18n;
 
 import io.github.rose.core.util.Assert;
+import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.interpolation.DefaultMessageInterpolator;
 import io.github.rose.i18n.interpolation.MessageInterpolator;
 import io.github.rose.i18n.util.I18nResourceUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements I18nMessageSource, ReloadedMessageSource {
-    public static final String DEFAULT_LOCATION = "META-INF/i18n";
-    public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
+import static java.util.Collections.singleton;
 
-    private volatile Map<Locale, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
-    private volatile Map<Locale, String> localeFileMap = new ConcurrentHashMap<>();
+@Slf4j
+public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource, ReloadedResourceMessageSource {
+    public static final String DEFAULT_RESOURCE_NAME = "i18n_messages_";
+    public static final String RESOURCE_LOCATION_PATTERN = "META-INF/i18n/%s/";
+
+    private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
 
     protected String location;
     protected String basename;
-    protected String encoding;
     protected String source;
     protected MessageInterpolator interpolator;
 
     public AbstractResourceMessageSource(String source) {
         this.source = source;
-        this.encoding = "UTF-8";
-
-        setLocaltion(DEFAULT_LOCATION);
-        setBasename(DEFAULT_RESOURCE_NAME);
+        this.location = RESOURCE_LOCATION_PATTERN.formatted(source);
+        this.basename = DEFAULT_RESOURCE_NAME;
         this.interpolator = new DefaultMessageInterpolator();
     }
 
     @Override
     public void init() {
         Assert.assertNotNull(this.source, "The 'source' attribute must be assigned before initialization!");
-        reloadResource(basename);
+        Assert.assertNotNull(getResourceSuffixes(), "getResourceSuffixes() Methods cannot return an empty array");
+        initialize();
     }
 
     @Override
@@ -54,60 +56,71 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         return null;
     }
 
+    protected final void initialize() {
+        Set<Locale> supportedLocales = getSupportedLocales();
+        assertSupportedLocales(supportedLocales);
+        Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(supportedLocales.size());
+        for (Locale resolveLocale : supportedLocales) {
+            for (String resourceSuffix : getResourceSuffixes()) {
+                String resource = getResource(resolveLocale, resourceSuffix);
+                initializeResource(resource, localizedResourceMessages);
+            }
+        }
+        // Exchange the field
+        this.localizedResourceMessages = localizedResourceMessages;
+        log.debug("Source '{}' Initialization is completed , localizedResourceMessages : {}", source, localizedResourceMessages);
+    }
+
     @Override
-    public void reloadResource(Locale locale) {
-        String filePath = localeFileMap.get(locale);
-        if (filePath != null) {
-            reloadResource(I18nResourceUtils.getName(filePath));
+    public void initializeResource(String resource) {
+        initializeResources(singleton(resource));
+    }
+
+    @Override
+    public void initializeResources(Iterable<String> resources) {
+        synchronized (this) {
+            // Copy the current messages and initialized resources
+            Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(this.localizedResourceMessages);
+            initializeResources(resources, localizedResourceMessages);
+            // Exchange the field
+            this.localizedResourceMessages = localizedResourceMessages;
         }
     }
 
-    @Override
-    public String getResourceDir() {
-        return String.format("%s/%s/%s/", location, basename, source);
+    private void assertSupportedLocales(Set<Locale> supportedLocales) {
+        if (CollectionUtils.isEmpty(supportedLocales)) {
+            throw new IllegalStateException(String.format("{}.getSupportedLocales() Methods cannot return an empty list of locales!", this.getClass()));
+        }
     }
 
-    private void reloadResource(String filename) {
-        String resourceDir = getResourceDir();
-        I18nResourceUtils.loadResourceMessages(resourceDir, filename, getSupportedExtensions(),
-                (fileNameWithExt, inputStream) -> handleResourceFile(fileNameWithExt, inputStream));
+    private void initializeResources(Iterable<String> resources, Map<String, Map<String, String>> localizedResourceMessages) {
+        for (String resource : resources) {
+            initializeResource(resource, localizedResourceMessages);
+        }
     }
 
-    private void handleResourceFile(String fileNameWithExt, InputStream in) {
-        Locale locale = I18nResourceUtils.parseLocale(fileNameWithExt);
-        if (locale == null) {
+    private void initializeResource(String resource, Map<String, Map<String, String>> localizedResourceMessages) {
+        Map<String, String> messages = loadMessages(resource);
+        log.debug("Source '{}' loads the resource['{}'] messages : {}", source, resource, messages);
+
+        if (messages == null) {
             return;
         }
 
-        localeFileMap.putIfAbsent(locale, fileNameWithExt);
-
-        if (!localizedResourceMessages.containsKey(locale)) {
-            try (Reader reader = new InputStreamReader(in, encoding)) {
-                Map<String, String> messages = doLoadMessages(reader);
-                if (messages != null && !messages.isEmpty()) {
-                    localizedResourceMessages.put(locale, messages);
-                }
-            } catch (Exception e) {
-                // 可选：日志记录
-            }
-        }
+        // Override the localized message if present
+        localizedResourceMessages.putIfAbsent(resource, messages);
     }
 
-    public Set<Locale> getSupportedLocales() {
+    @Override
+    public Set<String> getInitializeResources() {
         return localizedResourceMessages.keySet();
     }
 
-    public void setLocaltion(String localtion) {
-        this.location = localtion;
+    protected String getResource(Locale locale, String resourceSuffix) {
+        return location + DEFAULT_RESOURCE_NAME + "_" + locale + resourceSuffix;
     }
 
-    public void setBasename(String basename) {
-        this.basename = basename;
-    }
-
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
-    }
+    protected abstract String[] getResourceSuffixes();
 
     public void setSource(String source) {
         this.source = source;
@@ -117,7 +130,5 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         this.interpolator = interpolator;
     }
 
-    protected abstract List<String> getSupportedExtensions();
-
-    protected abstract Map<String, String> doLoadMessages(Reader reader);
+    protected abstract Map<String, String> loadMessages(String resource);
 } 

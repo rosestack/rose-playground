@@ -1,5 +1,6 @@
 package io.github.rose.i18n;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,7 @@ class CachingI18nMessageSourceTest {
     @BeforeEach
     void setUp() {
         cachingMessageSource = new CachingI18nMessageSource(delegate);
+        cachingMessageSource.init();
     }
 
     // ==================== 基本缓存功能测试 ====================
@@ -581,19 +583,5 @@ class CachingI18nMessageSourceTest {
     void testMaxSizeConstant() {
         // 测试MAX_SIZE常量
         assertEquals(512, CachingI18nMessageSource.MAX_SIZE);
-    }
-
-    // ==================== 辅助方法 ====================
-
-    /**
-     * 创建一个简单的mock I18nMessageSource用于测试
-     */
-    private I18nMessageSource createMockMessageSource() {
-        I18nMessageSource mock = mock(I18nMessageSource.class);
-        when(mock.getMessage(anyString(), any(), any(), any())).thenAnswer(invocation -> {
-            String code = invocation.getArgument(0);
-            return "Mock message for " + code;
-        });
-        return mock;
     }
 }

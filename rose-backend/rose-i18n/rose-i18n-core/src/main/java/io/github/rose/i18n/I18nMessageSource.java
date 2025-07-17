@@ -1,6 +1,11 @@
 package io.github.rose.i18n;
 
+import jakarta.annotation.Nonnull;
+
 import java.util.Locale;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
 
 /**
  * Rose I18n 消息源核心接口
@@ -37,5 +42,9 @@ public interface I18nMessageSource extends Lifecycle {
 
     default String getMessage(String code, Locale locale) {
         return getMessage(code, null, locale);
+    }
+
+    default Set<Locale> getSupportedLocales() {
+        return Set.of(Locale.getDefault(), Locale.ENGLISH);
     }
 }

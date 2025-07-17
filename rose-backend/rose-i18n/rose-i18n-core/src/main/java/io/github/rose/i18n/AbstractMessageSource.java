@@ -3,10 +3,11 @@ package io.github.rose.i18n;
 import org.springframework.lang.Nullable;
 
 import java.util.Locale;
+import java.util.Set;
 
-public abstract class AbstractMessageSource implements HierarchicalMessageSource {
-    @Nullable
+public abstract class AbstractMessageSource implements HierarchicalMessageSource, I18nMessageSource {
     private I18nMessageSource parentMessageSource;
+    private Set<Locale> supportedLocales;
 
     @Override
     public void setParentMessageSource(@Nullable I18nMessageSource parent) {
@@ -51,4 +52,15 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         }
     }
 
+    @Override
+    public Set<Locale> getSupportedLocales() {
+        if (supportedLocales != null) {
+            return supportedLocales;
+        }
+        return HierarchicalMessageSource.super.getSupportedLocales();
+    }
+
+    public void setSupportedLocales(Set<Locale> supportedLocales) {
+        this.supportedLocales = supportedLocales;
+    }
 }
