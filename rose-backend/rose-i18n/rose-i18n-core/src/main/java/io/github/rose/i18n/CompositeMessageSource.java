@@ -23,7 +23,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     }
 
     public CompositeMessageSource(List<? extends I18nMessageSource> messageSources) {
-        setMessageSources(messageSources);
+        this.messageSources = messageSources;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     }
 
     @Override
-    public String getMessage(String code, Object[] args, String defaultMessage, Locale locale) {
+    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
         String message = null;
         for (I18nMessageSource serviceMessageSource : messageSources) {
             message = serviceMessageSource.getMessage(code, args, defaultMessage, locale);
@@ -43,10 +43,24 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         return message;
     }
 
+    @Nonnull
+    @Override
+    public Locale getLocale() {
+        I18nMessageSource i18nMessageSource = getFirstMessageSource();
+        return i18nMessageSource == null ? getDefaultLocale() : i18nMessageSource.getLocale();
+    }
+
+    @Nonnull
+    @Override
+    public Locale getDefaultLocale() {
+        I18nMessageSource i18nMessageSource = getFirstMessageSource();
+        return i18nMessageSource == null ? ReloadedResourceMessageSource.super.getDefaultLocale() : i18nMessageSource.getDefaultLocale();
+    }
+
     @Override
     public Set<Locale> getSupportedLocales() {
         Set<Locale> supportedLocales = new TreeSet<>();
-        iterate(serviceMessageSource -> {
+        this.messageSources.forEach(serviceMessageSource -> {
             for (Locale locale : serviceMessageSource.getSupportedLocales()) {
                 if (!supportedLocales.contains(locale)) {
                     supportedLocales.add(locale);
@@ -142,7 +156,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
                 '}';
     }
 
-    private I18nMessageSource getFirstServiceMessageSource() {
+    private I18nMessageSource getFirstMessageSource() {
         return this.messageSources.isEmpty() ? null : this.messageSources.get(0);
     }
 
@@ -151,9 +165,5 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
                 .filter(serviceMessageSourceType::isInstance)
                 .map(serviceMessageSourceType::cast)
                 .forEach(consumer);
-    }
-
-    private <T> void iterate(Consumer<I18nMessageSource> consumer) {
-        this.messageSources.forEach(consumer);
     }
 }

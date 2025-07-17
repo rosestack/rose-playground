@@ -3,6 +3,7 @@ package io.github.rose.i18n.spring;
 import io.github.rose.i18n.CompositeMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.ReloadedResourceMessageSource;
+import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -50,8 +51,14 @@ public class DelegatingServiceMessageSource implements ReloadedResourceMessageSo
     }
 
     @Override
-    public String getMessage(String code, Object[] args, String defaultMessage, Locale locale) {
-        return delegate.getMessage(code, args, defaultMessage, locale);
+    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
+        return delegate.getMessage(code, locale, defaultMessage, args);
+    }
+
+    @Nonnull
+    @Override
+    public Locale getLocale() {
+        return delegate.getLocale();
     }
 
     @NonNull

@@ -43,13 +43,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Expression Language support -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-expression</artifactId>
-            <optional>true</optional>
-        </dependency>
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

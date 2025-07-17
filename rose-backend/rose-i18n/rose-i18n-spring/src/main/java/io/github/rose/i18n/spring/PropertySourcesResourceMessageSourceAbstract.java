@@ -1,9 +1,11 @@
 package io.github.rose.i18n.spring;
 
 import io.github.rose.i18n.ReloadedResourceMessageSource;
-import io.github.rose.i18n.spi.PropertiesResourceMessageSource;
+import io.github.rose.i18n.spi.AbstractPropertiesResourceMessageSource;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.env.Environment;
+import org.springframework.lang.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -15,11 +17,11 @@ import java.util.Locale;
 
 import static org.springframework.util.StringUtils.hasText;
 
-public class PropertySourcesResourceMessageSource extends
-        PropertiesResourceMessageSource implements ReloadedResourceMessageSource, EnvironmentAware {
+public class PropertySourcesResourceMessageSourceAbstract extends
+        AbstractPropertiesResourceMessageSource implements ReloadedResourceMessageSource, EnvironmentAware {
     private Environment environment;
 
-    public PropertySourcesResourceMessageSource(String source) {
+    public PropertySourcesResourceMessageSourceAbstract(String source) {
         super(source);
     }
 
@@ -54,6 +56,12 @@ public class PropertySourcesResourceMessageSource extends
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    @Nullable
+    @Override
+    protected Locale getInternalLocale() {
+        return LocaleContextHolder.getLocale();
     }
 
 }

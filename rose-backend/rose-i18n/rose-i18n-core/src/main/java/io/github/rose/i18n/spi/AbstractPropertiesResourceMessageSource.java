@@ -3,8 +3,7 @@ package io.github.rose.i18n.spi;
 import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.AbstractResourceMessageSource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,9 +16,14 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 
 @Slf4j
-public abstract class PropertiesResourceMessageSource extends AbstractResourceMessageSource {
-    public PropertiesResourceMessageSource(String source) {
+public abstract class AbstractPropertiesResourceMessageSource extends AbstractResourceMessageSource {
+    public AbstractPropertiesResourceMessageSource(String source) {
         super(source);
+    }
+
+    @Override
+    protected String getResourceSuffix() {
+        return ".properties";
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -28,7 +32,7 @@ public abstract class PropertiesResourceMessageSource extends AbstractResourceMe
         Map<String, String> messages = null;
         try {
             Properties properties = loadAllProperties(resource);
-            if (!MapUtils.isEmpty(properties)) {
+            if (!ObjectUtils.isEmpty(properties)) {
                 messages = new HashMap<>(properties.size());
                 messages.putAll((Map) properties);
             }
@@ -41,7 +45,7 @@ public abstract class PropertiesResourceMessageSource extends AbstractResourceMe
     public Properties loadAllProperties(String resource) throws IOException {
         List<Reader> propertiesResources = loadAllPropertiesResources(resource);
         log.debug("Source '{}' loads {} Properties Resources['{}']", source, propertiesResources.size(), resource);
-        if (CollectionUtils.isEmpty(propertiesResources)) {
+        if (ObjectUtils.isEmpty(propertiesResources)) {
             return null;
         }
         Properties properties = new Properties();

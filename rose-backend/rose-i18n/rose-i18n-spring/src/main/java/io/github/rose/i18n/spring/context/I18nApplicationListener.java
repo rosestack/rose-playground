@@ -66,7 +66,7 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
     private void initializeServiceMessageSource(ApplicationContext context) {
         I18nMessageSource serviceMessageSource = context.getBean(MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
-        I18nUtils.setMessageSource(serviceMessageSource);
+        I18nUtils.setI18nMessageSource(serviceMessageSource);
     }
 
 

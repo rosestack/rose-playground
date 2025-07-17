@@ -1,5 +1,7 @@
 package io.github.rose.i18n;
 
+import jakarta.annotation.Nonnull;
+
 import java.util.*;
 
 /**
@@ -27,8 +29,8 @@ public class CachingI18nMessageSource implements I18nMessageSource {
     }
 
     @Override
-    public String getMessage(String code, Object[] args, String defaultMessage, Locale locale) {
-        CacheKey key = new CacheKey(code, args, defaultMessage, locale);
+    public String getMessage(String code, Locale locale, String defaultMessage, Object... args) {
+        CacheKey key = new CacheKey(code, defaultMessage, locale, args);
         String cached = cache.get(key);
         if (cached != null) return cached;
         String value = delegate.getMessage(code, args, defaultMessage, locale);
@@ -36,9 +38,10 @@ public class CachingI18nMessageSource implements I18nMessageSource {
         return value;
     }
 
+    @Nonnull
     @Override
-    public String getMessage(String code, Object[] args, Locale locale) {
-        return getMessage(code, args, null, locale);
+    public Locale getLocale() {
+        return delegate.getLocale();
     }
 
     @Override
@@ -57,7 +60,7 @@ public class CachingI18nMessageSource implements I18nMessageSource {
         private final String defaultMessage;
         private final Locale locale;
 
-        CacheKey(String code, Object[] args, String defaultMessage, Locale locale) {
+        CacheKey(String code, String defaultMessage, Locale locale, Object... args) {
             this.code = code;
             this.args = args != null ? Arrays.copyOf(args, args.length) : null;
             this.defaultMessage = defaultMessage;

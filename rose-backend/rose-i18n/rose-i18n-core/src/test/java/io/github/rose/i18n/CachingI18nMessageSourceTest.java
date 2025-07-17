@@ -214,9 +214,9 @@ class CachingI18nMessageSourceTest {
     @Test
     void testDelegateMethodCalls() {
         // 测试所有重载方法都正确委托
-        when(delegate.getMessage("test.key", new Object[]{"arg"}, "default", Locale.ENGLISH))
+        when(delegate.getMessage("test.key", Locale.ENGLISH, "default", new Object[]{"arg"}))
                 .thenReturn("Test Message");
-        when(delegate.getMessage("test.key", new Object[]{"arg"}, null, Locale.ENGLISH))
+        when(delegate.getMessage("test.key", Locale.ENGLISH, null, new Object[]{"arg"}))
                 .thenReturn("Test Message");
 
         // 测试主要方法
