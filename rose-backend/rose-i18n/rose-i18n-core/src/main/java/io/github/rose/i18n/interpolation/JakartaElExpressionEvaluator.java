@@ -56,7 +56,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
             }
 
             // 添加locale参数（如果没有的话）
-            if (!mutableArgs.containsKey("locale")) {
+            if (locale != null && !mutableArgs.containsKey("locale")) {
                 mutableArgs.put("locale", locale);
             }
 
@@ -72,7 +72,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
 
     /**
      * 创建EL上下文
-     * 
+     *
      * @param variables 变量映射
      * @return EL上下文
      */
@@ -84,7 +84,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
      * 评估EL表达式
      *
      * @param expression EL表达式（不包含${}）
-     * @param elContext EL上下文
+     * @param elContext  EL上下文
      * @return 评估结果
      */
     private Object evaluateExpression(String expression, ELContext elContext) {
@@ -100,13 +100,14 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
      * 获取值表达式
      *
      * @param expression EL表达式
-     * @param elContext EL上下文
+     * @param elContext  EL上下文
      * @return 值表达式
      */
     private ValueExpression getValueExpression(String expression, ELContext elContext) {
         String fullExpression = "${" + expression + "}";
         return expressionFactory.createValueExpression(elContext, fullExpression, Object.class);
     }
+
     /**
      * 简单的EL上下文实现
      */
@@ -121,18 +122,18 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
             this.variableMapper = new SimpleVariableMapper();
             this.functionMapper = new SimpleFunctionMapper();
             this.elResolver = new CompositeELResolver();
-            
+
             // 添加标准解析器
             ((CompositeELResolver) elResolver).add(new ArrayELResolver());
             ((CompositeELResolver) elResolver).add(new ListELResolver());
             ((CompositeELResolver) elResolver).add(new MapELResolver());
             ((CompositeELResolver) elResolver).add(new ResourceBundleELResolver());
             ((CompositeELResolver) elResolver).add(new BeanELResolver());
-            
+
             // 设置变量
             for (Map.Entry<String, Object> entry : variables.entrySet()) {
                 ValueExpression valueExpression = expressionFactory.createValueExpression(
-                    entry.getValue(), Object.class);
+                        entry.getValue(), Object.class);
                 variableMapper.setVariable(entry.getKey(), valueExpression);
             }
         }

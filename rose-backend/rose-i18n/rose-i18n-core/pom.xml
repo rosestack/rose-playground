@@ -36,8 +36,6 @@
             <optional>true</optional>
         </dependency>
 
-
-
         <!-- Jackson for JSON support -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
