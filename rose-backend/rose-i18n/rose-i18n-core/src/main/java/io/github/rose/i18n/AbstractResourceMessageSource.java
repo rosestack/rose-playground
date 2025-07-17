@@ -9,11 +9,12 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements I18nMessageSource {
+public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements I18nMessageSource, ReloadedMessageSource {
     public static final String DEFAULT_LOCATION = "META-INF/i18n";
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
 
     private volatile Map<Locale, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
+    private volatile Map<Locale, String> localeFileMap = new ConcurrentHashMap<>();
 
     protected String location;
     protected String basename;
@@ -33,7 +34,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     @Override
     public void init() {
         Assert.assertNotNull(this.source, "The 'source' attribute must be assigned before initialization!");
-        initializeResource();
+        reloadResource(basename);
     }
 
     @Override
@@ -53,19 +54,34 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         return null;
     }
 
-    private void initializeResource() {
-        String resourceDir = getResourceDir();
-        I18nResourceUtils.loadResourceMessages(resourceDir, basename, getSupportedExtensions(),
-                (filename, inputStream) -> handleResourceFile(filename, inputStream));
+    @Override
+    public void reloadResource(Locale locale) {
+        String filePath = localeFileMap.get(locale);
+        if (filePath != null) {
+            reloadResource(I18nResourceUtils.getName(filePath));
+        }
     }
 
+    @Override
     public String getResourceDir() {
         return String.format("%s/%s/%s/", location, basename, source);
     }
 
-    private void handleResourceFile(String fileName, InputStream in) {
-        Locale locale = I18nResourceUtils.parseLocale(fileName);
-        if (locale != null && !localizedResourceMessages.containsKey(locale)) {
+    private void reloadResource(String filename) {
+        String resourceDir = getResourceDir();
+        I18nResourceUtils.loadResourceMessages(resourceDir, filename, getSupportedExtensions(),
+                (fileNameWithExt, inputStream) -> handleResourceFile(fileNameWithExt, inputStream));
+    }
+
+    private void handleResourceFile(String fileNameWithExt, InputStream in) {
+        Locale locale = I18nResourceUtils.parseLocale(fileNameWithExt);
+        if (locale == null) {
+            return;
+        }
+
+        localeFileMap.putIfAbsent(locale, fileNameWithExt);
+
+        if (!localizedResourceMessages.containsKey(locale)) {
             try (Reader reader = new InputStreamReader(in, encoding)) {
                 Map<String, String> messages = doLoadMessages(reader);
                 if (messages != null && !messages.isEmpty()) {

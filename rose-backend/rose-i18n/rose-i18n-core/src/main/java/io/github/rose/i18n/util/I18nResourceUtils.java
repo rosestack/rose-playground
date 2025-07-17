@@ -13,6 +13,25 @@ import java.util.jar.JarFile;
 public class I18nResourceUtils {
     public static final String FILE_PROTOCOL = "file";
     public static final String JAR_PROTOCOL = "jar";
+    private static final char UNIX_SEPARATOR = '/';
+    private static final char WINDOWS_SEPARATOR = '\\';
+
+    public static String getName(final String filename) {
+        if (filename == null) {
+            return null;
+        }
+        int index = indexOfLastSeparator(filename);
+        return filename.substring(index + 1);
+    }
+
+    public static int indexOfLastSeparator(final String filename) {
+        if (filename == null) {
+            return -1;
+        }
+        int lastUnixPos = filename.lastIndexOf(UNIX_SEPARATOR);
+        int lastWindowsPos = filename.lastIndexOf(WINDOWS_SEPARATOR);
+        return Math.max(lastUnixPos, lastWindowsPos);
+    }
 
     public static boolean isSupportedResource(String fileName, String basename, List<String> extensions) {
         if (!fileName.startsWith(basename)) {
@@ -39,10 +58,10 @@ public class I18nResourceUtils {
                         File[] files = dir.listFiles();
                         if (files != null) {
                             for (File file : files) {
-                                String fileName = file.getName();
-                                if (I18nResourceUtils.isSupportedResource(fileName, basename, extensions)) {
+                                String fileNameWithExt = file.getName();
+                                if (I18nResourceUtils.isSupportedResource(fileNameWithExt, basename, extensions)) {
                                     try (InputStream in = new FileInputStream(file)) {
-                                        consumer.accept(fileName, in);
+                                        consumer.accept(fileNameWithExt, in);
                                     }
                                 }
                             }
@@ -71,15 +90,6 @@ public class I18nResourceUtils {
         } catch (Exception e) {
             // 可选：日志记录
         }
-    }
-
-    public static String getExtension(String fileName, List<String> extensions) {
-        for (String ext : extensions) {
-            if (fileName.endsWith(ext)) {
-                return ext;
-            }
-        }
-        return null;
     }
 
     /**

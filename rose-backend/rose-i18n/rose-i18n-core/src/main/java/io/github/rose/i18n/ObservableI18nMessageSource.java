@@ -23,8 +23,8 @@ public class ObservableI18nMessageSource implements I18nMessageSource {
     public ObservableI18nMessageSource(I18nMessageSource delegate) {
         this.delegate = delegate;
 
-        if (delegate instanceof AbstractResourceMessageSource) {
-            AbstractResourceMessageSource resourceMessageSource = (AbstractResourceMessageSource) delegate;
+        if (delegate instanceof ReloadedMessageSource) {
+            ReloadedMessageSource resourceMessageSource = (ReloadedMessageSource) delegate;
             watchPaths.add(Paths.get(resourceMessageSource.getResourceDir()));
         }
     }
