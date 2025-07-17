@@ -1,0 +1,3 @@
+io.github.rose.i18n.provider.PropertiesMessageProvider
+io.github.rose.i18n.provider.JsonMessageProvider
+io.github.rose.i18n.provider.YamlMessageProvider

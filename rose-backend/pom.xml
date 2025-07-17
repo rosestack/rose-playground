@@ -58,13 +58,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit 5 额外的参数化测试支持 -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Mockito 扩展 for JUnit 5 -->
         <dependency>
             <groupId>org.mockito</groupId>

@@ -1,0 +1,8 @@
+test:
+  message: Hello
+  param: Hello, {0}
+  nested:
+    message: Hello Nested
+    param: Hello Nested, {0}
+foo:
+  message: Hello
