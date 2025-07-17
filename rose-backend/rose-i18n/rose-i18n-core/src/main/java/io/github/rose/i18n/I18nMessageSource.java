@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
  * @since 1.0.0
  */
 public interface I18nMessageSource extends Lifecycle {
+    String COMMON_SOURCE = "common";
 
     String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
 
@@ -46,5 +47,14 @@ public interface I18nMessageSource extends Lifecycle {
 
     default Set<Locale> getSupportedLocales() {
         return Set.of(Locale.getDefault(), Locale.ENGLISH);
+    }
+
+    /**
+     * Message service source
+     *
+     * @return The application name or {@link #COMMON_SOURCE}
+     */
+    default String getSource() {
+        return COMMON_SOURCE;
     }
 }

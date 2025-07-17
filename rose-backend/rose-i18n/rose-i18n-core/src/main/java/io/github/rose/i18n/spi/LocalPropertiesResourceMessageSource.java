@@ -15,11 +15,6 @@ public class LocalPropertiesResourceMessageSource extends PropertiesResourceMess
     }
 
     @Override
-    protected String[] getResourceSuffixes() {
-        return new String[]{".properties"};
-    }
-
-    @Override
     protected List<Reader> loadAllPropertiesResources(String resource) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         Enumeration<URL> resources = classLoader.getResources(resource);

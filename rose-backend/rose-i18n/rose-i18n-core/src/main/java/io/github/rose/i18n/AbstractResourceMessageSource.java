@@ -1,14 +1,16 @@
 package io.github.rose.i18n;
 
 import io.github.rose.core.util.Assert;
-import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.interpolation.DefaultMessageInterpolator;
 import io.github.rose.i18n.interpolation.MessageInterpolator;
 import io.github.rose.i18n.util.I18nResourceUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Collections.singleton;
@@ -16,7 +18,8 @@ import static java.util.Collections.singleton;
 @Slf4j
 public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource, ReloadedResourceMessageSource {
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages_";
-    public static final String RESOURCE_LOCATION_PATTERN = "META-INF/i18n/%s/";
+    public static final String RESOURCE_LOCATION_PATTERN = "META-INF/i18n/";
+    public static final String DEFAULT_RESOURCE_NAME_SUFFIX = ".properties";
 
     private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
 
@@ -27,7 +30,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     public AbstractResourceMessageSource(String source) {
         this.source = source;
-        this.location = RESOURCE_LOCATION_PATTERN.formatted(source);
+        this.location = RESOURCE_LOCATION_PATTERN;
         this.basename = DEFAULT_RESOURCE_NAME;
         this.interpolator = new DefaultMessageInterpolator();
     }
@@ -35,7 +38,6 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     @Override
     public void init() {
         Assert.assertNotNull(this.source, "The 'source' attribute must be assigned before initialization!");
-        Assert.assertNotNull(getResourceSuffixes(), "getResourceSuffixes() Methods cannot return an empty array");
         initialize();
     }
 
@@ -61,10 +63,9 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         assertSupportedLocales(supportedLocales);
         Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(supportedLocales.size());
         for (Locale resolveLocale : supportedLocales) {
-            for (String resourceSuffix : getResourceSuffixes()) {
-                String resource = getResource(resolveLocale, resourceSuffix);
-                initializeResource(resource, localizedResourceMessages);
-            }
+            String resource = getResource(resolveLocale);
+            initializeResource(resource, localizedResourceMessages);
+
         }
         // Exchange the field
         this.localizedResourceMessages = localizedResourceMessages;
@@ -116,11 +117,18 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         return localizedResourceMessages.keySet();
     }
 
-    protected String getResource(Locale locale, String resourceSuffix) {
-        return location + DEFAULT_RESOURCE_NAME + "_" + locale + resourceSuffix;
+    protected String buildResourceName(Locale locale) {
+        return DEFAULT_RESOURCE_NAME + "_" + locale + DEFAULT_RESOURCE_NAME_SUFFIX;
     }
 
-    protected abstract String[] getResourceSuffixes();
+    protected String getResource(String resourceName) {
+        return location + "/" + source + "/" + resourceName;
+    }
+
+    protected String getResource(Locale locale) {
+        String resourceName = buildResourceName(locale);
+        return getResource(resourceName).replaceAll("//", "/");
+    }
 
     public void setSource(String source) {
         this.source = source;
