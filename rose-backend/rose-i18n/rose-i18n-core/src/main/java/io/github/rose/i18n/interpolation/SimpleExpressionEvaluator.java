@@ -22,10 +22,6 @@ import java.util.regex.Pattern;
  * @since 1.0.0
  */
 public class SimpleExpressionEvaluator implements ExpressionEvaluator {
-
-    private static final Pattern SIMPLE_PROPERTY_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_.\\[\\]'\"()]*$");
-    private static final Pattern COMPLEX_EXPRESSION_PATTERN = Pattern.compile(".*[+\\-*/>=<&|!?:].*");
-
     @Override
     public Object evaluate(String expression, Map<String, Object> variables, Locale locale) {
         if (expression == null || expression.trim().isEmpty()) {
