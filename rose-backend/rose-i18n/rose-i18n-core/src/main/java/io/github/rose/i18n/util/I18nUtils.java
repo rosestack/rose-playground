@@ -17,15 +17,15 @@ public abstract class I18nUtils {
 
     public static I18nMessageSource i18nMessageSource() {
         if (i18nMessageSource == null) {
-            logger.warn("serviceMessageSource is not initialized, EmptyServiceMessageSource will be used");
+            logger.warn("i18nMessageSource is not initialized, EmptyMessageSource will be used");
             return EmptyMessageSource.INSTANCE;
         }
         return i18nMessageSource;
     }
 
-    public static void setI18nMessageSource(I18nMessageSource serviceMessageSource) {
-        I18nUtils.i18nMessageSource = serviceMessageSource;
-        logger.debug("I18nUtils.serviceMessageSource is initialized : {}", serviceMessageSource);
+    public static void setI18nMessageSource(I18nMessageSource i18nMessageSource) {
+        I18nUtils.i18nMessageSource = i18nMessageSource;
+        logger.debug("I18nUtils.i18nMessageSource is initialized : {}", i18nMessageSource);
     }
 
     public static void destroyMessageSource() {
@@ -33,27 +33,21 @@ public abstract class I18nUtils {
         logger.debug("messageSource is destroyed");
     }
 
-    public static String getLocalizedMessage(String messagePattern, Object... args) {
-        I18nMessageSource serviceMessageSource = I18nUtils.i18nMessageSource();
-        Locale locale = serviceMessageSource.getLocale();
-        return serviceMessageSource.getMessage(messagePattern, args, locale);
+    public static List<I18nMessageSource> findAllMessageSources(I18nMessageSource i18nMessageSource) {
+        List<I18nMessageSource> alli18nMessageSources = new LinkedList<>();
+        initMessageSources(i18nMessageSource, alli18nMessageSources);
+        return Collections.unmodifiableList(alli18nMessageSources);
     }
 
-    public static List<I18nMessageSource> findAllMessageSources(I18nMessageSource serviceMessageSource) {
-        List<I18nMessageSource> allServiceMessageSources = new LinkedList<>();
-        initMessageSources(serviceMessageSource, allServiceMessageSources);
-        return Collections.unmodifiableList(allServiceMessageSources);
-    }
-
-    public static void initMessageSources(I18nMessageSource serviceMessageSource,
-                                          List<I18nMessageSource> allServiceMessageSources) {
-        if (serviceMessageSource instanceof CompositeMessageSource) {
-            CompositeMessageSource compositeServiceMessageSource = (CompositeMessageSource) serviceMessageSource;
+    public static void initMessageSources(I18nMessageSource i18nMessageSource,
+                                          List<I18nMessageSource> allMessageSources) {
+        if (i18nMessageSource instanceof CompositeMessageSource) {
+            CompositeMessageSource compositeServiceMessageSource = (CompositeMessageSource) i18nMessageSource;
             for (I18nMessageSource subServiceMessageSource : compositeServiceMessageSource.getMessageSources()) {
-                initMessageSources(subServiceMessageSource, allServiceMessageSources);
+                initMessageSources(subServiceMessageSource, allMessageSources);
             }
         } else {
-            allServiceMessageSources.add(serviceMessageSource);
+            allMessageSources.add(i18nMessageSource);
         }
     }
 
@@ -61,11 +55,13 @@ public abstract class I18nUtils {
      * 生成 locale 的 fallback 列表，如 zh_CN → [zh_CN, zh, ROOT]
      */
     public static Set<Locale> getFallbackLocales(Locale locale) {
-        Set<Locale> fallbacks = new TreeSet<>();
+        Set<Locale> fallbacks = new LinkedHashSet<>();
         if (locale == null) {
             fallbacks.add(Locale.ROOT);
             return fallbacks;
         }
+        fallbacks.add(locale);
+
         String language = locale.getLanguage();
         String region = locale.getCountry();
         String variant = locale.getVariant();

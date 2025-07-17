@@ -14,9 +14,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static io.github.rose.core.util.BeanFactoryUtils.asBeanDefinitionRegistry;
 import static io.github.rose.core.util.BeanFactoryUtils.asConfigurableBeanFactory;
@@ -100,7 +103,7 @@ public class BeanUtils {
 
         invokeBeanFactoryAwareInterfaces(bean, beanFactory, beanFactory);
 
-        BeanPostProcessor beanPostProcessor = ApplicationContextUtils.getApplicationContextAwareProcessor(beanFactory);
+        BeanPostProcessor beanPostProcessor = io.github.rose.core.util.ApplicationContextUtils.getApplicationContextAwareProcessor(beanFactory);
 
         if (beanPostProcessor != null) {
             beanPostProcessor.postProcessBeforeInitialization(bean, "");
@@ -126,17 +129,16 @@ public class BeanUtils {
         }
     }
 
-    public static <T> List<T> getSortedBeans(BeanFactory beanFactory, Class<T> type) {
-        if (beanFactory instanceof ListableBeanFactory lbf) {
-            return getSortedBeans(lbf, type);
-        }
-        return Collections.emptyList();
+    public static <T> List<T> getSortedBeans(ListableBeanFactory beanFactory, Class<T> type) {
+        Map<String, T> beansOfType = BeanFactoryUtils.beansOfTypeIncludingAncestors(beanFactory, type);
+        List<T> beansList = new ArrayList(beansOfType.values());
+        AnnotationAwareOrderComparator.sort(beansList);
+        return Collections.unmodifiableList(beansList);
     }
 
     public static <T> T getOptionalBean(ListableBeanFactory beanFactory, Class<T> beanClass) throws BeansException {
         return getOptionalBean(beanFactory, beanClass, false);
     }
-
 
     public static <T> T getOptionalBean(ListableBeanFactory beanFactory, Class<T> beanClass, boolean includingAncestors) throws BeansException {
         String[] beanNames = getBeanNames(beanFactory, beanClass, includingAncestors);

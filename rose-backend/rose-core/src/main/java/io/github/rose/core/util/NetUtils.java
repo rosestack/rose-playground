@@ -122,8 +122,8 @@ public class NetUtils {
      * @return 可用的端口
      * @since 4.5.4
      */
-    public static TreeSet<Integer> getUsableLocalPorts(int numRequested, int minPort, int maxPort) {
-        final TreeSet<Integer> availablePorts = new TreeSet<>();
+    public static LinkedHashSet<Integer> getUsableLocalPorts(int numRequested, int minPort, int maxPort) {
+        final LinkedHashSet<Integer> availablePorts = new LinkedHashSet<>();
         int attemptCount = 0;
         while ((++attemptCount <= numRequested + 100) && availablePorts.size() < numRequested) {
             availablePorts.add(getUsableLocalPort(minPort, maxPort));

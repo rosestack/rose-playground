@@ -36,7 +36,7 @@ import static io.github.rose.core.util.FormatUtils.format;
 /**
  * The utility class for Assertion
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul<a/>
  * @since 1.0.0
  */
 public abstract class Assert {

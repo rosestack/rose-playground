@@ -20,10 +20,10 @@ import java.util.Set;
 
 import static org.springframework.core.annotation.AnnotationAwareOrderComparator.sort;
 
-public class DelegatingServiceMessageSource implements ReloadedResourceMessageSource, InitializingBean,
+public class DelegatingI18nMessageSource implements ReloadedResourceMessageSource, InitializingBean,
         DisposableBean {
 
-    private static final Logger logger = LoggerFactory.getLogger(DelegatingServiceMessageSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(DelegatingI18nMessageSource.class);
 
     private final ObjectProvider<I18nMessageSource> messageSources;
 
@@ -31,7 +31,7 @@ public class DelegatingServiceMessageSource implements ReloadedResourceMessageSo
 
     private ListableBeanFactory beanFactory;
 
-    public DelegatingServiceMessageSource(ObjectProvider<I18nMessageSource> messageSourceObjectProvider) {
+    public DelegatingI18nMessageSource(ObjectProvider<I18nMessageSource> messageSourceObjectProvider) {
         this.messageSources = messageSourceObjectProvider;
     }
 
@@ -40,7 +40,7 @@ public class DelegatingServiceMessageSource implements ReloadedResourceMessageSo
         CompositeMessageSource delegate = this.delegate;
         if (delegate == null) {
             delegate = new CompositeMessageSource();
-            delegate.setMessageSources(getServiceMessageSourceBeans());
+            delegate.setMessageSources(getI18nMessageSourceBeans());
             this.delegate = delegate;
         }
     }
@@ -116,12 +116,12 @@ public class DelegatingServiceMessageSource implements ReloadedResourceMessageSo
         return delegate;
     }
 
-    private List<I18nMessageSource> getServiceMessageSourceBeans() {
-        List<I18nMessageSource> serviceMessageSources = new LinkedList<>();
-        messageSources.forEach(serviceMessageSources::add);
-        sort(serviceMessageSources);
-        logger.debug("Initializes the ServiceMessageSource Bean list : {}", serviceMessageSources);
-        return serviceMessageSources;
+    private List<I18nMessageSource> getI18nMessageSourceBeans() {
+        List<I18nMessageSource> i18nMessageSources = new LinkedList<>();
+        messageSources.forEach(i18nMessageSources::add);
+        sort(i18nMessageSources);
+        logger.debug("Initializes the I18nMessageSource Bean list : {}", i18nMessageSources);
+        return i18nMessageSources;
     }
 
 }

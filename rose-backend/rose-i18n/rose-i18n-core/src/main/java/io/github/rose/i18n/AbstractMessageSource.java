@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractMessageSource implements HierarchicalMessageSource, I18nMessageSource {
     private static final Logger log = LoggerFactory.getLogger(AbstractMessageSource.class);
-    protected final String source;
+    protected String source;
 
     private I18nMessageSource parentMessageSource;
     private Locale defaultLocale;
@@ -36,7 +36,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
     }
 
     @Override
-    public String getMessage(String code, Locale locale,  Object... args) {
+    public String getMessage(String code, Locale locale, Object... args) {
         String msg = this.getMessageInternal(code, locale, args);
         if (msg != null) {
             return msg;
@@ -111,7 +111,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
     }
 
     protected static Set<Locale> resolveLocales(Set<Locale> supportedLocales) {
-        Set<Locale> resolvedLocales = new TreeSet<>();
+        Set<Locale> resolvedLocales = new LinkedHashSet<>();
         for (Locale supportedLocale : supportedLocales) {
             addLocale(resolvedLocales, supportedLocale);
             for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
@@ -150,5 +150,10 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         }
 
         return derivedLocales;
+    }
+
+    @Override
+    public String getSource() {
+        return source;
     }
 }

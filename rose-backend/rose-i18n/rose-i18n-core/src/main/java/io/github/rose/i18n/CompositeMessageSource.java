@@ -16,26 +16,26 @@ import java.util.function.Consumer;
 public class CompositeMessageSource implements I18nMessageSource, ReloadedResourceMessageSource {
     private static final Logger logger = LoggerFactory.getLogger(CompositeMessageSource.class);
 
-    private List<? extends I18nMessageSource> messageSources;
+    private List<? extends I18nMessageSource> i18nMessageSources;
 
     public CompositeMessageSource() {
-        this.messageSources = Collections.emptyList();
+        this.i18nMessageSources = Collections.emptyList();
     }
 
-    public CompositeMessageSource(List<? extends I18nMessageSource> messageSources) {
-        this.messageSources = messageSources;
+    public CompositeMessageSource(List<? extends I18nMessageSource> i18nMessageSources) {
+        this.i18nMessageSources = i18nMessageSources;
     }
 
     @Override
     public void init() {
-        ListUtils.forEach(this.messageSources, I18nMessageSource::init);
+        ListUtils.forEach(this.i18nMessageSources, I18nMessageSource::init);
     }
 
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
         String message = null;
-        for (I18nMessageSource serviceMessageSource : messageSources) {
-            message = serviceMessageSource.getMessage(code, locale, args);
+        for (I18nMessageSource i18nMessageSource : i18nMessageSources) {
+            message = i18nMessageSource.getMessage(code, locale, args);
             if (message != null) {
                 break;
             }
@@ -59,8 +59,8 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
 
     @Override
     public Set<Locale> getSupportedLocales() {
-        Set<Locale> supportedLocales = new TreeSet<>();
-        this.messageSources.forEach(serviceMessageSource -> {
+        Set<Locale> supportedLocales = new LinkedHashSet<>();
+        this.i18nMessageSources.forEach(serviceMessageSource -> {
             for (Locale locale : serviceMessageSource.getSupportedLocales()) {
                 if (!supportedLocales.contains(locale)) {
                     supportedLocales.add(locale);
@@ -82,14 +82,14 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     }
 
     public void setMessageSources(List<? extends I18nMessageSource> messageSources) {
-        List<? extends I18nMessageSource> oldmessageSources = this.messageSources;
-        List<I18nMessageSource> newmessageSources = new ArrayList<>(messageSources);
-        OrderComparator.sort(newmessageSources);
-        if (oldmessageSources != null) {
-            oldmessageSources.clear();
+        List<? extends I18nMessageSource> oldMessageSources = this.i18nMessageSources;
+        List<I18nMessageSource> newMessageSources = new ArrayList<>(messageSources);
+        OrderComparator.sort(newMessageSources);
+        if (oldMessageSources != null) {
+            oldMessageSources.clear();
         }
-        this.messageSources = newmessageSources;
-        logger.debug("Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, newmessageSources);
+        this.i18nMessageSources = newMessageSources;
+        logger.debug("Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, newMessageSources);
     }
 
     @Override
@@ -139,12 +139,12 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
      */
     @Nonnull
     public List<I18nMessageSource> getMessageSources() {
-        return Collections.unmodifiableList(messageSources);
+        return Collections.unmodifiableList(i18nMessageSources);
     }
 
     @Override
     public void destroy() {
-        List<? extends I18nMessageSource> messageSources = this.messageSources;
+        List<? extends I18nMessageSource> messageSources = this.i18nMessageSources;
         ListUtils.forEach(messageSources, I18nMessageSource::destroy);
         messageSources.clear();
     }
@@ -152,18 +152,18 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     @Override
     public String toString() {
         return "CompositeMessageSource{" +
-                "messageSources=" + messageSources +
+                "messageSources=" + i18nMessageSources +
                 '}';
     }
 
     private I18nMessageSource getFirstMessageSource() {
-        return this.messageSources.isEmpty() ? null : this.messageSources.get(0);
+        return this.i18nMessageSources.isEmpty() ? null : this.i18nMessageSources.get(0);
     }
 
-    private <T> void iterate(Class<T> serviceMessageSourceType, Consumer<T> consumer) {
-        this.messageSources.stream()
-                .filter(serviceMessageSourceType::isInstance)
-                .map(serviceMessageSourceType::cast)
+    private <T> void iterate(Class<T> messageSourceType, Consumer<T> consumer) {
+        this.i18nMessageSources.stream()
+                .filter(messageSourceType::isInstance)
+                .map(messageSourceType::cast)
                 .forEach(consumer);
     }
 }

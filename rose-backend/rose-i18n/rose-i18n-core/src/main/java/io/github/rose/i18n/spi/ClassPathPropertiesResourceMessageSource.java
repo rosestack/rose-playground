@@ -8,9 +8,9 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ClassPathAbstractPropertiesResourceMessageSource extends AbstractPropertiesResourceMessageSource {
+public class ClassPathPropertiesResourceMessageSource extends AbstractPropertiesResourceMessageSource {
 
-    public ClassPathAbstractPropertiesResourceMessageSource(String source) {
+    public ClassPathPropertiesResourceMessageSource(String source) {
         super(source);
     }
 
@@ -25,6 +25,4 @@ public class ClassPathAbstractPropertiesResourceMessageSource extends AbstractPr
         }
         return propertiesResources;
     }
-
-
 }

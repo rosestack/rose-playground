@@ -1,5 +1,7 @@
 package io.github.rose.i18n.interpolation;
 
+import io.github.rose.core.util.FormatUtils;
+
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
@@ -10,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DefaultMessageInterpolator implements MessageInterpolator {
+    private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{\\}");
     private static final Pattern MESSAGE_FORMAT_PATTERN = Pattern.compile("\\{\\d+\\}");
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
@@ -38,7 +41,6 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             if (args instanceof Object[]) {
                 return interpolateExpressions(template, (Object[]) args, locale);
             } else if (args instanceof Map) {
-                @SuppressWarnings("unchecked")
                 Map<String, Object> mapArgs = (Map<String, Object>) args;
                 return interpolateExpressions(template, mapArgs, locale);
             } else {
@@ -62,9 +64,13 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
 
         // 命名参数风格
         if (NAMED_PARAMETER_PATTERN.matcher(template).find() && args instanceof Map) {
-            @SuppressWarnings("unchecked")
             Map<String, Object> mapArgs = (Map<String, Object>) args;
             return interpolateNamedParameters(template, mapArgs, locale);
+        }
+
+        if (FORMAT_PATTERN.matcher(template).find() && args instanceof Object[]) {
+            Object[] objArgs = (Object[]) args;
+            return FormatUtils.format(template, objArgs);
         }
 
         return template;

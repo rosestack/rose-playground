@@ -28,44 +28,40 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.github.rose.core.util.BeanUtils.invokeAwareInterfaces;
+import static io.github.rose.i18n.spring.I18nConstants.DEFAULT_LOCALE_PROPERTY_NAME;
+import static io.github.rose.i18n.spring.I18nConstants.SUPPORTED_LOCALES_PROPERTY_NAME;
 import static io.github.rose.i18n.util.I18nUtils.findAllMessageSources;
 import static org.springframework.beans.BeanUtils.instantiateClass;
 import static org.springframework.core.io.support.SpringFactoriesLoader.loadFactoryNames;
 import static org.springframework.util.ClassUtils.getConstructorIfAvailable;
 import static org.springframework.util.ClassUtils.resolveClassName;
+import static org.springframework.util.StringUtils.hasText;
+import static org.springframework.util.StringUtils.parseLocale;
 
 /**
  * {@link I18nMessageSource} {@link FactoryBean} Implementation
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul<a/>
  * @since 1.0.0
  */
-public final class ServiceMessageSourceFactoryBean extends CompositeMessageSource implements
+public final class I18nMessageSourceFactoryBean extends CompositeMessageSource implements
         ReloadedResourceMessageSource, InitializingBean, DisposableBean, EnvironmentAware, BeanClassLoaderAware,
         ApplicationContextAware, FactoryBean<ReloadedResourceMessageSource>,
         ApplicationListener<ResourceMessageSourceChangedEvent>, Ordered {
-    String PROPERTY_NAME_PREFIX = "microsphere.i18n.";
 
-    String SUPPORTED_LOCALES_PROPERTY_NAME = PROPERTY_NAME_PREFIX + "supported-locales";
-
-
-    private static final Logger logger = LoggerFactory.getLogger(ServiceMessageSourceFactoryBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(I18nMessageSourceFactoryBean.class);
 
     private final String source;
-
     private ClassLoader classLoader;
-
     private ConfigurableEnvironment environment;
-
     private ApplicationContext context;
-
     private int order;
 
-    public ServiceMessageSourceFactoryBean(String source) {
+    public I18nMessageSourceFactoryBean(String source) {
         this(source, Ordered.LOWEST_PRECEDENCE);
     }
 
-    public ServiceMessageSourceFactoryBean(String source, int order) {
+    public I18nMessageSourceFactoryBean(String source, int order) {
         this.source = source;
         this.order = order;
     }
@@ -123,6 +119,7 @@ public final class ServiceMessageSourceFactoryBean extends CompositeMessageSourc
     private List<AbstractMessageSource> initMessageSources() {
         List<String> factoryNames = loadFactoryNames(AbstractMessageSource.class, classLoader);
 
+        Locale defaultLocale = resolveDefaultLocale(environment);
         Set<Locale> supportedLocales = resolveSupportedLocales(environment);
 
         List<AbstractMessageSource> serviceMessageSources = new ArrayList<>(factoryNames.size());
@@ -135,6 +132,7 @@ public final class ServiceMessageSourceFactoryBean extends CompositeMessageSourc
 
             invokeAwareInterfaces(serviceMessageSource, context);
 
+            serviceMessageSource.setDefaultLocale(defaultLocale);
             serviceMessageSource.setSupportedLocales(supportedLocales);
             serviceMessageSource.init();
         }
@@ -146,11 +144,26 @@ public final class ServiceMessageSourceFactoryBean extends CompositeMessageSourc
 
     @Override
     public String toString() {
-        return "ServiceMessageSourceFactoryBean{" +
-                "serviceMessageSources = " + getMessageSources() +
+        return "I18nMessageSourceFactoryBean{" +
+                "i18nMessageSources = " + getMessageSources() +
                 ", order=" + order +
                 '}';
     }
+
+    private Locale resolveDefaultLocale(ConfigurableEnvironment environment) {
+        String propertyName = DEFAULT_LOCALE_PROPERTY_NAME;
+        String localeValue = environment.getProperty(propertyName);
+        final Locale locale;
+        if (!hasText(localeValue)) {
+            locale = getDefaultLocale();
+            logger.debug("Default Locale configuration property [name : '{}'] not found, use default value: '{}'", propertyName, locale);
+        } else {
+            locale = parseLocale(localeValue);
+            logger.debug("Default Locale : '{}' parsed by configuration properties [name : '{}']", propertyName, locale);
+        }
+        return locale;
+    }
+
 
     private Set<Locale> resolveSupportedLocales(ConfigurableEnvironment environment) {
         final Set<Locale> supportedLocales;
@@ -170,9 +183,9 @@ public final class ServiceMessageSourceFactoryBean extends CompositeMessageSourc
     public void onApplicationEvent(ResourceMessageSourceChangedEvent event) {
         Iterable<String> changedResources = event.getChangedResources();
         logger.debug("Receive event change resource: {}", changedResources);
-        for (I18nMessageSource serviceMessageSource : getAllServiceMessageSources()) {
-            if (serviceMessageSource instanceof ReloadedResourceMessageSource) {
-                ReloadedResourceMessageSource reloadableResourceServiceMessageSource = (ReloadedResourceMessageSource) serviceMessageSource;
+        for (I18nMessageSource i18nMessageSource : getAllI18nMessageSources()) {
+            if (i18nMessageSource instanceof ReloadedResourceMessageSource) {
+                ReloadedResourceMessageSource reloadableResourceServiceMessageSource = (ReloadedResourceMessageSource) i18nMessageSource;
                 if (reloadableResourceServiceMessageSource.canReload(changedResources)) {
                     reloadableResourceServiceMessageSource.reload(changedResources);
                     logger.debug("change resource [{}] activate {} reloaded", changedResources, reloadableResourceServiceMessageSource);
@@ -181,7 +194,7 @@ public final class ServiceMessageSourceFactoryBean extends CompositeMessageSourc
         }
     }
 
-    public List<I18nMessageSource> getAllServiceMessageSources() {
+    public List<I18nMessageSource> getAllI18nMessageSources() {
         return findAllMessageSources(this);
     }
 }

@@ -11,20 +11,20 @@ import java.util.Locale;
 
 public class MessageSourceAdapter implements MessageSource, SmartInitializingSingleton {
 
-    private final I18nMessageSource messageSource;
+    private final I18nMessageSource i18nMessageSource;
 
     private final ObjectProvider<MessageSource> messageSourceProvider;
 
     private MessageSource defaultMessageSource;
 
-    public MessageSourceAdapter(I18nMessageSource messageSource, ObjectProvider<MessageSource> messageSourceProvider) {
-        this.messageSource = messageSource;
+    public MessageSourceAdapter(I18nMessageSource i18nMessageSource, ObjectProvider<MessageSource> messageSourceProvider) {
+        this.i18nMessageSource = i18nMessageSource;
         this.messageSourceProvider = messageSourceProvider;
     }
 
     @Override
     public String getMessage(String code, Object[] args, String defaultMessage, Locale locale) {
-        String message = messageSource.getMessage(code, args, locale);
+        String message = i18nMessageSource.getMessage(code, args, locale);
         if (message == null) {
             message = getDefaultMessage(code, args, defaultMessage, locale);
         }
@@ -63,7 +63,7 @@ public class MessageSourceAdapter implements MessageSource, SmartInitializingSin
     @Override
     public String toString() {
         return "MessageSourceAdapter{" +
-                "messageSource=" + messageSource +
+                "i18nMessageSource=" + i18nMessageSource +
                 ", defaultMessageSource=" + defaultMessageSource +
                 '}';
     }

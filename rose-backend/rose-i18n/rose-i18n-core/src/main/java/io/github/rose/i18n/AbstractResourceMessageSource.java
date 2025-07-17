@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 
 @Slf4j
 public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource, ReloadedResourceMessageSource {
-    public static final String DEFAULT_RESOURCE_LOCATION = "META-INF/i18n/";
+    public static final String DEFAULT_RESOURCE_LOCATION = "META-INF/i18n";
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
 
     private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
@@ -48,7 +48,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     @Override
     public String getMessageInternal(@Nullable String code, @Nullable Locale locale, @Nullable Object... args) {
         for (Locale candidate : I18nUtils.getFallbackLocales(locale)) {
-            Map<String, String> messages = localizedResourceMessages.get(candidate);
+            Map<String, String> messages = localizedResourceMessages.get(getResource(candidate));
             if (messages != null && messages.containsKey(code)) {
                 String template = messages.get(code);
                 return interpolator.interpolate(template, args, candidate);
@@ -133,7 +133,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         }
 
         // Override the localized message if present
-        localizedResourceMessages.putIfAbsent(resource, messages);
+        localizedResourceMessages.put(resource, messages);
     }
 
     protected abstract String getResourceSuffix();

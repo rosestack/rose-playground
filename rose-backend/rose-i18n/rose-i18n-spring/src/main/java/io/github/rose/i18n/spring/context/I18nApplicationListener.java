@@ -3,6 +3,7 @@ package io.github.rose.i18n.spring.context;
 import io.github.rose.core.util.BeanUtils;
 import io.github.rose.core.util.ClassLoaderUtils;
 import io.github.rose.i18n.I18nMessageSource;
+import io.github.rose.i18n.spring.I18nConstants;
 import io.github.rose.i18n.util.I18nUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +25,11 @@ import static org.springframework.util.ObjectUtils.containsElement;
 /**
  * Internationalization {@link ApplicationListener}
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul<a/>
  * @see SmartApplicationListener
  * @since 1.0.0
  */
 public class I18nApplicationListener implements SmartApplicationListener {
-    String MESSAGE_SOURCE_BEAN_NAME = "i18nMessageSource";
-
     private static final Logger logger = LoggerFactory.getLogger(I18nApplicationListener.class);
 
     private static final String ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME = "org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver";
@@ -65,8 +64,8 @@ public class I18nApplicationListener implements SmartApplicationListener {
     }
 
     private void initializeServiceMessageSource(ApplicationContext context) {
-        I18nMessageSource serviceMessageSource = context.getBean(MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
-        I18nUtils.setI18nMessageSource(serviceMessageSource);
+        I18nMessageSource i18nMessageSource = context.getBean(I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
+        I18nUtils.setI18nMessageSource(i18nMessageSource);
     }
 
 
@@ -86,11 +85,11 @@ public class I18nApplicationListener implements SmartApplicationListener {
             return;
         }
 
-        I18nMessageSource serviceMessageSource = BeanUtils.getOptionalBean(context, I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource = BeanUtils.getOptionalBean(context, I18nMessageSource.class);
 
         for (AcceptHeaderLocaleResolver acceptHeaderLocaleResolver : acceptHeaderLocaleResolvers) {
             Locale defaultLocale = Locale.getDefault();
-            Set<Locale> supportedLocales = serviceMessageSource.getSupportedLocales();
+            Set<Locale> supportedLocales = i18nMessageSource.getSupportedLocales();
             acceptHeaderLocaleResolver.setDefaultLocale(defaultLocale);
             acceptHeaderLocaleResolver.setSupportedLocales(new ArrayList<>(supportedLocales));
             logger.debug("AcceptHeaderLocaleResolver Bean associated with default Locale : '{}' , list of supported Locales : {}", defaultLocale, supportedLocales);

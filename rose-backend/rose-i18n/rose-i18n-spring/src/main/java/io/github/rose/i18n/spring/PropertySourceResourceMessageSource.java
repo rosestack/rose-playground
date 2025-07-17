@@ -17,11 +17,11 @@ import java.util.Locale;
 
 import static org.springframework.util.StringUtils.hasText;
 
-public class PropertySourcesResourceMessageSourceAbstract extends
+public class PropertySourceResourceMessageSource extends
         AbstractPropertiesResourceMessageSource implements ReloadedResourceMessageSource, EnvironmentAware {
     private Environment environment;
 
-    public PropertySourcesResourceMessageSourceAbstract(String source) {
+    public PropertySourceResourceMessageSource(String source) {
         super(source);
     }
 

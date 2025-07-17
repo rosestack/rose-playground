@@ -20,19 +20,14 @@ import static org.springframework.aop.support.AopUtils.getTargetClass;
  *     <li>{@link LocalValidatorFactoryBean#setValidationMessageSource(MessageSource)} associates {@link MessageSourceAdapter}</li>
  * </ul>
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul<a/>
  * @since 1.0.0
  */
 public class I18nBeanPostProcessor implements BeanPostProcessor {
-
     private static final Logger logger = LoggerFactory.getLogger(I18nBeanPostProcessor.class);
-
     private static final ClassLoader classLoader = I18nBeanPostProcessor.class.getClassLoader();
-
     private static final Class<?> VALIDATOR_FACTORY_CLASS = ClassLoaderUtils.resolveClass("javax.validation.ValidatorFactory", classLoader);
-
     private static final Class<?> LOCAL_VALIDATOR_FACTORY_BEAN_CLASS = ClassLoaderUtils.resolveClass("org.springframework.validation.beanvalidation.LocalValidatorFactoryBean", classLoader);
-
     private final ConfigurableApplicationContext context;
 
     public I18nBeanPostProcessor(ConfigurableApplicationContext context) {
