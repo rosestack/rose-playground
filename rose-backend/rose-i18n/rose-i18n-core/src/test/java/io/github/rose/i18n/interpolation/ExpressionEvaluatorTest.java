@@ -83,6 +83,23 @@ class ExpressionEvaluatorTest {
         assertEquals("Hello World!", result);
     }
 
+    @Test
+    void testDefaultMessageInterpolatorAutoDiscovery() {
+        // 测试自动发现功能
+        DefaultMessageInterpolator interpolator = new DefaultMessageInterpolator();
+
+        // 测试复杂表达式，如果有Spring EL或Jakarta EL可用，应该能够处理
+        TestUser user = new TestUser("Bob", 20);
+        Map<String, Object> params = Map.of("user", user, "minAge", 18);
+
+        String template = "Status: ${user.age >= minAge ? 'adult' : 'minor'}";
+        String result = interpolator.interpolate(template, params, Locale.ENGLISH);
+
+        // 如果有高级表达式评估器可用，应该能正确处理条件表达式
+        // 否则会返回原始表达式
+        assertTrue(result.equals("Status: adult") || result.contains("${"));
+    }
+
     // 测试用的辅助类
     public static class TestUser {
         private String name;

@@ -8,7 +8,6 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultMessageInterpolator implements MessageInterpolator {
     private static final Pattern MESSAGE_FORMAT_PATTERN = Pattern.compile("\\{\\d+\\}");
@@ -16,30 +15,16 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
 
     private volatile ExpressionEvaluator expressionEvaluator = new SimpleExpressionEvaluator();
-    // LRU 缓存表达式结果（表达式+参数hash -> 结果）
-    private static final int EXPRESSION_CACHE_SIZE = 100;
-    // LRU 缓存参数数组到Map的转换
-    private static final int PARAM_MAP_CACHE_SIZE = 100;
-
-    private final Map<String, String> expressionCache = new LinkedHashMap<>(EXPRESSION_CACHE_SIZE, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
-            return size() > EXPRESSION_CACHE_SIZE;
-        }
-    };
-
-    private final Map<Integer, Map<String, Object>> paramMapCache = new LinkedHashMap<>(PARAM_MAP_CACHE_SIZE, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<Integer, Map<String, Object>> eldest) {
-            return size() > PARAM_MAP_CACHE_SIZE;
-        }
-    };
 
     public DefaultMessageInterpolator() {
     }
 
     public DefaultMessageInterpolator(ExpressionEvaluator expressionEvaluator) {
         this.expressionEvaluator = expressionEvaluator;
+    }
+
+    public void setExpressionEvaluator(ExpressionEvaluator expressionEvaluator) {
+        this.expressionEvaluator = expressionEvaluator != null ? expressionEvaluator : new SimpleExpressionEvaluator();
     }
 
     @Override
@@ -105,20 +90,11 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     }
 
     private String interpolateExpressions(String template, Object[] args, Locale locale) {
-        // 参数预处理缓存
-        int paramHash = Arrays.hashCode(args);
-        Map<String, Object> namedArgs;
-        synchronized (paramMapCache) {
-            namedArgs = paramMapCache.get(paramHash);
-            if (namedArgs == null) {
-                namedArgs = new HashMap<>();
-                if (args != null) {
-                    for (int i = 0; i < args.length; i++) {
-                        namedArgs.put("arg" + i, args[i]);
-                        namedArgs.put(String.valueOf(i), args[i]);
-                    }
-                }
-                paramMapCache.put(paramHash, namedArgs);
+        Map<String, Object> namedArgs = new HashMap<>();
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                namedArgs.put("arg" + i, args[i]);
+                namedArgs.put(String.valueOf(i), args[i]);
             }
         }
         return interpolateExpressions(template, namedArgs, locale);
@@ -128,12 +104,6 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
         if (template == null) {
             return null;
         }
-        String cacheKey = template + "::" + (namedArgs != null ? namedArgs.hashCode() : 0) + "::" + (locale != null ? locale.toString() : "");
-        synchronized (expressionCache) {
-            if (expressionCache.containsKey(cacheKey)) {
-                return expressionCache.get(cacheKey);
-            }
-        }
         Matcher matcher = EXPRESSION_PATTERN.matcher(template);
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {
@@ -142,11 +112,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(result);
-        String finalResult = result.toString();
-        synchronized (expressionCache) {
-            expressionCache.put(cacheKey, finalResult);
-        }
-        return finalResult;
+        return result.toString();
     }
 
     private String evaluateExpression(String expression, Map<String, Object> variables, Locale locale) {
