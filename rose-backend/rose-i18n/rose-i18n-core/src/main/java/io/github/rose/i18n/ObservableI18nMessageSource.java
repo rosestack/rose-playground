@@ -77,7 +77,7 @@ public class ObservableI18nMessageSource implements ReloadedResourceMessageSourc
                     if (watchPaths.contains(changed)) {
                         // 通知所有监听器
                         for (MessageSourceChangeListener listener : listeners) {
-                            listener.onMessagesReloaded(I18nResourceUtils.parseLocale(changed.toFile().getName()), this); // locale 可根据实际实现传递
+                            listener.onMessagesReloaded(changed.toFile().getAbsolutePath(), this); // locale 可根据实际实现传递
                         }
                     }
                 }

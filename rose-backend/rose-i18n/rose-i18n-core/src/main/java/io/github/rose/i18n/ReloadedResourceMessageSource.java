@@ -1,6 +1,5 @@
 package io.github.rose.i18n;
 
-import java.util.Locale;
 import java.util.Set;
 
 public interface ReloadedResourceMessageSource extends ResourceMessageSource {
