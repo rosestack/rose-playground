@@ -60,12 +60,11 @@ class ExpressionEvaluatorTest {
         assertEquals(200L, result); // EL表达式返回Long类型
     }
 
-
     @Test
     void testDefaultMessageInterpolatorWithExpressions() {
         DefaultMessageInterpolator interpolator = new DefaultMessageInterpolator();
 
-        // 测试简单表达式（应该使用SimpleExpressionEvaluator）
+        // 测试简单表达式
         TestUser user = new TestUser("Alice", 30);
         Map<String, Object> params = Map.of("user", user);
 
