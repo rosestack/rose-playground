@@ -27,7 +27,7 @@ import java.util.Locale;
  * @author Rose Framework Team
  * @since 1.0.0
  */
-public interface I18nMessageSource {
+public interface I18nMessageSource extends Lifecycle {
 
     String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
 

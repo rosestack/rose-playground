@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements I18nMessageSource, Lifecycle {
+public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements I18nMessageSource {
     public static final String DEFAULT_LOCATION = "META-INF/i18n";
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
 
@@ -54,17 +54,17 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     }
 
     private void initializeResource() {
-        String resourceDir = String.format("%s/%s/%s/", location, basename, source);
-
+        String resourceDir = getResourceDir();
         I18nResourceUtils.loadResourceMessages(resourceDir, basename, getSupportedExtensions(),
                 (filename, inputStream) -> handleResourceFile(filename, inputStream));
     }
 
+    public String getResourceDir() {
+        return String.format("%s/%s/%s/", location, basename, source);
+    }
+
     private void handleResourceFile(String fileName, InputStream in) {
-        List<String> extensions = getSupportedExtensions();
-        String ext = I18nResourceUtils.getExtension(fileName, extensions);
-        String localeStr = fileName.substring(basename.length(), fileName.length() - ext.length());
-        Locale locale = I18nResourceUtils.parseLocale(localeStr);
+        Locale locale = I18nResourceUtils.parseLocale(fileName);
         if (locale != null && !localizedResourceMessages.containsKey(locale)) {
             try (Reader reader = new InputStreamReader(in, encoding)) {
                 Map<String, String> messages = doLoadMessages(reader);

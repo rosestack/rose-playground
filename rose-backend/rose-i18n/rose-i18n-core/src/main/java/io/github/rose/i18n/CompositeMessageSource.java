@@ -24,4 +24,14 @@ public class CompositeMessageSource implements I18nMessageSource {
         }
         return defaultMessage;
     }
+
+    @Override
+    public void init() {
+        sources.forEach(I18nMessageSource::init);
+    }
+
+    @Override
+    public void destroy() {
+        sources.forEach(I18nMessageSource::destroy);
+    }
 }

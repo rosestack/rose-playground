@@ -6,17 +6,18 @@ import java.util.*;
  * 装饰器：为 I18nMessageSource 添加简单缓存能力
  */
 public class CachingI18nMessageSource implements I18nMessageSource {
+    public static final int MAX_SIZE = 512;
     private final I18nMessageSource delegate;
     private final Map<CacheKey, String> cache;
     private final int maxSize;
 
     public CachingI18nMessageSource(I18nMessageSource delegate) {
-        this(delegate, 512);
+        this(delegate, MAX_SIZE);
     }
 
     public CachingI18nMessageSource(I18nMessageSource delegate, int maxSize) {
         this.delegate = delegate;
-        this.maxSize = maxSize > 0 ? maxSize : 512;
+        this.maxSize = maxSize > 0 ? maxSize : MAX_SIZE;
         this.cache = Collections.synchronizedMap(new LinkedHashMap<>(maxSize, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<CacheKey, String> eldest) {
@@ -38,6 +39,16 @@ public class CachingI18nMessageSource implements I18nMessageSource {
     @Override
     public String getMessage(String code, Object[] args, Locale locale) {
         return getMessage(code, args, null, locale);
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void destroy() {
+        cache.clear();
     }
 
     private static class CacheKey {

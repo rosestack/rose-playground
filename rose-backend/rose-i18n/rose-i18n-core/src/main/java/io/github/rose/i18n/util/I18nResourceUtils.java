@@ -1,5 +1,7 @@
 package io.github.rose.i18n.util;
 
+import org.springframework.util.FileSystemUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -99,8 +101,8 @@ public class I18nResourceUtils {
         return fallbacks;
     }
 
-
-    public static Locale parseLocale(String localeStr) {
+    public static Locale parseLocale(String fileName) {
+        String localeStr = fileName.substring(0, fileName.lastIndexOf("."));
         if (localeStr == null || localeStr.isEmpty()) {
             return Locale.ROOT;
         }
