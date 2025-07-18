@@ -56,6 +56,8 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
     private ConfigurableEnvironment environment;
     private ApplicationContext context;
     private int order;
+    private Locale defaultLocale;
+    private Set<Locale> supportedLocales;
 
     public I18nMessageSourceFactoryBean(String source) {
         this(source, Ordered.LOWEST_PRECEDENCE);
@@ -116,30 +118,39 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
         this.order = order;
     }
 
+    public void setDefaultLocale(Locale defaultLocale) {
+        this.defaultLocale = defaultLocale;
+    }
+
+    public void setSupportedLocales(Set<Locale> supportedLocales) {
+        this.supportedLocales = supportedLocales;
+    }
+
     private List<AbstractMessageSource> initMessageSources() {
         List<String> factoryNames = loadFactoryNames(AbstractMessageSource.class, classLoader);
 
-        Locale defaultLocale = resolveDefaultLocale(environment);
-        Set<Locale> supportedLocales = resolveSupportedLocales(environment);
+        // 优先使用注解配置的值，如果没有配置则使用环境变量
+        Locale resolvedDefaultLocale = this.defaultLocale != null ? this.defaultLocale : resolveDefaultLocale(environment);
+        Set<Locale> resolvedSupportedLocales = this.supportedLocales != null ? this.supportedLocales : resolveSupportedLocales(environment);
 
-        List<AbstractMessageSource> serviceMessageSources = new ArrayList<>(factoryNames.size());
+        List<AbstractMessageSource> messageSources = new ArrayList<>(factoryNames.size());
 
         for (String factoryName : factoryNames) {
             Class<?> factoryClass = resolveClassName(factoryName, classLoader);
             Constructor constructor = getConstructorIfAvailable(factoryClass, String.class);
             AbstractMessageSource serviceMessageSource = (AbstractMessageSource) instantiateClass(constructor, source);
-            serviceMessageSources.add(serviceMessageSource);
+            messageSources.add(serviceMessageSource);
 
             BeanUtils.invokeAwareInterfaces(serviceMessageSource, context);
 
-            serviceMessageSource.setDefaultLocale(defaultLocale);
-            serviceMessageSource.setSupportedLocales(supportedLocales);
+            serviceMessageSource.setDefaultLocale(resolvedDefaultLocale);
+            serviceMessageSource.setSupportedLocales(resolvedSupportedLocales);
             serviceMessageSource.init();
         }
 
-        OrderComparator.sort(serviceMessageSources);
+        OrderComparator.sort(messageSources);
 
-        return serviceMessageSources;
+        return messageSources;
     }
 
     @Override
@@ -163,7 +174,6 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
         }
         return locale;
     }
-
 
     private Set<Locale> resolveSupportedLocales(ConfigurableEnvironment environment) {
         final Set<Locale> supportedLocales;

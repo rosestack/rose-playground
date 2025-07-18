@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 
 @Slf4j
 public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource, ReloadedResourceMessageSource {
-    public static final String DEFAULT_RESOURCE_LOCATION = "META-INF/i18n";
+    public static final String DEFAULT_RESOURCE_LOCATION = "i18n";
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
 
     private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();

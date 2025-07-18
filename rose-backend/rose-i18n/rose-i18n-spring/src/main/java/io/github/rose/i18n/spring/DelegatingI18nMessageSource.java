@@ -52,13 +52,19 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
 
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
-        return delegate.getMessage(code, locale, args);
+        return this.delegate.getMessage(code, locale, args);
     }
 
     @Nonnull
     @Override
     public Locale getLocale() {
-        return delegate.getLocale();
+        return this.delegate.getLocale();
+    }
+
+    @Nonnull
+    @Override
+    public Locale getDefaultLocale() {
+        return this.delegate.getDefaultLocale();
     }
 
     @NonNull
@@ -109,11 +115,11 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
 
     @Override
     public String toString() {
-        return "ServiceMessageSources{" + "delegate=" + delegate + '}';
+        return "DelegatingI18nMessageSource{" + "delegate=" + this.delegate + '}';
     }
 
     public CompositeMessageSource getDelegate() {
-        return delegate;
+        return this.delegate;
     }
 
     private List<I18nMessageSource> getI18nMessageSourceBeans() {

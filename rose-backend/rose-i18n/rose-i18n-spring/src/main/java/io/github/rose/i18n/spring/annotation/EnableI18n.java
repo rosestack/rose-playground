@@ -75,8 +75,6 @@ public @interface EnableI18n {
      */
     boolean exposeMessageSource() default true;
 
-    String basename() default DEFAULT_RESOURCE_NAME;
-
     String defaultLocale() default "en";
 
     String[] supportedLocales() default {"en", "zh_CN"};

@@ -34,11 +34,12 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.support.AbstractApplicationContext.MESSAGE_SOURCE_BEAN_NAME;
@@ -73,10 +74,17 @@ public class I18nImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 
     private void registerI18nMessageSourceBeanDefinitions(AnnotationAttributes attributes, BeanDefinitionRegistry registry) {
         Set<String> sources = resolveSources(attributes);
+        Locale defaultLocale = resolveDefaultLocale(attributes);
+        Set<Locale> supportedLocales = resolveSupportedLocales(attributes);
 
         for (String source : sources) {
             String beanName = source + "I18nMessageSource";
-            BeanRegistrar.registerBeanDefinition(registry, beanName, I18nMessageSourceFactoryBean.class, source);
+            BeanDefinition beanDefinition = rootBeanDefinition(I18nMessageSourceFactoryBean.class)
+                    .addConstructorArgValue(source)
+                    .addPropertyValue("defaultLocale", defaultLocale)
+                    .addPropertyValue("supportedLocales", supportedLocales)
+                    .getBeanDefinition();
+            registry.registerBeanDefinition(beanName, beanDefinition);
         }
 
         // Register DelegatingServiceMessageSource as the Spring Primary Bean
@@ -98,6 +106,30 @@ public class I18nImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
         for (String source : sourcesSupplier.get()) {
             sources.add(environment.resolvePlaceholders(source));
         }
+    }
+
+    /**
+     * 解析默认 Locale
+     */
+    private Locale resolveDefaultLocale(AnnotationAttributes attributes) {
+        String defaultLocaleStr = attributes.getString("defaultLocale");
+        if (defaultLocaleStr != null && !defaultLocaleStr.trim().isEmpty()) {
+            defaultLocaleStr = environment.resolvePlaceholders(defaultLocaleStr);
+            return StringUtils.parseLocale(defaultLocaleStr);
+        }
+        return null;
+    }
+
+    /**
+     * 解析支持的 Locales
+     */
+    private Set<Locale> resolveSupportedLocales(AnnotationAttributes attributes) {
+        String[] locales = attributes.getStringArray("supportedLocales");
+
+        Set<Locale> supportedLocales = Arrays.stream(locales)
+                .map(locale -> environment.resolvePlaceholders(locale))
+                .map(StringUtils::parseLocale).collect(Collectors.toSet());
+        return Collections.unmodifiableSet(supportedLocales);
     }
 
     private void registerMessageSourceAdapterBeanDefinition(AnnotationAttributes attributes, BeanDefinitionRegistry registry) {

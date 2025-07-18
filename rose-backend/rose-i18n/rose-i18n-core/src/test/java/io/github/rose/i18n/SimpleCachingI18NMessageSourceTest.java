@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * CachingI18nMessageSource 单元测试
+ * SimpleCachingI18nMessageSource 单元测试
  *
  * <p>测试职责：</p>
  * <ul>
@@ -30,18 +30,18 @@ import static org.mockito.Mockito.*;
  * </ul>
  */
 @ExtendWith(MockitoExtension.class)
-class CachingI18nMessageSourceTest {
+class SimpleCachingI18NMessageSourceTest {
 
     @Mock
     private I18nMessageSource delegate;
 
-    private CachingI18nMessageSource cachingMessageSource;
+    private SimpleCachingI18nMessageSource cachingMessageSource;
 
     @BeforeEach
     void setUp() {
         // Mock the getLocale method with lenient stubbing
         lenient().when(delegate.getLocale()).thenReturn(Locale.ENGLISH);
-        cachingMessageSource = new CachingI18nMessageSource(delegate);
+        cachingMessageSource = new SimpleCachingI18nMessageSource(delegate);
     }
 
     // ==================== 基本缓存功能测试 ====================
@@ -129,7 +129,7 @@ class CachingI18nMessageSourceTest {
     @Test
     void testCacheSizeLimit() {
         // 创建小容量的缓存
-        CachingI18nMessageSource smallCache = new CachingI18nMessageSource(delegate, 2);
+        SimpleCachingI18nMessageSource smallCache = new SimpleCachingI18nMessageSource(delegate, 2);
 
         // 设置mock行为
         lenient().when(delegate.getMessage(anyString(), any(Locale.class))).thenAnswer(invocation -> {
@@ -156,7 +156,7 @@ class CachingI18nMessageSourceTest {
     @Test
     void testLRUEvictionPolicy() {
         // 创建容量为2的缓存
-        CachingI18nMessageSource lruCache = new CachingI18nMessageSource(delegate, 2);
+        SimpleCachingI18nMessageSource lruCache = new SimpleCachingI18nMessageSource(delegate, 2);
 
         // 设置mock行为
         when(delegate.getMessage(anyString(), any(), any())).thenAnswer(invocation -> {
@@ -187,14 +187,14 @@ class CachingI18nMessageSourceTest {
 
     @Test
     void testDefaultConstructor() {
-        CachingI18nMessageSource defaultCache = new CachingI18nMessageSource(delegate);
+        SimpleCachingI18nMessageSource defaultCache = new SimpleCachingI18nMessageSource(delegate);
         assertNotNull(defaultCache);
         // 默认大小应该是512
     }
 
     @Test
     void testConstructorWithCustomSize() {
-        CachingI18nMessageSource customCache = new CachingI18nMessageSource(delegate, 100);
+        SimpleCachingI18nMessageSource customCache = new SimpleCachingI18nMessageSource(delegate, 100);
         assertNotNull(customCache);
     }
 
@@ -202,11 +202,11 @@ class CachingI18nMessageSourceTest {
     void testConstructorWithInvalidSize() {
         // 负数应该抛出异常（因为LinkedHashMap不接受负的初始容量）
         assertThrows(IllegalArgumentException.class, () -> {
-            new CachingI18nMessageSource(delegate, -1);
+            new SimpleCachingI18nMessageSource(delegate, -1);
         });
 
         // 0应该使用默认大小
-        CachingI18nMessageSource zeroCache = new CachingI18nMessageSource(delegate, 0);
+        SimpleCachingI18nMessageSource zeroCache = new SimpleCachingI18nMessageSource(delegate, 0);
         assertNotNull(zeroCache);
     }
 
@@ -401,7 +401,7 @@ class CachingI18nMessageSourceTest {
     @Test
     void testNullDelegate() {
         // 测试null delegate - 实际实现不会抛出异常，只是在使用时会有问题
-        CachingI18nMessageSource nullDelegateCache = new CachingI18nMessageSource(null);
+        SimpleCachingI18nMessageSource nullDelegateCache = new SimpleCachingI18nMessageSource(null);
         assertNotNull(nullDelegateCache);
 
         // 但是调用getMessage时会抛出NPE
@@ -550,7 +550,7 @@ class CachingI18nMessageSourceTest {
     @Test
     void testCacheEvictionOrder() {
         // 测试缓存淘汰顺序
-        CachingI18nMessageSource smallCache = new CachingI18nMessageSource(delegate, 3);
+        SimpleCachingI18nMessageSource smallCache = new SimpleCachingI18nMessageSource(delegate, 3);
 
         when(delegate.getMessage(anyString(), any())).thenAnswer(invocation -> {
             String code = invocation.getArgument(0);
@@ -583,6 +583,6 @@ class CachingI18nMessageSourceTest {
     @Test
     void testMaxSizeConstant() {
         // 测试MAX_SIZE常量
-        assertEquals(512, CachingI18nMessageSource.MAX_SIZE);
+        assertEquals(512, SimpleCachingI18nMessageSource.MAX_SIZE);
     }
 }

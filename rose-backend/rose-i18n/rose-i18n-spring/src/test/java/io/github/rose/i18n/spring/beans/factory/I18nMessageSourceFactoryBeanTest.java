@@ -77,7 +77,6 @@ class I18nMessageSourceFactoryBeanTest extends AbstractSpringTest {
         ResourceMessageSourceChangedEvent event = new ResourceMessageSourceChangedEvent(context, Arrays.asList("test.i18n_messages_en.properties"));
         propertySource.setProperty("test.i18n_messages_en.properties", "a=1");
         eventPublisher.publishEvent(event);
-        ThreadUtils.sleep(2000);
         assertEquals("1", i18nMessageSource.getMessage("a"));
     }
 

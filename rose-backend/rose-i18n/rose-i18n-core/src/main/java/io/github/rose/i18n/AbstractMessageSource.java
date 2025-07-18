@@ -59,7 +59,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
                 AbstractMessageSource abstractMessageSource = (AbstractMessageSource) parent;
                 return abstractMessageSource.getMessageInternal(code, locale, args);
             } else {
-                return parent.getMessage(code, args, (String) null, locale);
+                return parent.getMessage(code, args, null, locale);
             }
         } else {
             return null;

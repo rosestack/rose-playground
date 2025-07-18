@@ -33,7 +33,7 @@ class PropertySourcesServiceMessageSourceTest extends AbstractSpringTest {
     public void test() throws IOException {
         MockEnvironment environment = new MockEnvironment();
         ClassLoader classLoader = getClass().getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream("META-INF/i18n/test/i18n_messages_zh_CN.properties");
+        InputStream inputStream = classLoader.getResourceAsStream("i18n/test/i18n_messages_zh_CN.properties");
         String propertiesContent = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
         environment.setProperty("test.i18n_messages_zh_CN.properties", propertiesContent);
 
