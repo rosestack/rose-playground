@@ -2,11 +2,11 @@ package io.github.rose.core.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.time.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +14,11 @@ import java.util.regex.Pattern;
  * 统一的格式化工具类
  * <p>
  * 提供模板格式化、变量替换和值格式化功能，支持本地化
+ * 支持的类型包括：
+ * - 基本类型：String, Number, Boolean, Character
+ * - 数字类型：BigDecimal, BigInteger
+ * - 其他类型：Currency, Enum, Collection, Array
+ * - 日期时间：通过可配置的DateTimeFormatter处理
  *
  * @author rose
  * @since 0.0.1
@@ -22,6 +27,7 @@ public abstract class FormatUtils {
     public static final String DEFAULT_PLACEHOLDER = "{}";
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern INDEXED_PARAMETER_PATTERN = Pattern.compile("\\{(\\d+)\\}");
+
 
     /**
      * 格式化占位符（使用默认占位符 {}）
@@ -57,7 +63,7 @@ public abstract class FormatUtils {
             if (index == -1) {
                 break;
             }
-            String value = formatValue(args[i], locale);
+            String value = LocaleFormatUtils.formatValue(args[i], locale);
             result = result.substring(0, index) + value + result.substring(index + DEFAULT_PLACEHOLDER.length());
         }
 
@@ -100,7 +106,7 @@ public abstract class FormatUtils {
             if (index == -1) {
                 break;
             }
-            String value = formatValue(args[i], locale);
+            String value = LocaleFormatUtils.formatValue(args[i], locale);
             result = result.substring(0, index) + value + result.substring(index + placeholder.length());
         }
 
@@ -142,7 +148,7 @@ public abstract class FormatUtils {
             Object value = map.get(key);
             String replacement;
             if (value != null) {
-                replacement = formatValue(value, locale);
+                replacement = LocaleFormatUtils.formatValue(value, locale);
                 // 转义特殊字符
                 replacement = Matcher.quoteReplacement(replacement);
             } else {
@@ -190,7 +196,7 @@ public abstract class FormatUtils {
             try {
                 int index = Integer.parseInt(matcher.group(1));
                 if (index >= 0 && index < args.length) {
-                    String replacement = formatValue(args[index], locale);
+                    String replacement = LocaleFormatUtils.formatValue(args[index], locale);
                     // 转义特殊字符
                     replacement = Matcher.quoteReplacement(replacement);
                     matcher.appendReplacement(result, replacement);
@@ -273,79 +279,6 @@ public abstract class FormatUtils {
             }
             return template;
         }
-    }
-
-    /**
-     * 格式化单个值
-     *
-     * @param value 要格式化的值
-     * @return 格式化后的字符串
-     */
-    public static String formatValue(final Object value) {
-        return formatValue(value, Locale.getDefault());
-    }
-
-    /**
-     * 格式化单个值（支持本地化）
-     *
-     * @param value  要格式化的值
-     * @param locale 本地化设置
-     * @return 格式化后的字符串
-     */
-    public static String formatValue(final Object value, final Locale locale) {
-        if (value == null) {
-            return "null";
-        }
-        if (value instanceof String) {
-            return (String) value;
-        }
-        if (value instanceof Number) {
-            return formatNumber((Number) value, locale);
-        }
-        if (value instanceof Boolean) {
-            return value.toString();
-        }
-        if (value instanceof Character) {
-            return value.toString();
-        }
-        if (value instanceof Date) {
-            return formatDate((Date) value, locale);
-        }
-        // 对于其他类型，使用toString()
-        return value.toString();
-    }
-
-    /**
-     * 格式化数字（支持本地化）
-     *
-     * @param number 数字
-     * @param locale 本地化设置
-     * @return 格式化后的字符串
-     */
-    private static String formatNumber(final Number number, final Locale locale) {
-        if (number == null) {
-            return "null";
-        }
-
-        NumberFormat formatter = NumberFormat.getInstance(locale);
-        return formatter.format(number);
-    }
-
-    /**
-     * 格式化日期（支持本地化）
-     *
-     * @param date   日期
-     * @param locale 本地化设置
-     * @return 格式化后的字符串
-     */
-    private static String formatDate(final Date date, final Locale locale) {
-        if (date == null) {
-            return "null";
-        }
-
-        // 使用默认的日期格式，可以根据需要自定义
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", locale);
-        return formatter.format(date);
     }
 
     /**
