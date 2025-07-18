@@ -1,8 +1,6 @@
 package io.github.rose.core.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -17,8 +15,6 @@ import java.util.regex.Pattern;
  * @since 0.0.1
  */
 public abstract class FormatUtils {
-    private static final Logger log = LoggerFactory.getLogger(FormatUtils.class);
-
     public static final String DEFAULT_PLACEHOLDER = "{}";
 
     // 缓存常用的正则表达式模式
