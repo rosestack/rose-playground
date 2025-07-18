@@ -17,16 +17,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * SimpleCachingI18nMessageSource 单元测试
+ * SimpleCachingI18nMessageSource Unit Tests
  *
- * <p>测试职责：</p>
+ * <p>Test Responsibilities:</p>
  * <ul>
- *   <li>基本缓存功能：缓存命中、缓存未命中</li>
- *   <li>缓存大小限制：LRU淘汰策略</li>
- *   <li>装饰器模式：正确委托给底层MessageSource</li>
- *   <li>线程安全：并发访问测试</li>
- *   <li>生命周期：init/destroy方法</li>
- *   <li>CacheKey：equals/hashCode正确性</li>
+ *   <li>Basic cache functionality: cache hit, cache miss</li>
+ *   <li>Cache size limits: LRU eviction policy</li>
+ *   <li>Decorator pattern: proper delegation to underlying MessageSource</li>
+ *   <li>Thread safety: concurrent access testing</li>
+ *   <li>Lifecycle: init/destroy methods</li>
+ *   <li>CacheKey: equals/hashCode correctness</li>
  * </ul>
  */
 @ExtendWith(MockitoExtension.class)
@@ -44,23 +44,23 @@ class SimpleCachingI18NMessageSourceTest {
         cachingMessageSource = new SimpleCachingI18nMessageSource(delegate);
     }
 
-    // ==================== 基本缓存功能测试 ====================
+    // ==================== Basic Cache Functionality Tests ====================
 
     @Test
     void testCacheHit() {
-        // 设置mock行为
+        // Setup mock behavior
         when(delegate.getMessage("test.key", Locale.ENGLISH, "arg1"))
                 .thenReturn("Test Message");
 
-        // 第一次调用 - 缓存未命中
+        // First call - cache miss
         String result1 = cachingMessageSource.getMessage("test.key", Locale.ENGLISH, "arg1");
         assertEquals("Test Message", result1);
 
-        // 第二次调用 - 缓存命中
+        // Second call - cache hit
         String result2 = cachingMessageSource.getMessage("test.key", Locale.ENGLISH, "arg1");
         assertEquals("Test Message", result2);
 
-        // 验证delegate只被调用一次
+        // Verify delegate is called only once
         verify(delegate, times(1)).getMessage("test.key", Locale.ENGLISH, "arg1");
     }
 
@@ -402,7 +402,7 @@ class SimpleCachingI18NMessageSourceTest {
 
     @Test
     void testNullDelegate() {
-        // 测试null delegate - 现在在构造函数中就会抛出异常
+        // Test null delegate - now throws exception in constructor
         assertThrows(NullPointerException.class, () -> {
             new SimpleCachingI18nMessageSource(null);
         });
@@ -410,11 +410,11 @@ class SimpleCachingI18NMessageSourceTest {
 
     @Test
     void testNullCodeHandling() {
-        // 测试null code的处理
+        // Test null code handling
         String result = cachingMessageSource.getMessage(null, Locale.ENGLISH, "arg");
         assertNull(result);
 
-        // 验证delegate没有被调用
+        // Verify delegate is not called
         verify(delegate, never()).getMessage(isNull(), any(Locale.class), any());
     }
 

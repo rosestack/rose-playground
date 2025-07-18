@@ -1,6 +1,8 @@
 package io.github.rose.i18n.interpolation;
 
 import io.github.rose.core.util.FormatUtils;
+import io.github.rose.i18n.interpolation.evaluator.ExpressionEvaluator;
+import io.github.rose.i18n.interpolation.evaluator.SimpleExpressionEvaluator;
 
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -39,7 +41,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             return template;
         }
 
-        // 优先表达式
+        // Priority: Expression style
         if (EXPRESSION_PATTERN.matcher(template).find()) {
             if (args instanceof Object[]) {
                 return interpolateExpressions(template, (Object[]) args, locale);
@@ -51,7 +53,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             }
         }
 
-        // MessageFormat风格
+        // MessageFormat style
         if (MESSAGE_FORMAT_PATTERN.matcher(template).find()) {
             if (args instanceof Object[] && ((Object[]) args).length > 0) {
                 try {
@@ -65,7 +67,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             }
         }
 
-        // 命名参数风格
+        // Named parameter style
         if (NAMED_PARAMETER_PATTERN.matcher(template).find() && args instanceof Map) {
             Map<String, Object> mapArgs = (Map<String, Object>) args;
             return interpolateNamedParameters(template, mapArgs, locale);
@@ -155,7 +157,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             return (String) value;
         }
         if (value instanceof Number) {
-            // 支持 locale-aware 格式化，可扩展 pattern
+            // Support locale-aware formatting, extensible pattern
             NumberFormat nf = NumberFormat.getInstance(locale);
             return nf.format(value);
         }
@@ -175,14 +177,14 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     }
 
     /**
-     * 静态工厂方法，返回默认实现
+     * Static factory method, returns default implementation
      */
     public static DefaultMessageInterpolator create() {
         return new DefaultMessageInterpolator();
     }
 
     /**
-     * 静态工厂方法，使用指定的表达式评估器
+     * Static factory method, uses specified expression evaluator
      */
     public static DefaultMessageInterpolator create(ExpressionEvaluator expressionEvaluator) {
         return new DefaultMessageInterpolator(expressionEvaluator);

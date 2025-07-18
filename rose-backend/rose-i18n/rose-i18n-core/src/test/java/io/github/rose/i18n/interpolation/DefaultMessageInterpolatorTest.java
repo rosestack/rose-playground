@@ -1,9 +1,9 @@
 package io.github.rose.i18n.interpolation;
 
+import io.github.rose.i18n.interpolation.evaluator.ExpressionEvaluator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.text.MessageFormat;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

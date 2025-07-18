@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * 组合型 I18nMessageSource，可聚合多个消息源，按顺序查找。
+ * Composite I18nMessageSource that can aggregate multiple message sources and search in order.
  */
 public class CompositeMessageSource implements I18nMessageSource, ReloadedResourceMessageSource {
     private static final Logger logger = LoggerFactory.getLogger(CompositeMessageSource.class);

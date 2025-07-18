@@ -59,7 +59,7 @@ public abstract class I18nUtils {
     }
 
     /**
-     * 生成 locale 的 fallback 列表，如 zh_CN → [zh_CN, zh, ROOT]
+     * Generate fallback list for locale, e.g. zh_CN → [zh_CN, zh, ROOT]
      */
     public static Set<Locale> getFallbackLocales(Locale locale) {
         Set<Locale> fallbacks = new LinkedHashSet<>();

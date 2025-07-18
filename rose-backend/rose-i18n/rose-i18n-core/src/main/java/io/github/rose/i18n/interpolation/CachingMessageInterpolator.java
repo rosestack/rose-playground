@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 支持 LRU 缓存的消息插值器包装器
+ * Message interpolator wrapper with LRU cache support
  */
 public class CachingMessageInterpolator implements MessageInterpolator {
     private final MessageInterpolator delegate;
@@ -41,7 +41,7 @@ public class CachingMessageInterpolator implements MessageInterpolator {
     }
 
     /**
-     * 缓存键，包含模板、参数和 locale
+     * Cache key containing template, arguments and locale
      */
     private static class CacheKey {
         private final String template;

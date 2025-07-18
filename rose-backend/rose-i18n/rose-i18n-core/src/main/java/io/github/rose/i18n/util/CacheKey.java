@@ -1,11 +1,13 @@
 package io.github.rose.i18n.util;
 
+import lombok.Getter;
 import lombok.ToString;
 
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 
+@Getter
 @ToString
 public class CacheKey {
     private final String code;

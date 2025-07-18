@@ -1,5 +1,6 @@
-package io.github.rose.i18n;
+package io.github.rose.i18n.cache;
 
+import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.util.CacheKey;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 装饰器：为 I18nMessageSource 添加简单缓存能力
+ * Decorator: Adds simple caching capability to I18nMessageSource
  */
 public class SimpleCachingI18nMessageSource implements I18nMessageSource {
     public static final int MAX_SIZE = 512;
