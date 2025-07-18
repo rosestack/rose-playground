@@ -411,14 +411,14 @@ class NetUtilsTest {
     // ==================== 工具方法测试 ====================
 
     @Test
-    void testGetMultistageReverseProxyIp() {
+    void testGetReverseProxyIp() {
         assertEquals("192.168.1.1",
-            NetUtils.getMultistageReverseProxyIp("192.168.1.1, unknown, 10.0.0.1"));
+            NetUtils.getReverseProxyIp("192.168.1.1, unknown, 10.0.0.1"));
         assertEquals("10.0.0.1",
-            NetUtils.getMultistageReverseProxyIp("unknown, 10.0.0.1"));
+            NetUtils.getReverseProxyIp("unknown, 10.0.0.1"));
         assertEquals("192.168.1.1",
-            NetUtils.getMultistageReverseProxyIp("192.168.1.1"));
-        assertNull(NetUtils.getMultistageReverseProxyIp(null));
+            NetUtils.getReverseProxyIp("192.168.1.1"));
+        assertNull(NetUtils.getReverseProxyIp(null));
     }
 
     @Test

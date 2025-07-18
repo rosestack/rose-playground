@@ -850,7 +850,7 @@ public abstract class NetUtils {
      * @param ip 可能包含多个IP的字符串
      * @return 第一个非unknown的IP
      */
-    public static String getMultistageReverseProxyIp(String ip) {
+    public static String getReverseProxyIp(String ip) {
         if (ip != null && ip.contains(",")) {
             for (String subIp : ip.split(",")) {
                 String trimmedIp = subIp.trim();

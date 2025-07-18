@@ -15,7 +15,7 @@ public class RestAuthenticationDetails implements Serializable {
     private final Client userAgent;
 
     public RestAuthenticationDetails(HttpServletRequest request) {
-        this.clientIp = ServletUtils.getClientIP(request);
+        this.clientIp = ServletUtils.getClientIp(request);
         this.userAgent = getUserAgent(request);
     }
 
