@@ -56,7 +56,7 @@ public abstract class BeanDefinitionUtils {
                 String beanClassName = beanDefinition.getBeanClassName();
                 if (StringUtils.hasText(beanClassName)) {
                     ClassLoader targetClassLoader = classLoader == null ? ClassLoaderUtils.getDefaultClassLoader() : classLoader;
-                    beanClass = ClassLoaderUtils.resolveClass(beanClassName, targetClassLoader, true);
+                    beanClass = ClassLoaderUtils.loadClass(beanClassName, targetClassLoader, true);
                 }
             }
         } else {

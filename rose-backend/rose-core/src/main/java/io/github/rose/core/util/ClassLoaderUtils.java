@@ -13,38 +13,21 @@ public class ClassLoaderUtils {
     private static final ConcurrentMap<String, Class<?>> loadedClassesCache = new ConcurrentHashMap<>(256);
 
     @Nullable
-    public static Class<?> resolveClass(@Nullable String className) {
-        return resolveClass(className, getDefaultClassLoader());
+    public static Class<?> loadClass(@Nullable String className) {
+        return loadClass(className, getDefaultClassLoader());
     }
 
     @Nullable
-    public static Class<?> resolveClass(@Nullable String className, @Nullable ClassLoader classLoader) {
-        return resolveClass(className, classLoader, false);
+    public static Class<?> loadClass(@Nullable String className, @Nullable ClassLoader classLoader) {
+        return loadClass(className, classLoader, false);
     }
 
     @Nullable
-    public static Class<?> resolveClass(@Nullable String className, @Nullable ClassLoader classLoader, boolean cached) {
+    public static Class<?> loadClass(@Nullable String className, @Nullable ClassLoader classLoader, boolean cached) {
         if (StringUtils.isBlank(className)) {
             return null;
         }
 
-        Class<?> targetClass = null;
-        try {
-            ClassLoader targetClassLoader = classLoader == null ? getDefaultClassLoader() : classLoader;
-            targetClass = loadClass(targetClassLoader, className, cached);
-        } catch (Throwable ignored) { // Ignored
-        }
-        return targetClass;
-    }
-
-    @Nullable
-    public static Class<?> loadClass(@Nullable ClassLoader classLoader, @Nullable String className) {
-        ClassLoader actualClassLoader = findClassLoader(classLoader);
-        return doLoadClass(actualClassLoader, className);
-    }
-
-    @Nullable
-    public static Class<?> loadClass(@Nullable ClassLoader classLoader, @Nullable String className, boolean cached) {
         ClassLoader actualClassLoader = findClassLoader(classLoader);
         if (cached) {
             String cacheKey = buildCacheKey(actualClassLoader, className);
@@ -68,11 +51,11 @@ public class ClassLoaderUtils {
     }
 
     @Nullable
-    static ClassLoader findClassLoader(@Nullable ClassLoader classLoader) {
+    private static ClassLoader findClassLoader(@Nullable ClassLoader classLoader) {
         return classLoader == null ? getDefaultClassLoader() : classLoader;
     }
 
-    static String buildCacheKey(ClassLoader classLoader, String className) {
+    private static String buildCacheKey(ClassLoader classLoader, String className) {
         String cacheKey = className + classLoader.hashCode();
         return cacheKey;
     }

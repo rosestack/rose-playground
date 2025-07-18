@@ -29,7 +29,7 @@ public class ApplicationContextUtils {
      *
      * @see org.springframework.context.support.ApplicationContextAwareProcessor
      */
-    public static final Class<?> APPLICATION_CONTEXT_AWARE_PROCESSOR_CLASS = ClassLoaderUtils.resolveClass(APPLICATION_CONTEXT_AWARE_PROCESSOR_CLASS_NAME);
+    public static final Class<?> APPLICATION_CONTEXT_AWARE_PROCESSOR_CLASS = ClassLoaderUtils.loadClass(APPLICATION_CONTEXT_AWARE_PROCESSOR_CLASS_NAME);
 
 
     @Nonnull

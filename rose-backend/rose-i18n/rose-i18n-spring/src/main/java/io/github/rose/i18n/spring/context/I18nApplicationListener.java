@@ -34,7 +34,7 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
     private static final String ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME = "org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver";
 
-    private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS = ClassLoaderUtils.resolveClass(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
+    private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS = ClassLoaderUtils.loadClass(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
 
     private static final Class<?>[] SUPPORTED_EVENT_TYPES = {
             ContextRefreshedEvent.class,
