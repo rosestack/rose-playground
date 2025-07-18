@@ -41,10 +41,17 @@ public abstract class I18nUtils {
 
     public static void initMessageSources(I18nMessageSource i18nMessageSource,
                                           List<I18nMessageSource> allMessageSources) {
+        if (i18nMessageSource == null || allMessageSources == null) {
+            return;
+        }
+
         if (i18nMessageSource instanceof CompositeMessageSource) {
             CompositeMessageSource compositeServiceMessageSource = (CompositeMessageSource) i18nMessageSource;
-            for (I18nMessageSource subServiceMessageSource : compositeServiceMessageSource.getMessageSources()) {
-                initMessageSources(subServiceMessageSource, allMessageSources);
+            List<I18nMessageSource> messageSources = compositeServiceMessageSource.getMessageSources();
+            if (messageSources != null) {
+                for (I18nMessageSource subServiceMessageSource : messageSources) {
+                    initMessageSources(subServiceMessageSource, allMessageSources);
+                }
             }
         } else {
             allMessageSources.add(i18nMessageSource);

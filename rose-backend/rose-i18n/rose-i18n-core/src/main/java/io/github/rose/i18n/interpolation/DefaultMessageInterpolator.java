@@ -23,7 +23,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     }
 
     public DefaultMessageInterpolator(ExpressionEvaluator expressionEvaluator) {
-        this.expressionEvaluator = expressionEvaluator;
+        this.expressionEvaluator = expressionEvaluator != null ? expressionEvaluator : new SimpleExpressionEvaluator();
     }
 
     public void setExpressionEvaluator(ExpressionEvaluator expressionEvaluator) {
@@ -32,7 +32,10 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
 
     @Override
     public String interpolate(String template, Object args, Locale locale) {
-        if (template == null || args == null) {
+        if (template == null) {
+            return null;
+        }
+        if (args == null) {
             return template;
         }
 
@@ -77,9 +80,13 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     }
 
     private String interpolateNamedParameters(String template, Map<String, Object> namedArgs, Locale locale) {
+        if (template == null) {
+            return null;
+        }
         if (namedArgs == null || namedArgs.isEmpty()) {
             return template;
         }
+
         StringBuffer sb = new StringBuffer();
         Matcher matcher = NAMED_PARAMETER_PATTERN.matcher(template);
         int lastEnd = 0;
@@ -110,24 +117,31 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
         if (template == null) {
             return null;
         }
+
         Matcher matcher = EXPRESSION_PATTERN.matcher(template);
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {
             String expression = matcher.group(1);
-            String replacement = evaluateExpression(expression, namedArgs, locale);
-            matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+            if (expression != null) {
+                String replacement = evaluateExpression(expression, namedArgs, locale);
+                matcher.appendReplacement(result, Matcher.quoteReplacement(replacement != null ? replacement : ""));
+            }
         }
         matcher.appendTail(result);
         return result.toString();
     }
 
     private String evaluateExpression(String expression, Map<String, Object> variables, Locale locale) {
+        if (expression == null || expression.trim().isEmpty()) {
+            return "";
+        }
+
         if (expressionEvaluator != null) {
             try {
                 Object result = expressionEvaluator.evaluate(expression, variables, locale);
                 return result != null ? result.toString() : "";
             } catch (Exception e) {
-                // ignore
+                // ignore and return original expression
             }
         }
         return "${" + expression + "}";

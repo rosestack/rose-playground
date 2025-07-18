@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 装饰器：为 I18nMessageSource 添加简单缓存能力
@@ -23,9 +24,12 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
     }
 
     public SimpleCachingI18nMessageSource(I18nMessageSource delegate, int maxSize) {
-        this.delegate = delegate;
+        this.delegate = Objects.requireNonNull(delegate, "delegate cannot be null");
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("maxSize cannot be negative: " + maxSize);
+        }
         this.maxSize = maxSize > 0 ? maxSize : MAX_SIZE;
-        this.cache = Collections.synchronizedMap(new LinkedHashMap<>(maxSize, 0.75f, true) {
+        this.cache = Collections.synchronizedMap(new LinkedHashMap<>(this.maxSize, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<CacheKey, String> eldest) {
                 return size() > SimpleCachingI18nMessageSource.this.maxSize;
@@ -35,6 +39,9 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
 
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
+        if (code == null) {
+            return null;
+        }
         CacheKey key = new CacheKey(code, locale, args);
         String cached = cache.get(key);
         if (cached != null) {
@@ -61,12 +68,16 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
 
     @Override
     public void init() {
-        delegate.init();
+        if (delegate != null) {
+            delegate.init();
+        }
     }
 
     @Override
     public void destroy() {
         cache.clear();
-        delegate.destroy();
+        if (delegate != null) {
+            delegate.destroy();
+        }
     }
 }

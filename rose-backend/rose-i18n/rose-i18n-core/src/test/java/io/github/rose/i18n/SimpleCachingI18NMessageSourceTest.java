@@ -402,14 +402,20 @@ class SimpleCachingI18NMessageSourceTest {
 
     @Test
     void testNullDelegate() {
-        // 测试null delegate - 实际实现不会抛出异常，只是在使用时会有问题
-        SimpleCachingI18nMessageSource nullDelegateCache = new SimpleCachingI18nMessageSource(null);
-        assertNotNull(nullDelegateCache);
-
-        // 但是调用getMessage时会抛出NPE
+        // 测试null delegate - 现在在构造函数中就会抛出异常
         assertThrows(NullPointerException.class, () -> {
-            nullDelegateCache.getMessage("test.key", Locale.ENGLISH);
+            new SimpleCachingI18nMessageSource(null);
         });
+    }
+
+    @Test
+    void testNullCodeHandling() {
+        // 测试null code的处理
+        String result = cachingMessageSource.getMessage(null, Locale.ENGLISH, "arg");
+        assertNull(result);
+
+        // 验证delegate没有被调用
+        verify(delegate, never()).getMessage(isNull(), any(Locale.class), any());
     }
 
     @Test

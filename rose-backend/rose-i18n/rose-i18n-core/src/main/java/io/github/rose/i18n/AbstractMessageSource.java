@@ -38,6 +38,10 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
 
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
+        if (code == null) {
+            return null;
+        }
+
         String msg = this.getMessageInternal(code, locale, args);
         if (msg != null) {
             return msg;
@@ -81,13 +85,17 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
 
     @Nullable
     protected String getMessageFromParent(String code, Locale locale, @Nullable Object... args) {
+        if (code == null) {
+            return null;
+        }
+
         I18nMessageSource parent = this.getParentMessageSource();
         if (parent != null) {
             if (parent instanceof AbstractMessageSource) {
                 AbstractMessageSource abstractMessageSource = (AbstractMessageSource) parent;
                 return abstractMessageSource.getMessageInternal(code, locale, args);
             } else {
-                return parent.getMessage(code, args, null, locale);
+                return parent.getMessage(code, locale, args);
             }
         } else {
             return null;

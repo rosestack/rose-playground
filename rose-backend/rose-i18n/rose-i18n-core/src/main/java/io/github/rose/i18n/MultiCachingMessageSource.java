@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,8 +27,8 @@ public class MultiCachingMessageSource implements I18nMessageSource {
     private final RedisTemplate<String, String> redisTemplate;
 
     public MultiCachingMessageSource(I18nMessageSource delegate, RedisTemplate<String, String> redisTemplate) {
-        this.delegate = delegate;
-        this.redisTemplate = redisTemplate;
+        this.delegate = Objects.requireNonNull(delegate, "delegate cannot be null");
+        this.redisTemplate = Objects.requireNonNull(redisTemplate, "redisTemplate cannot be null");
     }
 
     @Override
@@ -45,16 +46,26 @@ public class MultiCachingMessageSource implements I18nMessageSource {
     // 缓存预热
     public void preloadCache() {
         CompletableFuture.runAsync(() -> {
-            Set<Locale> supportedLocales = getSupportedLocales();
+            try {
+                Set<Locale> supportedLocales = getSupportedLocales();
+                if (supportedLocales == null || supportedLocales.isEmpty()) {
+                    return;
+                }
 
-            for (Locale locale : supportedLocales) {
-                for (String key : getMessages(locale).keySet()) {
-                    try {
-                        getMessage(key, locale);
-                    } catch (Exception e) {
-                        // 忽略预加载失败的消息
+                for (Locale locale : supportedLocales) {
+                    Map<String, String> messages = getMessages(locale);
+                    if (messages != null && !messages.isEmpty()) {
+                        for (String key : messages.keySet()) {
+                            try {
+                                getMessage(key, locale);
+                            } catch (Exception e) {
+                                // 忽略预加载失败的消息
+                            }
+                        }
                     }
                 }
+            } catch (Exception e) {
+                // 忽略预加载过程中的异常
             }
         });
     }
@@ -62,6 +73,10 @@ public class MultiCachingMessageSource implements I18nMessageSource {
     @Nullable
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
+        if (code == null) {
+            return null;
+        }
+
         // 先从L1缓存获取
         CacheKey cacheKey = new CacheKey(code, locale, args);
         String message = localCache.getIfPresent(cacheKey.toString());
@@ -70,12 +85,30 @@ public class MultiCachingMessageSource implements I18nMessageSource {
         }
 
         // 从L2缓存获取
-        message = redisTemplate.opsForValue().get(cacheKey);
-        if (message != null) {
-            return message;
+        try {
+            message = redisTemplate.opsForValue().get(cacheKey);
+            if (message != null) {
+                // 回填L1缓存
+                localCache.put(cacheKey.toString(), message);
+                return message;
+            }
+        } catch (Exception e) {
+            // Redis异常时继续从delegate获取
         }
 
-        return delegate.getMessage(code, locale, args);
+        // 从delegate获取
+        message = delegate.getMessage(code, locale, args);
+        if (message != null) {
+            // 同时缓存到L1和L2
+            localCache.put(cacheKey.toString(), message);
+            try {
+                redisTemplate.opsForValue().set(cacheKey.toString(), message);
+            } catch (Exception e) {
+                // Redis异常时忽略
+            }
+        }
+
+        return message;
     }
 
     @Nullable

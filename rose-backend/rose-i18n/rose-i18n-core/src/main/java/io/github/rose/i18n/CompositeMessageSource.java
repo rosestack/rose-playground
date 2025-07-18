@@ -26,9 +26,14 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     }
 
     public CompositeMessageSource(List<? extends I18nMessageSource> i18nMessageSources) {
-        this.i18nMessageSources = i18nMessageSources.stream()
-                .sorted(Comparator.comparingInt(I18nMessageSource::getPriority))
-                .collect(Collectors.toList());
+        if (i18nMessageSources == null) {
+            this.i18nMessageSources = Collections.emptyList();
+        } else {
+            this.i18nMessageSources = i18nMessageSources.stream()
+                    .filter(Objects::nonNull)
+                    .sorted(Comparator.comparingInt(I18nMessageSource::getPriority))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -38,11 +43,17 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
 
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
+        if (code == null || i18nMessageSources == null || i18nMessageSources.isEmpty()) {
+            return null;
+        }
+
         String message = null;
         for (I18nMessageSource i18nMessageSource : i18nMessageSources) {
-            message = i18nMessageSource.getMessage(code, locale, args);
-            if (message != null) {
-                break;
+            if (i18nMessageSource != null) {
+                message = i18nMessageSource.getMessage(code, locale, args);
+                if (message != null) {
+                    break;
+                }
             }
         }
         return message;
@@ -100,13 +111,22 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
 
     public void setMessageSources(List<? extends I18nMessageSource> messageSources) {
         List<? extends I18nMessageSource> oldMessageSources = this.i18nMessageSources;
-        List<I18nMessageSource> newMessageSources = new ArrayList<>(messageSources);
-        OrderComparator.sort(newMessageSources);
-        if (oldMessageSources != null) {
-            oldMessageSources.clear();
+
+        if (messageSources == null) {
+            this.i18nMessageSources = Collections.emptyList();
+        } else {
+            List<I18nMessageSource> newMessageSources = messageSources.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(ArrayList::new));
+            OrderComparator.sort(newMessageSources);
+            this.i18nMessageSources = newMessageSources;
         }
-        this.i18nMessageSources = newMessageSources;
-        logger.debug("Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, newMessageSources);
+
+        if (oldMessageSources != null && oldMessageSources instanceof ArrayList) {
+            ((ArrayList<?>) oldMessageSources).clear();
+        }
+
+        logger.debug("Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, this.i18nMessageSources);
     }
 
     @Override
