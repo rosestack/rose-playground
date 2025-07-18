@@ -1,7 +1,7 @@
 package io.github.rose.i18n;
 
-import io.github.rose.i18n.interpolation.DefaultMessageInterpolator;
-import io.github.rose.i18n.interpolation.MessageInterpolator;
+import io.github.rose.i18n.render.DefaultMessageRenderer;
+import io.github.rose.i18n.render.MessageRenderer;
 import io.github.rose.i18n.util.I18nUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,13 +25,13 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
     protected String location;
     protected String basename;
-    protected MessageInterpolator interpolator;
+    protected MessageRenderer messageRenderer;
 
     public AbstractResourceMessageSource(String source) {
         super(source);
         this.location = DEFAULT_RESOURCE_LOCATION;
         this.basename = DEFAULT_RESOURCE_NAME;
-        this.interpolator = new DefaultMessageInterpolator();
+        this.messageRenderer = new DefaultMessageRenderer();
     }
 
     @Override
@@ -50,14 +50,14 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
             Map<String, String> messages = localizedResourceMessages.get(getResource(candidate));
             if (messages != null && messages.containsKey(code)) {
                 String template = messages.get(code);
-                return interpolator.interpolate(template, candidate, args);
+                return messageRenderer.render(template, candidate, args);
             }
         }
         return null;
     }
 
     @Override
-    protected Map<String, String>  getMessagesInternal(Locale locale) {
+    protected Map<String, String> getMessagesInternal(Locale locale) {
         return localizedResourceMessages.get(getResource(locale));
     }
 
@@ -124,8 +124,8 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         this.basename = basename;
     }
 
-    public void setInterpolator(MessageInterpolator interpolator) {
-        this.interpolator = interpolator;
+    public MessageRenderer getMessageRenderer() {
+        return messageRenderer;
     }
 
     private void initializeResource(String resource, Map<String, Map<String, String>> localizedResourceMessages) {

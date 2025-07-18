@@ -1,4 +1,4 @@
-package io.github.rose.i18n.interpolation;
+package io.github.rose.i18n.render;
 
 import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.evaluator.ExpressionEvaluator;
@@ -9,23 +9,23 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DefaultMessageInterpolator implements MessageInterpolator {
+public class DefaultMessageRenderer implements MessageRenderer {
     private static final Pattern MESSAGE_FORMAT_PATTERN = Pattern.compile("\\{\\d+\\}");
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
 
     private final ExpressionEvaluator expressionEvaluator;
 
-    public DefaultMessageInterpolator() {
+    public DefaultMessageRenderer() {
         this(new SpelExpressionEvaluator());
     }
 
-    public DefaultMessageInterpolator(ExpressionEvaluator expressionEvaluator) {
+    public DefaultMessageRenderer(ExpressionEvaluator expressionEvaluator) {
         this.expressionEvaluator = expressionEvaluator;
     }
 
     @Override
-    public String interpolate(String message, Locale locale, Object args) {
+    public String render(String message, Locale locale, Object args) {
         if (message == null) {
             return null;
         }
