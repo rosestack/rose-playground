@@ -1,4 +1,4 @@
-package io.github.rose.i18n.interpolation.evaluator;
+package io.github.rose.i18n.evaluator;
 
 import java.util.Locale;
 import java.util.Map;

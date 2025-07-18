@@ -35,11 +35,11 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- EL Expression Language Support - Jakarta EL Implementation (实现) -->
+        <!-- EL Expression Language Support - Jakarta EL Implementation (Tomcat) -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>5.0.0-M1</version>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-el-api</artifactId>
+            <version>10.1.19</version>
             <optional>true</optional>
         </dependency>
 
