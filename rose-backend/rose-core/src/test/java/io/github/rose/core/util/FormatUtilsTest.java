@@ -73,7 +73,7 @@ class FormatUtilsTest {
     @Test
     void testReplacePlaceholders_WithCustomPlaceholder() {
         String template = "Hello %s, welcome to %s";
-        String result = FormatUtils.replacePlaceholders(template, "%s", "John", "Rose");
+        String result = FormatUtils.replaceCustomPlaceholder(template, "%s", "John", "Rose");
         assertEquals("Hello John, welcome to Rose", result);
     }
 

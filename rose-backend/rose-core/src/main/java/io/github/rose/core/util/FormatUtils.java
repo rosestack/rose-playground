@@ -22,7 +22,7 @@ public abstract class FormatUtils {
     private static final Pattern INDEXED_PARAMETER_PATTERN = Pattern.compile("\\{(\\d+)\\}");
 
     /**
-     * 格式化占位符（自定义占位符）
+     * 格式化占位符（使用默认占位符 {}）
      *
      * @param template 模板字符串
      * @param args     参数数组
@@ -36,21 +36,48 @@ public abstract class FormatUtils {
             return template;
         }
 
-        StringBuilder result = new StringBuilder(template);
-        int index = -1;
-        int argsIndex = 0;
+        String result = template;
 
-        while (argsIndex < args.length) {
-            index = result.indexOf(DEFAULT_PLACEHOLDER, index + 1);
+        for (int i = 0; i < args.length; i++) {
+            int index = result.indexOf(DEFAULT_PLACEHOLDER);
             if (index == -1) {
                 break;
             }
-            String value = formatValue(args[argsIndex]);
-            result.replace(index, index + DEFAULT_PLACEHOLDER.length(), value);
-            argsIndex++;
+            String value = formatValue(args[i]);
+            result = result.substring(0, index) + value + result.substring(index + DEFAULT_PLACEHOLDER.length());
         }
 
-        return result.toString();
+        return result;
+    }
+
+    /**
+     * 格式化占位符（自定义占位符）
+     *
+     * @param template    模板字符串
+     * @param placeholder 占位符字符串
+     * @param args        参数数组
+     * @return 格式化后的字符串
+     */
+    public static String replaceCustomPlaceholder(final String template, String placeholder, final Object... args) {
+        if (StringUtils.isBlank(template)) {
+            return template;
+        }
+        if (args == null || args.length == 0) {
+            return template;
+        }
+
+        String result = template;
+
+        for (int i = 0; i < args.length; i++) {
+            int index = result.indexOf(placeholder);
+            if (index == -1) {
+                break;
+            }
+            String value = formatValue(args[i]);
+            result = result.substring(0, index) + value + result.substring(index + placeholder.length());
+        }
+
+        return result;
     }
 
     /**
@@ -74,9 +101,15 @@ public abstract class FormatUtils {
         while (matcher.find()) {
             String key = matcher.group(1);
             Object value = map.get(key);
-            String replacement = formatValue(value);
-            // 转义特殊字符
-            replacement = Matcher.quoteReplacement(replacement);
+            String replacement;
+            if (value != null) {
+                replacement = formatValue(value);
+                // 转义特殊字符
+                replacement = Matcher.quoteReplacement(replacement);
+            } else {
+                // 如果参数不存在，保留原始占位符
+                replacement = matcher.group(0);
+            }
             matcher.appendReplacement(result, replacement);
         }
         matcher.appendTail(result);
@@ -165,15 +198,15 @@ public abstract class FormatUtils {
 
             // 检测是否包含占位符
             if (template.contains(DEFAULT_PLACEHOLDER)) {
-                return replacePlaceholders(template, DEFAULT_PLACEHOLDER, array);
+                return replacePlaceholders(template, array);
             }
 
             // 默认使用占位符格式化
-            return replacePlaceholders(template, DEFAULT_PLACEHOLDER, array);
+            return replacePlaceholders(template, array);
         } else {
             // 单个对象，使用占位符格式化
             if (template.contains(DEFAULT_PLACEHOLDER)) {
-                return replacePlaceholders(template, DEFAULT_PLACEHOLDER, args);
+                return replacePlaceholders(template, args);
             }
             return template;
         }
