@@ -9,19 +9,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * 默认消息插值器实现
- *
- * <p>根据参数类型自动选择合适的插值方式：</p>
- * <ul>
- *   <li>Object[] 或 Object...：使用 FormatUtils.format() 和 MessageFormat</li>
- *   <li>Map&lt;String, Object&gt;：使用命名参数和表达式插值</li>
- *   <li>其他类型：转换为字符串后处理</li>
- * </ul>
- *
- * @author Rose Framework Team
- * @since 1.0.0
- */
 public class DefaultMessageInterpolator implements MessageInterpolator {
     private static final Pattern MESSAGE_FORMAT_PATTERN = Pattern.compile("\\{\\d+\\}");
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
