@@ -158,8 +158,8 @@ class SimpleCachingI18NMessageSourceTest {
         // 创建容量为2的缓存
         SimpleCachingI18nMessageSource lruCache = new SimpleCachingI18nMessageSource(delegate, 2);
 
-        // 设置mock行为
-        when(delegate.getMessage(anyString(), any(), any())).thenAnswer(invocation -> {
+        // 设置mock行为 - 使用正确的参数匹配
+        when(delegate.getMessage(anyString(), any(Locale.class), any(Object[].class))).thenAnswer(invocation -> {
             String code = invocation.getArgument(0);
             return "Message for " + code;
         });
@@ -376,11 +376,12 @@ class SimpleCachingI18NMessageSourceTest {
                 null
         };
 
-        lenient().when(delegate.getMessage(eq("complex.key"), eq(Locale.ENGLISH), any()))
+        lenient().when(delegate.getMessage(eq("complex.key"), eq(Locale.ENGLISH), any(Object[].class)))
                 .thenReturn("Complex Message");
 
         // 两次调用相同的复杂参数
-        cachingMessageSource.getMessage("complex.key", Locale.ENGLISH, complexArgs);
+        String result1 = cachingMessageSource.getMessage("complex.key", Locale.ENGLISH, complexArgs);
+        assertEquals("Complex Message", result1);
 
         // 创建相同内容但不同实例的参数数组
         Object[] sameComplexArgs = {
@@ -390,10 +391,11 @@ class SimpleCachingI18NMessageSourceTest {
                 new String[]{"nested", "array"},
                 null
         };
-        cachingMessageSource.getMessage("complex.key", Locale.ENGLISH, sameComplexArgs);
+        String result2 = cachingMessageSource.getMessage("complex.key", Locale.ENGLISH, sameComplexArgs);
+        assertEquals("Complex Message", result2);
 
-        // 验证delegate被调用两次（因为数组内容相同但实例不同，缓存key不同）
-        verify(delegate, times(2)).getMessage(eq("complex.key"), eq(Locale.ENGLISH), any());
+        // 验证delegate只被调用一次（因为CacheKey使用Arrays.deepEquals，相同内容的数组被视为相同的缓存键）
+        verify(delegate, times(1)).getMessage(eq("complex.key"), eq(Locale.ENGLISH), any(Object[].class));
     }
 
     // ==================== 边界情况测试 ====================
@@ -448,7 +450,8 @@ class SimpleCachingI18NMessageSourceTest {
             largeArgs[i] = "arg" + i;
         }
 
-        lenient().when(delegate.getMessage(eq("large.args"), eq(Locale.ENGLISH), any()))
+        // Use lenient stubbing with proper argument matching
+        lenient().when(delegate.getMessage(eq("large.args"), eq(Locale.ENGLISH), any(Object[].class)))
                 .thenReturn("Large Args Message");
 
         String result = cachingMessageSource.getMessage("large.args", Locale.ENGLISH, largeArgs);
@@ -458,15 +461,15 @@ class SimpleCachingI18NMessageSourceTest {
         String result2 = cachingMessageSource.getMessage("large.args", Locale.ENGLISH, largeArgs);
         assertEquals("Large Args Message", result2);
 
-        verify(delegate, times(1)).getMessage(eq("large.args"), eq(Locale.ENGLISH), any());
+        verify(delegate, times(1)).getMessage(eq("large.args"), eq(Locale.ENGLISH), any(Object[].class));
     }
 
     // ==================== 性能测试 ====================
 
     @Test
     void testCachePerformance() {
-        // 设置mock行为
-        when(delegate.getMessage(anyString(), any())).thenAnswer(invocation -> {
+        // 设置mock行为 - 使用正确的参数匹配
+        when(delegate.getMessage(anyString(), any(Locale.class), any(Object[].class))).thenAnswer(invocation -> {
             // 模拟耗时操作
             Thread.sleep(1);
             String code = invocation.getArgument(0);
@@ -552,7 +555,7 @@ class SimpleCachingI18NMessageSourceTest {
         // 测试缓存淘汰顺序
         SimpleCachingI18nMessageSource smallCache = new SimpleCachingI18nMessageSource(delegate, 3);
 
-        when(delegate.getMessage(anyString(), any())).thenAnswer(invocation -> {
+        when(delegate.getMessage(anyString(), any(Locale.class), any(Object[].class))).thenAnswer(invocation -> {
             String code = invocation.getArgument(0);
             return "Message for " + code;
         });
