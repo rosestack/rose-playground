@@ -37,7 +37,7 @@ public abstract class AbstractPropertiesResourceMessageSource extends AbstractRe
                 messages.putAll((Map) properties);
             }
         } catch (IOException e) {
-            throw new RuntimeException(FormatUtils.format("Source '{}' Messages Properties Resource[name : {}] loading is failed", source, resource), e);
+            throw new RuntimeException(FormatUtils.replacePlaceholders("Source '{}' Messages Properties Resource[name : {}] loading is failed", source, resource), e);
         }
         return messages == null ? emptyMap() : unmodifiableMap(messages);
     }

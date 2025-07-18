@@ -56,7 +56,7 @@ import static io.github.rose.core.util.Assert.assertNotNull;
 public interface ThrowableBiFunction<T, U, R> {
 
     ExceptionHandler DEFAULT_EXCEPTION_HANDLER = (first, second, failure) -> {
-        String errorMessage = FormatUtils.format("It's failed to execute the function with arguments[{}, {}] is failed", first, second);
+        String errorMessage = FormatUtils.replacePlaceholders("It's failed to execute the function with arguments[{}, {}] is failed", first, second);
         throw new RuntimeException(errorMessage, failure);
     };
 

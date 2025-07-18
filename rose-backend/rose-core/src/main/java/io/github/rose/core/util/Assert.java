@@ -31,8 +31,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static io.github.rose.core.util.FormatUtils.format;
-
 /**
  * The utility class for Assertion
  *
@@ -435,13 +433,13 @@ public abstract class Assert {
      */
     public static void assertArrayIndex(Object array, int index) throws IllegalArgumentException {
         if (index < 0) {
-            String message = format("The index argument must be positive , actual is {}", index);
+            String message = FormatUtils.replacePlaceholders("The index argument must be positive , actual is {}", index);
             throw new ArrayIndexOutOfBoundsException(message);
         }
         assertArrayType(array);
         int length = Array.getLength(array);
         if (index > length - 1) {
-            String message = format("The index must be less than {} , actual is {}", length, index);
+            String message = FormatUtils.replacePlaceholders("The index must be less than {} , actual is {}", length, index);
             throw new ArrayIndexOutOfBoundsException(message);
         }
     }
@@ -461,7 +459,7 @@ public abstract class Assert {
     public static void assertArrayType(Object array) throws IllegalArgumentException {
         Class<?> type = array.getClass();
         if (!ObjectUtils.isArray(type)) {
-            String message = format("The argument is not an array object, its type is {}", type.getName());
+            String message = FormatUtils.replacePlaceholders("The argument is not an array object, its type is {}", type.getName());
             throw new IllegalArgumentException(message);
         }
     }

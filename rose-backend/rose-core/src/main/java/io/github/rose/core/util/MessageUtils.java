@@ -24,6 +24,6 @@ public class MessageUtils {
         if (MESSAGE_SOURCE != null) {
             return MESSAGE_SOURCE.getMessage(code, args, LocaleContextHolder.getLocale());
         }
-        return FormatUtils.format(code, args);
+        return FormatUtils.replacePlaceholders(code, args);
     }
 }

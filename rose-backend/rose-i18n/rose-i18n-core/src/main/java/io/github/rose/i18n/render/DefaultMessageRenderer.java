@@ -45,7 +45,7 @@ public class DefaultMessageRenderer implements MessageRenderer {
 
             // 处理 {name} 命名参数
             if (NAMED_PARAMETER_PATTERN.matcher(message).find()) {
-                return FormatUtils.formatVariables(message, mapArgs);
+                return FormatUtils.replacePlaceholders(message, mapArgs);
             }
         }
 
@@ -63,13 +63,13 @@ public class DefaultMessageRenderer implements MessageRenderer {
 
             // 处理 {} 占位符
             if (message.contains("{}")) {
-                return FormatUtils.format(message, arrayArgs);
+                return FormatUtils.replacePlaceholders(message, arrayArgs);
             }
         }
 
         // 处理 {} 占位符
         if (message.contains("{}")) {
-            return FormatUtils.format(message, args);
+            return FormatUtils.replacePlaceholders(message, args);
         }
 
         // 如果没有匹配的格式，返回原消息
