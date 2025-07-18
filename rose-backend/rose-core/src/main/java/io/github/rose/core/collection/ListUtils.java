@@ -17,7 +17,6 @@
 package io.github.rose.core.collection;
 
 
-import io.github.rose.core.util.Utils;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.function.Consumer;
  * @see List
  * @since 1.0.0
  */
-public abstract class ListUtils implements Utils {
+public abstract class ListUtils {
     /**
      * Performs the given action for each element of the specified list, providing both the index and the element.
      *

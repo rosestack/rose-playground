@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServletUtils {
+public abstract class ServletUtils {
+    private ServletUtils() {
+    }
 
     /**
      * 获取String参数

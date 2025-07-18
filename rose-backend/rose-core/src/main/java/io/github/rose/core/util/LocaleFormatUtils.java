@@ -1,25 +1,56 @@
 package io.github.rose.core.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
- * TODO Comment
+ * 本地化格式化工具类
+ * 使用Jackson ObjectMapper处理日期时间格式化，支持统一的时区和格式配置
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since TODO
  */
-public class LocaleFormatUtils {
-    // 简化的日期时间格式化 - 建议使用专门的框架处理复杂格式化
-    private static final java.time.format.DateTimeFormatter DEFAULT_DATE_FORMATTER =
-            java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM);
-    private static final java.time.format.DateTimeFormatter DEFAULT_TIME_FORMATTER =
-            java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.MEDIUM);
-    private static final java.time.format.DateTimeFormatter DEFAULT_DATETIME_FORMATTER =
-            java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM);
+@Slf4j
+public abstract class LocaleFormatUtils {
+    private LocaleFormatUtils() {
+    }
+
+    /**
+     * 使用Jackson ObjectMapper进行日期时间格式化
+     * 这样可以统一使用应用配置的日期格式和时区设置
+     */
+    private static volatile ObjectMapper objectMapper;
+
+    /**
+     * NumberFormat缓存，避免重复创建
+     */
+    private static final Map<Locale, NumberFormat> NUMBER_FORMAT_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * 常用的null字符串
+     */
+    private static final String NULL_STRING = "null";
+
+    public static void setObjectMapper(ObjectMapper mapper) {
+        objectMapper = mapper;
+    }
+
+    /**
+     * 获取ObjectMapper实例，如果未设置则使用JacksonUtil的默认实例
+     *
+     * @return ObjectMapper实例
+     */
+    private static ObjectMapper getObjectMapper() {
+        return objectMapper != null ? objectMapper : JacksonUtils.getObjectMapper();
+    }
 
     /**
      * 格式化单个值
@@ -28,7 +59,7 @@ public class LocaleFormatUtils {
      * @return 格式化后的字符串
      */
     public static String formatValue(final Object value) {
-        return formatValue(value, Locale.getDefault());
+        return formatValue(value, Locale.getDefault(), TimeZone.getDefault());
     }
 
     /**
@@ -39,71 +70,48 @@ public class LocaleFormatUtils {
      * @return 格式化后的字符串
      */
     public static String formatValue(final Object value, final Locale locale) {
+        return formatValue(value, locale, TimeZone.getDefault());
+    }
+
+    /**
+     * 格式化单个值（支持本地化和时区）
+     *
+     * @param value    要格式化的值
+     * @param locale   本地化设置
+     * @param timeZone 时区设置
+     * @return 格式化后的字符串
+     */
+    public static String formatValue(final Object value, final Locale locale, final TimeZone timeZone) {
         if (value == null) {
-            return "null";
+            return NULL_STRING;
         }
 
-        // 基本类型
+        // 基本类型 - 快速路径
         if (value instanceof String) {
             return (String) value;
         }
-        if (value instanceof Boolean) {
-            return value.toString();
-        }
-        if (value instanceof Character) {
+        if (value instanceof Boolean || value instanceof Character) {
             return value.toString();
         }
 
-        // 数字类型
+        // 数字类型 - 统一处理
         if (value instanceof Number) {
             return formatNumber((Number) value, locale);
         }
-        if (value instanceof BigDecimal) {
-            return formatBigDecimal((BigDecimal) value, locale);
-        }
-        if (value instanceof BigInteger) {
-            return formatBigInteger((BigInteger) value, locale);
-        }
 
-        // 日期时间类型 - 使用简化的格式化，建议使用专门的框架处理复杂格式化
-        if (value instanceof Date) {
-            return formatDate((Date) value, locale);
+        // 日期时间类型 - 使用Jackson ObjectMapper进行格式化，统一时区和格式处理
+        if (isDateTimeType(value)) {
+            return formatDateTimeWithJackson(value, locale, timeZone);
         }
-        if (value instanceof LocalDate) {
-            return ((LocalDate) value).format(DEFAULT_DATE_FORMATTER.withLocale(locale));
-        }
-        if (value instanceof LocalTime) {
-            return ((LocalTime) value).format(DEFAULT_TIME_FORMATTER.withLocale(locale));
-        }
-        if (value instanceof LocalDateTime) {
-            return ((LocalDateTime) value).format(DEFAULT_DATETIME_FORMATTER.withLocale(locale));
-        }
-        if (value instanceof ZonedDateTime) {
-            return ((ZonedDateTime) value).format(DEFAULT_DATETIME_FORMATTER.withLocale(locale));
-        }
-        if (value instanceof Instant) {
-            LocalDateTime dateTime = LocalDateTime.ofInstant((Instant) value, ZoneId.systemDefault());
-            return dateTime.format(DEFAULT_DATETIME_FORMATTER.withLocale(locale));
-        }
-        if (value instanceof Duration) {
-            return formatDuration((Duration) value, locale);
-        }
-        if (value instanceof Period) {
-            return formatPeriod((Period) value, locale);
-        }
-
         // 其他类型
         if (value instanceof Currency) {
             return formatCurrency((Currency) value, locale);
         }
-        if (value instanceof Enum) {
-            return formatEnum((Enum<?>) value, locale);
-        }
         if (value instanceof Collection) {
-            return formatCollection((Collection<?>) value, locale);
+            return formatCollection((Collection<?>) value, locale, timeZone);
         }
         if (value.getClass().isArray()) {
-            return formatArray(value, locale);
+            return formatArray(value, locale, timeZone);
         }
         if (value instanceof TimeZone) {
             return formatTimeZone((TimeZone) value, locale);
@@ -115,6 +123,7 @@ public class LocaleFormatUtils {
 
     /**
      * 格式化数字（支持本地化）
+     * 统一处理所有数字类型，包括BigDecimal和BigInteger
      *
      * @param number 数字
      * @param locale 本地化设置
@@ -122,106 +131,81 @@ public class LocaleFormatUtils {
      */
     private static String formatNumber(final Number number, final Locale locale) {
         if (number == null) {
-            return "null";
+            return NULL_STRING;
         }
 
-        NumberFormat formatter = NumberFormat.getInstance(locale);
-        return formatter.format(number);
+        try {
+            NumberFormat formatter = getNumberFormat(locale);
+
+            // 特殊处理BigDecimal的精度
+            if (number instanceof BigDecimal) {
+                BigDecimal decimal = (BigDecimal) number;
+                formatter.setMaximumFractionDigits(decimal.scale());
+                formatter.setMinimumFractionDigits(0);
+            }
+
+            return formatter.format(number);
+        } catch (Exception e) {
+            log.warn("Failed to format number: {}, fallback to toString()", number, e);
+            return number.toString();
+        }
     }
 
     /**
-     * 格式化BigDecimal（支持本地化）
+     * 获取NumberFormat实例，使用缓存提高性能
      *
-     * @param decimal BigDecimal
-     * @param locale  本地化设置
-     * @return 格式化后的字符串
-     */
-    private static String formatBigDecimal(final BigDecimal decimal, final Locale locale) {
-        if (decimal == null) {
-            return "null";
-        }
-
-        NumberFormat formatter = NumberFormat.getInstance(locale);
-        formatter.setMaximumFractionDigits(decimal.scale());
-        return formatter.format(decimal);
-    }
-
-    /**
-     * 格式化BigInteger（支持本地化）
-     *
-     * @param integer BigInteger
-     * @param locale  本地化设置
-     * @return 格式化后的字符串
-     */
-    private static String formatBigInteger(final BigInteger integer, final Locale locale) {
-        if (integer == null) {
-            return "null";
-        }
-
-        NumberFormat formatter = NumberFormat.getInstance(locale);
-        return formatter.format(integer);
-    }
-
-    /**
-     * 格式化Date（支持本地化）
-     *
-     * @param date   Date对象
      * @param locale 本地化设置
-     * @return 格式化后的字符串
+     * @return NumberFormat实例
      */
-    private static String formatDate(final Date date, final Locale locale) {
-        if (date == null) {
-            return "null";
-        }
-        java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", locale);
-        return formatter.format(date);
+    private static NumberFormat getNumberFormat(final Locale locale) {
+        return NUMBER_FORMAT_CACHE.computeIfAbsent(locale, NumberFormat::getInstance);
     }
 
     /**
-     * 格式化Duration（支持本地化）
+     * 判断是否为日期时间类型
+     * 使用更高效的类型判断方式
      *
-     * @param duration Duration对象
-     * @param locale   本地化设置
-     * @return 格式化后的字符串
+     * @param value 要判断的值
+     * @return 是否为日期时间类型
      */
-    private static String formatDuration(final Duration duration, final Locale locale) {
-        if (duration == null) {
-            return "null";
-        }
-        long hours = duration.toHours();
-        long minutes = duration.toMinutesPart();
-        long seconds = duration.toSecondsPart();
-
-        if (hours > 0) {
-            return String.format(locale, "%d:%02d:%02d", hours, minutes, seconds);
-        } else {
-            return String.format(locale, "%d:%02d", minutes, seconds);
-        }
+    private static boolean isDateTimeType(Object value) {
+        Class<?> clazz = value.getClass();
+        return Date.class.isAssignableFrom(clazz)
+                || LocalDate.class.equals(clazz)
+                || LocalTime.class.equals(clazz)
+                || LocalDateTime.class.equals(clazz)
+                || ZonedDateTime.class.equals(clazz)
+                || Instant.class.equals(clazz);
     }
 
     /**
-     * 格式化Period（支持本地化）
+     * 使用Jackson ObjectMapper格式化日期时间类型
+     * 这样可以统一使用应用配置的日期格式和时区设置，不需要关心具体的格式化样式
      *
-     * @param period Period对象
-     * @param locale 本地化设置
+     * @param value    日期时间对象
+     * @param locale   本地化设置（注意：Jackson主要通过配置文件控制格式，locale在这里影响有限）
+     * @param timeZone 时区设置，用于日期时间的时区转换
      * @return 格式化后的字符串
      */
-    private static String formatPeriod(final Period period, final Locale locale) {
-        if (period == null) {
-            return "null";
-        }
-        List<String> parts = new ArrayList<>();
-        if (period.getYears() > 0) {
-            parts.add(period.getYears() + "年");
-        }
-        if (period.getMonths() > 0) {
-            parts.add(period.getMonths() + "月");
-        }
-        if (period.getDays() > 0) {
-            parts.add(period.getDays() + "天");
+    private static String formatDateTimeWithJackson(final Object value, final Locale locale, final TimeZone timeZone) {
+        if (value == null) {
+            return NULL_STRING;
         }
 
-        return parts.isEmpty() ? "0天" : String.join("", parts);
+        try {
+            // 使用Jackson进行序列化，会自动应用配置的日期格式和时区
+            ObjectMapper mapper = getObjectMapper().copy().setLocale(locale).setTimeZone(timeZone);
+            String jsonValue = mapper.writeValueAsString(value);
+
+            // 移除JSON字符串的引号
+            if (jsonValue.length() >= 2 && jsonValue.startsWith("\"") && jsonValue.endsWith("\"")) {
+                return jsonValue.substring(1, jsonValue.length() - 1);
+            }
+            return jsonValue;
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to format datetime with Jackson: {}, fallback to toString()", value, e);
+            return value.toString();
+        }
     }
 
     /**
@@ -233,98 +217,109 @@ public class LocaleFormatUtils {
      */
     private static String formatCurrency(final Currency currency, final Locale locale) {
         if (currency == null) {
-            return "null";
+            return NULL_STRING;
         }
 
-        return currency.getSymbol(locale);
+        try {
+            return currency.getSymbol(locale);
+        } catch (Exception e) {
+            log.warn("Failed to format currency: {}, fallback to currency code", currency, e);
+            return currency.getCurrencyCode();
+        }
     }
 
     /**
-     * 格式化Enum（支持本地化）
-     *
-     * @param enumValue Enum
-     * @param locale    本地化设置
-     * @return 格式化后的字符串
-     */
-    private static String formatEnum(final Enum<?> enumValue, final Locale locale) {
-        if (enumValue == null) {
-            return "null";
-        }
-
-        // 可以根据需要实现更复杂的枚举本地化逻辑
-        return enumValue.name();
-    }
-
-    /**
-     * 格式化Collection（支持本地化）
+     * 格式化Collection（支持本地化和时区）
+     * 优化：使用Stream API提高性能和可读性
      *
      * @param collection Collection
      * @param locale     本地化设置
+     * @param timeZone   时区设置
      * @return 格式化后的字符串
      */
-    private static String formatCollection(final Collection<?> collection, final Locale locale) {
+    private static String formatCollection(final Collection<?> collection, final Locale locale, final TimeZone timeZone) {
         if (collection == null) {
-            return "null";
+            return NULL_STRING;
         }
 
-        List<String> formattedElements = new ArrayList<>();
-        for (Object element : collection) {
-            formattedElements.add(formatValue(element, locale));
+        if (collection.isEmpty()) {
+            return "[]";
         }
 
-        return "[" + String.join(", ", formattedElements) + "]";
+        String elements = collection.stream()
+                .map(element -> formatValue(element, locale, timeZone))
+                .collect(Collectors.joining(", "));
+
+        return "[" + elements + "]";
     }
 
     /**
      * 格式化Array（支持本地化）
+     * 优化：简化数组处理逻辑，使用更高效的方式
      *
      * @param array  数组
      * @param locale 本地化设置
      * @return 格式化后的字符串
      */
-    private static String formatArray(final Object array, final Locale locale) {
+    private static String formatArray(final Object array, final Locale locale, final TimeZone timeZone) {
         if (array == null) {
-            return "null";
+            return NULL_STRING;
         }
 
+        // 对象数组
         if (array instanceof Object[]) {
-            return formatCollection(Arrays.asList((Object[]) array), locale);
-        } else if (array instanceof int[]) {
-            return formatCollection(Arrays.stream((int[]) array).boxed().toList(), locale);
-        } else if (array instanceof long[]) {
-            return formatCollection(Arrays.stream((long[]) array).boxed().toList(), locale);
-        } else if (array instanceof double[]) {
-            return formatCollection(Arrays.stream((double[]) array).boxed().toList(), locale);
-        } else if (array instanceof float[]) {
-            List<Float> floatList = new ArrayList<>();
-            for (float f : (float[]) array) {
-                floatList.add(f);
+            return formatCollection(Arrays.asList((Object[]) array), locale, timeZone);
+        }
+
+        // 基本类型数组 - 使用更简洁的方式
+        if (array instanceof int[]) {
+            return formatCollection(Arrays.stream((int[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
+        }
+        if (array instanceof long[]) {
+            return formatCollection(Arrays.stream((long[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
+        }
+        if (array instanceof double[]) {
+            return formatCollection(Arrays.stream((double[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
+        }
+        if (array instanceof float[]) {
+            float[] floats = (float[]) array;
+            List<Float> list = new ArrayList<>(floats.length);
+            for (float f : floats) {
+                list.add(f);
             }
-            return formatCollection(floatList, locale);
-        } else if (array instanceof boolean[]) {
-            List<Boolean> booleanList = new ArrayList<>();
-            for (boolean b : (boolean[]) array) {
-                booleanList.add(b);
+            return formatCollection(list, locale, timeZone);
+        }
+        if (array instanceof boolean[]) {
+            boolean[] booleans = (boolean[]) array;
+            List<Boolean> list = new ArrayList<>(booleans.length);
+            for (boolean b : booleans) {
+                list.add(b);
             }
-            return formatCollection(booleanList, locale);
-        } else if (array instanceof char[]) {
-            List<Character> charList = new ArrayList<>();
-            for (char c : (char[]) array) {
-                charList.add(c);
+            return formatCollection(list, locale, timeZone);
+        }
+        if (array instanceof char[]) {
+            char[] chars = (char[]) array;
+            List<Character> list = new ArrayList<>(chars.length);
+            for (char c : chars) {
+                list.add(c);
             }
-            return formatCollection(charList, locale);
-        } else if (array instanceof byte[]) {
-            List<Byte> byteList = new ArrayList<>();
-            for (byte b : (byte[]) array) {
-                byteList.add(b);
+            return formatCollection(list, locale, timeZone);
+        }
+        if (array instanceof byte[]) {
+            byte[] bytes = (byte[]) array;
+            List<Byte> list = new ArrayList<>(bytes.length);
+            for (byte b : bytes) {
+                list.add(b);
             }
-            return formatCollection(byteList, locale);
-        } else if (array instanceof short[]) {
-            List<Short> shortList = new ArrayList<>();
-            for (short s : (short[]) array) {
-                shortList.add(s);
+            return formatCollection(list, locale, timeZone);
+        }
+        if (array instanceof short[]) {
+            short[] shorts = (short[]) array;
+            List<Short> list = new ArrayList<>(shorts.length);
+            for (short s : shorts) {
+                list.add(s);
             }
-            return formatCollection(shortList, locale);
+            return formatCollection(list, locale, timeZone);
         }
 
         return array.toString();
@@ -332,6 +327,7 @@ public class LocaleFormatUtils {
 
     /**
      * 格式化TimeZone（支持本地化）
+     * 改进：添加异常处理
      *
      * @param timeZone TimeZone
      * @param locale   本地化设置
@@ -339,9 +335,21 @@ public class LocaleFormatUtils {
      */
     private static String formatTimeZone(final TimeZone timeZone, final Locale locale) {
         if (timeZone == null) {
-            return "null";
+            return NULL_STRING;
         }
 
-        return timeZone.getDisplayName(locale);
+        try {
+            return timeZone.getDisplayName(locale);
+        } catch (Exception e) {
+            log.warn("Failed to format timezone: {}, fallback to ID", timeZone, e);
+            return timeZone.getID();
+        }
+    }
+
+    /**
+     * 清理缓存，主要用于测试或内存管理
+     */
+    public static void clearCache() {
+        NUMBER_FORMAT_CACHE.clear();
     }
 }

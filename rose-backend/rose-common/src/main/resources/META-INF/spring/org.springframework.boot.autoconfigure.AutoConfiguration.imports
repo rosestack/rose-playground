@@ -3,4 +3,5 @@ io.github.rose.core.config.AsyncConfig
 io.github.rose.core.config.ThreadPoolConfig
 io.github.rose.core.config.ValidatorConfig
 io.github.rose.core.config.RedisConfig
+io.github.rose.core.config.JacksonConfig
 io.github.rose.core.config.GlobalExceptionHandler

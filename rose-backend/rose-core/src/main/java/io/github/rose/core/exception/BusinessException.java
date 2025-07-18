@@ -1,10 +1,13 @@
 package io.github.rose.core.exception;
 
-import io.github.rose.core.util.MessageUtils;
+import io.github.rose.core.util.FormatUtils;
+import io.github.rose.core.util.SpringContextUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.Serial;
 
@@ -14,6 +17,8 @@ import static io.github.rose.core.util.Result.SERVER_ERROR;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class BusinessException extends RuntimeException {
+    private static final MessageSource MESSAGE_SOURCE = SpringContextUtils.getBean(MessageSource.class);
+
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -56,7 +61,11 @@ public class BusinessException extends RuntimeException {
     public String getMessage() {
         String message = null;
         if (!StringUtils.isEmpty(code)) {
-            message = MessageUtils.getMessage(code, args);
+            if (MESSAGE_SOURCE != null) {
+                message = MESSAGE_SOURCE.getMessage(code, args, LocaleContextHolder.getLocale());
+            } else {
+                message = FormatUtils.replacePlaceholders(code, args);
+            }
         }
         if (message == null) {
             message = defaultMessage;

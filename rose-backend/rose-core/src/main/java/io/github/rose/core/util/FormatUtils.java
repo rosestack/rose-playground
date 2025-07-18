@@ -2,32 +2,19 @@ package io.github.rose.core.util;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.NumberFormat;
-import java.time.*;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * 统一的格式化工具类
- * <p>
- * 提供模板格式化、变量替换和值格式化功能，支持本地化
- * 支持的类型包括：
- * - 基本类型：String, Number, Boolean, Character
- * - 数字类型：BigDecimal, BigInteger
- * - 其他类型：Currency, Enum, Collection, Array
- * - 日期时间：通过可配置的DateTimeFormatter处理
- *
- * @author rose
- * @since 0.0.1
- */
 public abstract class FormatUtils {
     public static final String DEFAULT_PLACEHOLDER = "{}";
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern INDEXED_PARAMETER_PATTERN = Pattern.compile("\\{(\\d+)\\}");
 
+    private FormatUtils() {
+    }
 
     /**
      * 格式化占位符（使用默认占位符 {}）
@@ -37,7 +24,7 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replacePlaceholders(final String template, final Object... args) {
-        return replacePlaceholders(template, Locale.getDefault(), args);
+        return replacePlaceholders(template, Locale.getDefault(), TimeZone.getDefault(), args);
     }
 
     /**
@@ -48,26 +35,8 @@ public abstract class FormatUtils {
      * @param args     参数数组
      * @return 格式化后的字符串
      */
-    public static String replacePlaceholders(final String template, final Locale locale, final Object... args) {
-        if (StringUtils.isBlank(template)) {
-            return template;
-        }
-        if (args == null || args.length == 0) {
-            return template;
-        }
-
-        String result = template;
-
-        for (int i = 0; i < args.length; i++) {
-            int index = result.indexOf(DEFAULT_PLACEHOLDER);
-            if (index == -1) {
-                break;
-            }
-            String value = LocaleFormatUtils.formatValue(args[i], locale);
-            result = result.substring(0, index) + value + result.substring(index + DEFAULT_PLACEHOLDER.length());
-        }
-
-        return result;
+    public static String replacePlaceholders(final String template, final Locale locale, final TimeZone timeZone, final Object... args) {
+        return replaceCustomPlaceholder(template, DEFAULT_PLACEHOLDER, locale, timeZone, args);
     }
 
     /**
@@ -91,7 +60,7 @@ public abstract class FormatUtils {
      * @param args        参数数组
      * @return 格式化后的字符串
      */
-    public static String replaceCustomPlaceholder(final String template, String placeholder, final Locale locale, final Object... args) {
+    public static String replaceCustomPlaceholder(final String template, String placeholder, final Locale locale, TimeZone timeZone, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -106,7 +75,7 @@ public abstract class FormatUtils {
             if (index == -1) {
                 break;
             }
-            String value = LocaleFormatUtils.formatValue(args[i], locale);
+            String value = LocaleFormatUtils.formatValue(args[i], locale, timeZone);
             result = result.substring(0, index) + value + result.substring(index + placeholder.length());
         }
 
@@ -121,7 +90,7 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replaceNamedParameters(final String template, final Map<String, ?> map) {
-        return replaceNamedParameters(template, map, Locale.getDefault());
+        return replaceNamedParameters(template, Locale.getDefault(), TimeZone.getDefault(), map);
     }
 
     /**
@@ -132,7 +101,7 @@ public abstract class FormatUtils {
      * @param locale   本地化设置
      * @return 格式化后的字符串
      */
-    public static String replaceNamedParameters(final String template, final Map<String, ?> map, final Locale locale) {
+    public static String replaceNamedParameters(final String template, final Locale locale, TimeZone timeZone, final Map<String, ?> map) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -148,7 +117,7 @@ public abstract class FormatUtils {
             Object value = map.get(key);
             String replacement;
             if (value != null) {
-                replacement = LocaleFormatUtils.formatValue(value, locale);
+                replacement = LocaleFormatUtils.formatValue(value, locale, timeZone);
                 // 转义特殊字符
                 replacement = Matcher.quoteReplacement(replacement);
             } else {
@@ -170,7 +139,7 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replaceIndexedParameters(final String template, final Object... args) {
-        return replaceIndexedParameters(template, Locale.getDefault(), args);
+        return replaceIndexedParameters(template, Locale.getDefault(), TimeZone.getDefault(), args);
     }
 
     /**
@@ -181,7 +150,7 @@ public abstract class FormatUtils {
      * @param args     参数数组
      * @return 格式化后的字符串
      */
-    public static String replaceIndexedParameters(final String template, final Locale locale, final Object... args) {
+    public static String replaceIndexedParameters(final String template, final Locale locale, TimeZone timeZone, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -196,7 +165,7 @@ public abstract class FormatUtils {
             try {
                 int index = Integer.parseInt(matcher.group(1));
                 if (index >= 0 && index < args.length) {
-                    String replacement = LocaleFormatUtils.formatValue(args[index], locale);
+                    String replacement = LocaleFormatUtils.formatValue(args[index], locale, timeZone);
                     // 转义特殊字符
                     replacement = Matcher.quoteReplacement(replacement);
                     matcher.appendReplacement(result, replacement);
@@ -222,7 +191,7 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String format(final String template, final Object args) {
-        return format(template, Locale.getDefault(), args);
+        return format(template, Locale.getDefault(), TimeZone.getDefault(), args);
     }
 
     /**
@@ -233,7 +202,7 @@ public abstract class FormatUtils {
      * @param locale   本地化设置
      * @return 格式化后的字符串
      */
-    public static String format(final String template, final Locale locale, final Object args) {
+    public static String format(final String template, final Locale locale, TimeZone timeZone, final Object args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -247,7 +216,7 @@ public abstract class FormatUtils {
 
             // 检测是否包含命名参数
             if (NAMED_PARAMETER_PATTERN.matcher(template).find()) {
-                return replaceNamedParameters(template, map, locale);
+                return replaceNamedParameters(template, locale, timeZone, map);
             }
 
             // 检测是否包含索引参数
@@ -256,7 +225,7 @@ public abstract class FormatUtils {
             }
 
             // 默认使用变量格式化
-            return replaceNamedParameters(template, map, locale);
+            return replaceNamedParameters(template, locale, timeZone, map);
         } else if (args instanceof Object[]) {
             Object[] array = (Object[]) args;
 

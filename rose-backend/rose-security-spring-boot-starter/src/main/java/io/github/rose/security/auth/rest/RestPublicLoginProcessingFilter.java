@@ -1,7 +1,7 @@
 
 package io.github.rose.security.auth.rest;
 
-import io.github.rose.core.util.JacksonUtil;
+import io.github.rose.core.util.JacksonUtils;
 import io.github.rose.security.auth.exception.AuthMethodNotSupportedException;
 import io.github.rose.security.model.PublicLoginRequest;
 import io.github.rose.security.model.UserPrincipal;
@@ -31,7 +31,7 @@ public class RestPublicLoginProcessingFilter extends AbstractAuthenticationProce
 
 
     public RestPublicLoginProcessingFilter(String defaultProcessUrl, AuthenticationSuccessHandler successHandler,
-                                     AuthenticationFailureHandler failureHandler) {
+                                           AuthenticationFailureHandler failureHandler) {
         super(defaultProcessUrl);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
@@ -41,7 +41,7 @@ public class RestPublicLoginProcessingFilter extends AbstractAuthenticationProce
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
         if (!HttpMethod.POST.name().equals(request.getMethod())) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Authentication method not supported. Request method: " + request.getMethod());
             }
             throw new AuthMethodNotSupportedException("Authentication method not supported");
@@ -49,7 +49,7 @@ public class RestPublicLoginProcessingFilter extends AbstractAuthenticationProce
 
         PublicLoginRequest loginRequest;
         try {
-            loginRequest = JacksonUtil.fromReader(request.getReader(), PublicLoginRequest.class);
+            loginRequest = JacksonUtils.readValue(request.getReader(), PublicLoginRequest.class);
         } catch (Exception e) {
             throw new AuthenticationServiceException("Invalid public login request payload");
         }
