@@ -16,8 +16,6 @@ import java.util.regex.Pattern;
  */
 public abstract class FormatUtils {
     public static final String DEFAULT_PLACEHOLDER = "{}";
-
-    // 缓存常用的正则表达式模式
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern INDEXED_PARAMETER_PATTERN = Pattern.compile("\\{(\\d+)\\}");
 
@@ -245,7 +243,11 @@ public abstract class FormatUtils {
      * @return 是否包含占位符
      */
     public static boolean hasPlaceholders(final String template) {
-        return StringUtils.isNotBlank(template) && template.contains(DEFAULT_PLACEHOLDER);
+        return hasPlaceholders(template, DEFAULT_PLACEHOLDER);
+    }
+
+    public static boolean hasPlaceholders(final String template, String placeholder) {
+        return StringUtils.isNotBlank(template) && template.contains(placeholder);
     }
 
     /**
@@ -268,19 +270,23 @@ public abstract class FormatUtils {
         return StringUtils.isNotBlank(template) && INDEXED_PARAMETER_PATTERN.matcher(template).find();
     }
 
+    public static int countPlaceholders(final String template) {
+        return countPlaceholders(template, DEFAULT_PLACEHOLDER);
+    }
+
     /**
      * 统计模板中的占位符数量
      *
      * @param template 模板字符串
      * @return 占位符数量
      */
-    public static int countPlaceholders(final String template) {
+    public static int countPlaceholders(final String template, String placeholder) {
         if (StringUtils.isBlank(template)) {
             return 0;
         }
         int count = 0;
         int index = -1;
-        while ((index = template.indexOf(DEFAULT_PLACEHOLDER, index + 1)) != -1) {
+        while ((index = template.indexOf(placeholder, index + 1)) != -1) {
             count++;
         }
         return count;
