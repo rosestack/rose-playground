@@ -1,7 +1,6 @@
 package io.github.rose.i18n.spring.context;
 
 import io.github.rose.core.spring.SpringBeans;
-import io.github.rose.core.util.ClassLoaderUtils;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spring.I18nConstants;
 import io.github.rose.i18n.util.I18nUtils;
@@ -13,6 +12,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
     private static final String ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME = "org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver";
 
-    private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS = ClassLoaderUtils.loadClass(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
+    private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS = ClassUtils.resolveClassName(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME, ClassUtils.getDefaultClassLoader());
 
     private static final Class<?>[] SUPPORTED_EVENT_TYPES = {
             ContextRefreshedEvent.class,

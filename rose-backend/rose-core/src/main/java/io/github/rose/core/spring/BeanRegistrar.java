@@ -1,6 +1,5 @@
 package io.github.rose.core.spring;
 
-import io.github.rose.core.util.ClassLoaderUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +80,7 @@ public abstract class BeanRegistrar {
      * @return Bean类型
      */
     public static Class<?> resolveBeanType(RootBeanDefinition beanDefinition) {
-        return resolveBeanType(beanDefinition, ClassLoaderUtils.getDefaultClassLoader());
+        return resolveBeanType(beanDefinition, ClassUtils.getDefaultClassLoader());
     }
 
     /**
@@ -100,8 +99,8 @@ public abstract class BeanRegistrar {
             } else {
                 String beanClassName = beanDefinition.getBeanClassName();
                 if (StringUtils.hasText(beanClassName)) {
-                    ClassLoader targetClassLoader = classLoader == null ? ClassLoaderUtils.getDefaultClassLoader() : classLoader;
-                    beanClass = ClassLoaderUtils.loadClass(beanClassName, targetClassLoader, true);
+                    ClassLoader targetClassLoader = classLoader == null ? ClassUtils.getDefaultClassLoader() : classLoader;
+                    beanClass = ClassUtils.resolveClassName(beanClassName, targetClassLoader);
                 }
             }
         } else {

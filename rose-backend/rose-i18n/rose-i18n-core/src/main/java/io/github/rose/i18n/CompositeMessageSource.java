@@ -1,6 +1,5 @@
 package io.github.rose.i18n;
 
-import io.github.rose.core.collection.ListUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ObjectUtils;
@@ -29,16 +28,13 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         if (i18nMessageSources == null) {
             this.i18nMessageSources = Collections.emptyList();
         } else {
-            this.i18nMessageSources = i18nMessageSources.stream()
-                    .filter(Objects::nonNull)
-                    .sorted(Comparator.comparingInt(I18nMessageSource::getPriority))
-                    .collect(Collectors.toList());
+            this.i18nMessageSources = i18nMessageSources;
         }
     }
 
     @Override
     public void init() {
-        ListUtils.forEach(this.i18nMessageSources, I18nMessageSource::init);
+        this.i18nMessageSources.forEach(I18nMessageSource::init);
     }
 
     @Override
@@ -182,7 +178,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     @Override
     public void destroy() {
         List<? extends I18nMessageSource> messageSources = this.i18nMessageSources;
-        ListUtils.forEach(messageSources, I18nMessageSource::destroy);
+        messageSources.forEach(I18nMessageSource::destroy);
         messageSources.clear();
     }
 

@@ -1,13 +1,13 @@
 package io.github.rose.i18n.spring.beans;
 
 import io.github.rose.core.spring.SpringBeans;
-import io.github.rose.core.util.ClassLoaderUtils;
 import io.github.rose.i18n.spring.context.MessageSourceAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.MessageSource;
+import org.springframework.util.ClassUtils;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import static org.springframework.aop.support.AopUtils.getTargetClass;
@@ -25,8 +25,8 @@ import static org.springframework.aop.support.AopUtils.getTargetClass;
 public class I18nBeanPostProcessor implements BeanPostProcessor {
     private static final Logger logger = LoggerFactory.getLogger(I18nBeanPostProcessor.class);
     private static final ClassLoader classLoader = I18nBeanPostProcessor.class.getClassLoader();
-    private static final Class<?> VALIDATOR_FACTORY_CLASS = ClassLoaderUtils.loadClass("javax.validation.ValidatorFactory", classLoader);
-    private static final Class<?> LOCAL_VALIDATOR_FACTORY_BEAN_CLASS = ClassLoaderUtils.loadClass("org.springframework.validation.beanvalidation.LocalValidatorFactoryBean", classLoader);
+    private static final Class<?> VALIDATOR_FACTORY_CLASS = ClassUtils.resolveClassName("javax.validation.ValidatorFactory", classLoader);
+    private static final Class<?> LOCAL_VALIDATOR_FACTORY_BEAN_CLASS = ClassUtils.resolveClassName("org.springframework.validation.beanvalidation.LocalValidatorFactoryBean", classLoader);
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {

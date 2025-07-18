@@ -1,4 +1,4 @@
-package io.github.rose.i18n.util;
+package io.github.rose.i18n.cache;
 
 import lombok.Getter;
 import lombok.ToString;

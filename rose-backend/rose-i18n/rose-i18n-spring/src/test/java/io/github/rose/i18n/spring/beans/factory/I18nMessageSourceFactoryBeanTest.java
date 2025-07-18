@@ -1,6 +1,5 @@
 package io.github.rose.i18n.spring.beans.factory;
 
-import io.github.rose.core.util.ThreadUtils;
 import io.github.rose.i18n.AbstractSpringTest;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spring.TestServiceMessageSourceConfiguration;

@@ -1,6 +1,5 @@
 package io.github.rose.common.util;
 
-import io.github.rose.core.util.NetUtils;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -777,13 +776,22 @@ public abstract class ServletUtils {
         String ip;
         for (String header : headerNames) {
             ip = request.getHeader(header);
-            if (!NetUtils.isUnknown(ip)) {
-                return NetUtils.getReverseProxyIp(ip);
-            }
+            return getReverseProxyIp(ip);
         }
 
         ip = request.getRemoteAddr();
-        return NetUtils.getReverseProxyIp(ip);
+        return getReverseProxyIp(ip);
+    }
+
+    public static String getReverseProxyIp(String ip) {
+        if (ip != null && ip.contains(",")) {
+            for (String subIp : ip.split(",")) {
+                if (!StringUtils.isBlank(subIp) && !"unknown".equalsIgnoreCase(subIp)) {
+                    return subIp;
+                }
+            }
+        }
+        return ip;
     }
 
     /**
@@ -1032,12 +1040,12 @@ public abstract class ServletUtils {
 
         String uri = request.getRequestURI();
         return StringUtils.endsWithIgnoreCase(uri, EXT_JS) ||
-               StringUtils.endsWithIgnoreCase(uri, EXT_CSS) ||
-               StringUtils.endsWithIgnoreCase(uri, EXT_PNG) ||
-               StringUtils.endsWithIgnoreCase(uri, EXT_JPG) ||
-               StringUtils.endsWithIgnoreCase(uri, EXT_JPEG) ||
-               StringUtils.endsWithIgnoreCase(uri, EXT_GIF) ||
-               StringUtils.endsWithIgnoreCase(uri, EXT_PDF);
+                StringUtils.endsWithIgnoreCase(uri, EXT_CSS) ||
+                StringUtils.endsWithIgnoreCase(uri, EXT_PNG) ||
+                StringUtils.endsWithIgnoreCase(uri, EXT_JPG) ||
+                StringUtils.endsWithIgnoreCase(uri, EXT_JPEG) ||
+                StringUtils.endsWithIgnoreCase(uri, EXT_GIF) ||
+                StringUtils.endsWithIgnoreCase(uri, EXT_PDF);
     }
 
     // ==================== 请求信息获取方法 ====================
@@ -1230,7 +1238,7 @@ public abstract class ServletUtils {
      * 设置响应字符编码
      *
      * @param response 响应对象
-     * @param charset   字符编码
+     * @param charset  字符编码
      */
     public static void setCharacterEncoding(HttpServletResponse response, String charset) {
         if (response != null && StringUtils.isNotBlank(charset)) {

@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.Lifecycle;
-import io.github.rose.i18n.util.CacheKey;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;

@@ -4,8 +4,8 @@ import io.github.rose.i18n.render.DefaultMessageRenderer;
 import io.github.rose.i18n.render.MessageRenderer;
 import io.github.rose.i18n.util.I18nUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Locale;

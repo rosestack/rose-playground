@@ -1,7 +1,6 @@
 package io.github.rose.i18n.cache;
 
 import io.github.rose.i18n.I18nMessageSource;
-import io.github.rose.i18n.util.CacheKey;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
