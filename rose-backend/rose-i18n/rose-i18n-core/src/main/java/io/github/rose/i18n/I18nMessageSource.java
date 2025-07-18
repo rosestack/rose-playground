@@ -1,6 +1,5 @@
 package io.github.rose.i18n;
 
-import io.github.rose.core.lang.Prioritized;
 import io.github.rose.i18n.cache.MessageSourceStats;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -8,7 +7,7 @@ import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public interface I18nMessageSource extends Lifecycle, Prioritized {
+public interface I18nMessageSource extends Lifecycle {
     String COMMON_SOURCE = "common";
 
     @Nullable

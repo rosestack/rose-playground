@@ -26,15 +26,21 @@ public class DelegatingFactoryBean implements FactoryBean<Object>, InitializingB
     }
 
     public void afterPropertiesSet() throws Exception {
-        BeanUtils.invokeInitializingBean(this.delegate);
+        if (this.delegate instanceof InitializingBean) {
+            ((InitializingBean) this.delegate).afterPropertiesSet();
+        }
     }
 
     public void setApplicationContext(ApplicationContext context) throws BeansException {
-        BeanUtils.invokeAwareInterfaces(this.delegate, context);
+        if (this.delegate instanceof ApplicationContextAware) {
+            ((ApplicationContextAware) this.delegate).setApplicationContext(context);
+        }
     }
 
     public void setBeanName(String name) {
-        BeanUtils.invokeBeanNameAware(this.delegate, name);
+        if (this.delegate instanceof BeanNameAware) {
+            ((BeanNameAware) this.delegate).setBeanName(name);
+        }
     }
 
     public void destroy() throws Exception {

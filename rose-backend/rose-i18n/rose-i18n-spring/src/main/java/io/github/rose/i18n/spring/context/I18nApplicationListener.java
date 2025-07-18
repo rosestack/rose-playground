@@ -1,6 +1,6 @@
 package io.github.rose.i18n.spring.context;
 
-import io.github.rose.core.spring.BeanUtils;
+import io.github.rose.core.spring.SpringBeans;
 import io.github.rose.core.util.ClassLoaderUtils;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spring.I18nConstants;
@@ -78,14 +78,14 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
         Class<AcceptHeaderLocaleResolver> beanClass = (Class<AcceptHeaderLocaleResolver>) ACCEPT_HEADER_LOCALE_RESOLVER_CLASS;
 
-        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = BeanUtils.getSortedBeans(context, beanClass);
+        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = SpringBeans.getSortedBeans(beanClass);
 
         if (acceptHeaderLocaleResolvers.isEmpty()) {
             logger.debug("The '{}' Spring Bean was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
             return;
         }
 
-        I18nMessageSource i18nMessageSource = BeanUtils.getOptionalBean(context, I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource = SpringBeans.getBean(I18nMessageSource.class);
 
         for (AcceptHeaderLocaleResolver acceptHeaderLocaleResolver : acceptHeaderLocaleResolvers) {
             Locale defaultLocale = Locale.getDefault();

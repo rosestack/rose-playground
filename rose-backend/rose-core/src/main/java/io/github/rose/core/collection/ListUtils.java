@@ -17,7 +17,7 @@
 package io.github.rose.core.collection;
 
 
-import org.apache.commons.collections4.CollectionUtils;
+
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -57,7 +57,7 @@ public abstract class ListUtils {
      * @param <T>                    the type of elements in the list
      */
     public static <T> void forEach(List<T> values, BiConsumer<Integer, T> indexedElementConsumer) {
-        int length = CollectionUtils.size(values);
+        int length = values == null ? 0 : values.size();
         for (int i = 0; i < length; i++) {
             T value = values.get(i);
             indexedElementConsumer.accept(i, value);

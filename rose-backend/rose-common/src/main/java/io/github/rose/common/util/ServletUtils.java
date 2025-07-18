@@ -1,5 +1,6 @@
-package io.github.rose.core.util;
+package io.github.rose.common.util;
 
+import io.github.rose.core.util.NetUtils;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,7 +55,32 @@ public abstract class ServletUtils {
             "HTTP_X_FORWARDED_FOR",
             "X-Real-IP"
     );
-    ;
+
+    /**
+     * 常见的HTTP方法
+     */
+    private static final String HTTP_METHOD_GET = "GET";
+    private static final String HTTP_METHOD_POST = "POST";
+    private static final String HTTP_METHOD_PUT = "PUT";
+    private static final String HTTP_METHOD_DELETE = "DELETE";
+    private static final String HTTP_METHOD_PATCH = "PATCH";
+    private static final String HTTP_METHOD_HEAD = "HEAD";
+    private static final String HTTP_METHOD_OPTIONS = "OPTIONS";
+
+    /**
+     * 常见的文件扩展名
+     */
+    private static final String EXT_JSON = ".json";
+    private static final String EXT_XML = ".xml";
+    private static final String EXT_HTML = ".html";
+    private static final String EXT_HTM = ".htm";
+    private static final String EXT_JS = ".js";
+    private static final String EXT_CSS = ".css";
+    private static final String EXT_PNG = ".png";
+    private static final String EXT_JPG = ".jpg";
+    private static final String EXT_JPEG = ".jpeg";
+    private static final String EXT_GIF = ".gif";
+    private static final String EXT_PDF = ".pdf";
 
     /**
      * Ajax请求标识
@@ -208,6 +234,66 @@ public abstract class ServletUtils {
             return Double.valueOf(value);
         } catch (NumberFormatException e) {
             log.warn("Failed to parse parameter '{}' to Double: {}", name, value);
+            return defaultValue;
+        }
+    }
+
+    /**
+     * 获取Float参数
+     *
+     * @param name 参数名
+     * @return 参数值，如果不存在或转换失败返回null
+     */
+    public static Float getParameterToFloat(String name) {
+        return getParameterToFloat(name, null);
+    }
+
+    /**
+     * 获取Float参数（带默认值）
+     *
+     * @param name         参数名
+     * @param defaultValue 默认值
+     * @return 参数值
+     */
+    public static Float getParameterToFloat(String name, Float defaultValue) {
+        String value = getParameter(name);
+        if (StringUtils.isBlank(value)) {
+            return defaultValue;
+        }
+        try {
+            return Float.valueOf(value);
+        } catch (NumberFormatException e) {
+            log.warn("Failed to parse parameter '{}' to Float: {}", name, value);
+            return defaultValue;
+        }
+    }
+
+    /**
+     * 获取BigDecimal参数
+     *
+     * @param name 参数名
+     * @return 参数值，如果不存在或转换失败返回null
+     */
+    public static java.math.BigDecimal getParameterToBigDecimal(String name) {
+        return getParameterToBigDecimal(name, null);
+    }
+
+    /**
+     * 获取BigDecimal参数（带默认值）
+     *
+     * @param name         参数名
+     * @param defaultValue 默认值
+     * @return 参数值
+     */
+    public static java.math.BigDecimal getParameterToBigDecimal(String name, java.math.BigDecimal defaultValue) {
+        String value = getParameter(name);
+        if (StringUtils.isBlank(value)) {
+            return defaultValue;
+        }
+        try {
+            return new java.math.BigDecimal(value);
+        } catch (NumberFormatException e) {
+            log.warn("Failed to parse parameter '{}' to BigDecimal: {}", name, value);
             return defaultValue;
         }
     }
@@ -514,7 +600,7 @@ public abstract class ServletUtils {
      * @return 是否是GET请求
      */
     public static boolean isGetRequest(HttpServletRequest request) {
-        return request != null && "GET".equalsIgnoreCase(request.getMethod());
+        return request != null && HTTP_METHOD_GET.equalsIgnoreCase(request.getMethod());
     }
 
     /**
@@ -524,7 +610,7 @@ public abstract class ServletUtils {
      * @return 是否是POST请求
      */
     public static boolean isPostRequest(HttpServletRequest request) {
-        return request != null && "POST".equalsIgnoreCase(request.getMethod());
+        return request != null && HTTP_METHOD_POST.equalsIgnoreCase(request.getMethod());
     }
 
     /**
@@ -534,7 +620,7 @@ public abstract class ServletUtils {
      * @return 是否是PUT请求
      */
     public static boolean isPutRequest(HttpServletRequest request) {
-        return request != null && "PUT".equalsIgnoreCase(request.getMethod());
+        return request != null && HTTP_METHOD_PUT.equalsIgnoreCase(request.getMethod());
     }
 
     /**
@@ -544,7 +630,57 @@ public abstract class ServletUtils {
      * @return 是否是DELETE请求
      */
     public static boolean isDeleteRequest(HttpServletRequest request) {
-        return request != null && "DELETE".equalsIgnoreCase(request.getMethod());
+        return request != null && HTTP_METHOD_DELETE.equalsIgnoreCase(request.getMethod());
+    }
+
+    /**
+     * 是否是PATCH请求
+     *
+     * @param request 请求对象
+     * @return 是否是PATCH请求
+     */
+    public static boolean isPatchRequest(HttpServletRequest request) {
+        return request != null && HTTP_METHOD_PATCH.equalsIgnoreCase(request.getMethod());
+    }
+
+    /**
+     * 是否是HEAD请求
+     *
+     * @param request 请求对象
+     * @return 是否是HEAD请求
+     */
+    public static boolean isHeadRequest(HttpServletRequest request) {
+        return request != null && HTTP_METHOD_HEAD.equalsIgnoreCase(request.getMethod());
+    }
+
+    /**
+     * 是否是OPTIONS请求
+     *
+     * @param request 请求对象
+     * @return 是否是OPTIONS请求
+     */
+    public static boolean isOptionsRequest(HttpServletRequest request) {
+        return request != null && HTTP_METHOD_OPTIONS.equalsIgnoreCase(request.getMethod());
+    }
+
+    /**
+     * 获取HTTP方法
+     *
+     * @param request 请求对象
+     * @return HTTP方法，如果请求为null返回null
+     */
+    public static String getHttpMethod(HttpServletRequest request) {
+        return request != null ? request.getMethod() : null;
+    }
+
+    /**
+     * 获取HTTP方法（使用当前请求）
+     *
+     * @return HTTP方法
+     */
+    public static String getHttpMethod() {
+        HttpServletRequest request = getRequest();
+        return getHttpMethod(request);
     }
 
     /**
@@ -801,5 +937,389 @@ public abstract class ServletUtils {
     public static String getReferer() {
         HttpServletRequest request = getRequest();
         return getReferer(request);
+    }
+
+    // ==================== 文件类型检测方法 ====================
+
+    /**
+     * 是否是JSON请求
+     *
+     * @param request 请求对象
+     * @return 是否是JSON请求
+     */
+    public static boolean isJsonRequest(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+
+        // 检查Accept头
+        String accept = request.getHeader(HttpHeaders.ACCEPT);
+        if (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE)) {
+            return true;
+        }
+
+        // 检查Content-Type头
+        String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
+        if (contentType != null && contentType.contains(MediaType.APPLICATION_JSON_VALUE)) {
+            return true;
+        }
+
+        // 检查URI后缀
+        String uri = request.getRequestURI();
+        return StringUtils.endsWithIgnoreCase(uri, EXT_JSON);
+    }
+
+    /**
+     * 是否是XML请求
+     *
+     * @param request 请求对象
+     * @return 是否是XML请求
+     */
+    public static boolean isXmlRequest(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+
+        // 检查Accept头
+        String accept = request.getHeader(HttpHeaders.ACCEPT);
+        if (accept != null && accept.contains(MediaType.APPLICATION_XML_VALUE)) {
+            return true;
+        }
+
+        // 检查Content-Type头
+        String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
+        if (contentType != null && contentType.contains(MediaType.APPLICATION_XML_VALUE)) {
+            return true;
+        }
+
+        // 检查URI后缀
+        String uri = request.getRequestURI();
+        return StringUtils.endsWithIgnoreCase(uri, EXT_XML);
+    }
+
+    /**
+     * 是否是HTML请求
+     *
+     * @param request 请求对象
+     * @return 是否是HTML请求
+     */
+    public static boolean isHtmlRequest(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+
+        // 检查Accept头
+        String accept = request.getHeader(HttpHeaders.ACCEPT);
+        if (accept != null && accept.contains(MediaType.TEXT_HTML_VALUE)) {
+            return true;
+        }
+
+        // 检查URI后缀
+        String uri = request.getRequestURI();
+        return StringUtils.endsWithIgnoreCase(uri, EXT_HTML) || StringUtils.endsWithIgnoreCase(uri, EXT_HTM);
+    }
+
+    /**
+     * 是否是静态资源请求
+     *
+     * @param request 请求对象
+     * @return 是否是静态资源请求
+     */
+    public static boolean isStaticResourceRequest(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+
+        String uri = request.getRequestURI();
+        return StringUtils.endsWithIgnoreCase(uri, EXT_JS) ||
+               StringUtils.endsWithIgnoreCase(uri, EXT_CSS) ||
+               StringUtils.endsWithIgnoreCase(uri, EXT_PNG) ||
+               StringUtils.endsWithIgnoreCase(uri, EXT_JPG) ||
+               StringUtils.endsWithIgnoreCase(uri, EXT_JPEG) ||
+               StringUtils.endsWithIgnoreCase(uri, EXT_GIF) ||
+               StringUtils.endsWithIgnoreCase(uri, EXT_PDF);
+    }
+
+    // ==================== 请求信息获取方法 ====================
+
+    /**
+     * 获取请求的协议
+     *
+     * @param request 请求对象
+     * @return 协议（http或https）
+     */
+    public static String getProtocol(HttpServletRequest request) {
+        return request != null ? request.getScheme() : null;
+    }
+
+    /**
+     * 获取请求的协议（使用当前请求）
+     *
+     * @return 协议
+     */
+    public static String getProtocol() {
+        HttpServletRequest request = getRequest();
+        return getProtocol(request);
+    }
+
+    /**
+     * 获取请求的服务器名称
+     *
+     * @param request 请求对象
+     * @return 服务器名称
+     */
+    public static String getServerName(HttpServletRequest request) {
+        return request != null ? request.getServerName() : null;
+    }
+
+    /**
+     * 获取请求的服务器名称（使用当前请求）
+     *
+     * @return 服务器名称
+     */
+    public static String getServerName() {
+        HttpServletRequest request = getRequest();
+        return getServerName(request);
+    }
+
+    /**
+     * 获取请求的服务器端口
+     *
+     * @param request 请求对象
+     * @return 服务器端口
+     */
+    public static int getServerPort(HttpServletRequest request) {
+        return request != null ? request.getServerPort() : -1;
+    }
+
+    /**
+     * 获取请求的服务器端口（使用当前请求）
+     *
+     * @return 服务器端口
+     */
+    public static int getServerPort() {
+        HttpServletRequest request = getRequest();
+        return getServerPort(request);
+    }
+
+    /**
+     * 获取请求的上下文路径
+     *
+     * @param request 请求对象
+     * @return 上下文路径
+     */
+    public static String getContextPath(HttpServletRequest request) {
+        return request != null ? request.getContextPath() : null;
+    }
+
+    /**
+     * 获取请求的上下文路径（使用当前请求）
+     *
+     * @return 上下文路径
+     */
+    public static String getContextPath() {
+        HttpServletRequest request = getRequest();
+        return getContextPath(request);
+    }
+
+    /**
+     * 获取请求的Servlet路径
+     *
+     * @param request 请求对象
+     * @return Servlet路径
+     */
+    public static String getServletPath(HttpServletRequest request) {
+        return request != null ? request.getServletPath() : null;
+    }
+
+    /**
+     * 获取请求的Servlet路径（使用当前请求）
+     *
+     * @return Servlet路径
+     */
+    public static String getServletPath() {
+        HttpServletRequest request = getRequest();
+        return getServletPath(request);
+    }
+
+    /**
+     * 获取请求的路径信息
+     *
+     * @param request 请求对象
+     * @return 路径信息
+     */
+    public static String getPathInfo(HttpServletRequest request) {
+        return request != null ? request.getPathInfo() : null;
+    }
+
+    /**
+     * 获取请求的路径信息（使用当前请求）
+     *
+     * @return 路径信息
+     */
+    public static String getPathInfo() {
+        HttpServletRequest request = getRequest();
+        return getPathInfo(request);
+    }
+
+    // ==================== 响应操作方法 ====================
+
+    /**
+     * 设置响应状态码
+     *
+     * @param response 响应对象
+     * @param status   状态码
+     */
+    public static void setStatus(HttpServletResponse response, int status) {
+        if (response != null) {
+            response.setStatus(status);
+        }
+    }
+
+    /**
+     * 设置响应状态码
+     *
+     * @param response 响应对象
+     * @param status   状态码
+     */
+    public static void setStatus(HttpServletResponse response, HttpStatus status) {
+        if (response != null && status != null) {
+            response.setStatus(status.value());
+        }
+    }
+
+    /**
+     * 设置响应头
+     *
+     * @param response 响应对象
+     * @param name     头名称
+     * @param value    头值
+     */
+    public static void setHeader(HttpServletResponse response, String name, String value) {
+        if (response != null && StringUtils.isNotBlank(name)) {
+            response.setHeader(name, value);
+        }
+    }
+
+    /**
+     * 添加响应头
+     *
+     * @param response 响应对象
+     * @param name     头名称
+     * @param value    头值
+     */
+    public static void addHeader(HttpServletResponse response, String name, String value) {
+        if (response != null && StringUtils.isNotBlank(name)) {
+            response.addHeader(name, value);
+        }
+    }
+
+    /**
+     * 设置响应内容类型
+     *
+     * @param response    响应对象
+     * @param contentType 内容类型
+     */
+    public static void setContentType(HttpServletResponse response, String contentType) {
+        if (response != null && StringUtils.isNotBlank(contentType)) {
+            response.setContentType(contentType);
+        }
+    }
+
+    /**
+     * 设置响应字符编码
+     *
+     * @param response 响应对象
+     * @param charset   字符编码
+     */
+    public static void setCharacterEncoding(HttpServletResponse response, String charset) {
+        if (response != null && StringUtils.isNotBlank(charset)) {
+            response.setCharacterEncoding(charset);
+        }
+    }
+
+    // ==================== 安全相关方法 ====================
+
+    /**
+     * 是否是HTTPS请求
+     *
+     * @param request 请求对象
+     * @return 是否是HTTPS请求
+     */
+    public static boolean isHttpsRequest(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+        return "https".equalsIgnoreCase(request.getScheme());
+    }
+
+    /**
+     * 是否是HTTPS请求（使用当前请求）
+     *
+     * @return 是否是HTTPS请求
+     */
+    public static boolean isHttpsRequest() {
+        HttpServletRequest request = getRequest();
+        return isHttpsRequest(request);
+    }
+
+    /**
+     * 获取请求的真实IP（考虑代理）
+     *
+     * @param request 请求对象
+     * @return 真实IP地址
+     */
+    public static String getRealIp(HttpServletRequest request) {
+        return getClientIp(request);
+    }
+
+    /**
+     * 获取请求的真实IP（使用当前请求）
+     *
+     * @return 真实IP地址
+     */
+    public static String getRealIp() {
+        return getClientIp();
+    }
+
+    // ==================== 调试和日志方法 ====================
+
+    /**
+     * 获取请求的详细信息（用于调试）
+     *
+     * @param request 请求对象
+     * @return 请求详细信息
+     */
+    public static String getRequestDetails(HttpServletRequest request) {
+        if (request == null) {
+            return "Request is null";
+        }
+
+        StringBuilder details = new StringBuilder();
+        details.append("Method: ").append(request.getMethod()).append("\n");
+        details.append("URL: ").append(getFullUrl(request)).append("\n");
+        details.append("Protocol: ").append(request.getScheme()).append("\n");
+        details.append("Server: ").append(request.getServerName()).append(":").append(request.getServerPort()).append("\n");
+        details.append("Context Path: ").append(request.getContextPath()).append("\n");
+        details.append("Servlet Path: ").append(request.getServletPath()).append("\n");
+        details.append("Path Info: ").append(request.getPathInfo()).append("\n");
+        details.append("Query String: ").append(request.getQueryString()).append("\n");
+        details.append("Remote Address: ").append(request.getRemoteAddr()).append("\n");
+        details.append("Remote Host: ").append(request.getRemoteHost()).append("\n");
+        details.append("Remote Port: ").append(request.getRemotePort()).append("\n");
+        details.append("User Agent: ").append(getUserAgent(request)).append("\n");
+        details.append("Referer: ").append(getReferer(request)).append("\n");
+
+        return details.toString();
+    }
+
+    /**
+     * 获取请求的详细信息（使用当前请求）
+     *
+     * @return 请求详细信息
+     */
+    public static String getRequestDetails() {
+        HttpServletRequest request = getRequest();
+        return getRequestDetails(request);
     }
 }

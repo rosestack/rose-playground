@@ -1,6 +1,6 @@
 package io.github.rose.core.lang.function;
 
-import io.github.rose.core.util.Assert;
+import org.springframework.util.Assert;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -66,7 +66,7 @@ public interface ThrowableSupplier<T> {
      * @see #execute()
      */
     default T execute(Function<Throwable, T> exceptionHandler) {
-        Assert.assertNotNull(exceptionHandler, () -> "The 'exceptionHandler' must not be null");
+        Assert.notNull(exceptionHandler, "The 'exceptionHandler' must not be null");
         T result;
         try {
             result = get();
@@ -144,7 +144,7 @@ public interface ThrowableSupplier<T> {
      * @throws NullPointerException if either the supplier or the exception handler is null.
      */
     static <T> T execute(ThrowableSupplier<T> supplier, Function<Throwable, T> exceptionHandler) throws NullPointerException {
-        Assert.assertNotNull(supplier, "The supplier must not be null");
+        Assert.notNull(supplier, "The supplier must not be null");
         return supplier.execute(exceptionHandler);
     }
 }

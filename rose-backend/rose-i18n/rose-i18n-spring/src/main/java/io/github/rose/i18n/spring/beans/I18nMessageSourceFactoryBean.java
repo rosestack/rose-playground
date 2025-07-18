@@ -1,6 +1,5 @@
 package io.github.rose.i18n.spring.beans;
 
-import io.github.rose.core.spring.BeanUtils;
 import io.github.rose.i18n.AbstractMessageSource;
 import io.github.rose.i18n.CompositeMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
@@ -141,7 +140,10 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
             AbstractMessageSource serviceMessageSource = (AbstractMessageSource) instantiateClass(constructor, source);
             messageSources.add(serviceMessageSource);
 
-            BeanUtils.invokeAwareInterfaces(serviceMessageSource, context);
+            // 手动调用Aware接口
+            if (serviceMessageSource instanceof ApplicationContextAware) {
+                ((ApplicationContextAware) serviceMessageSource).setApplicationContext(context);
+            }
 
             serviceMessageSource.setDefaultLocale(resolvedDefaultLocale);
             serviceMessageSource.setSupportedLocales(resolvedSupportedLocales);

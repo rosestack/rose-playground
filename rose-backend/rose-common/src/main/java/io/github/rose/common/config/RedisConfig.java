@@ -1,4 +1,4 @@
-package io.github.rose.core.config;
+package io.github.rose.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

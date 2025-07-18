@@ -1,4 +1,4 @@
-package io.github.rose.core.util;
+package io.github.rose.core.model;
 
 import lombok.Data;
 

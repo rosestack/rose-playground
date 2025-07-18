@@ -3,20 +3,21 @@ package io.github.rose.i18n.cache;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
-import io.github.rose.core.lang.Prioritized;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.Lifecycle;
 import io.github.rose.i18n.util.CacheKey;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,7 +34,6 @@ public class AdvancedCachingMessageSource implements I18nMessageSource {
     private static final String CACHE_PREFIX = "i18n:message:";
     private static final Duration DEFAULT_REDIS_TTL = Duration.ofHours(24);
     private static final Duration DEFAULT_LOCAL_TTL = Duration.ofMinutes(30);
-    private static final int DEFAULT_PRIORITY = Prioritized.NORMAL_PRIORITY;
 
     private final I18nMessageSource delegate;
     private final Cache<CacheKey, String> localCache;
@@ -42,7 +42,6 @@ public class AdvancedCachingMessageSource implements I18nMessageSource {
     private final MessageSourceStats stats;
     private final Locale defaultLocale;
     private final String source;
-    private final int priority;
 
     private volatile boolean initialized = false;
     private volatile boolean destroyed = false;
@@ -57,7 +56,7 @@ public class AdvancedCachingMessageSource implements I18nMessageSource {
     public AdvancedCachingMessageSource(I18nMessageSource delegate,
                                         RedisTemplate<String, String> redisTemplate,
                                         CacheConfig config) {
-        this(delegate, redisTemplate, config, delegate.getDefaultLocale(), delegate.getSource(), DEFAULT_PRIORITY);
+        this(delegate, redisTemplate, config, delegate.getDefaultLocale(), delegate.getSource());
     }
 
     /**
@@ -68,20 +67,17 @@ public class AdvancedCachingMessageSource implements I18nMessageSource {
      * @param config        缓存配置
      * @param defaultLocale 默认locale
      * @param source        消息源名称
-     * @param priority      优先级
      */
     public AdvancedCachingMessageSource(I18nMessageSource delegate,
                                         RedisTemplate<String, String> redisTemplate,
                                         CacheConfig config,
                                         Locale defaultLocale,
-                                        String source,
-                                        int priority) {
+                                        String source) {
         this.delegate = delegate;
         this.redisTemplate = redisTemplate;
         this.config = config;
         this.defaultLocale = defaultLocale;
         this.source = source;
-        this.priority = priority;
         this.stats = new MessageSourceStats();
 
         this.localCache = buildLocalCache();
@@ -163,11 +159,6 @@ public class AdvancedCachingMessageSource implements I18nMessageSource {
         } catch (Exception e) {
             log.error("Failed to destroy AdvancedCachingMessageSource", e);
         }
-    }
-
-    @Override
-    public int getPriority() {
-        return priority;
     }
 
     @Override

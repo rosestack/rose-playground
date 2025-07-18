@@ -1,7 +1,7 @@
-package io.github.rose.core.config;
+package io.github.rose.common.config;
 
 import io.github.rose.core.exception.BusinessException;
-import io.github.rose.core.util.Result;
+import io.github.rose.core.model.Result;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 

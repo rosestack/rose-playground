@@ -1,7 +1,6 @@
-io.github.rose.core.config.AopConfig
-io.github.rose.core.config.AsyncConfig
-io.github.rose.core.config.ThreadPoolConfig
-io.github.rose.core.config.ValidatorConfig
-io.github.rose.core.config.RedisConfig
-io.github.rose.core.config.JacksonConfig
-io.github.rose.core.config.GlobalExceptionHandler
+io.github.rose.common.config.AopConfig
+io.github.rose.common.config.AsyncConfig
+io.github.rose.common.config.ThreadPoolConfig
+io.github.rose.common.config.ValidatorConfig
+io.github.rose.common.config.RedisConfig
+io.github.rose.common.config.GlobalExceptionHandler

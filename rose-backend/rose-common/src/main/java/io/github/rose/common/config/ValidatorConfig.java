@@ -1,4 +1,4 @@
-package io.github.rose.core.config;
+package io.github.rose.common.config;
 
 import jakarta.validation.Validator;
 import org.hibernate.validator.HibernateValidator;

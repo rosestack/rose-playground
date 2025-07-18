@@ -1,7 +1,7 @@
 package io.github.rose.core.exception;
 
+import io.github.rose.core.spring.SpringBeans;
 import io.github.rose.core.util.FormatUtils;
-import io.github.rose.core.util.SpringContextUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -11,13 +11,13 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.Serial;
 
-import static io.github.rose.core.util.Result.SERVER_ERROR;
+import static io.github.rose.core.model.Result.SERVER_ERROR;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class BusinessException extends RuntimeException {
-    private static final MessageSource MESSAGE_SOURCE = SpringContextUtils.getBean(MessageSource.class);
+    private static final MessageSource MESSAGE_SOURCE = SpringBeans.getBean(MessageSource.class);
 
 
     @Serial
