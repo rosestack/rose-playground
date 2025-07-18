@@ -5,6 +5,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public interface I18nMessageSource extends Lifecycle, Prioritized {
@@ -12,6 +13,9 @@ public interface I18nMessageSource extends Lifecycle, Prioritized {
 
     @Nullable
     String getMessage(String code, Locale locale, Object... args);
+
+    @Nullable
+    Map<String, String> getMessages(Locale locale);
 
     default String getMessage(String code, Object... args) {
         return getMessage(code, getLocale(), args);

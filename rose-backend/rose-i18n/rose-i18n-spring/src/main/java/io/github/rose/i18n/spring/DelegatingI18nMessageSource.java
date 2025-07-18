@@ -4,6 +4,7 @@ import io.github.rose.i18n.CompositeMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.ReloadedResourceMessageSource;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -13,10 +14,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.lang.NonNull;
 
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 import static org.springframework.core.annotation.AnnotationAwareOrderComparator.sort;
 
@@ -53,6 +51,12 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
     @Override
     public String getMessage(String code, Locale locale, Object... args) {
         return this.delegate.getMessage(code, locale, args);
+    }
+
+    @Nullable
+    @Override
+    public Map<String, String> getMessages(Locale locale) {
+        return delegate.getMessages(locale);
     }
 
     @Nonnull

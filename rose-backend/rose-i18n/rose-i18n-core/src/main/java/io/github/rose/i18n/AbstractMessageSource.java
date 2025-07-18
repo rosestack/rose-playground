@@ -1,6 +1,7 @@
 package io.github.rose.i18n;
 
 import jakarta.annotation.Nonnull;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,34 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
     }
 
     @Nullable
-    protected abstract String getMessageInternal(@Nullable String code, @Nullable Locale locale, @Nullable Object... args);
+    @Override
+    public Map<String, String>  getMessages(Locale locale) {
+        Map<String, String>  messages = this.getMessagesInternal(locale);
+        if (ObjectUtils.isEmpty(messages)) {
+            return this.getMessagesFromParent(locale);
+        }
+        return messages;
+    }
+
+    protected abstract Map<String, String>  getMessagesInternal(Locale locale);
+
+    @Nullable
+    protected abstract String  getMessageInternal(@Nullable String code, @Nullable Locale locale, @Nullable Object... args);
+
+    @Nullable
+    protected Map<String, String>  getMessagesFromParent(Locale locale) {
+        I18nMessageSource parent = this.getParentMessageSource();
+        if (parent != null) {
+            if (parent instanceof AbstractMessageSource) {
+                AbstractMessageSource abstractMessageSource = (AbstractMessageSource) parent;
+                return abstractMessageSource.getMessagesInternal(locale);
+            } else {
+                return parent.getMessages(locale);
+            }
+        } else {
+            return null;
+        }
+    }
 
     @Nullable
     protected String getMessageFromParent(String code, Locale locale, @Nullable Object... args) {

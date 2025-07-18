@@ -1,6 +1,8 @@
 package io.github.rose.i18n;
 
+import io.github.rose.i18n.util.CacheKey;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.ToString;
 
 import java.util.*;
@@ -43,6 +45,12 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
         return value;
     }
 
+    @Nullable
+    @Override
+    public Map<String, String> getMessages(Locale locale) {
+        return delegate.getMessages(locale);
+    }
+
     @Nonnull
     @Override
     public Locale getLocale() {
@@ -59,33 +67,5 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
         cache.clear();
     }
 
-    @ToString
-    private static class CacheKey {
-        private final String code;
-        private final Object[] args;
-        private final Locale locale;
 
-        CacheKey(String code, Locale locale, Object... args) {
-            this.code = code;
-            this.args = args != null ? Arrays.copyOf(args, args.length) : null;
-            this.locale = locale;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof CacheKey)) return false;
-            CacheKey that = (CacheKey) o;
-            return Objects.equals(code, that.code)
-                    && Arrays.deepEquals(args, that.args)
-                    && Objects.equals(locale, that.locale);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Objects.hash(code, locale);
-            result = 31 * result + Arrays.deepHashCode(args);
-            return result;
-        }
-    }
 }

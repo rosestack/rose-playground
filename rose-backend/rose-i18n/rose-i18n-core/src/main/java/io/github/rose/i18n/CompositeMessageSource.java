@@ -2,6 +2,8 @@ package io.github.rose.i18n;
 
 import io.github.rose.core.collection.ListUtils;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.OrderComparator;
@@ -44,6 +46,18 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
             }
         }
         return message;
+    }
+
+    @Nullable
+    @Override
+    public Map<String, String> getMessages(Locale locale) {
+        for (I18nMessageSource i18nMessageSource : i18nMessageSources) {
+            Map<String, String> messages = i18nMessageSource.getMessages(locale);
+            if (ObjectUtils.isNotEmpty(messages)) {
+                return messages;
+            }
+        }
+        return null;
     }
 
     @Nonnull

@@ -57,6 +57,11 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         return null;
     }
 
+    @Override
+    protected Map<String, String>  getMessagesInternal(Locale locale) {
+        return localizedResourceMessages.get(getResource(locale));
+    }
+
     protected final void initialize() {
         Set<Locale> supportedLocales = getSupportedLocales();
         if (CollectionUtils.isEmpty(supportedLocales)) {
