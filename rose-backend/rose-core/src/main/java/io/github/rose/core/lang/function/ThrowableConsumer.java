@@ -53,7 +53,7 @@ import static io.github.rose.core.util.Assert.assertNotNull;
  * }</pre>
  *
  * @param <T> the type of the input to the operation
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @see Consumer
  * @see Throwable
  */

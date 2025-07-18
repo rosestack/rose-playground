@@ -8,13 +8,12 @@ import jakarta.annotation.Nullable;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-public class EnhancedCachingMessageSource implements I18nMessageSource {
+public class MultiCachingMessageSource implements I18nMessageSource {
     // L1缓存：本地高速缓存
     private final Cache<String, String> localCache = Caffeine.newBuilder()
             .maximumSize(10000)
@@ -26,19 +25,21 @@ public class EnhancedCachingMessageSource implements I18nMessageSource {
     // L2缓存：分布式缓存
     private final RedisTemplate<String, String> redisTemplate;
 
-    public EnhancedCachingMessageSource(I18nMessageSource delegate, RedisTemplate<String, String> redisTemplate) {
+    public MultiCachingMessageSource(I18nMessageSource delegate, RedisTemplate<String, String> redisTemplate) {
         this.delegate = delegate;
         this.redisTemplate = redisTemplate;
     }
 
     @Override
     public void init() {
+        delegate.init();
         preloadCache();
     }
 
     @Override
     public void destroy() {
-
+        localCache.cleanUp();
+        delegate.destroy();
     }
 
     // 缓存预热

@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 /**
  * Service Message Exception
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
  */
 public class MessageSourceException extends RuntimeException {

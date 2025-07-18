@@ -41,7 +41,7 @@ import static io.github.rose.core.util.Assert.assertNotNull;
  * action.execute(ex -> System.err.println("An error occurred: " + ex.getMessage()));
  * }</pre>
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @see Runnable
  * @see Throwable
  * @since 1.0.0

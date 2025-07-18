@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 /**
  * The utilities class for Java {@link List}
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @see List
  * @since 1.0.0
  */

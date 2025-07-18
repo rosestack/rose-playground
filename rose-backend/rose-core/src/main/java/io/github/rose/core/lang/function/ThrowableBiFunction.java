@@ -48,7 +48,7 @@ import static io.github.rose.core.util.Assert.assertNotNull;
  * @param <T> the type of the first argument to the function
  * @param <U> the type of the second argument to the function
  * @param <R> the type of the result of the function
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @see BiFunction
  * @see Throwable
  */

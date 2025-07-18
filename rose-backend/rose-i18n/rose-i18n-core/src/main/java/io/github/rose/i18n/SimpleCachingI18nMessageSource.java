@@ -3,9 +3,11 @@ package io.github.rose.i18n;
 import io.github.rose.i18n.util.CacheKey;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import lombok.ToString;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 装饰器：为 I18nMessageSource 添加简单缓存能力
@@ -59,13 +61,12 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
 
     @Override
     public void init() {
-
+        delegate.init();
     }
 
     @Override
     public void destroy() {
         cache.clear();
+        delegate.destroy();
     }
-
-
 }

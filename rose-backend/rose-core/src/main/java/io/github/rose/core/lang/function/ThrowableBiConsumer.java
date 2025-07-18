@@ -57,7 +57,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @param <T> the type of the first argument to the operation
  * @param <U> the type of the second argument to the operation
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @see BiConsumer
  * @see Throwable
  * @since 1.0.0

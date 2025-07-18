@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * making it easier to work with functional patterns in environments where exceptions must be managed.</p>
  *
  * @param <T> the type of result supplied by this supplier
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @see Supplier
  * @see Throwable
  * @since 1.0.0
