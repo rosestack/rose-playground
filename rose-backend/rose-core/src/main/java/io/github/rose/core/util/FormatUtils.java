@@ -2,6 +2,10 @@ package io.github.rose.core.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,7 +13,7 @@ import java.util.regex.Pattern;
 /**
  * 统一的格式化工具类
  * <p>
- * 提供模板格式化、变量替换和值格式化功能
+ * 提供模板格式化、变量替换和值格式化功能，支持本地化
  *
  * @author rose
  * @since 0.0.1
@@ -27,6 +31,18 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replacePlaceholders(final String template, final Object... args) {
+        return replacePlaceholders(template, Locale.getDefault(), args);
+    }
+
+    /**
+     * 格式化占位符（使用默认占位符 {}，支持本地化）
+     *
+     * @param template 模板字符串
+     * @param locale   本地化设置
+     * @param args     参数数组
+     * @return 格式化后的字符串
+     */
+    public static String replacePlaceholders(final String template, final Locale locale, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -41,7 +57,7 @@ public abstract class FormatUtils {
             if (index == -1) {
                 break;
             }
-            String value = formatValue(args[i]);
+            String value = formatValue(args[i], locale);
             result = result.substring(0, index) + value + result.substring(index + DEFAULT_PLACEHOLDER.length());
         }
 
@@ -57,6 +73,19 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replaceCustomPlaceholder(final String template, String placeholder, final Object... args) {
+        return replaceCustomPlaceholder(template, placeholder, Locale.getDefault(), args);
+    }
+
+    /**
+     * 格式化占位符（自定义占位符，支持本地化）
+     *
+     * @param template    模板字符串
+     * @param placeholder 占位符字符串
+     * @param locale      本地化设置
+     * @param args        参数数组
+     * @return 格式化后的字符串
+     */
+    public static String replaceCustomPlaceholder(final String template, String placeholder, final Locale locale, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -71,7 +100,7 @@ public abstract class FormatUtils {
             if (index == -1) {
                 break;
             }
-            String value = formatValue(args[i]);
+            String value = formatValue(args[i], locale);
             result = result.substring(0, index) + value + result.substring(index + placeholder.length());
         }
 
@@ -86,6 +115,18 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replaceNamedParameters(final String template, final Map<String, ?> map) {
+        return replaceNamedParameters(template, map, Locale.getDefault());
+    }
+
+    /**
+     * 格式化命名参数（使用正则表达式，更高效，支持本地化）
+     *
+     * @param template 模板字符串
+     * @param map      变量映射
+     * @param locale   本地化设置
+     * @return 格式化后的字符串
+     */
+    public static String replaceNamedParameters(final String template, final Map<String, ?> map, final Locale locale) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -101,7 +142,7 @@ public abstract class FormatUtils {
             Object value = map.get(key);
             String replacement;
             if (value != null) {
-                replacement = formatValue(value);
+                replacement = formatValue(value, locale);
                 // 转义特殊字符
                 replacement = Matcher.quoteReplacement(replacement);
             } else {
@@ -123,6 +164,18 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replaceIndexedParameters(final String template, final Object... args) {
+        return replaceIndexedParameters(template, Locale.getDefault(), args);
+    }
+
+    /**
+     * 格式化索引参数（使用正则表达式，更高效，支持本地化）
+     *
+     * @param template 模板字符串
+     * @param locale   本地化设置
+     * @param args     参数数组
+     * @return 格式化后的字符串
+     */
+    public static String replaceIndexedParameters(final String template, final Locale locale, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -137,7 +190,7 @@ public abstract class FormatUtils {
             try {
                 int index = Integer.parseInt(matcher.group(1));
                 if (index >= 0 && index < args.length) {
-                    String replacement = formatValue(args[index]);
+                    String replacement = formatValue(args[index], locale);
                     // 转义特殊字符
                     replacement = Matcher.quoteReplacement(replacement);
                     matcher.appendReplacement(result, replacement);
@@ -163,6 +216,18 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String format(final String template, final Object args) {
+        return format(template, Locale.getDefault(), args);
+    }
+
+    /**
+     * 智能格式化：自动检测模板类型并选择合适的格式化方法（支持本地化）
+     *
+     * @param template 模板字符串
+     * @param args     参数（可以是Map或Object数组）
+     * @param locale   本地化设置
+     * @return 格式化后的字符串
+     */
+    public static String format(final String template, final Locale locale, final Object args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -176,35 +241,35 @@ public abstract class FormatUtils {
 
             // 检测是否包含命名参数
             if (NAMED_PARAMETER_PATTERN.matcher(template).find()) {
-                return replaceNamedParameters(template, map);
+                return replaceNamedParameters(template, map, locale);
             }
 
             // 检测是否包含索引参数
             if (INDEXED_PARAMETER_PATTERN.matcher(template).find()) {
-                return replaceIndexedParameters(template, map.values().toArray());
+                return replaceIndexedParameters(template, locale, map.values().toArray());
             }
 
             // 默认使用变量格式化
-            return replaceNamedParameters(template, map);
+            return replaceNamedParameters(template, map, locale);
         } else if (args instanceof Object[]) {
             Object[] array = (Object[]) args;
 
             // 检测是否包含索引参数
             if (INDEXED_PARAMETER_PATTERN.matcher(template).find()) {
-                return replaceIndexedParameters(template, array);
+                return replaceIndexedParameters(template, locale, array);
             }
 
             // 检测是否包含占位符
             if (template.contains(DEFAULT_PLACEHOLDER)) {
-                return replacePlaceholders(template, array);
+                return replacePlaceholders(template, locale, array);
             }
 
             // 默认使用占位符格式化
-            return replacePlaceholders(template, array);
+            return replacePlaceholders(template, locale, array);
         } else {
             // 单个对象，使用占位符格式化
             if (template.contains(DEFAULT_PLACEHOLDER)) {
-                return replacePlaceholders(template, args);
+                return replacePlaceholders(template, locale, args);
             }
             return template;
         }
@@ -217,6 +282,17 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String formatValue(final Object value) {
+        return formatValue(value, Locale.getDefault());
+    }
+
+    /**
+     * 格式化单个值（支持本地化）
+     *
+     * @param value  要格式化的值
+     * @param locale 本地化设置
+     * @return 格式化后的字符串
+     */
+    public static String formatValue(final Object value, final Locale locale) {
         if (value == null) {
             return "null";
         }
@@ -224,7 +300,7 @@ public abstract class FormatUtils {
             return (String) value;
         }
         if (value instanceof Number) {
-            return value.toString();
+            return formatNumber((Number) value, locale);
         }
         if (value instanceof Boolean) {
             return value.toString();
@@ -232,8 +308,44 @@ public abstract class FormatUtils {
         if (value instanceof Character) {
             return value.toString();
         }
+        if (value instanceof Date) {
+            return formatDate((Date) value, locale);
+        }
         // 对于其他类型，使用toString()
         return value.toString();
+    }
+
+    /**
+     * 格式化数字（支持本地化）
+     *
+     * @param number 数字
+     * @param locale 本地化设置
+     * @return 格式化后的字符串
+     */
+    private static String formatNumber(final Number number, final Locale locale) {
+        if (number == null) {
+            return "null";
+        }
+
+        NumberFormat formatter = NumberFormat.getInstance(locale);
+        return formatter.format(number);
+    }
+
+    /**
+     * 格式化日期（支持本地化）
+     *
+     * @param date   日期
+     * @param locale 本地化设置
+     * @return 格式化后的字符串
+     */
+    private static String formatDate(final Date date, final Locale locale) {
+        if (date == null) {
+            return "null";
+        }
+
+        // 使用默认的日期格式，可以根据需要自定义
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", locale);
+        return formatter.format(date);
     }
 
     /**

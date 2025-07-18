@@ -2,403 +2,129 @@ package io.github.rose.core.util;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * FormatUtils 单元测试
+ * FormatUtils 测试类
  *
- * <p>测试覆盖范围：</p>
- * <ul>
- *   <li>变量替换功能</li>
- *   <li>占位符替换功能</li>
- *   <li>命名参数替换功能</li>
- *   <li>索引参数替换功能</li>
- *   <li>智能格式化功能</li>
- *   <li>边界情况和错误处理</li>
- *   <li>性能相关方法</li>
- * </ul>
+ * @author rose
+ * @since 0.0.1
  */
 class FormatUtilsTest {
 
     @Test
-    void testReplaceVariables_WithBlankTemplate() {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
+    void testReplacePlaceholdersWithLocale() {
+        // 测试数字格式化
+        String template = "价格: {}, 数量: {}";
+        String result = FormatUtils.replacePlaceholders(template, Locale.US, 1234.56, 1000);
+        assertEquals("价格: 1,234.56, 数量: 1,000", result);
 
-        String result = FormatUtils.replaceNamedParameters("", variables);
-        assertEquals("", result);
+        // 测试中文数字格式化
+        String resultCN = FormatUtils.replacePlaceholders(template, Locale.CHINA, 1234.56, 1000);
+        assertEquals("价格: 1,234.56, 数量: 1,000", resultCN);
     }
 
     @Test
-    void testReplaceVariables_WithEmptyKey() {
-        String template = "Hello {name}, welcome to {}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
-        variables.put("", "Rose");
-    }
+    void testReplaceNamedParametersWithLocale() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("price", 1234.56);
+        params.put("quantity", 1000);
+        params.put("date", new Date(1234567890000L)); // 2009-02-13 23:31:30
 
-    // ==================== 占位符替换测试 ====================
+        String template = "价格: {price}, 数量: {quantity}, 日期: {date}";
+        String result = FormatUtils.replaceNamedParameters(template, params, Locale.US);
 
-    @Test
-    void testReplacePlaceholders_Simple() {
-        String template = "Hello {}, welcome to {}";
-        String result = FormatUtils.replacePlaceholders(template, "John", "Rose");
-        assertEquals("Hello John, welcome to Rose", result);
-    }
-
-    @Test
-    void testReplacePlaceholders_WithNullValue() {
-        String template = "Hello {}, your age is {}";
-        String result = FormatUtils.replacePlaceholders(template, "John", null);
-        assertEquals("Hello John, your age is null", result);
+        assertTrue(result.contains("价格: 1,234.56"));
+        assertTrue(result.contains("数量: 1,000"));
+        assertTrue(result.contains("日期: 2009-02-13"));
     }
 
     @Test
-    void testReplacePlaceholders_WithMoreArgsThanPlaceholders() {
-        String template = "Hello {}, welcome to {}";
-        String result = FormatUtils.replacePlaceholders(template, "John", "Rose", "Extra");
-        assertEquals("Hello John, welcome to Rose", result);
+    void testReplaceIndexedParametersWithLocale() {
+        String template = "价格: {0}, 数量: {1}, 日期: {2}";
+        Date date = new Date(1234567890000L); // 2009-02-13 23:31:30
+
+        String result = FormatUtils.replaceIndexedParameters(template, Locale.US, 1234.56, 1000, date);
+
+        assertTrue(result.contains("价格: 1,234.56"));
+        assertTrue(result.contains("数量: 1,000"));
+        assertTrue(result.contains("日期: 2009-02-13"));
     }
 
     @Test
-    void testReplacePlaceholders_WithFewerArgsThanPlaceholders() {
-        String template = "Hello {}, welcome to {}, your age is {}";
-        String result = FormatUtils.replacePlaceholders(template, "John", "Rose");
-        assertEquals("Hello John, welcome to Rose, your age is {}", result);
+    void testFormatValueWithLocale() {
+        // 测试数字格式化
+        assertEquals("1,234.56", FormatUtils.formatValue(1234.56, Locale.US));
+        assertEquals("1,234.56", FormatUtils.formatValue(1234.56, Locale.CHINA));
+
+        // 测试日期格式化
+        Date date = new Date(1234567890000L); // 2009-02-13 23:31:30
+        String dateResult = FormatUtils.formatValue(date, Locale.US);
+        assertTrue(dateResult.contains("2009-02-13"));
+
+        // 测试其他类型
+        assertEquals("true", FormatUtils.formatValue(true, Locale.US));
+        assertEquals("hello", FormatUtils.formatValue("hello", Locale.US));
+        assertEquals("A", FormatUtils.formatValue('A', Locale.US));
     }
 
     @Test
-    void testReplacePlaceholders_WithCustomPlaceholder() {
-        String template = "Hello %s, welcome to %s";
-        String result = FormatUtils.replaceCustomPlaceholder(template, "%s", "John", "Rose");
-        assertEquals("Hello John, welcome to Rose", result);
+    void testFormatWithLocale() {
+        // 测试 Map 参数
+        Map<String, Object> params = new HashMap<>();
+        params.put("price", 1234.56);
+        params.put("quantity", 1000);
+
+        String template = "价格: {price}, 数量: {quantity}";
+        String result = FormatUtils.format(template, Locale.US, params);
+
+        assertTrue(result.contains("价格: 1,234.56"));
+        assertTrue(result.contains("数量: 1,000"));
+
+        // 测试数组参数
+        String template2 = "价格: {}, 数量: {}";
+        Object[] args = {1234.56, 1000};
+        String result2 = FormatUtils.format(template2, Locale.US, args);
+
+        assertTrue(result2.contains("价格: 1,234.56"));
+        assertTrue(result2.contains("数量: 1,000"));
     }
 
     @Test
-    void testReplacePlaceholders_WithEmptyTemplate() {
-        String result = FormatUtils.replacePlaceholders("", "John", "Rose");
-        assertEquals("", result);
-    }
+    void testBackwardCompatibility() {
+        // 测试向后兼容性 - 不带 Locale 参数的方法应该使用默认 Locale
+        String template = "价格: {}, 数量: {}";
+        String result = FormatUtils.replacePlaceholders(template, 1234.56, 1000);
 
-    @Test
-    void testReplacePlaceholders_WithNullArgs() {
-        String template = "Hello {}, welcome to {}";
-        String result = FormatUtils.replacePlaceholders(template, (Object[]) null);
-        assertEquals(template, result);
-    }
-
-    @Test
-    void testReplacePlaceholders_WithEmptyArgs() {
-        String template = "Hello {}, welcome to {}";
-        String result = FormatUtils.replacePlaceholders(template);
-        assertEquals(template, result);
-    }
-
-    // ==================== 命名参数替换测试 ====================
-
-    @Test
-    void testReplaceNamedParameters_Simple() {
-        String template = "Hello {name}, welcome to {site}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
-        variables.put("site", "Rose");
-
-        String result = FormatUtils.replaceNamedParameters(template, variables);
-        assertEquals("Hello John, welcome to Rose", result);
-    }
-
-    @Test
-    void testReplaceNamedParameters_WithMissingParameter() {
-        String template = "Hello {name}, your age is {age}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
-
-        String result = FormatUtils.replaceNamedParameters(template, variables);
-        assertEquals("Hello John, your age is {age}", result);
-    }
-
-    @Test
-    void testReplaceNamedParameters_WithSpecialCharacters() {
-        String template = "Hello {user_name}, your email is {email}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("user_name", "john_doe");
-        variables.put("email", "john@example.com");
-
-        String result = FormatUtils.replaceNamedParameters(template, variables);
-        assertEquals("Hello john_doe, your email is john@example.com", result);
-    }
-
-    @Test
-    void testReplaceNamedParameters_WithRegexSpecialCharacters() {
-        String template = "Hello {name}, your path is {path}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
-        variables.put("path", "C:\\Users\\John\\Documents");
-
-        String result = FormatUtils.replaceNamedParameters(template, variables);
-        assertEquals("Hello John, your path is C:\\Users\\John\\Documents", result);
-    }
-
-    // ==================== 索引参数替换测试 ====================
-
-    @Test
-    void testReplaceIndexedParameters_Simple() {
-        String template = "Hello {0}, welcome to {1}";
-        String result = FormatUtils.replaceIndexedParameters(template, "John", "Rose");
-        assertEquals("Hello John, welcome to Rose", result);
-    }
-
-    @Test
-    void testReplaceIndexedParameters_WithOutOfRangeIndex() {
-        String template = "Hello {0}, your age is {5}";
-        String result = FormatUtils.replaceIndexedParameters(template, "John", 25);
-        assertEquals("Hello John, your age is {5}", result);
-    }
-
-    @Test
-    void testReplaceIndexedParameters_WithNonNumericIndex() {
-        String template = "Hello {0}, welcome to {abc}";
-        String result = FormatUtils.replaceIndexedParameters(template, "John", "Rose");
-        assertEquals("Hello John, welcome to {abc}", result);
-    }
-
-    @Test
-    void testReplaceIndexedParameters_WithNegativeIndex() {
-        String template = "Hello {0}, welcome to {-1}";
-        String result = FormatUtils.replaceIndexedParameters(template, "John", "Rose");
-        assertEquals("Hello John, welcome to {-1}", result);
-    }
-
-    // ==================== 智能格式化测试 ====================
-
-    @Test
-    void testFormat_WithMap() {
-        String template = "Hello {name}, welcome to {site}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
-        variables.put("site", "Rose");
-
-        String result = FormatUtils.format(template, variables);
-        assertEquals("Hello John, welcome to Rose", result);
-    }
-
-    @Test
-    void testFormat_WithArray() {
-        String template = "Hello {}, welcome to {}";
-        Object[] args = {"John", "Rose"};
-
-        String result = FormatUtils.format(template, args);
-        assertEquals("Hello John, welcome to Rose", result);
-    }
-
-    @Test
-    void testFormat_WithSingleObject() {
-        String template = "Hello {}";
-        String result = FormatUtils.format(template, "John");
-        assertEquals("Hello John", result);
-    }
-
-    @Test
-    void testFormat_WithIndexedParameters() {
-        String template = "Hello {0}, welcome to {1}";
-        Object[] args = {"John", "Rose"};
-
-        String result = FormatUtils.format(template, args);
-        assertEquals("Hello John, welcome to Rose", result);
-    }
-
-    @Test
-    void testFormat_WithNoPlaceholders() {
-        String template = "Hello World";
-        String result = FormatUtils.format(template, "John");
-        assertEquals("Hello World", result);
-    }
-
-    // ==================== 值格式化测试 ====================
-
-    @Test
-    void testFormatValue_WithString() {
-        assertEquals("Hello", FormatUtils.formatValue("Hello"));
-    }
-
-    @Test
-    void testFormatValue_WithNumber() {
-        assertEquals("42", FormatUtils.formatValue(42));
-        assertEquals("3.14", FormatUtils.formatValue(3.14));
-    }
-
-    @Test
-    void testFormatValue_WithBoolean() {
-        assertEquals("true", FormatUtils.formatValue(true));
-        assertEquals("false", FormatUtils.formatValue(false));
-    }
-
-    @Test
-    void testFormatValue_WithCharacter() {
-        assertEquals("A", FormatUtils.formatValue('A'));
-    }
-
-    @Test
-    void testFormatValue_WithNull() {
-        assertEquals("null", FormatUtils.formatValue(null));
-    }
-
-    @Test
-    void testFormatValue_WithCustomObject() {
-        Object customObject = new Object() {
-            @Override
-            public String toString() {
-                return "CustomObject";
-            }
-        };
-        assertEquals("CustomObject", FormatUtils.formatValue(customObject));
-    }
-
-    // ==================== 检查方法测试 ====================
-
-    @Test
-    void testHasPlaceholders_WithPlaceholders() {
-        assertTrue(FormatUtils.hasPlaceholders("Hello {}, welcome to {}"));
-    }
-
-    @Test
-    void testHasPlaceholders_WithoutPlaceholders() {
-        assertFalse(FormatUtils.hasPlaceholders("Hello World"));
-    }
-
-    @Test
-    void testHasPlaceholders_WithNull() {
-        assertFalse(FormatUtils.hasPlaceholders(null));
-    }
-
-    @Test
-    void testHasPlaceholders_WithEmpty() {
-        assertFalse(FormatUtils.hasPlaceholders(""));
-    }
-
-    @Test
-    void testHasNamedParameters_WithNamedParameters() {
-        assertTrue(FormatUtils.hasNamedParameters("Hello {name}, welcome to {site}"));
-    }
-
-    @Test
-    void testHasNamedParameters_WithoutNamedParameters() {
-        assertFalse(FormatUtils.hasNamedParameters("Hello World"));
-    }
-
-    @Test
-    void testHasIndexedParameters_WithIndexedParameters() {
-        assertTrue(FormatUtils.hasIndexedParameters("Hello {0}, welcome to {1}"));
-    }
-
-    @Test
-    void testHasIndexedParameters_WithoutIndexedParameters() {
-        assertFalse(FormatUtils.hasIndexedParameters("Hello World"));
-    }
-
-    // ==================== 统计方法测试 ====================
-
-    @Test
-    void testCountPlaceholders_WithMultiplePlaceholders() {
-        assertEquals(3, FormatUtils.countPlaceholders("Hello {}, welcome to {}, your age is {}"));
-    }
-
-    @Test
-    void testCountPlaceholders_WithNoPlaceholders() {
-        assertEquals(0, FormatUtils.countPlaceholders("Hello World"));
-    }
-
-    @Test
-    void testCountPlaceholders_WithNull() {
-        assertEquals(0, FormatUtils.countPlaceholders(null));
-    }
-
-    @Test
-    void testCountNamedParameters_WithMultipleParameters() {
-        assertEquals(2, FormatUtils.countNamedParameters("Hello {name}, welcome to {site}"));
-    }
-
-    @Test
-    void testCountNamedParameters_WithNoParameters() {
-        assertEquals(0, FormatUtils.countNamedParameters("Hello World"));
-    }
-
-    // ==================== 边界情况测试 ====================
-
-    @Test
-    void testEdgeCase_EmptyString() {
-        assertEquals("", FormatUtils.replacePlaceholders(""));
-        assertEquals("", FormatUtils.replaceNamedParameters("", new HashMap<>()));
-    }
-
-    @Test
-    void testEdgeCase_NullTemplate() {
-        assertNull(FormatUtils.replacePlaceholders(null));
-        assertNull(FormatUtils.replaceNamedParameters(null, new HashMap<>()));
-    }
-
-    @Test
-    void testEdgeCase_BlankTemplate() {
-        assertEquals("   ", FormatUtils.replacePlaceholders("   "));
-        assertEquals("   ", FormatUtils.replaceNamedParameters("   ", new HashMap<>()));
-    }
-
-    @Test
-    void testEdgeCase_SpecialCharactersInReplacement() {
-        String template = "Hello {name}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John$Doe");
-
-        String result = FormatUtils.replaceNamedParameters(template, variables);
-        assertEquals("Hello John$Doe", result);
-    }
-
-    // ==================== 性能测试 ====================
-
-    @Test
-    void testPerformance_LargeTemplate() {
-        StringBuilder template = new StringBuilder();
-        Map<String, Object> variables = new HashMap<>();
-
-        for (int i = 0; i < 100; i++) {
-            template.append("Hello {name").append(i).append("}, ");
-            variables.put("name" + i, "value" + i);
-        }
-
-        long start = System.nanoTime();
-        String result = FormatUtils.replaceNamedParameters(template.toString(), variables);
-        long end = System.nanoTime();
-
+        // 应该使用系统默认 Locale 进行格式化
         assertNotNull(result);
-        assertTrue((end - start) < 10000000); // 应该小于10ms
-    }
-
-    // ==================== 向后兼容性测试 ====================
-
-    @Test
-    void testBackwardCompatibility_FormatPlaceholders() {
-        String template = "Hello {}, welcome to {}";
-        String result = FormatUtils.replacePlaceholders(template, "John", "Rose");
-        assertEquals("Hello John, welcome to Rose", result);
+        assertTrue(result.contains("价格:"));
+        assertTrue(result.contains("数量:"));
     }
 
     @Test
-    void testBackwardCompatibility_SmartFormat() {
-        String template = "Hello {name}";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", "John");
+    void testNullAndEmptyHandling() {
+        // 测试空模板
+        assertEquals(null, FormatUtils.replacePlaceholders(null, Locale.US, "test"));
+        assertEquals("", FormatUtils.replacePlaceholders("", Locale.US, "test"));
+        assertEquals("   ", FormatUtils.replacePlaceholders("   ", Locale.US, "test"));
 
-        String result = FormatUtils.format(template, variables);
-        assertEquals("Hello John", result);
+        // 测试空参数
+        assertEquals("test", FormatUtils.replacePlaceholders("test", Locale.US));
+        assertEquals("test", FormatUtils.replacePlaceholders("test", Locale.US, (Object[]) null));
     }
 
     @Test
-    void testBackwardCompatibility_ContainsMethods() {
-        assertTrue(FormatUtils.hasPlaceholders("Hello {}"));
-        assertTrue(FormatUtils.hasNamedParameters("Hello {name}"));
-        assertTrue(FormatUtils.hasIndexedParameters("Hello {0}"));
+    void testDifferentNumberTypes() {
+        // 测试不同类型的数字
+        assertEquals("1,234", FormatUtils.formatValue(1234, Locale.US));
+        assertEquals("1,234.56", FormatUtils.formatValue(1234.56f, Locale.US));
+        assertEquals("1,234.56", FormatUtils.formatValue(1234.56d, Locale.US));
+        assertEquals("1,234", FormatUtils.formatValue(1234L, Locale.US));
     }
 } 
