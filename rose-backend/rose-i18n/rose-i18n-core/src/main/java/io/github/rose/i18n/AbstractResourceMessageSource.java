@@ -50,7 +50,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
             Map<String, String> messages = localizedResourceMessages.get(getResource(candidate));
             if (messages != null && messages.containsKey(code)) {
                 String template = messages.get(code);
-                return interpolator.interpolate(template, args, candidate);
+                return interpolator.interpolate(template, candidate, args);
             }
         }
         return null;

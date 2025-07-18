@@ -6,10 +6,19 @@ import java.util.Map;
 /**
  * 消息插值器接口
  *
- * <p>负责处理消息模板中的参数插值，支持两种插值方式：</p>
+ * <p>负责处理消息模板中的参数插值，支持多种插值方式：</p>
  * <ul>
  *   <li>数组参数插值：处理 {} 占位符和 {0}, {1} 等 MessageFormat 风格</li>
  *   <li>Map 参数插值：处理 {name} 命名参数和 ${expression} 表达式风格</li>
+ *   <li>InterpolationParameter：推荐使用的有序参数构建器</li>
+ * </ul>
+ *
+ * <p>实现类会根据 args 参数的类型自动选择合适的插值方式：</p>
+ * <ul>
+ *   <li>InterpolationParameter：推荐使用，保证参数顺序和类型安全</li>
+ *   <li>Object[] 或 Object...：使用数组插值方式</li>
+ *   <li>Map&lt;String, Object&gt;：使用 Map 插值方式（注意有序性问题）</li>
+ *   <li>其他类型：转换为字符串后处理</li>
  * </ul>
  *
  * @author Rose Framework Team
@@ -18,34 +27,12 @@ import java.util.Map;
 public interface MessageInterpolator {
 
     /**
-     * 使用数组参数进行消息插值
-     *
-     * <p>处理以下格式：</p>
-     * <ul>
-     *   <li>{} 占位符：FormatUtils.format() 风格，如 "Hello {}, you are {} years old!"</li>
-     *   <li>{0}, {1}, {2}...：MessageFormat 风格，如 "Hello {0}, you are {1} years old!"</li>
-     * </ul>
+     * 消息插值（推荐使用 InterpolationParameter）
      *
      * @param message 模板字符串
-     * @param args    参数数组
-     * @param locale  区域设置
+     * @param locale  语言环境
+     * @param arg     插值参数
      * @return 替换后的字符串
      */
-    String interpolate(String message, Object[] args, Locale locale);
-
-    /**
-     * 使用 Map 参数进行消息插值
-     *
-     * <p>处理以下格式：</p>
-     * <ul>
-     *   <li>{name} 命名参数：如 "Hello {name}, you are {age} years old!"</li>
-     *   <li>${expression} 表达式：如 "Hello ${user.name}, you are ${user.age} years old!"</li>
-     * </ul>
-     *
-     * @param message 模板字符串
-     * @param args    参数 Map
-     * @param locale  区域设置
-     * @return 替换后的字符串
-     */
-    String interpolate(String message, Map<String, Object> args, Locale locale);
+    String interpolate(String message, Locale locale, Object arg);
 }

@@ -23,16 +23,13 @@ public interface ExpressionEvaluator {
      */
     Object evaluate(String expression, Map<String, Object> variables, Locale locale);
 
-    // 新增方法
     default boolean supports(String expression) {
         return true;
     }
 
     default void registerFunction(String name, Function<Object[], Object> function) {
-        // 注册自定义函数
     }
 
     default void setCacheEnabled(boolean enabled) {
-        // 启用表达式缓存
     }
 }
