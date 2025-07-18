@@ -1,5 +1,7 @@
 package io.github.rose.core.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
@@ -16,12 +18,9 @@ import java.util.regex.Pattern;
  * @author rose
  * @since 0.0.1
  */
+@Slf4j
 public abstract class FormatUtils {
-
     public static final String DEFAULT_PLACEHOLDER = "{}";
-    public static final String EMPTY = "";
-
-    // ==================== 模板格式化方法 ====================
 
     /**
      * 格式化模板变量
@@ -53,14 +52,12 @@ public abstract class FormatUtils {
         }
 
         String template2 = template;
-        String value;
         for (final Map.Entry<String, ?> entry : map.entrySet()) {
-            value = Objects.toString(entry.getValue(), EMPTY);
-            if (entry.getValue().equals("NULL")) {
-                value = EMPTY;
-            }
-            if (value != null && !value.isEmpty()) {
-                template2 = template2.replace(prefix + entry.getKey() + suffix, value);
+            try {
+                template2 = template2.replace(prefix + entry.getKey() + suffix,
+                        entry.getValue() == null ? "null" : entry.getValue().toString());
+            } catch (Exception e) {
+                log.error("Failed to format template: " + template, e);
             }
         }
         return template2;

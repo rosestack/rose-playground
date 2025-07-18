@@ -16,6 +16,8 @@
  */
 package io.github.rose.core.lang.function;
 
+import io.github.rose.core.util.FormatUtils;
+
 import java.util.function.BiFunction;
 
 import static io.github.rose.core.util.Assert.assertNotNull;

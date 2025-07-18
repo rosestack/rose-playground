@@ -25,21 +25,31 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
     private final Map<String, Function<Object[], Object>> customFunctions = new ConcurrentHashMap<>();
 
     private boolean cacheEnabled = true;
+    private boolean available = false;
 
     /**
      * 默认构造函数
      */
     public JakartaElExpressionEvaluator() {
+        ExpressionFactory factory = null;
         try {
-            this.expressionFactory = ExpressionFactory.newInstance();
+            factory = ExpressionFactory.newInstance();
+            this.available = true;
         } catch (Exception e) {
-            throw new RuntimeException("Jakarta EL not available", e);
+            // Jakarta EL 不可用，但不抛出异常
+            this.available = false;
         }
+        this.expressionFactory = factory;
     }
 
     @Override
     public Object evaluate(String expression, Map<String, Object> variables, Locale locale) {
         if (expression == null || expression.trim().isEmpty()) {
+            return null;
+        }
+
+        // 如果 Jakarta EL 不可用，直接返回 null
+        if (!available || expressionFactory == null) {
             return null;
         }
 
@@ -89,21 +99,13 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
             return false;
         }
 
+        // 如果 Jakarta EL 不可用，不支持任何表达式
+        if (!available || expressionFactory == null) {
+            return false;
+        }
+
         // Jakarta EL支持所有有效的EL表达式
         return true;
-    }
-
-    @Override
-    public void registerFunction(String name, Function<Object[], Object> function) {
-        customFunctions.put(name, function);
-    }
-
-    @Override
-    public void setCacheEnabled(boolean enabled) {
-        this.cacheEnabled = enabled;
-        if (!enabled) {
-            expressionCache.clear();
-        }
     }
 
     /**

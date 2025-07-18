@@ -7,7 +7,7 @@ import java.util.function.Function;
 /**
  * 表达式评估器接口
  *
- * <p>用于评估表达式语法中的表达式，仅关注核心功能。</p>
+ * <p>用于评估表达式语法中的表达式，支持自定义函数功能。</p>
  *
  * @author Rose Framework Team
  * @since 1.0.0
@@ -23,13 +23,13 @@ public interface ExpressionEvaluator {
      */
     Object evaluate(String expression, Map<String, Object> variables, Locale locale);
 
+    /**
+     * 检查是否支持指定的表达式
+     *
+     * @param expression 表达式
+     * @return 是否支持
+     */
     default boolean supports(String expression) {
         return true;
-    }
-
-    default void registerFunction(String name, Function<Object[], Object> function) {
-    }
-
-    default void setCacheEnabled(boolean enabled) {
     }
 }

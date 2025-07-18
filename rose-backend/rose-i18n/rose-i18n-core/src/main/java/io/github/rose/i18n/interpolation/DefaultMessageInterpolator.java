@@ -2,7 +2,7 @@ package io.github.rose.i18n.interpolation;
 
 import io.github.rose.core.util.FormatUtils;
 import io.github.rose.i18n.interpolation.evaluator.ExpressionEvaluator;
-import io.github.rose.i18n.interpolation.evaluator.SimpleExpressionEvaluator;
+import io.github.rose.i18n.interpolation.evaluator.SpelExpressionEvaluator;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -30,7 +30,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     private final ExpressionEvaluator expressionEvaluator;
 
     public DefaultMessageInterpolator() {
-        this(new SimpleExpressionEvaluator());
+        this(new SpelExpressionEvaluator());
     }
 
     public DefaultMessageInterpolator(ExpressionEvaluator expressionEvaluator) {
@@ -38,45 +38,54 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     }
 
     @Override
-    public String interpolate(String message, Locale locale, Object arg) {
-        if (message == null || arg == null) {
+    public String interpolate(String message, Locale locale, Object args) {
+        if (message == null) {
             return null;
         }
 
-        // 1. 处理 ${expression} 表达式
-        if (EXPRESSION_PATTERN.matcher(message).find()) {
-            if (arg instanceof Map) {
-                return processExpressions(message, (Map<String, Object>) arg, locale);
+        if (args == null) {
+            return message;  // null 参数时返回原消息
+        }
+
+        // 根据参数类型和消息格式选择最合适的插值方式，只处理一次
+        if (args instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> mapArgs = (Map<String, Object>) args;
+
+            if (EXPRESSION_PATTERN.matcher(message).find()) {
+                return processExpressions(message, mapArgs, locale);
+            }
+
+            // 处理 {name} 命名参数
+            if (NAMED_PARAMETER_PATTERN.matcher(message).find()) {
+                return FormatUtils.formatVariables(message, mapArgs);
             }
         }
 
-        // 2. 处理 {name} 命名参数
-        if (NAMED_PARAMETER_PATTERN.matcher(message).find()) {
-            if (arg instanceof Map) {
-                return FormatUtils.formatVariables(message, (Map<String, Object>) arg);
-            }
-        }
+        if (args instanceof Object[]) {
+            Object[] arrayArgs = (Object[]) args;
 
-        // 3. 处理 {0}, {1} MessageFormat 风格
-        if (MESSAGE_FORMAT_PATTERN.matcher(message).find()) {
-            if (arg instanceof Object[] && ((Object[]) arg).length > 0) {
+            // 处理 {0}, {1} MessageFormat 风格
+            if (MESSAGE_FORMAT_PATTERN.matcher(message).find()) {
                 try {
                     MessageFormat messageFormat = new MessageFormat(message, locale);
-                    return messageFormat.format(arg);
+                    return messageFormat.format(arrayArgs);
                 } catch (Exception e) {
-                    return message;
                 }
             }
 
-        }
-
-        // 4. 处理 {} 占位符
-        if (message.contains("{}")) {
-            if (arg instanceof Object[] && ((Object[]) arg).length > 0) {
-                return FormatUtils.format(message, arg);
+            // 处理 {} 占位符
+            if (message.contains("{}")) {
+                return FormatUtils.format(message, arrayArgs);
             }
         }
 
+        // 处理 {} 占位符
+        if (message.contains("{}")) {
+            return FormatUtils.format(message, args);
+        }
+
+        // 如果没有匹配的格式，返回原消息
         return message;
     }
 
@@ -91,17 +100,20 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
             String expression = matcher.group(1);
             String replacement;
 
-            try {
-                Object value = expressionEvaluator.evaluate(expression, arg, locale);
-                if (value != null) {
-                    replacement = value.toString();
-                } else {
+            if (!expressionEvaluator.supports(expression)) {
+                return message;
+            } else {
+                try {
+                    Object value = expressionEvaluator.evaluate(expression, arg, locale);
+                    if (value != null) {
+                        replacement = value.toString();
+                    } else {
+                        replacement = "null";
+                    }
+                } catch (Exception e) {
                     replacement = matcher.group(0); // 保持原样
                 }
-            } catch (Exception e) {
-                replacement = matcher.group(0); // 保持原样
             }
-
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
 
@@ -109,3 +121,5 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
         return result.toString();
     }
 }
+
+
