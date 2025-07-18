@@ -58,6 +58,19 @@ class DefaultMessageInterpolatorTest {
     }
 
     @Test
+    void testFormatStyle() {
+        // 测试基本Format风格
+        String template = "Hello {}, you are {} years old!";
+        String result = interpolator.interpolate(template, new Object[]{"Alice", 25}, Locale.ENGLISH);
+        assertEquals("Hello Alice, you are 25 years old!", result);
+
+        // 测试多种数据类型
+        template = "User: {}, Age: {}, Active: {}, Score: {}";
+        result = interpolator.interpolate(template, new Object[]{"Bob", 30, true, 95.5}, Locale.ENGLISH);
+        assertEquals("User: Bob, Age: 30, Active: true, Score: 95.5", result);
+    }
+
+    @Test
     void testNamedParameters() {
         // 测试基本命名参数
         String template = "Hello {name}, you are {age} years old!";
@@ -103,21 +116,6 @@ class DefaultMessageInterpolatorTest {
     }
 
     @Test
-    void testMixedStyles() {
-        TestUser user = new TestUser("Grace", 27);
-        Map<String, Object> params = Map.of("user", user, "greeting", "Hi");
-
-        // 测试混合风格（优先级：表达式 > 命名参数 > MessageFormat）
-        String template = "Hello {greeting} ${user.name}, you are {0} years old!";
-        String result = interpolator.interpolate(template, params, Locale.ENGLISH);
-        assertNotNull(result);
-        // 表达式应该被处理
-        assertTrue(result.contains("Grace") || result.contains("${user.name}"));
-        // 命名参数应该被处理
-        assertTrue(result.contains("Hi") || result.contains("{greeting}"));
-    }
-
-    @Test
     void testArrayParametersInExpressions() {
         String[] names = {"Alice", "Bob", "Charlie"};
         Map<String, Object> params = Map.of("names", names);
@@ -139,7 +137,7 @@ class DefaultMessageInterpolatorTest {
         assertEquals("", result);
 
         // 测试null参数
-        result = interpolator.interpolate("Hello {name}!", (Object) null, Locale.ENGLISH);
+        result = interpolator.interpolate("Hello {name}!", (Map<String, Object>) null, Locale.ENGLISH);
         assertEquals("Hello {name}!", result);
 
         // 测试空参数
@@ -262,7 +260,7 @@ class DefaultMessageInterpolatorTest {
     @Test
     void testNullAndEmptyInputs() {
         // 测试null输入
-        assertNull(interpolator.interpolate(null, null, null));
+        assertNull(interpolator.interpolate(null, (Object[]) null, null));
         assertNull(interpolator.interpolate(null, Map.of(), Locale.ENGLISH));
         assertNull(interpolator.interpolate(null, new Object[]{}, Locale.ENGLISH));
 
@@ -284,11 +282,11 @@ class DefaultMessageInterpolatorTest {
 
         // 测试各种格式错误的占位符
         String[] malformedTemplates = {
-            "Hello {name",           // 缺少右括号
-            "Hello name}",           // 缺少左括号
-            "Hello {{name}}",        // 双括号
-            "Hello ${name",          // 缺少右括号
-            "Hello $name}",          // 缺少左括号
+                "Hello {name",           // 缺少右括号
+                "Hello name}",           // 缺少左括号
+                "Hello {{name}}",        // 双括号
+                "Hello ${name",          // 缺少右括号
+                "Hello $name}",          // 缺少左括号
         };
 
         for (String template : malformedTemplates) {
@@ -300,9 +298,9 @@ class DefaultMessageInterpolatorTest {
     @Test
     void testSpecialCharacters() {
         Map<String, Object> params = Map.of(
-            "special", "Hello\nWorld\t!",
-            "unicode", "你好世界",
-            "symbols", "@#$%^&*()"
+                "special", "Hello\nWorld\t!",
+                "unicode", "你好世界",
+                "symbols", "@#$%^&*()"
         );
 
         String template = "Special: ${special}, Unicode: ${unicode}, Symbols: ${symbols}";
@@ -385,10 +383,10 @@ class DefaultMessageInterpolatorTest {
         Order order = new Order("ORD-001", 299.99, "已发货");
 
         Map<String, Object> context = Map.of(
-            "user", user,
-            "order", order,
-            "currentDate", new Date(),
-            "supportEmail", "support@example.com"
+                "user", user,
+                "order", order,
+                "currentDate", new Date(),
+                "supportEmail", "support@example.com"
         );
 
         // 测试用户欢迎消息
@@ -407,24 +405,24 @@ class DefaultMessageInterpolatorTest {
         // 模拟邮件模板场景
         BusinessUser recipient = new BusinessUser("李四", "li.si@example.com", 35, true);
         Map<String, Object> context = Map.of(
-            "recipient", recipient,
-            "senderName", "客服小王",
-            "companyName", "科技有限公司",
-            "resetLink", "https://example.com/reset?token=abc123"
+                "recipient", recipient,
+                "senderName", "客服小王",
+                "companyName", "科技有限公司",
+                "resetLink", "https://example.com/reset?token=abc123"
         );
 
         String emailTemplate = """
-            亲爱的 ${recipient.name}，
-
-            您好！我是来自${companyName}的${senderName}。
-
-            您的密码重置链接：${resetLink}
-
-            如有疑问，请联系我们。
-
-            祝好！
-            ${senderName}
-            """;
+                亲爱的 ${recipient.name}，
+                
+                您好！我是来自${companyName}的${senderName}。
+                
+                您的密码重置链接：${resetLink}
+                
+                如有疑问，请联系我们。
+                
+                祝好！
+                ${senderName}
+                """;
 
         String result = interpolator.interpolate(emailTemplate, context, Locale.CHINESE);
 
@@ -480,10 +478,21 @@ class DefaultMessageInterpolatorTest {
             this.active = active;
         }
 
-        public String getName() { return name; }
-        public String getEmail() { return email; }
-        public int getAge() { return age; }
-        public boolean isActive() { return active; }
+        public String getName() {
+            return name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
     }
 
     public static class Order {
@@ -497,8 +506,16 @@ class DefaultMessageInterpolatorTest {
             this.status = status;
         }
 
-        public String getId() { return id; }
-        public double getAmount() { return amount; }
-        public String getStatus() { return status; }
+        public String getId() {
+            return id;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public String getStatus() {
+            return status;
+        }
     }
 }

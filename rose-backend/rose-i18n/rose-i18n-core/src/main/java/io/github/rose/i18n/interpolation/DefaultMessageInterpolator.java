@@ -14,7 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DefaultMessageInterpolator implements MessageInterpolator {
-    private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{\\}");
+    private static final Pattern PLACE_HODLER_PATTERN = Pattern.compile("\\{\\}");
     private static final Pattern MESSAGE_FORMAT_PATTERN = Pattern.compile("\\{\\d+\\}");
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
@@ -33,62 +33,65 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
     }
 
     @Override
-    public String interpolate(String template, Object args, Locale locale) {
-        if (template == null) {
+    public String interpolate(String message, Object[] args, Locale locale) {
+        if (message == null) {
             return null;
         }
         if (args == null) {
-            return template;
+            return message;
         }
 
-        // Priority: Expression style
-        if (EXPRESSION_PATTERN.matcher(template).find()) {
-            if (args instanceof Object[]) {
-                return interpolateExpressions(template, (Object[]) args, locale);
-            } else if (args instanceof Map) {
-                Map<String, Object> mapArgs = (Map<String, Object>) args;
-                return interpolateExpressions(template, mapArgs, locale);
-            } else {
-                return template;
+        // 检测模板中使用的格式类型
+        boolean hasMessageFormat = MESSAGE_FORMAT_PATTERN.matcher(message).find();
+        boolean hasFormat = PLACE_HODLER_PATTERN.matcher(message).find();
+
+        // MessageFormat style - 优先级更高
+        if (hasMessageFormat) {
+            try {
+                MessageFormat messageFormat = new MessageFormat(message, locale);
+                return messageFormat.format(args);
+            } catch (Exception e) {
+                // 如果 MessageFormat 失败，回退到 Format 风格
             }
         }
 
-        // MessageFormat style
-        if (MESSAGE_FORMAT_PATTERN.matcher(template).find()) {
-            if (args instanceof Object[] && ((Object[]) args).length > 0) {
-                try {
-                    MessageFormat messageFormat = new MessageFormat(template, locale);
-                    return messageFormat.format(args);
-                } catch (Exception e) {
-                    return template;
-                }
-            } else {
-                return template;
-            }
+        // Format style
+        if (hasFormat) {
+            return FormatUtils.format(message, args);
         }
 
-        // Named parameter style
-        if (NAMED_PARAMETER_PATTERN.matcher(template).find() && args instanceof Map) {
-            Map<String, Object> mapArgs = (Map<String, Object>) args;
-            return interpolateNamedParameters(template, mapArgs, locale);
+        // 如果都没有匹配的格式，返回原消息
+        return message;
+    }
+
+    @Override
+    public String interpolate(String message, Map<String, Object> args, Locale locale) {
+        if (message == null) {
+            return null;
+        }
+        if (args == null || args.isEmpty()) {
+            return message;
         }
 
-        if (FORMAT_PATTERN.matcher(template).find() && args instanceof Object[]) {
-            Object[] objArgs = (Object[]) args;
-            return FormatUtils.format(template, objArgs);
+        // 检测模板中使用的格式类型
+        boolean hasExpression = EXPRESSION_PATTERN.matcher(message).find();
+        boolean hasNamedParameter = NAMED_PARAMETER_PATTERN.matcher(message).find();
+
+        // 表达式风格 - 优先级更高
+        if (hasExpression) {
+            return interpolateExpressions(message, args, locale);
         }
 
-        return template;
+        // 命名参数风格
+        if (hasNamedParameter) {
+            return interpolateNamedParameters(message, args, locale);
+        }
+
+        // 如果都没有匹配的格式，返回原消息
+        return message;
     }
 
     private String interpolateNamedParameters(String template, Map<String, Object> namedArgs, Locale locale) {
-        if (template == null) {
-            return null;
-        }
-        if (namedArgs == null || namedArgs.isEmpty()) {
-            return template;
-        }
-
         StringBuffer sb = new StringBuffer();
         Matcher matcher = NAMED_PARAMETER_PATTERN.matcher(template);
         int lastEnd = 0;
@@ -104,22 +107,7 @@ public class DefaultMessageInterpolator implements MessageInterpolator {
         return sb.toString();
     }
 
-    private String interpolateExpressions(String template, Object[] args, Locale locale) {
-        Map<String, Object> namedArgs = new HashMap<>();
-        if (args != null) {
-            for (int i = 0; i < args.length; i++) {
-                namedArgs.put("arg" + i, args[i]);
-                namedArgs.put(String.valueOf(i), args[i]);
-            }
-        }
-        return interpolateExpressions(template, namedArgs, locale);
-    }
-
     private String interpolateExpressions(String template, Map<String, Object> namedArgs, Locale locale) {
-        if (template == null) {
-            return null;
-        }
-
         Matcher matcher = EXPRESSION_PATTERN.matcher(template);
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {

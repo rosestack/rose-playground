@@ -1,5 +1,6 @@
 package io.github.rose.i18n;
 
+import io.github.rose.i18n.cache.SimpleCachingI18nMessageSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

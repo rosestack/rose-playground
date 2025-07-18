@@ -1,6 +1,5 @@
 package io.github.rose.i18n;
 
-import io.github.rose.core.util.Assert;
 import io.github.rose.i18n.interpolation.DefaultMessageInterpolator;
 import io.github.rose.i18n.interpolation.MessageInterpolator;
 import io.github.rose.i18n.util.I18nUtils;
