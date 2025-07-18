@@ -119,9 +119,9 @@ public interface Predicates {
      *
      * Predicate<Integer> isPositiveAndEven = Predicates.and(isPositive, isEven);
      *
-     * System.out.println(isPositiveAndEven.test(4));  // Output: true
-     * System.out.println(isPositiveAndEven.test(-2)); // Output: false
-     * System.out.println(isPositiveAndEven.test(3));  // Output: false
+     * log.info(isPositiveAndEven.test(4));  // Output: true
+     * log.info(isPositiveAndEven.test(-2)); // Output: false
+     * log.info(isPositiveAndEven.test(3));  // Output: false
      * }</pre>
      *
      * @param predicates an array of predicates to be logically ANDed together
@@ -159,10 +159,10 @@ public interface Predicates {
      *
      * Predicate<Integer> isPositiveOrEven = Predicates.or(isPositive, isEven);
      *
-     * System.out.println(isPositiveOrEven.test(4));  // Output: true
-     * System.out.println(isPositiveOrEven.test(-2)); // Output: true
-     * System.out.println(isPositiveOrEven.test(3));  // Output: true
-     * System.out.println(isPositiveOrEven.test(-3)); // Output: false
+     * log.info(isPositiveOrEven.test(4));  // Output: true
+     * log.info(isPositiveOrEven.test(-2)); // Output: true
+     * log.info(isPositiveOrEven.test(3));  // Output: true
+     * log.info(isPositiveOrEven.test(-3)); // Output: false
      * }</pre>
      *
      * @param predicates an array of predicates to be logically ORed together

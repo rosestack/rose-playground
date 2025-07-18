@@ -38,7 +38,7 @@ import java.util.function.Function;
  *
  * // Using execute() with custom exception handling
  * Integer result2 = parser.execute("invalid", (input, ex) -> {
- *     System.out.println("Parsing failed for: " + input);
+ *     log.info("Parsing failed for: " + input);
  *     return -1; // fallback value
  * });
  * }</pre>

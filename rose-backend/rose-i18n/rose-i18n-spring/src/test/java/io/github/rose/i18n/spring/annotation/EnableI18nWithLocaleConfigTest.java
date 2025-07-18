@@ -5,6 +5,8 @@ import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spring.TestServiceMessageSourceConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -31,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
         supportedLocales = {"en_US", "zh_CN", "ja_JP", "fr_FR"}
 )
 class EnableI18nWithLocaleConfigTest {
-
+    private static final Logger log = LoggerFactory.getLogger(EnableI18nWithLocaleConfigTest.class);
     @Autowired
     private I18nMessageSource i18nMessageSource;
 
@@ -76,6 +78,6 @@ class EnableI18nWithLocaleConfigTest {
                 "支持的 locale 数量应该至少为4，实际为: " + supportedLocales.size());
 
         // 打印所有支持的 locales 用于调试
-        System.out.println("Supported Locales: " + supportedLocales);
+        log.info("Supported Locales: " + supportedLocales);
     }
 }

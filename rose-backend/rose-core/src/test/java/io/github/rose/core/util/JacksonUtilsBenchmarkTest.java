@@ -1,5 +1,6 @@
 package io.github.rose.core.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  * JacksonUtil性能基准测试
  * 用于验证优化后的性能表现
  */
+@Slf4j
 class JacksonUtilsBenchmarkTest {
 
     private List<TestData> testDataList;
@@ -35,7 +37,7 @@ class JacksonUtilsBenchmarkTest {
 
     @Test
     void benchmarkSerialization() {
-        System.out.println("=== Serialization Benchmark ===");
+        log.info("=== Serialization Benchmark ===");
         
         // 预热
         for (int i = 0; i < 100; i++) {
@@ -54,20 +56,20 @@ class JacksonUtilsBenchmarkTest {
             long iterationTime = endTime - startTime;
             totalTime += iterationTime;
             
-            System.out.printf("Iteration %d: %d ms%n", 
-                iteration + 1, 
+            log.info("Iteration {}: {} ms",
+                iteration + 1,
                 TimeUnit.NANOSECONDS.toMillis(iterationTime));
         }
-        
+
         long avgTime = totalTime / ITERATIONS;
-        System.out.printf("Average time: %d ms%n", TimeUnit.NANOSECONDS.toMillis(avgTime));
-        System.out.printf("Throughput: %.2f objects/ms%n", 
+        log.info("Average time: {} ms", TimeUnit.NANOSECONDS.toMillis(avgTime));
+        log.info("Throughput: {:.2f} objects/ms",
             (double) TEST_SIZE / TimeUnit.NANOSECONDS.toMillis(avgTime));
     }
 
     @Test
     void benchmarkDeserialization() {
-        System.out.println("=== Deserialization Benchmark ===");
+        log.info("=== Deserialization Benchmark ===");
         
         // 准备JSON字符串
         List<String> jsonStrings = new ArrayList<>();
@@ -105,7 +107,7 @@ class JacksonUtilsBenchmarkTest {
 
     @Test
     void benchmarkCloning() {
-        System.out.println("=== Cloning Benchmark ===");
+        log.info("=== Cloning Benchmark ===");
         
         // 预热
         for (int i = 0; i < 100; i++) {
@@ -137,7 +139,7 @@ class JacksonUtilsBenchmarkTest {
 
     @Test
     void benchmarkPrettyPrint() {
-        System.out.println("=== Pretty Print Benchmark ===");
+        log.info("=== Pretty Print Benchmark ===");
         
         // 预热
         for (int i = 0; i < 100; i++) {
@@ -169,7 +171,7 @@ class JacksonUtilsBenchmarkTest {
 
     @Test
     void memoryUsageTest() {
-        System.out.println("=== Memory Usage Test ===");
+        log.info("=== Memory Usage Test ===");
         
         Runtime runtime = Runtime.getRuntime();
         

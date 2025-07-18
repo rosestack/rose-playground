@@ -40,7 +40,7 @@ import static io.github.rose.core.util.Assert.assertNotNull;
  *
  * // Custom Exception Handling Example:
  * Integer resultWithCustomHandler = ThrowableBiFunction.execute(10, 0, divide, (first, second, error) -> {
- *     System.out.println("Error occurred: " + error.getMessage());
+ *     log.info("Error occurred: " + error.getMessage());
  *     return 0; // Default value on failure
  * });
  * }</pre>
@@ -116,7 +116,7 @@ public interface ThrowableBiFunction<T, U, R> {
      *
      * // Custom Exception Handling Example:
      * Integer resultWithCustomHandler = ThrowableBiFunction.execute(10, 0, divide, (first, second, error) -> {
-     *     System.out.println("Error occurred: " + error.getMessage());
+     *     log.info("Error occurred: " + error.getMessage());
      *     return 0; // Default value on failure
      * });
      * }</pre>

@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
  * <pre>{@code
  * ThrowableBiConsumer<Integer, Integer> addAndPrint = (a, b) -> {
  *     int sum = a + b;
- *     System.out.println("Sum: " + sum);
+ *     log.info("Sum: " + sum);
  * };
  *
  * addAndPrint.accept(3, 5); // Output: Sum: 8
@@ -44,7 +44,7 @@ import static java.util.Objects.requireNonNull;
  * <pre>{@code
  * ThrowableBiConsumer<String, Integer> parseAndPrint = (str, radix) -> {
  *     int value = Integer.parseInt(str, radix);
- *     System.out.println("Parsed value: " + value);
+ *     log.info("Parsed value: " + value);
  * };
  *
  * try {

@@ -41,14 +41,14 @@ public abstract class ListUtils {
      * <h3>Example Usage</h3>
      * <pre>{@code
      *     List<String> fruits = Arrays.asList("apple", "banana", "cherry");
-     *     ListUtils.forEach(fruits, (index, fruit) -> System.out.println("Index: " + index + ", Fruit: " + fruit));
+     *     ListUtils.forEach(fruits, (index, fruit) -> log.info("Index: " + index + ", Fruit: " + fruit));
      *     // Output:
      *     // Index: 0, Fruit: apple
      *     // Index: 1, Fruit: banana
      *     // Index: 2, Fruit: cherry
      *
      *     List<Integer> numbers = Collections.emptyList();
-     *     ListUtils.forEach(numbers, (index, number) -> System.out.println("Index: " + index + ", Number: " + number));
+     *     ListUtils.forEach(numbers, (index, number) -> log.info("Index: " + index + ", Number: " + number));
      *     // No output, as the list is empty
      * }</pre>
      *
@@ -73,14 +73,14 @@ public abstract class ListUtils {
      * <h3>Example Usage</h3>
      * <pre>{@code
      *     List<String> fruits = Arrays.asList("apple", "banana", "cherry");
-     *     ListUtils.forEach(fruits, fruit -> System.out.println("Fruit: " + fruit));
+     *     ListUtils.forEach(fruits, fruit -> log.info("Fruit: " + fruit));
      *     // Output:
      *     // Fruit: apple
      *     // Fruit: banana
      *     // Fruit: cherry
      *
      *     List<Integer> numbers = Collections.emptyList();
-     *     ListUtils.forEach(numbers, number -> System.out.println("Number: " + number));
+     *     ListUtils.forEach(numbers, number -> log.info("Number: " + number));
      *     // No output, as the list is empty
      * }</pre>
      *

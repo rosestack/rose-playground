@@ -3,6 +3,8 @@ package io.github.rose.core.util;
 import io.github.rose.core.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.*;
 import java.util.LinkedHashSet;
@@ -15,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 验证优化后的网络工具类功能
  */
 class NetUtilsTest {
+    private static final Logger log = LoggerFactory.getLogger(NetUtilsTest.class);
 
     @BeforeEach
     void setUp() {
@@ -286,7 +289,7 @@ class NetUtilsTest {
             assertTrue(NetUtils.isValidIPv4(ip), "IP should be valid IPv4: " + ip);
         }
 
-        System.out.println("Local IPv4 addresses: " + ipv4s);
+        log.info("Local IPv4 addresses: {}", ipv4s);
     }
 
     @Test
@@ -299,7 +302,7 @@ class NetUtilsTest {
             assertTrue(NetUtils.isValidIPv6(ip) || ip.contains(":"), "IP should be valid IPv6: " + ip);
         }
 
-        System.out.println("Local IPv6 addresses: " + ipv6s);
+        log.info("Local IPv6 addresses: {}", ipv6s);
     }
 
     @Test
@@ -402,7 +405,7 @@ class NetUtilsTest {
         assertNotNull(newHostName);
         assertEquals(hostName, newHostName);
 
-        System.out.println("Local host name: " + hostName);
+        log.info("Local host name: {}", hostName);
     }
 
     // ==================== 工具方法测试 ====================

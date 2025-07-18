@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -18,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 验证使用Jackson ObjectMapper进行日期时间格式化的功能
  */
 class LocaleFormatUtilsTest {
-
+    private static final Logger log = LoggerFactory.getLogger(LocaleFormatUtilsTest.class);
     @BeforeEach
     void setUp() {
         // 配置ObjectMapper，模拟Spring Boot的配置
@@ -42,7 +44,7 @@ class LocaleFormatUtilsTest {
         // 验证格式化结果符合配置的格式
         assertNotNull(result);
         assertTrue(result.contains("T")); // Jackson格式化后不应包含ISO格式的T
-        System.out.println("LocalDateTime formatted: " + result);
+        log.info("LocalDateTime formatted: " + result);
     }
 
     @Test
@@ -51,7 +53,7 @@ class LocaleFormatUtilsTest {
         String result = LocaleFormatUtils.formatValue(date, Locale.getDefault());
         
         assertNotNull(result);
-        System.out.println("LocalDate formatted: " + result);
+        log.info("LocalDate formatted: " + result);
     }
 
     @Test
@@ -60,7 +62,7 @@ class LocaleFormatUtilsTest {
         String result = LocaleFormatUtils.formatValue(time, Locale.getDefault());
         
         assertNotNull(result);
-        System.out.println("LocalTime formatted: " + result);
+        log.info("LocalTime formatted: " + result);
     }
 
     @Test
@@ -71,7 +73,7 @@ class LocaleFormatUtilsTest {
         assertNotNull(result);
         // 验证格式符合yyyy-MM-dd HH:mm:ss
         assertTrue(result.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"));
-        System.out.println("Date formatted: " + result);
+        log.info("Date formatted: " + result);
     }
 
     @Test
@@ -80,7 +82,7 @@ class LocaleFormatUtilsTest {
         String result = LocaleFormatUtils.formatValue(instant, Locale.getDefault());
         
         assertNotNull(result);
-        System.out.println("Instant formatted: " + result);
+        log.info("Instant formatted: " + result);
     }
 
     @Test
@@ -89,7 +91,7 @@ class LocaleFormatUtilsTest {
         String result = LocaleFormatUtils.formatValue(zonedDateTime, Locale.getDefault());
         
         assertNotNull(result);
-        System.out.println("ZonedDateTime formatted: " + result);
+        log.info("ZonedDateTime formatted: " + result);
     }
 
     @Test
@@ -118,7 +120,7 @@ class LocaleFormatUtilsTest {
         String result = LocaleFormatUtils.formatValue(dateTime, Locale.getDefault());
 
         assertNotNull(result);
-        System.out.println("Without ObjectMapper: " + result);
+        log.info("Without ObjectMapper: " + result);
     }
 
     @Test
@@ -129,7 +131,7 @@ class LocaleFormatUtilsTest {
         assertNotNull(result);
         assertTrue(result.startsWith("["));
         assertTrue(result.endsWith("]"));
-        System.out.println("Collection formatted: " + result);
+        log.info("Collection formatted: " + result);
     }
 
     @Test
@@ -140,7 +142,7 @@ class LocaleFormatUtilsTest {
         assertNotNull(result);
         assertTrue(result.startsWith("["));
         assertTrue(result.endsWith("]"));
-        System.out.println("Array formatted: " + result);
+        log.info("Array formatted: " + result);
     }
 
     @Test
@@ -149,7 +151,7 @@ class LocaleFormatUtilsTest {
         String result = LocaleFormatUtils.formatValue(decimal, Locale.US);
 
         assertNotNull(result);
-        System.out.println("BigDecimal formatted: " + result);
+        log.info("BigDecimal formatted: " + result);
     }
 
     @Test
