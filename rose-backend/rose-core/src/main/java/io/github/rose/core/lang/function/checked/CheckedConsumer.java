@@ -1,0 +1,73 @@
+package io.github.rose.core.lang.function.checked;
+
+import java.util.Objects;
+import java.util.function.Consumer;
+
+/**
+ * 受检异常的消费者接口
+ * 对应 JDK 的 Consumer<T>，但可以抛出受检异常
+ * 
+ * @param <T> 输入参数类型
+ * @author rose
+ */
+@FunctionalInterface
+public interface CheckedConsumer<T> {
+    
+    /**
+     * 消费值
+     * 
+     * @param t 输入参数
+     * @throws Exception 可能抛出的异常
+     */
+    void accept(T t) throws Exception;
+    
+    /**
+     * 组合消费者
+     */
+    default CheckedConsumer<T> andThen(CheckedConsumer<? super T> after) {
+        Objects.requireNonNull(after);
+        return (T t) -> {
+            accept(t);
+            after.accept(t);
+        };
+    }
+    
+    /**
+     * 组合消费者
+     */
+    default CheckedConsumer<T> andThen(Consumer<? super T> after) {
+        Objects.requireNonNull(after);
+        return (T t) -> {
+            accept(t);
+            after.accept(t);
+        };
+    }
+    
+    /**
+     * 转换为 JDK Consumer（异常会被包装为 RuntimeException）
+     */
+    default Consumer<T> unchecked() {
+        return (T t) -> {
+            try {
+                accept(t);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+    
+    /**
+     * 从 JDK Consumer 创建 CheckedConsumer
+     */
+    static <T> CheckedConsumer<T> from(Consumer<T> consumer) {
+        Objects.requireNonNull(consumer);
+        return consumer::accept;
+    }
+    
+    /**
+     * 创建空消费者
+     */
+    static <T> CheckedConsumer<T> noop() {
+        return t -> {};
+    }
+}

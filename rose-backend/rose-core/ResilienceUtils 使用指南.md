@@ -18,23 +18,31 @@
 断路器模式用于防止级联故障，当依赖服务出现问题时快速失败。
 
 ```java
-import io.github.rose.core.util.ResilienceUtils;
+
 import io.vavr.control.Try;
 
 // 创建断路器：5次失败后开启，1分钟后重置
-ResilienceUtils.CircuitBreaker circuitBreaker = 
-    new ResilienceUtils.CircuitBreaker(5, Duration.ofMinutes(1));
+ResilienceUtils.CircuitBreaker circuitBreaker =
+        new ResilienceUtils.CircuitBreaker(5, Duration.ofMinutes(1));
 
-// 使用断路器包装操作
-Try<String> result = circuitBreaker.execute(() -> 
-    Try.of(() -> riskyOperation())
-);
+        // 使用断路器包装操作
+        Try<String> result = circuitBreaker.execute(() ->
+                Try.of(() -> riskyOperation())
+        );
 
-if (result.isSuccess()) {
-    System.out.println("操作成功: " + result.get());
-} else {
-    System.out.println("操作失败: " + result.getCause().getMessage());
-}
+if(result.
+
+        isSuccess()){
+        System.out.
+
+        println("操作成功: "+result.get());
+        }else{
+        System.out.
+
+        println("操作失败: "+result.getCause().
+
+        getMessage());
+        }
 ```
 
 ### 2. 指数退避重试
