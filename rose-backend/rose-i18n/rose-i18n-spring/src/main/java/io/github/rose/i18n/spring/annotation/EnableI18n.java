@@ -24,9 +24,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import java.lang.annotation.*;
-import java.util.Locale;
 
-import static io.github.rose.i18n.AbstractResourceMessageSource.DEFAULT_RESOURCE_NAME;
 import static io.github.rose.i18n.I18nMessageSource.COMMON_SOURCE;
 
 /**

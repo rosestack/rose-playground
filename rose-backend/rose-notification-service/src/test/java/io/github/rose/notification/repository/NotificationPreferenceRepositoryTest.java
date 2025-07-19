@@ -5,7 +5,6 @@ import io.github.rose.notification.domain.repository.NotificationPreferenceRepos
 import io.github.rose.notification.domain.value.NotificationChannelType;
 import io.github.rose.notification.domain.value.TimeWindow;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

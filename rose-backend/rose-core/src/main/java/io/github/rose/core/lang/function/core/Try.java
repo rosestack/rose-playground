@@ -1,14 +1,6 @@
 package io.github.rose.core.lang.function.core;
 
-import io.github.rose.core.lang.function.checked.CheckedFunction;
-import io.github.rose.core.lang.function.checked.CheckedSupplier;
-import io.github.rose.core.lang.function.checked.CheckedConsumer;
-import io.github.rose.core.lang.function.checked.CheckedRunnable;
-import io.github.rose.core.lang.function.checked.CheckedBiFunction;
-import io.github.rose.core.lang.function.checked.CheckedBiConsumer;
-import io.github.rose.core.lang.function.checked.CheckedBiPredicate;
-import io.github.rose.core.lang.function.checked.CheckedPredicate;
-
+import io.github.rose.core.lang.function.checked.*;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -122,7 +114,7 @@ public final class Try<T> {
     /**
      * 转换成功值（可能抛出异常）
      */
-    public <R> Try<R> mapChecked(CheckedFunction<T, R> mapper) {
+    public <R> Try<R> map(CheckedFunction<T, R> mapper) {
         if (isSuccess) {
             try {
                 return success(mapper.apply(value));
@@ -167,27 +159,12 @@ public final class Try<T> {
     /**
      * 恢复失败（可能抛出异常）
      */
-    public Try<T> recoverChecked(CheckedFunction<Throwable, T> recovery) {
+    public Try<T> recover(CheckedFunction<Throwable, T> recovery) {
         if (isSuccess) {
             return this;
         } else {
             try {
                 return success(recovery.apply(cause));
-            } catch (Throwable e) {
-                return failure(e);
-            }
-        }
-    }
-
-    /**
-     * 扁平化恢复失败
-     */
-    public Try<T> recoverWith(Function<Throwable, Try<T>> recovery) {
-        if (isSuccess) {
-            return this;
-        } else {
-            try {
-                return recovery.apply(cause);
             } catch (Throwable e) {
                 return failure(e);
             }
@@ -254,7 +231,7 @@ public final class Try<T> {
     /**
      * 从 CheckedBiFunction 创建 Try
      */
-    public static <T, U, R> Try<R> ofBiFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
+    public static <T, U, R> Try<R> ofFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
         Objects.requireNonNull(function, "function cannot be null");
         try {
             return success(function.apply(t, u));
@@ -279,7 +256,7 @@ public final class Try<T> {
     /**
      * 从 CheckedBiConsumer 创建 Try<Void>
      */
-    public static <T, U> Try<Void> ofBiConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
+    public static <T, U> Try<Void> ofConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
         Objects.requireNonNull(consumer, "consumer cannot be null");
         try {
             consumer.accept(t, u);
@@ -328,7 +305,7 @@ public final class Try<T> {
     /**
      * 从 CheckedBiPredicate 创建 Try
      */
-    public static <T, U> Try<Boolean> ofBiPredicate(T t, U u, CheckedBiPredicate<T, U> predicate) {
+    public static <T, U> Try<Boolean> ofPredicate(T t, U u, CheckedBiPredicate<T, U> predicate) {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         try {
             return success(predicate.test(t, u));

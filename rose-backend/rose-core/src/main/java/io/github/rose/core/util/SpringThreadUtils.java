@@ -1,10 +1,7 @@
 package io.github.rose.core.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ExecutorConfigurationSupport;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureTask;
 
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -133,24 +130,6 @@ public class SpringThreadUtils {
         executor.initialize();
 
         return executor;
-    }
-
-    /**
-     * 异步执行任务，返回 ListenableFuture
-     * 使用 Spring 的异步执行机制
-     *
-     * @param executor 线程池执行器
-     * @param task     任务
-     * @param <T>      返回类型
-     * @return ListenableFuture
-     */
-    public static <T> ListenableFuture<T> submitAsync(
-            ThreadPoolTaskExecutor executor,
-            Supplier<T> task) {
-
-        ListenableFutureTask<T> futureTask = new ListenableFutureTask<>(task::get);
-        executor.execute(futureTask);
-        return futureTask;
     }
 
     /**

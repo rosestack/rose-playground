@@ -2,7 +2,6 @@ package io.github.rose.i18n.evaluator;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
 public interface ExpressionEvaluator {
     /**

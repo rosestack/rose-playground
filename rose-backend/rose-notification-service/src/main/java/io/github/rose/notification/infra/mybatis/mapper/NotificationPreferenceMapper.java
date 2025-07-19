@@ -2,10 +2,10 @@ package io.github.rose.notification.infra.mybatis.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import io.github.rose.notification.infra.mybatis.convert.NotificationPreferenceConvert;
-import io.github.rose.notification.infra.mybatis.entity.NotificationPreferenceEntity;
 import io.github.rose.notification.domain.model.NotificationPreference;
 import io.github.rose.notification.domain.repository.NotificationPreferenceRepository;
+import io.github.rose.notification.infra.mybatis.convert.NotificationPreferenceConvert;
+import io.github.rose.notification.infra.mybatis.entity.NotificationPreferenceEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 

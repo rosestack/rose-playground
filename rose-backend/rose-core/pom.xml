@@ -27,10 +27,6 @@
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.vavr</groupId>-->
-<!--            <artifactId>vavr</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

@@ -1,6 +1,5 @@
 package io.github.rose.i18n.spring.annotation;
 
-import io.github.rose.i18n.AbstractSpringTest;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.spring.TestServiceMessageSourceConfiguration;
 import org.junit.jupiter.api.Test;
@@ -9,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Locale;

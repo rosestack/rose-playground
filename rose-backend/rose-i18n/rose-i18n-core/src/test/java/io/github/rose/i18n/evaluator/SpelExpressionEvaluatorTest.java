@@ -1,6 +1,5 @@
 package io.github.rose.i18n.evaluator;
 
-import io.github.rose.i18n.evaluator.SpelExpressionEvaluator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

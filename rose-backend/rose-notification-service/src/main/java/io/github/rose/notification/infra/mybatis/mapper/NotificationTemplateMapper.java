@@ -1,10 +1,10 @@
 package io.github.rose.notification.infra.mybatis.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.github.rose.notification.infra.mybatis.convert.NotificationTemplateConvert;
-import io.github.rose.notification.infra.mybatis.entity.NotificationTemplateEntity;
 import io.github.rose.notification.domain.model.NotificationTemplate;
 import io.github.rose.notification.domain.repository.NotificationTemplateRepository;
+import io.github.rose.notification.infra.mybatis.convert.NotificationTemplateConvert;
+import io.github.rose.notification.infra.mybatis.entity.NotificationTemplateEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

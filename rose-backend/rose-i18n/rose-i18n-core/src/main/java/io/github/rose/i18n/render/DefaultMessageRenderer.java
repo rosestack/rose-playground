@@ -5,7 +5,8 @@ import io.github.rose.i18n.evaluator.ExpressionEvaluator;
 import io.github.rose.i18n.evaluator.SpelExpressionEvaluator;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

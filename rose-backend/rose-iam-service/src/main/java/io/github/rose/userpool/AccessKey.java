@@ -1,8 +1,8 @@
 package io.github.rose.userpool;
 
-import java.time.LocalDateTime;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class AccessKey {
