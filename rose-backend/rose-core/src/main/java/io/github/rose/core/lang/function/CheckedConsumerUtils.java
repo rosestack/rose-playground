@@ -138,7 +138,7 @@ public final class CheckedConsumerUtils {
      * @param <T> 输入类型
      * @return 空操作消费者
      */
-    public static <T> CheckedConsumer<T> noOp() {
+    public static <T> CheckedConsumer<T> noop() {
         return input -> {
             // 什么都不做
         };

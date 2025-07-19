@@ -229,7 +229,7 @@ public final class CheckedRunnableUtils {
      *
      * @return 空操作运行者
      */
-    public static CheckedRunnable noOp() {
+    public static CheckedRunnable noop() {
         return () -> {
             // 什么都不做
         };
