@@ -3,8 +3,6 @@ package io.github.rose.i18n.spring;
 import io.github.rose.i18n.CompositeMessageSource;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.ReloadedResourceMessageSource;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -12,6 +10,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.nio.charset.Charset;
 import java.util.*;
@@ -59,13 +58,13 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
         return delegate.getMessages(locale);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Locale getLocale() {
         return this.delegate.getLocale();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Locale getDefaultLocale() {
         return this.delegate.getDefaultLocale();

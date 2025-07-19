@@ -5,10 +5,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import io.github.rose.i18n.I18nMessageSource;
 import io.github.rose.i18n.Lifecycle;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
 
@@ -242,13 +242,13 @@ public class AdvancedCachingMessageSource implements I18nMessageSource {
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public Locale getLocale() {
         return defaultLocale;
     }
 
     @Override
-    @Nonnull
+    @NonNull
     public Locale getDefaultLocale() {
         return defaultLocale;
     }

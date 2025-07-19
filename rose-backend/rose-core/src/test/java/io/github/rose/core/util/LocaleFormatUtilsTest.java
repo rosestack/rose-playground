@@ -2,7 +2,6 @@ package io.github.rose.core.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -21,17 +20,18 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class LocaleFormatUtilsTest {
     private static final Logger log = LoggerFactory.getLogger(LocaleFormatUtilsTest.class);
+
     @BeforeEach
     void setUp() {
         // 配置ObjectMapper，模拟Spring Boot的配置
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
+        mapper.findAndRegisterModules();
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        
+
         // 设置日期格式和时区，模拟application.yaml中的配置
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         mapper.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-        
+
         // 注入到LocaleFormatUtils
         LocaleFormatUtils.setObjectMapper(mapper);
     }
@@ -40,7 +40,7 @@ class LocaleFormatUtilsTest {
     void testFormatLocalDateTime() {
         LocalDateTime dateTime = LocalDateTime.of(2023, 12, 25, 15, 30, 45);
         String result = LocaleFormatUtils.formatValue(dateTime, Locale.getDefault());
-        
+
         // 验证格式化结果符合配置的格式
         assertNotNull(result);
         assertTrue(result.contains("T")); // Jackson格式化后不应包含ISO格式的T
@@ -51,7 +51,7 @@ class LocaleFormatUtilsTest {
     void testFormatLocalDate() {
         LocalDate date = LocalDate.of(2023, 12, 25);
         String result = LocaleFormatUtils.formatValue(date, Locale.getDefault());
-        
+
         assertNotNull(result);
         log.info("LocalDate formatted: " + result);
     }
@@ -60,7 +60,7 @@ class LocaleFormatUtilsTest {
     void testFormatLocalTime() {
         LocalTime time = LocalTime.of(15, 30, 45);
         String result = LocaleFormatUtils.formatValue(time, Locale.getDefault());
-        
+
         assertNotNull(result);
         log.info("LocalTime formatted: " + result);
     }
@@ -69,7 +69,7 @@ class LocaleFormatUtilsTest {
     void testFormatDate() {
         Date date = new Date();
         String result = LocaleFormatUtils.formatValue(date, Locale.getDefault());
-        
+
         assertNotNull(result);
         // 验证格式符合yyyy-MM-dd HH:mm:ss
         assertTrue(result.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"));
@@ -80,7 +80,7 @@ class LocaleFormatUtilsTest {
     void testFormatInstant() {
         Instant instant = Instant.now();
         String result = LocaleFormatUtils.formatValue(instant, Locale.getDefault());
-        
+
         assertNotNull(result);
         log.info("Instant formatted: " + result);
     }
@@ -89,7 +89,7 @@ class LocaleFormatUtilsTest {
     void testFormatZonedDateTime() {
         ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Shanghai"));
         String result = LocaleFormatUtils.formatValue(zonedDateTime, Locale.getDefault());
-        
+
         assertNotNull(result);
         log.info("ZonedDateTime formatted: " + result);
     }
@@ -105,7 +105,7 @@ class LocaleFormatUtilsTest {
         // 测试非日期时间类型不受影响
         String result = LocaleFormatUtils.formatValue("Hello World", Locale.getDefault());
         assertEquals("Hello World", result);
-        
+
         Integer number = 12345;
         String numberResult = LocaleFormatUtils.formatValue(number, Locale.getDefault());
         assertNotNull(numberResult);

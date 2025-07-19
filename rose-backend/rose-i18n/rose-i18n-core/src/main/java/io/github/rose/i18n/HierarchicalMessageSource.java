@@ -1,6 +1,7 @@
 package io.github.rose.i18n;
 
-import jakarta.annotation.Nullable;
+
+import org.springframework.lang.Nullable;
 
 public interface HierarchicalMessageSource extends I18nMessageSource {
     void setParentMessageSource(@Nullable I18nMessageSource parent);

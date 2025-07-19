@@ -1,10 +1,10 @@
 package io.github.rose.i18n;
 
-import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.*;
@@ -102,7 +102,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         }
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public final Locale getLocale() {
         Locale locale = getInternalLocale();
@@ -119,7 +119,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         return null;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public final Locale getDefaultLocale() {
         if (defaultLocale != null) {

@@ -1,8 +1,9 @@
 package io.github.rose.i18n;
 
 import io.github.rose.i18n.cache.MessageSourceStats;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -56,10 +57,10 @@ public interface I18nMessageSource extends Lifecycle {
         return messages != null ? messages.keySet() : Collections.emptySet();
     }
 
-    @Nonnull
+    @NonNull
     Locale getLocale();
 
-    @Nonnull
+    @NonNull
     default Locale getDefaultLocale() {
         return Locale.getDefault();
     }

@@ -1,8 +1,8 @@
 package io.github.rose.i18n.cache;
 
 import io.github.rose.i18n.I18nMessageSource;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -60,7 +60,7 @@ public class SimpleCachingI18nMessageSource implements I18nMessageSource {
         return delegate.getMessages(locale);
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Locale getLocale() {
         return delegate.getLocale();

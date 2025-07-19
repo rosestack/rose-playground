@@ -1,11 +1,11 @@
 package io.github.rose.i18n;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.OrderComparator;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.nio.charset.Charset;
 import java.util.*;
@@ -67,14 +67,14 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         return null;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Locale getLocale() {
         I18nMessageSource i18nMessageSource = getFirstMessageSource();
         return i18nMessageSource == null ? getDefaultLocale() : i18nMessageSource.getLocale();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public Locale getDefaultLocale() {
         I18nMessageSource i18nMessageSource = getFirstMessageSource();
@@ -170,7 +170,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
      *
      * @return non-null
      */
-    @Nonnull
+    @NonNull
     public List<I18nMessageSource> getMessageSources() {
         return Collections.unmodifiableList(i18nMessageSources);
     }
