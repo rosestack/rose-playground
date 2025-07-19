@@ -18,10 +18,6 @@ public interface CheckedRunnable {
      */
     void run() throws Exception;
 
-    static CheckedRunnable of(CheckedRunnable methodReference) {
-        return methodReference;
-    }
-
     /**
      * 转换为 JDK Runnable（异常会被包装为 RuntimeException）
      */
@@ -30,7 +26,24 @@ public interface CheckedRunnable {
             try {
                 run();
             } catch (Exception e) {
-                sneakyThrow(e);
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    /**
+     * 转换为 JDK Runnable，使用自定义异常处理器
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @return 标准 Runnable
+     */
+    default Runnable unchecked(java.util.function.Consumer<Throwable> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return () -> {
+            try {
+                run();
+            } catch (Exception e) {
+                handler.accept(e);
             }
         };
     }
@@ -63,9 +76,5 @@ public interface CheckedRunnable {
             run();
             after.run();
         };
-    }
-
-    static <T extends Throwable, R> R sneakyThrow(Throwable t) throws T {
-        throw (T) t;
     }
 }

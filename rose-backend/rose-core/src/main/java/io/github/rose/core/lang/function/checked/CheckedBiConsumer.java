@@ -2,6 +2,7 @@ package io.github.rose.core.lang.function.checked;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * 受检异常的双参数消费者接口
@@ -71,6 +72,23 @@ public interface CheckedBiConsumer<T, U> {
             }
         };
     }
+
+    /**
+     * 转换为 JDK BiConsumer，使用自定义异常处理器
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @return 标准 BiConsumer
+     */
+    default BiConsumer<T, U> unchecked(Consumer<Throwable> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return (T t, U u) -> {
+            try {
+                accept(t, u);
+            } catch (Exception e) {
+                handler.accept(e);
+            }
+        };
+    }
     
     /**
      * 从 JDK BiConsumer 创建 CheckedBiConsumer
@@ -78,12 +96,5 @@ public interface CheckedBiConsumer<T, U> {
     static <T, U> CheckedBiConsumer<T, U> from(BiConsumer<T, U> consumer) {
         Objects.requireNonNull(consumer);
         return consumer::accept;
-    }
-    
-    /**
-     * 创建空消费者
-     */
-    static <T, U> CheckedBiConsumer<T, U> noop() {
-        return (t, u) -> {};
     }
 }

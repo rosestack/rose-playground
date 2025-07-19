@@ -4,10 +4,11 @@ import io.github.rose.core.lang.function.checked.CheckedFunction;
 import io.github.rose.core.lang.function.checked.CheckedSupplier;
 import io.github.rose.core.lang.function.checked.CheckedConsumer;
 import io.github.rose.core.lang.function.checked.CheckedRunnable;
-import io.github.rose.core.lang.function.checked.CheckedCallable;
 import io.github.rose.core.lang.function.checked.CheckedBiFunction;
 import io.github.rose.core.lang.function.checked.CheckedBiConsumer;
-import io.github.rose.core.lang.function.checked.CheckedBiSupplier;
+import io.github.rose.core.lang.function.checked.CheckedBiPredicate;
+import io.github.rose.core.lang.function.checked.CheckedPredicate;
+
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -32,142 +33,6 @@ public final class Try<T> {
         this.value = value;
         this.cause = cause;
         this.isSuccess = isSuccess;
-    }
-
-    /**
-     * 创建成功的 Try
-     */
-    public static <T> Try<T> success(T value) {
-        return new Try<>(value, null, true);
-    }
-
-    /**
-     * 创建失败的 Try
-     */
-    public static <T> Try<T> failure(Throwable error) {
-        return new Try<>(null, Objects.requireNonNull(error), false);
-    }
-
-    /**
-     * 从可能抛出异常的 Supplier 创建 Try
-     */
-    public static <T> Try<T> of(Supplier<T> supplier) {
-        Objects.requireNonNull(supplier, "supplier cannot be null");
-        try {
-            return success(supplier.get());
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    /**
-     * 从可能抛出异常的函数创建 Try
-     */
-    public static <T> Try<T> ofSupplier(CheckedSupplier<T> supplier) {
-        Objects.requireNonNull(supplier, "supplier cannot be null");
-        try {
-            return success(supplier.get());
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    /**
-     * 从 CheckedBiSupplier 创建 Try
-     */
-    public static <T, U> Try<U> ofSupplier(T input, CheckedBiSupplier<T, U> supplier) {
-        Objects.requireNonNull(supplier, "supplier cannot be null");
-        try {
-            return success(supplier.get(input));
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    /**
-     * 从 CheckedFunction 创建 Try
-     */
-    public static <T, R> Try<R> ofFunction(T input, CheckedFunction<T, R> function) {
-        Objects.requireNonNull(function, "function cannot be null");
-        try {
-            return success(function.apply(input));
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    /**
-     * 从 CheckedBiFunction 创建 Try
-     */
-    public static <T, U, R> Try<R> ofBiFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
-        Objects.requireNonNull(function, "function cannot be null");
-        try {
-            return success(function.apply(t, u));
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    /**
-     * 从 CheckedConsumer 创建 Try<Void>
-     */
-    public static <T> Try<Void> ofConsumer(T input, CheckedConsumer<T> consumer) {
-        Objects.requireNonNull(consumer, "consumer cannot be null");
-        try {
-            consumer.accept(input);
-            return success(null);
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    /**
-     * 从 CheckedBiConsumer 创建 Try<Void>
-     */
-    public static <T, U> Try<Void> ofConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
-        Objects.requireNonNull(consumer, "consumer cannot be null");
-        try {
-            consumer.accept(t, u);
-            return success(null);
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-
-    /**
-     * 从 CheckedRunnable 创建 Try<Void>
-     */
-    public static Try<Void> ofRunnable(CheckedRunnable runnable) {
-        Objects.requireNonNull(runnable, "runnable cannot be null");
-        try {
-            runnable.run();
-            return success(null);
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    static Try<Void> ofRunnable(Runnable runnable) {
-        Objects.requireNonNull(runnable, "runnable is null");
-        return ofRunnable((CheckedRunnable) runnable::run);
-    }
-
-    /**
-     * 从 CheckedCallable 创建 Try
-     */
-    public static <T> Try<T> ofCallable(CheckedCallable<T> callable) {
-        Objects.requireNonNull(callable, "callable cannot be null");
-        try {
-            return success(callable.call());
-        } catch (Throwable e) {
-            return failure(e);
-        }
-    }
-
-    public static <T> Try<T> ofCallable(Callable<T> callable) {
-        Objects.requireNonNull(callable, "callable cannot be null");
-        return ofCallable((CheckedCallable<T>) callable::call);
     }
 
     /**
@@ -334,6 +199,142 @@ public final class Try<T> {
      */
     public java.util.Optional<T> toOptional() {
         return isSuccess ? java.util.Optional.of(value) : java.util.Optional.empty();
+    }
+
+    /**
+     * 创建成功的 Try
+     */
+    public static <T> Try<T> success(T value) {
+        return new Try<>(value, null, true);
+    }
+
+    /**
+     * 创建失败的 Try
+     */
+    public static <T> Try<T> failure(Throwable error) {
+        return new Try<>(null, Objects.requireNonNull(error), false);
+    }
+
+    /**
+     * 从可能抛出异常的 Supplier 创建 Try
+     */
+    public static <T> Try<T> of(Supplier<T> supplier) {
+        Objects.requireNonNull(supplier, "supplier cannot be null");
+        try {
+            return success(supplier.get());
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    /**
+     * 从可能抛出异常的函数创建 Try
+     */
+    public static <T> Try<T> ofSupplier(CheckedSupplier<T> supplier) {
+        Objects.requireNonNull(supplier, "supplier cannot be null");
+        try {
+            return success(supplier.get());
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    /**
+     * 从 CheckedFunction 创建 Try
+     */
+    public static <T, R> Try<R> ofFunction(T input, CheckedFunction<T, R> function) {
+        Objects.requireNonNull(function, "function cannot be null");
+        try {
+            return success(function.apply(input));
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    /**
+     * 从 CheckedBiFunction 创建 Try
+     */
+    public static <T, U, R> Try<R> ofBiFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
+        Objects.requireNonNull(function, "function cannot be null");
+        try {
+            return success(function.apply(t, u));
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    /**
+     * 从 CheckedConsumer 创建 Try<Void>
+     */
+    public static <T> Try<Void> ofConsumer(T input, CheckedConsumer<T> consumer) {
+        Objects.requireNonNull(consumer, "consumer cannot be null");
+        try {
+            consumer.accept(input);
+            return success(null);
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    /**
+     * 从 CheckedBiConsumer 创建 Try<Void>
+     */
+    public static <T, U> Try<Void> ofBiConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
+        Objects.requireNonNull(consumer, "consumer cannot be null");
+        try {
+            consumer.accept(t, u);
+            return success(null);
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+
+    /**
+     * 从 CheckedRunnable 创建 Try<Void>
+     */
+    public static Try<Void> ofRunnable(CheckedRunnable runnable) {
+        Objects.requireNonNull(runnable, "runnable cannot be null");
+        try {
+            runnable.run();
+            return success(null);
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    static Try<Void> ofRunnable(Runnable runnable) {
+        Objects.requireNonNull(runnable, "runnable is null");
+        return ofRunnable((CheckedRunnable) runnable::run);
+    }
+
+    public static <T> Try<T> ofCallable(Callable<T> callable) {
+        Objects.requireNonNull(callable, "callable cannot be null");
+        return ofSupplier(callable::call);
+    }
+
+    /**
+     * 从 CheckedPredicate 创建 Try
+     */
+    public static <T> Try<Boolean> ofPredicate(T input, CheckedPredicate<T> predicate) {
+        Objects.requireNonNull(predicate, "predicate cannot be null");
+        try {
+            return success(predicate.test(input));
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    /**
+     * 从 CheckedBiPredicate 创建 Try
+     */
+    public static <T, U> Try<Boolean> ofBiPredicate(T t, U u, CheckedBiPredicate<T, U> predicate) {
+        Objects.requireNonNull(predicate, "predicate cannot be null");
+        try {
+            return success(predicate.test(t, u));
+        } catch (Throwable e) {
+            return failure(e);
+        }
     }
 
     /**

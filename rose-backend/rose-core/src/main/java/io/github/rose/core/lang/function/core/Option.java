@@ -18,8 +18,6 @@ import java.util.function.Supplier;
  * @author rose
  */
 public final class Option<T> {
-    private static final Logger log = LoggerFactory.getLogger(Option.class);
-
     private static final Option<?> NONE = new Option<>(null, false);
 
     private final T value;
@@ -226,7 +224,7 @@ public final class Option<T> {
     }
 
     public static <T, R> Option<R> of(CheckedFunction<T, R> function, T input,
-                                            java.util.function.Function<Exception, R> exceptionHandler) {
+                                      java.util.function.Function<Exception, R> exceptionHandler) {
         Objects.requireNonNull(function, "function cannot be null");
         Objects.requireNonNull(exceptionHandler, "exceptionHandler cannot be null");
         try {
@@ -255,40 +253,6 @@ public final class Option<T> {
             return result != null ? Option.some(result) : Option.none();
         } catch (Exception e) {
             return Option.none();
-        }
-    }
-
-    public static <T, U> Option<U> of(T t, CheckedBiSupplier<T, U> supplier) {
-        Objects.requireNonNull(supplier, "supplier cannot be null");
-        try {
-            U result = supplier.get(t);
-            return result != null ? Option.some(result) : Option.none();
-        } catch (Exception e) {
-            log.error("BiSupplier threw exception: {}", e.getMessage());
-            return Option.none();
-        }
-    }
-
-    public static <T> Option<T> of(CheckedCallable<T> callable) {
-        Objects.requireNonNull(callable, "callable cannot be null");
-        try {
-            T result = callable.call();
-            return result != null ? Option.some(result) : Option.none();
-        } catch (Exception e) {
-            return Option.none();
-        }
-    }
-
-    public static <T> Option<T> of(CheckedCallable<T> callable,
-                                   Function<Exception, T> exceptionHandler) {
-        Objects.requireNonNull(callable, "callable cannot be null");
-        Objects.requireNonNull(exceptionHandler, "exceptionHandler cannot be null");
-        try {
-            T result = callable.call();
-            return result != null ? Option.some(result) : Option.none();
-        } catch (Exception e) {
-            T fallback = exceptionHandler.apply(e);
-            return fallback != null ? Option.some(fallback) : Option.none();
         }
     }
 

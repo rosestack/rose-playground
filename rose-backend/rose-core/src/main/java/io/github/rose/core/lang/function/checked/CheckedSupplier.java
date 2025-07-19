@@ -33,6 +33,45 @@ public interface CheckedSupplier<T> {
             }
         };
     }
+
+    /**
+     * 转换为 JDK Supplier，使用自定义异常处理器
+     * 当发生异常时，调用异常处理器并返回 null
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @return 标准 Supplier
+     */
+    default Supplier<T> unchecked(java.util.function.Consumer<Throwable> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return () -> {
+            try {
+                return get();
+            } catch (Exception e) {
+                handler.accept(e);
+                return null;
+            }
+        };
+    }
+
+    /**
+     * 转换为 JDK Supplier，使用自定义异常处理器和默认值
+     * 当发生异常时，调用异常处理器并返回默认值
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @param defaultValue 异常时返回的默认值
+     * @return 标准 Supplier
+     */
+    default Supplier<T> unchecked(java.util.function.Consumer<Throwable> handler, T defaultValue) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return () -> {
+            try {
+                return get();
+            } catch (Exception e) {
+                handler.accept(e);
+                return defaultValue;
+            }
+        };
+    }
     
     /**
      * 从 JDK Supplier 创建 CheckedSupplier

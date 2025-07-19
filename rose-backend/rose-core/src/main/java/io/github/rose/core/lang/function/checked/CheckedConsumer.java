@@ -55,6 +55,23 @@ public interface CheckedConsumer<T> {
             }
         };
     }
+
+    /**
+     * 转换为 JDK Consumer，使用自定义异常处理器
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @return 标准 Consumer
+     */
+    default Consumer<T> unchecked(java.util.function.Consumer<Throwable> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return (T t) -> {
+            try {
+                accept(t);
+            } catch (Exception e) {
+                handler.accept(e);
+            }
+        };
+    }
     
     /**
      * 从 JDK Consumer 创建 CheckedConsumer
@@ -62,12 +79,5 @@ public interface CheckedConsumer<T> {
     static <T> CheckedConsumer<T> from(Consumer<T> consumer) {
         Objects.requireNonNull(consumer);
         return consumer::accept;
-    }
-    
-    /**
-     * 创建空消费者
-     */
-    static <T> CheckedConsumer<T> noop() {
-        return t -> {};
     }
 }
