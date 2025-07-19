@@ -1,11 +1,11 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.model.BaseTenantWithExtra;
+import io.github.rose.core.model.ExtraTenantModel;
 import io.github.rose.core.model.HasCodeNameDescription;
 import lombok.Data;
 
 @Data
-public class Position extends BaseTenantWithExtra<Long> implements HasCodeNameDescription {
+public class Position extends ExtraTenantModel<Long> implements HasCodeNameDescription {
     /**
      * 分组名称
      */

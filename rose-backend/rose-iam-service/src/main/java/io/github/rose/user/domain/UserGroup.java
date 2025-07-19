@@ -1,10 +1,10 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.model.BaseAudit;
+import io.github.rose.core.model.AuditModel;
 import lombok.Data;
 
 @Data
-public class UserGroup extends BaseAudit<Long> {
+public class UserGroup extends AuditModel<Long> {
 
     private String groupId;
 

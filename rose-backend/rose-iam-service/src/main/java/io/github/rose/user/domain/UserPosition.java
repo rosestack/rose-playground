@@ -1,10 +1,11 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.model.BaseAudit;
+import io.github.rose.core.model.AuditModel;
+import io.github.rose.core.model.Auditable;
 import lombok.Data;
 
 @Data
-public class UserPosition extends BaseAudit<Long> {
+public class UserPosition extends AuditModel<Long> {
     private String positionId;
 
     private String userId;

@@ -1,11 +1,11 @@
 package io.github.rose.tenant;
 
-import io.github.rose.core.model.BaseAuditWithExtra;
+import io.github.rose.core.model.ExtraTenantModel;
 import io.github.rose.core.model.HasCodeNameDescription;
 import lombok.Data;
 
 @Data
-public class Tenant extends BaseAuditWithExtra<String> implements HasCodeNameDescription {
+public class Tenant extends ExtraTenantModel<String> implements HasCodeNameDescription {
     private String name;
     private String code;
     private String description;

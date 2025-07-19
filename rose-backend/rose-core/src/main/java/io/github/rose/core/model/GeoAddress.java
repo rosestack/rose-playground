@@ -1,8 +1,10 @@
 package io.github.rose.core.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class GeoAddress extends Address {
     /**
      * 经度

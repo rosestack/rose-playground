@@ -1,6 +1,6 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.model.BaseTenantWithExtra;
+import io.github.rose.core.model.ExtraTenantModel;
 import io.github.rose.core.model.HasCodeNameDescription;
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
  * B2B场景，新增用户池时，自动创建一个用户池名称的组织
  */
 @Data
-public class Department extends BaseTenantWithExtra<Long> implements HasCodeNameDescription {
+public class Department extends ExtraTenantModel<Long> implements HasCodeNameDescription {
     /**
      * 名称
      */

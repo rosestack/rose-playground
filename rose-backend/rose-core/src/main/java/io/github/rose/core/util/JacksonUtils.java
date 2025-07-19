@@ -89,8 +89,6 @@ public abstract class JacksonUtils {
                 .build();
     }
 
-    // ==================== 公共方法 ====================
-
     /**
      * 设置主要的ObjectMapper实例
      * 通常由Spring容器调用
@@ -111,61 +109,19 @@ public abstract class JacksonUtils {
         return objectMapper != null ? objectMapper : DEFAULT_MAPPER;
     }
 
-    // ==================== 类型转换方法 ====================
-
-    /**
-     * 将对象转换为指定类型
-     *
-     * @param fromValue   源对象
-     * @param toValueType 目标类型
-     * @param <T>         目标类型泛型
-     * @return 转换后的对象
-     * @throws IllegalArgumentException 转换失败时抛出
-     */
-    public static <T> T convertValue(Object fromValue, Class<T> toValueType) {
-        if (fromValue == null) {
+    public static <T> T readValue(Reader reader, Class<T> clazz) {
+        if (reader == null) {
             return null;
         }
         try {
-            return getObjectMapper().convertValue(fromValue, toValueType);
-        } catch (IllegalArgumentException e) {
-            log.warn("Failed to convert value to {}: {}", toValueType.getSimpleName(), fromValue, e);
-            throw new IllegalArgumentException("The given object value cannot be converted to " + toValueType + ": " + fromValue, e);
+            return getObjectMapper().readValue(reader, clazz);
+        } catch (IOException e) {
+            log.warn("Failed to deserialize reader to {}: {}", clazz.getSimpleName(), reader, e);
+            throw new IllegalArgumentException("The reader cannot be transformed to Json object: " + reader, e);
         }
     }
 
-    /**
-     * 将对象转换为指定类型（使用TypeReference）
-     *
-     * @param fromValue      源对象
-     * @param toValueTypeRef 目标类型引用
-     * @param <T>            目标类型泛型
-     * @return 转换后的对象
-     * @throws IllegalArgumentException 转换失败时抛出
-     */
-    public static <T> T convertValue(Object fromValue, TypeReference<T> toValueTypeRef) {
-        if (fromValue == null) {
-            return null;
-        }
-        try {
-            return getObjectMapper().convertValue(fromValue, toValueTypeRef);
-        } catch (IllegalArgumentException e) {
-            log.warn("Failed to convert value to {}: {}", toValueTypeRef.getType(), fromValue, e);
-            throw new IllegalArgumentException("The given object value cannot be converted to " + toValueTypeRef + ": " + fromValue, e);
-        }
-    }
 
-    // ==================== 字符串反序列化方法 ====================
-
-    /**
-     * 从JSON字符串反序列化为指定类型对象
-     *
-     * @param string JSON字符串
-     * @param clazz  目标类型
-     * @param <T>    目标类型泛型
-     * @return 反序列化后的对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
     public static <T> T fromString(String string, Class<T> clazz) {
         if (string == null || string.trim().isEmpty()) {
             return null;
@@ -178,15 +134,6 @@ public abstract class JacksonUtils {
         }
     }
 
-    /**
-     * 从JSON字符串反序列化为指定类型对象（使用TypeReference）
-     *
-     * @param string       JSON字符串
-     * @param valueTypeRef 目标类型引用
-     * @param <T>          目标类型泛型
-     * @return 反序列化后的对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
     public static <T> T fromString(String string, TypeReference<T> valueTypeRef) {
         if (string == null || string.trim().isEmpty()) {
             return null;
@@ -199,37 +146,6 @@ public abstract class JacksonUtils {
         }
     }
 
-    /**
-     * 从JSON字符串反序列化为指定类型对象（使用JavaType）
-     *
-     * @param string   JSON字符串
-     * @param javaType 目标Java类型
-     * @param <T>      目标类型泛型
-     * @return 反序列化后的对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
-    public static <T> T fromString(String string, JavaType javaType) {
-        if (string == null || string.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return getObjectMapper().readValue(string, javaType);
-        } catch (IOException e) {
-            log.warn("Failed to deserialize string to {}: {}", javaType, string, e);
-            throw new IllegalArgumentException("The given String value cannot be transformed to Json object: " + string, e);
-        }
-    }
-
-    /**
-     * 从JSON字符串反序列化为指定类型对象（忽略未知字段）
-     *
-     * @param string              JSON字符串
-     * @param clazz               目标类型
-     * @param ignoreUnknownFields 是否忽略未知字段
-     * @param <T>                 目标类型泛型
-     * @return 反序列化后的对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
     public static <T> T fromString(String string, Class<T> clazz, boolean ignoreUnknownFields) {
         if (string == null || string.trim().isEmpty()) {
             return null;
@@ -243,78 +159,6 @@ public abstract class JacksonUtils {
         }
     }
 
-    // ==================== 字节数组反序列化方法 ====================
-
-    /**
-     * 从字节数组反序列化为指定类型对象
-     *
-     * @param bytes 字节数组
-     * @param clazz 目标类型
-     * @param <T>   目标类型泛型
-     * @return 反序列化后的对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
-    public static <T> T fromBytes(byte[] bytes, Class<T> clazz) {
-        if (bytes == null || bytes.length == 0) {
-            return null;
-        }
-        try {
-            return getObjectMapper().readValue(bytes, clazz);
-        } catch (IOException e) {
-            log.warn("Failed to deserialize bytes to {}: {} bytes", clazz.getSimpleName(), bytes.length, e);
-            throw new IllegalArgumentException("The given byte[] value cannot be transformed to Json object", e);
-        }
-    }
-
-    /**
-     * 从字节数组反序列化为指定类型对象（使用TypeReference）
-     *
-     * @param bytes        字节数组
-     * @param valueTypeRef 目标类型引用
-     * @param <T>          目标类型泛型
-     * @return 反序列化后的对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
-    public static <T> T fromBytes(byte[] bytes, TypeReference<T> valueTypeRef) {
-        if (bytes == null || bytes.length == 0) {
-            return null;
-        }
-        try {
-            return getObjectMapper().readValue(bytes, valueTypeRef);
-        } catch (IOException e) {
-            log.warn("Failed to deserialize bytes to {}: {} bytes", valueTypeRef.getType(), bytes.length, e);
-            throw new IllegalArgumentException("The given byte[] value cannot be transformed to Json object", e);
-        }
-    }
-
-    /**
-     * 从字节数组反序列化为JsonNode
-     *
-     * @param bytes 字节数组
-     * @return JsonNode对象
-     * @throws IllegalArgumentException 反序列化失败时抛出
-     */
-    public static JsonNode fromBytes(byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
-            return null;
-        }
-        try {
-            return getObjectMapper().readTree(bytes);
-        } catch (IOException e) {
-            log.warn("Failed to deserialize bytes to JsonNode: {} bytes", bytes.length, e);
-            throw new IllegalArgumentException("The given byte[] value cannot be transformed to Json object", e);
-        }
-    }
-
-    // ==================== 序列化方法 ====================
-
-    /**
-     * 将对象序列化为JSON字符串
-     *
-     * @param value 要序列化的对象
-     * @return JSON字符串
-     * @throws IllegalArgumentException 序列化失败时抛出
-     */
     public static String toString(Object value) {
         if (value == null) {
             return null;
@@ -327,207 +171,15 @@ public abstract class JacksonUtils {
         }
     }
 
-    /**
-     * 将对象序列化为格式化的JSON字符串
-     *
-     * @param value 要序列化的对象
-     * @return 格式化的JSON字符串
-     * @throws IllegalArgumentException 序列化失败时抛出
-     */
-    public static String toPrettyString(Object value) {
-        if (value == null) {
-            return null;
+    public static void writeValue(PrintWriter writer, Object value) {
+        if (writer == null) {
+            return;
         }
         try {
-            return PRETTY_SORTED_JSON_MAPPER.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
-            log.warn("Failed to serialize object to pretty string: {}", value.getClass().getSimpleName(), e);
-            throw new IllegalArgumentException("Failed to serialize object to pretty string", e);
-        }
-    }
-
-    /**
-     * 将JSON字符串转换为纯文本（去除引号）
-     *
-     * @param data JSON字符串
-     * @return 纯文本字符串
-     */
-    public static String toPlainText(String data) {
-        if (data == null || data.trim().isEmpty()) {
-            return data;
-        }
-
-        // 检查是否为JSON字符串格式
-        if (data.length() >= 2 && data.startsWith("\"") && data.endsWith("\"")) {
-            try {
-                String result = fromString(data, String.class);
-                log.trace("Trimming double quotes. Before: [{}], after: [{}]", data, result);
-                return result;
-            } catch (Exception e) {
-                log.trace("Failed to parse as JSON string, returning original: {}", data);
-                return data;
-            }
-        }
-        return data;
-    }
-
-    public static <T> T treeToValue(JsonNode node, Class<T> clazz) {
-        try {
-            return getObjectMapper().treeToValue(node, clazz);
+            getObjectMapper().writeValue(writer, value);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Can't convert value: " + node.toString(), e);
-        }
-    }
-
-    public static JsonNode toJsonNode(String value) {
-        return toJsonNode(value, getObjectMapper());
-    }
-
-    public static JsonNode toJsonNode(String value, ObjectMapper mapper) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        try {
-            return mapper.readTree(value);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    public static <T> T readValue(String file, CollectionType clazz) {
-        try {
-            return getObjectMapper().readValue(file, clazz);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Can't read file: " + file, e);
-        }
-    }
-
-    public static <T> T readValue(String object, TypeReference<T> clazz) {
-        try {
-            return getObjectMapper().readValue(object, clazz);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Can't read object: " + object, e);
-        }
-    }
-
-    public static <T> T readValue(File file, TypeReference<T> clazz) {
-        try {
-            return getObjectMapper().readValue(file, clazz);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Can't read file: " + file, e);
-        }
-    }
-
-    public static <T> T readValue(File file, Class<T> clazz) {
-        try {
-            return getObjectMapper().readValue(file, clazz);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Can't read file: " + file, e);
-        }
-    }
-
-    public static JsonNode readTree(Path file) {
-        try {
-            return getObjectMapper().readTree(Files.readAllBytes(file));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Can't read file: " + file, e);
-        }
-    }
-
-    public static JsonNode readTree(File value) {
-        try {
-            return value != null ? getObjectMapper().readTree(value) : null;
-        } catch (IOException e) {
-            throw new IllegalArgumentException("The given File object value: "
-                    + value + " cannot be transformed to a JsonNode", e);
-        }
-    }
-
-    public static JsonNode readTree(InputStream value) {
-        try {
-            return value != null ? getObjectMapper().readTree(value) : null;
-        } catch (IOException e) {
-            throw new IllegalArgumentException("The given InputStream value: "
-                    + value + " cannot be transformed to a JsonNode", e);
-        }
-    }
-
-    public static ObjectNode newObjectNode() {
-        return newObjectNode(getObjectMapper());
-    }
-
-    public static ObjectNode newObjectNode(ObjectMapper mapper) {
-        return mapper.createObjectNode();
-    }
-
-    public static ArrayNode newArrayNode() {
-        return newArrayNode(getObjectMapper());
-    }
-
-    public static ArrayNode newArrayNode(ObjectMapper mapper) {
-        return mapper.createArrayNode();
-    }
-
-    // ==================== 工具方法 ====================
-
-    /**
-     * 深度克隆对象（通过JSON序列化/反序列化）
-     *
-     * @param value 要克隆的对象
-     * @param <T>   对象类型
-     * @return 克隆后的对象
-     * @throws IllegalArgumentException 克隆失败时抛出
-     */
-    public static <T> T clone(T value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            @SuppressWarnings("unchecked")
-            Class<T> valueClass = (Class<T>) value.getClass();
-            return fromString(toString(value), valueClass);
-        } catch (Exception e) {
-            log.warn("Failed to clone object: {}", value.getClass().getSimpleName(), e);
-            throw new IllegalArgumentException("Failed to clone object", e);
-        }
-    }
-
-    /**
-     * 将对象转换为JsonNode
-     *
-     * @param value 要转换的对象
-     * @param <T>   对象类型
-     * @return JsonNode对象
-     */
-    public static <T> JsonNode valueToTree(T value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return getObjectMapper().valueToTree(value);
-        } catch (Exception e) {
-            log.warn("Failed to convert value to tree: {}", value.getClass().getSimpleName(), e);
-            throw new IllegalArgumentException("Failed to convert value to JsonNode", e);
-        }
-    }
-
-    /**
-     * 将对象序列化为字节数组
-     *
-     * @param value 要序列化的对象
-     * @param <T>   对象类型
-     * @return 字节数组
-     * @throws IllegalArgumentException 序列化失败时抛出
-     */
-    public static <T> byte[] writeValueAsBytes(T value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return getObjectMapper().writeValueAsBytes(value);
-        } catch (JsonProcessingException e) {
-            log.warn("Failed to serialize object to bytes: {}", value.getClass().getSimpleName(), e);
-            throw new IllegalArgumentException("The given Json object value cannot be transformed to bytes: " + value, e);
+            log.warn("Failed to serialize object to writer: {}", value.getClass().getSimpleName(), e);
+            throw new IllegalArgumentException("The given Json object value cannot be transformed to a String: " + value, e);
         }
     }
 
@@ -545,62 +197,12 @@ public abstract class JacksonUtils {
         return node;
     }
 
-    public static ObjectNode asObject(JsonNode node) {
-        return node != null && node.isObject() ? ((ObjectNode) node) : newObjectNode();
-    }
-
     public static Map<String, String> toFlatMap(JsonNode node) {
         HashMap<String, String> map = new HashMap<>();
         toFlatMap(node, "", map);
         return map;
     }
 
-    public static <T> T readValue(Reader reader, Class<T> clazz) {
-        try {
-            return reader != null ? getObjectMapper().readValue(reader, clazz) : null;
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Invalid request payload", e);
-        }
-    }
-
-    public static <T> void writeValue(Writer writer, T value) {
-        try {
-            getObjectMapper().writeValue(writer, value);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("The given writer value: "
-                    + writer + "cannot be wrote", e);
-        }
-    }
-
-    /**
-     * 构造集合类型
-     *
-     * @param collectionClass 集合类型
-     * @param elementClass    元素类型
-     * @return JavaType对象
-     */
-    public static JavaType constructCollectionType(Class<?> collectionClass, Class<?> elementClass) {
-        return getObjectMapper().getTypeFactory().constructCollectionType((Class<? extends Collection>) collectionClass, elementClass);
-    }
-
-    /**
-     * 构造Map类型
-     *
-     * @param mapClass   Map类型
-     * @param keyClass   键类型
-     * @param valueClass 值类型
-     * @return JavaType对象
-     */
-    public static JavaType constructMapType(Class<?> mapClass, Class<?> keyClass, Class<?> valueClass) {
-        return getObjectMapper().getTypeFactory().constructMapType((Class<? extends Map>) mapClass, keyClass, valueClass);
-    }
-
-    /**
-     * 检查字符串是否为有效的JSON
-     *
-     * @param jsonString JSON字符串
-     * @return 是否为有效JSON
-     */
     public static boolean isValidJson(String jsonString) {
         if (jsonString == null || jsonString.trim().isEmpty()) {
             return false;
@@ -610,36 +212,6 @@ public abstract class JacksonUtils {
             return true;
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    /**
-     * 安全地获取JSON字符串的大小（字符数）
-     *
-     * @param jsonString JSON字符串
-     * @return 字符数，如果为null则返回0
-     */
-    public static int getJsonSize(String jsonString) {
-        return jsonString != null ? jsonString.length() : 0;
-    }
-
-    /**
-     * 压缩JSON字符串（移除空白字符）
-     *
-     * @param jsonString JSON字符串
-     * @return 压缩后的JSON字符串
-     * @throws IllegalArgumentException 如果不是有效的JSON
-     */
-    public static String compactJson(String jsonString) {
-        if (jsonString == null || jsonString.trim().isEmpty()) {
-            return jsonString;
-        }
-        try {
-            JsonNode node = getObjectMapper().readTree(jsonString);
-            return getObjectMapper().writeValueAsString(node);
-        } catch (Exception e) {
-            log.warn("Failed to compact JSON string: {}", jsonString, e);
-            throw new IllegalArgumentException("Invalid JSON string", e);
         }
     }
 
@@ -767,6 +339,7 @@ public abstract class JacksonUtils {
             }
         }
     }
+
 
     @Data
     public static class JsonNodeProcessingTask {

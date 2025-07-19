@@ -1,6 +1,6 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.model.BaseTenantWithExtra;
+import io.github.rose.core.model.ExtraTenantModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,7 +13,7 @@ import java.io.Serializable;
  * withUserSource
  */
 @Data
-public class User extends BaseTenantWithExtra<Long> implements Serializable {
+public class User extends ExtraTenantModel<Long> implements Serializable {
     /**
      * 用户名，唯一
      */

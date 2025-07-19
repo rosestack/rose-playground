@@ -184,7 +184,7 @@ public class ThingsboardErrorResponseHandler extends ResponseEntityExceptionHand
     private void handleSubscriptionException(ThingsboardException subscriptionException, HttpServletResponse response) throws IOException {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         JacksonUtils.writeValue(response.getWriter(),
-                JacksonUtils.fromBytes(((HttpClientErrorException) subscriptionException.getCause()).getResponseBodyAsByteArray(), Object.class));
+                JacksonUtils.fromString(((HttpClientErrorException) subscriptionException.getCause()).getResponseBodyAsString(), Object.class));
     }
 
     private void handleDatabaseException(Throwable databaseException, HttpServletResponse response) throws IOException {
