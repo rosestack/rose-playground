@@ -8,7 +8,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Redis configuration class for customizing RedisTemplate serialization behavior.
- * <p>
+ *
  * This configuration class provides a customized RedisTemplate bean that uses string
  * serialization for all Redis operations. This approach ensures human-readable keys
  * and values in Redis, making debugging and monitoring easier while maintaining
@@ -53,17 +53,17 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * }</pre>
  *
  * @author Rose Framework Team
+ * @since 1.0.0
  * @see RedisTemplate
  * @see StringRedisSerializer
  * @see RedisConnectionFactory
- * @since 1.0.0
  */
 @Configuration
 public class RedisConfig {
 
     /**
      * Creates a customized RedisTemplate with string serialization for all operations.
-     * <p>
+     *
      * This method configures a RedisTemplate that uses StringRedisSerializer for all
      * serialization operations, ensuring that all data stored in Redis is in a
      * human-readable string format. This configuration is particularly useful for
@@ -88,20 +88,36 @@ public class RedisConfig {
      * multiple threads and concurrent operations.
      *
      * @param factory The RedisConnectionFactory to use for Redis connections.
-     *                Must not be null. Typically provided by Spring Boot auto-configuration.
+     *               Must not be null. Typically provided by Spring Boot auto-configuration.
      * @return A fully configured RedisTemplate with string serialization for all operations
+     *
      * @see RedisTemplate#setConnectionFactory(RedisConnectionFactory)
      * @see RedisTemplate#setKeySerializer(org.springframework.data.redis.serializer.RedisSerializer)
      * @see StringRedisSerializer
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        // Create new RedisTemplate instance with String key and Object value types
         RedisTemplate<String, Object> template = new RedisTemplate<>();
+
+        // Set the connection factory for Redis operations
         template.setConnectionFactory(factory);
+
+        // Configure string serialization for all Redis operations
+        // This ensures human-readable data in Redis for debugging and monitoring
+
+        // Set key serializer for regular Redis keys
         template.setKeySerializer(new StringRedisSerializer());
+
+        // Set value serializer for regular Redis values
         template.setValueSerializer(new StringRedisSerializer());
+
+        // Set hash key serializer for Redis hash field names
         template.setHashKeySerializer(new StringRedisSerializer());
+
+        // Set hash value serializer for Redis hash field values
         template.setHashValueSerializer(new StringRedisSerializer());
+
         return template;
     }
 }

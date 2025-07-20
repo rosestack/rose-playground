@@ -6,13 +6,41 @@ import lombok.Setter;
 import java.io.Serial;
 
 /**
- * 业务异常类
+ * 业务异常类，用于处理应用程序特定的错误情况。
  * <p>
- * 设计原则：
- * 1. 不处理国际化逻辑，只携带异常信息
- * 2. 明确区分简单消息和国际化消息
- * 3. 使用静态工厂方法避免构造器歧义
- * 4. 提供清晰的API语义
+ * 该异常类提供了一个全面的框架来处理业务逻辑错误，支持简单错误消息和国际化消息。
+ * 它遵循清晰的关注点分离原则，通过携带异常信息而不直接执行国际化逻辑。
+ *
+ * <h3>设计原则：</h3>
+ * <ul>
+ *   <li><strong>信息载体：</strong> 携带异常信息而不处理国际化逻辑</li>
+ *   <li><strong>清晰区分：</strong> 将简单消息与国际化消息分离</li>
+ *   <li><strong>工厂方法：</strong> 使用静态工厂方法避免构造器歧义</li>
+ *   <li><strong>清晰的API语义：</strong> 提供直观和自文档化的API方法</li>
+ * </ul>
+ *
+ * <h3>使用模式：</h3>
+ * <pre>{@code
+ * // 简单消息（无国际化）
+ * throw BusinessException.of("用户未找到");
+ *
+ * // 国际化消息
+ * throw BusinessException.i18n("user.not.found", new Object[]{"john"});
+ *
+ * // 带回退的国际化消息
+ * throw BusinessException.i18n("user.not.found", "用户未找到", new Object[]{"john"});
+ * }</pre>
+ *
+ * <h3>国际化支持：</h3>
+ * 异常支持两种模式：
+ * <ul>
+ *   <li><strong>简单模式：</strong> 直接消息，无国际化</li>
+ *   <li><strong>国际化模式：</strong> 消息代码和参数用于国际化</li>
+ * </ul>
+ *
+ * @author chensoul
+ * @since 1.0.0
+ * @see RuntimeException
  */
 @Getter
 public class BusinessException extends RuntimeException {
@@ -21,65 +49,84 @@ public class BusinessException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 国际化消息编码（可选）
-     * 如果为空，表示不需要国际化处理
+     * 国际化消息代码（可选）。
+     * <p>
+     * 当存在时，表示此异常应通过国际化系统处理。如果为null，异常使用简单消息模式。
      */
     private String messageCode;
 
     /**
-     * 国际化消息参数（可选）
-     * 用于替换消息模板中的占位符
+     * 国际化消息参数（可选）。
+     * <p>
+     * 这些参数用于替换国际化消息模板中的占位符。仅在messageCode存在时相关。
      */
     private Object[] messageArgs;
 
     /**
-     * 默认错误消息
-     * 当国际化处理失败或不需要国际化时使用
+     * 默认错误消息。
+     * <p>
+     * 当国际化处理失败或不需要国际化时用作回退。此消息也用作基础异常消息。
      */
     private String defaultMessage;
 
     /**
-     * 是否需要国际化处理
+     * 标志，指示此异常是否需要国际化处理。
+     * <p>
+     * 当为true时，异常应通过国际化系统使用messageCode和messageArgs处理。
+     * 当为false时，应直接使用defaultMessage。
      */
     private boolean needsInternationalization;
 
-    // ========== 公共构造器 ==========
+    // ==================== Public Constructors ====================
 
     /**
-     * 简单消息构造器（不需要国际化）
+     * Creates a business exception with a simple message (no internationalization).
+     * <p>
+     * This constructor is used for exceptions that don't require internationalization
+     * and have a fixed error message. The exception will operate in simple mode.
      *
-     * @param message 错误消息
+     * @param message The error message to be displayed
      */
     public BusinessException(String message) {
         this(null, message, null, null, false);
     }
 
     /**
-     * 简单消息构造器（不需要国际化，带异常原因）
+     * Creates a business exception with a simple message and cause (no internationalization).
+     * <p>
+     * This constructor is used for exceptions that don't require internationalization
+     * but need to wrap another exception as the cause.
      *
-     * @param message 错误消息
-     * @param cause   异常原因
+     * @param message The error message to be displayed
+     * @param cause   The underlying cause of this exception
      */
     public BusinessException(String message, Throwable cause) {
         this(null, message, null, cause, false);
     }
 
     /**
-     * 国际化构造器
+     * Creates an internationalized business exception with message code and arguments.
+     * <p>
+     * This constructor is used for exceptions that require internationalization.
+     * The actual message will be resolved using the messageCode and messageArgs
+     * through the internationalization system.
      *
-     * @param messageCode 国际化消息编码
-     * @param messageArgs 消息参数
+     * @param messageCode The internationalization message code
+     * @param messageArgs Arguments for message template substitution
      */
     public BusinessException(String messageCode, Object[] messageArgs) {
         this(messageCode, null, messageArgs, null, true);
     }
 
     /**
-     * 国际化构造器（带默认消息）
+     * Creates an internationalized business exception with fallback message.
+     * <p>
+     * This constructor provides both internationalization support and a fallback
+     * default message in case internationalization processing fails.
      *
-     * @param messageCode    国际化消息编码
-     * @param defaultMessage 默认错误消息
-     * @param messageArgs    消息参数
+     * @param messageCode    The internationalization message code
+     * @param defaultMessage The default error message used as fallback
+     * @param messageArgs    Arguments for message template substitution
      */
     public BusinessException(String messageCode, String defaultMessage, Object[]
             messageArgs) {
@@ -87,13 +134,16 @@ public class BusinessException extends RuntimeException {
     }
 
     /**
-     * 完整构造器（受保护，供子类使用）
+     * Complete constructor for full control over exception properties (protected for subclasses).
+     * <p>
+     * This constructor provides complete control over all exception properties and is
+     * primarily intended for use by subclasses or internal factory methods.
      *
-     * @param messageCode               国际化消息编码
-     * @param defaultMessage            默认错误消息
-     * @param messageArgs               消息参数
-     * @param cause                     异常原因
-     * @param needsInternationalization 是否需要国际化
+     * @param messageCode               The internationalization message code (can be null)
+     * @param defaultMessage            The default error message (can be null)
+     * @param messageArgs               Arguments for message template substitution (can be null)
+     * @param cause                     The underlying cause of this exception (can be null)
+     * @param needsInternationalization Whether this exception requires i18n processing
      */
     protected BusinessException(String messageCode, String defaultMessage, Object[] messageArgs,
                                 Throwable cause, boolean needsInternationalization) {
@@ -104,57 +154,80 @@ public class BusinessException extends RuntimeException {
         this.needsInternationalization = needsInternationalization;
     }
 
-    // ========== 静态工厂方法 ==========
+    // ==================== Static Factory Methods ====================
 
     /**
-     * 创建简单的业务异常（不需要国际化）
+     * Creates a simple business exception without internationalization support.
+     * <p>
+     * This factory method provides a clean API for creating exceptions with simple
+     * error messages that don't require internationalization processing.
      *
-     * @param message 错误消息
-     * @return BusinessException实例
+     * @param message The error message to be displayed
+     * @return A new BusinessException instance in simple mode
      */
     public static BusinessException of(String message) {
         return new BusinessException(null, message, null, null, false);
     }
 
     /**
-     * 创建简单的业务异常（不需要国际化，带异常原因）
+     * Creates a simple business exception with cause, without internationalization support.
+     * <p>
+     * This factory method is used when you need to wrap another exception while
+     * providing a simple error message that doesn't require internationalization.
      *
-     * @param message 错误消息
-     * @param cause   异常原因
-     * @return BusinessException实例
+     * @param message The error message to be displayed
+     * @param cause   The underlying cause of this exception
+     * @return A new BusinessException instance in simple mode with cause
      */
     public static BusinessException of(String message, Throwable cause) {
         return new BusinessException(null, message, null, cause, false);
     }
 
     /**
-     * 创建国际化业务异常
+     * Creates an internationalized business exception with message code and arguments.
+     * <p>
+     * This factory method provides a clean API for creating exceptions that require
+     * internationalization processing. The actual message will be resolved through
+     * the internationalization system.
      *
-     * @param messageCode 国际化消息编码
-     * @param messageArgs 消息参数
-     * @return BusinessException实例
+     * @param messageCode The internationalization message code
+     * @param messageArgs Arguments for message template substitution
+     * @return A new BusinessException instance in internationalization mode
      */
     public static BusinessException i18n(String messageCode, Object[] messageArgs) {
         return new BusinessException(messageCode, null, messageArgs, null, true);
     }
 
     /**
-     * 创建国际化业务异常（带默认消息）
+     * Creates an internationalized business exception with fallback message.
+     * <p>
+     * This factory method provides both internationalization support and a fallback
+     * mechanism. If internationalization processing fails, the defaultMessage will
+     * be used instead.
      *
-     * @param messageCode    国际化消息编码
-     * @param defaultMessage 默认错误消息
-     * @param messageArgs    消息参数
-     * @return BusinessException实例
+     * @param messageCode    The internationalization message code
+     * @param defaultMessage The default error message used as fallback
+     * @param messageArgs    Arguments for message template substitution
+     * @return A new BusinessException instance in internationalization mode with fallback
      */
     public static BusinessException i18n(String messageCode, String defaultMessage, Object[] messageArgs) {
         return new BusinessException(messageCode, defaultMessage, messageArgs, null, true);
     }
 
-    // ========== 重写父类方法 ==========
+    // ==================== Overridden Methods ====================
 
     /**
-     * 获取异常消息
-     * 优先返回defaultMessage，如果为空则返回messageCode
+     * Returns the exception message with priority-based selection.
+     * <p>
+     * The message selection follows this priority:
+     * 1. defaultMessage (if present)
+     * 2. messageCode (if present)
+     * 3. super.getMessage() (fallback)
+     * <p>
+     * This ensures that there's always a meaningful message available,
+     * even when internationalization processing hasn't occurred yet.
+     *
+     * @return The exception message
      */
     @Override
     public String getMessage() {
@@ -168,31 +241,46 @@ public class BusinessException extends RuntimeException {
     }
 
     /**
-     * 获取本地化消息（与getMessage相同）
+     * Returns the localized message (same as getMessage for this implementation).
+     * <p>
+     * Note: This method doesn't perform actual localization. The localization
+     * should be handled by external components using the messageCode and messageArgs.
+     *
+     * @return The exception message (same as getMessage())
      */
     @Override
     public String getLocalizedMessage() {
         return getMessage();
     }
 
-    // ========== 工具方法 ==========
+    // ==================== Utility Methods ====================
 
     /**
-     * 判断是否有消息参数
+     * Checks whether this exception has message arguments for internationalization.
+     *
+     * @return true if messageArgs is not null and not empty, false otherwise
      */
     public boolean hasMessageArgs() {
         return messageArgs != null && messageArgs.length > 0;
     }
 
     /**
-     * 获取消息参数数量
+     * Returns the number of message arguments.
+     *
+     * @return The count of message arguments, 0 if messageArgs is null
      */
     public int getMessageArgsCount() {
         return messageArgs != null ? messageArgs.length : 0;
     }
 
     /**
-     * 转换为字符串表示
+     * Returns a string representation of this exception with detailed information.
+     * <p>
+     * The format varies based on whether the exception requires internationalization:
+     * - For i18n exceptions: Shows messageCode, args, and defaultMessage
+     * - For simple exceptions: Shows the message directly
+     *
+     * @return A detailed string representation of this exception
      */
     @Override
     public String toString() {

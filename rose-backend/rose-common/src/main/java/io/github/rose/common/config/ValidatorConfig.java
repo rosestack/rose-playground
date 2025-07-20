@@ -11,7 +11,7 @@ import java.util.Properties;
 
 /**
  * Validation framework configuration class for Bean Validation setup.
- * <p>
+ *
  * This configuration class provides a customized Bean Validation setup using Hibernate Validator
  * with internationalization support and fail-fast behavior. It integrates with Spring's
  * MessageSource for localized validation messages and configures the validator for optimal
@@ -51,18 +51,18 @@ import java.util.Properties;
  * }</pre>
  *
  * @author Rose Framework Team
+ * @since 1.0.0
  * @see Validator
  * @see HibernateValidator
  * @see MessageSource
  * @see LocalValidatorFactoryBean
- * @since 1.0.0
  */
 @AutoConfiguration
 public class ValidatorConfig {
 
     /**
      * Creates and configures a Bean Validation Validator with internationalization and fail-fast support.
-     * <p>
+     *
      * This method sets up a LocalValidatorFactoryBean with the following configurations:
      * <ul>
      *   <li><strong>Message Source Integration:</strong> Uses the provided MessageSource for i18n support</li>
@@ -88,8 +88,9 @@ public class ValidatorConfig {
      * </ul>
      *
      * @param messageSource The Spring MessageSource for internationalized validation messages.
-     *                      Must not be null. Used to resolve validation error messages based on locale.
+     *                     Must not be null. Used to resolve validation error messages based on locale.
      * @return A fully configured Validator instance ready for use in validation operations
+     *
      * @throws IllegalStateException if the LocalValidatorFactoryBean cannot be properly initialized
      * @see LocalValidatorFactoryBean#setValidationMessageSource(MessageSource)
      * @see LocalValidatorFactoryBean#setProviderClass(Class)
@@ -99,14 +100,25 @@ public class ValidatorConfig {
     public Validator validator(MessageSource messageSource) {
         LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
 
+        // Configure internationalization support through MessageSource integration
+        // This enables localized validation error messages based on user locale
         factoryBean.setValidationMessageSource(messageSource);
+
+        // Explicitly set Hibernate Validator as the JSR-303 Bean Validation provider
+        // This ensures consistent behavior and access to Hibernate-specific features
         factoryBean.setProviderClass(HibernateValidator.class);
 
+        // Configure Hibernate Validator specific properties
         Properties properties = new Properties();
+
+        // Enable fail-fast mode for improved performance
+        // Validation will stop on the first constraint violation encountered
         properties.setProperty("hibernate.validator.fail_fast", "true");
         factoryBean.setValidationProperties(properties);
 
+        // Initialize the factory bean to prepare the validator for use
         factoryBean.afterPropertiesSet();
+
         return factoryBean.getValidator();
     }
 }

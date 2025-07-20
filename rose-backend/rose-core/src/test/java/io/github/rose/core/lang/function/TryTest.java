@@ -1,8 +1,8 @@
 package io.github.rose.core.lang.function;
 
-import io.github.rose.core.lang.function.Option;
-import io.github.rose.core.lang.function.Try;
-import io.github.rose.core.lang.function.checked.*;
+import io.github.rose.core.lang.function.checked.CheckedFunction;
+import io.github.rose.core.lang.function.checked.CheckedPredicate;
+import io.github.rose.core.lang.function.checked.CheckedRunnable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

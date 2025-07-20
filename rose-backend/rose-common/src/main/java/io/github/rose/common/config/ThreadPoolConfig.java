@@ -1,5 +1,6 @@
 package io.github.rose.common.config;
 
+// import io.github.rose.core.util.SpringThreadUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -117,12 +118,25 @@ public class ThreadPoolConfig {
     public ThreadPoolTaskExecutor threadPoolTaskExecutor(TaskExecutionProperties threadPoolProperties) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
+        // Configure core pool size with fallback to CPU core count
         executor.setCorePoolSize(ObjectUtils.defaultIfNull(threadPoolProperties.getPool().getCoreSize(), core));
+
+        // Configure maximum pool size with fallback to 2x CPU core count
         executor.setMaxPoolSize(ObjectUtils.defaultIfNull(threadPoolProperties.getPool().getMaxSize(), core * 2));
+
+        // Configure queue capacity from properties
         executor.setQueueCapacity(threadPoolProperties.getPool().getQueueCapacity());
+
+        // Configure keep-alive time from properties
         executor.setKeepAliveSeconds((int) threadPoolProperties.getPool().getKeepAlive().toSeconds());
+
+        // Configure core thread timeout behavior
         executor.setAllowCoreThreadTimeOut(threadPoolProperties.getPool().isAllowCoreThreadTimeout());
+
+        // Configure thread naming for debugging
         executor.setThreadNamePrefix(threadPoolProperties.getThreadNamePrefix());
+
+        // Configure rejection policy for graceful degradation
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
         return executor;

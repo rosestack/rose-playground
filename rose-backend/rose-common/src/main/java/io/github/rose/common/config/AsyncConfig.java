@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 
 /**
  * Asynchronous execution configuration for Spring's @Async annotation support.
- * <p>
+ *
  * This configuration class provides centralized setup for asynchronous method execution
  * in the application. It implements Spring's AsyncConfigurer interface to customize
  * the default behavior of @Async annotated methods, including thread pool configuration
@@ -60,11 +60,11 @@ import java.util.concurrent.Executor;
  * to be available in the application context. This is typically provided by ThreadPoolConfig.
  *
  * @author Rose Framework Team
+ * @since 1.0.0
  * @see AsyncConfigurer
  * @see EnableAsync
  * @see ThreadPoolTaskExecutor
  * @see AsyncUncaughtExceptionHandler
- * @since 1.0.0
  */
 @EnableAsync(proxyTargetClass = true)
 @AutoConfiguration
@@ -73,7 +73,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
     /**
      * The thread pool executor used for asynchronous method execution.
-     * <p>
+     *
      * This executor is injected by qualifier to ensure we get the specific
      * ThreadPoolTaskExecutor configured for the application rather than
      * any other Executor that might be available in the context.
@@ -83,7 +83,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
     /**
      * Provides the custom executor for @Async annotated methods.
-     * <p>
+     *
      * This method overrides the default Spring async executor configuration
      * to use our custom ThreadPoolTaskExecutor instead of the default
      * SimpleAsyncTaskExecutor. This provides better control over thread
@@ -98,6 +98,7 @@ public class AsyncConfig implements AsyncConfigurer {
      * </ul>
      *
      * @return The configured ThreadPoolTaskExecutor for async method execution
+     *
      * @see ThreadPoolTaskExecutor
      * @see AsyncConfigurer#getAsyncExecutor()
      */
@@ -108,7 +109,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
     /**
      * Provides a custom exception handler for uncaught exceptions in async methods.
-     * <p>
+     *
      * This handler implements a comprehensive error handling strategy for async methods
      * that fail with uncaught exceptions. Since async methods run in separate threads,
      * normal exception propagation doesn't work, so this handler ensures that errors
@@ -136,6 +137,7 @@ public class AsyncConfig implements AsyncConfigurer {
      * CompletableFuture return types for better error handling in async methods.
      *
      * @return AsyncUncaughtExceptionHandler that converts exceptions to BusinessException
+     *
      * @see AsyncUncaughtExceptionHandler
      * @see BusinessException
      * @see AsyncConfigurer#getAsyncUncaughtExceptionHandler()
@@ -143,12 +145,20 @@ public class AsyncConfig implements AsyncConfigurer {
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return (throwable, method, objects) -> {
+            // Print stack trace for debugging and monitoring
+            throwable.printStackTrace();
+
+            // Build comprehensive error message with context information
             StringBuilder sb = new StringBuilder();
             sb.append("Exception message - ").append(throwable.getMessage())
                     .append(", Method name - ").append(method.getName());
+
+            // Include parameter information if available
             if (ObjectUtils.isNotEmpty(objects)) {
                 sb.append(", Parameter value - ").append(Arrays.toString(objects));
             }
+
+            // Convert to BusinessException for consistent error handling
             throw new BusinessException(sb.toString());
         };
     }

@@ -4,8 +4,35 @@ package io.github.rose.core.exception;
 import java.io.Serial;
 
 /**
- * 限流异常
- * 继承BusinessException，直接使用父类构造器
+ * Rate limiting exception for handling request rate limit violations.
+ *
+ * This exception is thrown when a client exceeds the configured rate limits for API endpoints
+ * or system resources. It extends BusinessException to inherit internationalization support
+ * and consistent error handling patterns.
+ *
+ * <h3>Common Use Cases:</h3>
+ * <ul>
+ *   <li><strong>API Rate Limiting:</strong> When clients exceed API call limits</li>
+ *   <li><strong>Resource Protection:</strong> When system resources are being overused</li>
+ *   <li><strong>Abuse Prevention:</strong> When detecting potential abuse patterns</li>
+ *   <li><strong>Fair Usage:</strong> When enforcing fair usage policies</li>
+ * </ul>
+ *
+ * <h3>Usage Examples:</h3>
+ * <pre>{@code
+ * // Simple rate limit violation
+ * throw new RateLimitException("Rate limit exceeded: 100 requests per minute");
+ *
+ * // Internationalized rate limit message
+ * throw new RateLimitException("rate.limit.exceeded", new Object[]{100, "minute"});
+ *
+ * // With fallback message
+ * throw new RateLimitException("rate.limit.exceeded", "Rate limit exceeded", new Object[]{100});
+ * }</pre>
+ *
+ * @author Rose Framework Team
+ * @since 1.0.0
+ * @see BusinessException
  */
 public class RateLimitException extends BusinessException {
 
@@ -13,40 +40,40 @@ public class RateLimitException extends BusinessException {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 简单消息构造器（不需要国际化）
+     * Creates a rate limit exception with a simple message (no internationalization).
      *
-     * @param message 错误消息
+     * @param message The error message describing the rate limit violation
      */
     public RateLimitException(String message) {
         super(message);
     }
 
     /**
-     * 简单消息构造器（不需要国际化，带异常原因）
+     * Creates a rate limit exception with a simple message and cause (no internationalization).
      *
-     * @param message 错误消息
-     * @param cause   异常原因
+     * @param message The error message describing the rate limit violation
+     * @param cause The underlying cause of this exception
      */
     public RateLimitException(String message, Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * 国际化构造器
+     * Creates an internationalized rate limit exception with message code and arguments.
      *
-     * @param messageCode 国际化消息编码
-     * @param messageArgs 消息参数
+     * @param messageCode The internationalization message code
+     * @param messageArgs Arguments for message template substitution
      */
     public RateLimitException(String messageCode, Object[] messageArgs) {
         super(messageCode, messageArgs);
     }
 
     /**
-     * 国际化构造器（带默认消息）
+     * Creates an internationalized rate limit exception with fallback message.
      *
-     * @param messageCode    国际化消息编码
-     * @param defaultMessage 默认错误消息
-     * @param messageArgs    消息参数
+     * @param messageCode The internationalization message code
+     * @param defaultMessage The default error message used as fallback
+     * @param messageArgs Arguments for message template substitution
      */
     public RateLimitException(String messageCode, String defaultMessage, Object[] messageArgs) {
         super(messageCode, defaultMessage, messageArgs);

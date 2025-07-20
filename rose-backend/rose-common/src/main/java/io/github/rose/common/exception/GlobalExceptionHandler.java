@@ -17,91 +17,38 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+
 /**
- * Global exception handler for centralized exception processing in web applications.
- *
- * This class provides comprehensive exception handling for all controller layer exceptions,
- * ensuring consistent error response formats and internationalization support throughout
- * the application. It integrates with the ExceptionMessageResolver for localized error
- * messages and follows REST API best practices for error responses.
- *
- * <h3>Exception Handling Strategy:</h3>
+ * 全局异常处理器
+ * <p>
+ * 捕获并处理应用程序中的各种异常，将它们转换为统一的响应格式。支持国际化错误消息，
+ * 并根据异常类型返回适当的HTTP状态码。
+ * <p>
+ * <h3>核心特性：</h3>
  * <ul>
- *   <li><strong>Business Exceptions:</strong> Application-specific business logic violations</li>
- *   <li><strong>Validation Exceptions:</strong> Bean validation and method argument validation failures</li>
- *   <li><strong>Rate Limiting:</strong> Request rate limit exceeded scenarios</li>
- *   <li><strong>System Exceptions:</strong> Unexpected runtime errors and system failures</li>
- *   <li><strong>Security Exceptions:</strong> Authentication and authorization failures</li>
+ *   <li>统一异常处理和响应格式</li>
+ *   <li>支持国际化错误消息</li>
+ *   <li>根据异常类型返回适当的HTTP状态码</li>
+ *   <li>详细的日志记录</li>
  * </ul>
  *
- * <h3>Response Format:</h3>
- * All exception handlers return a consistent Result&lt;Void&gt; format wrapped in ResponseEntity
- * with appropriate HTTP status codes. The Result object contains:
- * <ul>
- *   <li>Success flag (always false for exceptions)</li>
- *   <li>Localized error message</li>
- *   <li>Error code (when applicable)</li>
- *   <li>Additional context information</li>
- * </ul>
- *
- * <h3>Internationalization Support:</h3>
- * Error messages are resolved through ExceptionMessageResolver, which provides:
- * <ul>
- *   <li>Locale-specific error messages</li>
- *   <li>Fallback to default messages</li>
- *   <li>Parameter substitution for dynamic content</li>
- *   <li>Integration with Spring's MessageSource</li>
- * </ul>
- *
- * <h3>Logging Strategy:</h3>
- * <ul>
- *   <li><strong>Business Exceptions:</strong> WARN level (expected application behavior)</li>
- *   <li><strong>Validation Exceptions:</strong> WARN level (client input issues)</li>
- *   <li><strong>System Exceptions:</strong> ERROR level (unexpected failures)</li>
- *   <li><strong>Security Exceptions:</strong> WARN level (potential security issues)</li>
- * </ul>
- *
- * @author Rose Framework Team
- * @since 1.0.0
- * @see RestControllerAdvice
- * @see ExceptionHandler
+ * @see io.github.rose.core.model.Result
+ * @see io.github.rose.core.exception.BusinessException
  * @see ExceptionMessageResolver
- * @see Result
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
-     * Handles business logic exceptions thrown by application services.
+     * 处理业务异常
+     * <p>
+     * 捕获业务异常并转换为统一的错误响应，记录警告级别日志，并解析国际化错误消息。
      *
-     * Business exceptions represent expected error conditions in the application's
-     * business logic, such as validation failures, resource not found, or business
-     * rule violations. These are typically recoverable errors that should be
-     * communicated clearly to the client.
-     *
-     * <p><strong>Response Characteristics:</strong>
-     * <ul>
-     *   <li><strong>HTTP Status:</strong> 400 Bad Request</li>
-     *   <li><strong>Logging Level:</strong> WARN (expected application behavior)</li>
-     *   <li><strong>Message Resolution:</strong> Through ExceptionMessageResolver for i18n</li>
-     *   <li><strong>Response Format:</strong> Standardized Result object</li>
-     * </ul>
-     *
-     * <p><strong>Exception Processing:</strong>
-     * <ol>
-     *   <li>Log the exception at WARN level with context</li>
-     *   <li>Resolve localized error message using ExceptionMessageResolver</li>
-     *   <li>Create failure Result with resolved message</li>
-     *   <li>Return ResponseEntity with 400 status</li>
-     * </ol>
-     *
-     * @param e The BusinessException that was thrown
-     * @param request The HTTP request that caused the exception (for context)
-     * @return ResponseEntity with failure Result and 400 Bad Request status
-     *
+     * @param e       业务异常实例
+     * @param request HTTP请求对象
+     * @return 包含错误信息的响应实体，HTTP状态码为400
      * @see BusinessException
-     * @see ExceptionMessageResolver#resolveMessage(BusinessException)
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Result<Void>> handleBusinessException(BusinessException e, HttpServletRequest request) {
@@ -113,35 +60,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles rate limiting exceptions when request limits are exceeded.
+     * 处理限流异常
+     * <p>
+     * 捕获限流异常并转换为统一的错误响应，记录警告级别日志，并解析国际化错误消息。
+     * 返回429 Too Many Requests状态码。
      *
-     * Rate limit exceptions occur when clients exceed the configured request
-     * rate limits for API endpoints. This is a protective mechanism to prevent
-     * abuse and ensure fair resource usage across all clients.
-     *
-     * <p><strong>Response Characteristics:</strong>
-     * <ul>
-     *   <li><strong>HTTP Status:</strong> 429 Too Many Requests</li>
-     *   <li><strong>Logging Level:</strong> WARN (potential abuse or misconfiguration)</li>
-     *   <li><strong>Message Resolution:</strong> Through ExceptionMessageResolver for i18n</li>
-     *   <li><strong>Response Format:</strong> Standardized Result object</li>
-     * </ul>
-     *
-     * <p><strong>Rate Limiting Context:</strong>
-     * Rate limiting helps protect the application from:
-     * <ul>
-     *   <li>Denial of Service (DoS) attacks</li>
-     *   <li>Resource exhaustion</li>
-     *   <li>Unfair resource consumption</li>
-     *   <li>Accidental client loops</li>
-     * </ul>
-     *
-     * @param e The RateLimitException that was thrown
-     * @param request The HTTP request that exceeded rate limits (for context)
-     * @return ResponseEntity with failure Result and 429 Too Many Requests status
-     *
+     * @param e 限流异常实例
+     * @param request HTTP请求对象
+     * @return 包含错误信息的响应实体，HTTP状态码为429
      * @see RateLimitException
-     * @see ExceptionMessageResolver#resolveMessage(BusinessException)
      */
     @ExceptionHandler(RateLimitException.class)
     public ResponseEntity<Result<Void>> handleRateLimitException(RateLimitException e, HttpServletRequest request) {
@@ -154,11 +81,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles Bean Validation exceptions for request parameter and body validation.
+     * 处理参数验证异常
+     * <p>
+     * 捕获表单和方法参数验证失败的异常，记录警告级别日志，并将所有字段错误格式化为统一的错误消息。
+     * 支持处理MethodArgumentNotValidException和BindException两种类型的验证异常。
      *
-     * @param e The validation exception that occurred
-     * @param request The HTTP request that caused the exception
-     * @return ResponseEntity with failure Result and 400 Bad Request status
+     * @param e 验证异常实例
+     * @param request HTTP请求对象
+     * @return 包含格式化错误信息的响应实体，HTTP状态码为400
+     * @see MethodArgumentNotValidException
+     * @see BindException
+     * @see #formatFieldError(FieldError)
      */
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
     public ResponseEntity<Result<Void>> handleValidationException(Exception e, HttpServletRequest request) {
@@ -184,11 +117,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles illegal argument exceptions for invalid method parameters.
+     * 处理非法参数异常
+     * <p>
+     * 捕获非法参数异常并转换为统一的错误响应，记录警告级别日志，并解析国际化错误消息。
      *
-     * @param e The IllegalArgumentException that was thrown
-     * @param request The HTTP request that caused the exception
-     * @return ResponseEntity with failure Result and 400 Bad Request status
+     * @param e 非法参数异常实例
+     * @param request HTTP请求对象
+     * @return 包含错误信息的响应实体，HTTP状态码为400
+     * @see IllegalArgumentException
      */
     @ExceptionHandler({IllegalArgumentException.class})
     public ResponseEntity<Result<Void>> handleIllegalArgumentException(IllegalArgumentException e, HttpServletRequest request) {
@@ -203,11 +139,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles null pointer exceptions indicating programming errors.
+     * 处理空指针异常
+     * <p>
+     * 捕获空指针异常并转换为统一的错误响应，记录错误级别日志，并解析国际化错误消息。
      *
-     * @param e The NullPointerException that was thrown
-     * @param request The HTTP request that caused the exception
-     * @return ResponseEntity with failure Result and 500 Internal Server Error status
+     * @param e 空指针异常实例
+     * @param request HTTP请求对象
+     * @return 包含错误信息的响应实体，HTTP状态码为500
+     * @see NullPointerException
      */
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<Result<Void>> handleNullPointerException(NullPointerException e, HttpServletRequest request) {
@@ -223,11 +162,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles general system exceptions as a catch-all for unexpected errors.
+     * 处理系统异常
+     * <p>
+     * 捕获一般系统异常并转换为统一的错误响应，记录错误级别日志，并解析国际化错误消息。
+     * 作为最后的异常处理手段，捕获所有未被其他处理器捕获的异常。
      *
-     * @param e The Exception that was thrown
-     * @param request The HTTP request that caused the exception
-     * @return ResponseEntity with failure Result and 500 Internal Server Error status
+     * @param e 系统异常实例
+     * @param request HTTP请求对象
+     * @return 包含错误信息的响应实体，HTTP状态码为500
+     * @see Exception
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleSystemException(Exception e, HttpServletRequest request) {
@@ -243,11 +186,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles runtime exceptions with special handling for known business exceptions.
+     * 处理运行时异常
+     * <p>
+     * 捕获运行时异常并转换为统一的错误响应，记录错误级别日志，并解析国际化错误消息。
+     * 处理所有未被特定处理器捕获的运行时异常。
      *
-     * @param e The RuntimeException that was thrown
-     * @param request The HTTP request that caused the exception
-     * @return ResponseEntity with failure Result and appropriate HTTP status
+     * @param e 运行时异常实例
+     * @param request HTTP请求对象
+     * @return 包含错误信息的响应实体，HTTP状态码为500
+     * @see RuntimeException
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Result<Void>> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
@@ -267,10 +214,13 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Formats field validation error messages with internationalization support.
+     * 格式化字段错误信息
+     * <p>
+     * 将验证错误对象转换为可读的错误消息字符串，包含字段名称和具体的错误信息。
+     * 用于处理表单验证和请求参数验证的错误提示。
      *
-     * @param fieldError The field error to format
-     * @return Formatted error message with field name and localized message
+     * @param fieldError 字段错误对象
+     * @return 格式化后的错误消息字符串
      */
     private String formatFieldError(FieldError fieldError) {
         Locale locale = LocaleContextHolder.getLocale();

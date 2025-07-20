@@ -290,11 +290,20 @@ public class ExceptionMessageResolver {
     public static String resolveMessage(String messageCode, String defaultMessage, Locale locale, Object[] args) {
         String message = null;
 
+        // Early validation: only attempt resolution if messageCode is provided
+        // This optimization avoids unnecessary MessageSource lookup for empty codes
         if (!StringUtils.isEmpty(messageCode)) {
+            // Retrieve MessageSource with lazy loading and caching
             MessageSource msgSource = getMessageSource();
 
+            // Proceed with resolution only if MessageSource is available
             if (msgSource != null) {
                 try {
+                    // Attempt message resolution with full parameter support
+                    // This delegates to Spring's MessageSource implementation which handles:
+                    // - Locale-specific message bundle selection
+                    // - Message template retrieval
+                    // - Argument substitution using MessageFormat
                     message = msgSource.getMessage(messageCode, args, locale);
                 } catch (Exception e) {
                     // Message resolution failed - continue with fallback handling
@@ -310,6 +319,8 @@ public class ExceptionMessageResolver {
             }
         }
 
+        // Apply fallback strategy: return default message if resolution failed
+        // This ensures that callers always receive a meaningful result
         if (message == null) {
             message = defaultMessage;
         }
@@ -410,11 +421,16 @@ public class ExceptionMessageResolver {
      * @see #resolveMessage(String, String, Locale, Object[])
      */
     public static String resolveMessage(BusinessException exception, Locale locale) {
+        // Strategy 1: Handle non-internationalized exceptions with direct message access
+        // This path is optimized for performance by avoiding MessageSource lookup
         if (!exception.isNeedsInternationalization()) {
             String defaultMessage = exception.getDefaultMessage();
+            // Return defaultMessage if available, otherwise fall back to standard exception message
             return defaultMessage != null ? defaultMessage : exception.getMessage();
         }
 
+        // Strategy 2: Handle internationalized exceptions through full resolution pipeline
+        // Extract all relevant properties from the exception and delegate to core resolution method
         return resolveMessage(
                 exception.getMessageCode(),      // i18n message key
                 exception.getDefaultMessage(),   // fallback message
@@ -477,10 +493,18 @@ public class ExceptionMessageResolver {
      * @see MessageSource
      */
     private static MessageSource getMessageSource() {
+        // First check: fast path for already initialized MessageSource
+        // This check is performed without synchronization for optimal performance
         if (messageSource == null) {
+            // Enter critical section for thread-safe initialization
+            // Synchronize on class object to ensure only one thread initializes
             synchronized (ExceptionMessageResolver.class) {
+                // Second check: verify MessageSource still needs initialization
+                // This prevents duplicate initialization if another thread completed it
                 if (messageSource == null) {
                     try {
+                        // Attempt to retrieve MessageSource bean from Spring context
+                        // SpringBeans utility handles the ApplicationContext lookup
                         messageSource = SpringBeans.getBean(MessageSource.class);
                     } catch (Exception e) {
                         // MessageSource retrieval failed - return null to indicate unavailability
@@ -497,6 +521,7 @@ public class ExceptionMessageResolver {
             }
         }
 
+        // Return cached MessageSource (guaranteed to be safely published due to volatile)
         return messageSource;
     }
 

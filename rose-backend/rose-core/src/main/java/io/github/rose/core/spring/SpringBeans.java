@@ -18,27 +18,91 @@ import org.springframework.util.CollectionUtils;
 import java.util.*;
 
 /**
- * Spring Bean工具类
- * 提供Bean获取、配置访问、Bean查询等核心功能
- * 整合了原来的SpringContextUtils、BeanFactoryUtils、ApplicationContextUtils功能
+ * Spring Bean 工具类，提供对 Spring 应用上下文和 Bean 的全面访问。
+ * <p>
+ * 该工具类作为访问 Spring Bean、配置属性和应用上下文操作的集中访问点。
+ * 它将 SpringContextUtils、BeanFactoryUtils 和 ApplicationContextUtils
+ * 等多个工具类的功能整合到一个统一的接口中。
  *
- * 注意：避免与Spring框架的org.springframework.beans.BeanUtils冲突
+ * <h3>核心功能：</h3>
+ * <ul>
+ *   <li><strong>Bean 访问：</strong> 通过名称、类型或两者来检索 Bean</li>
+ *   <li><strong>配置访问：</strong> 访问应用程序属性和配置文件</li>
+ *   <li><strong>Bean 发现：</strong> 基于各种条件查找和过滤 Bean</li>
+ *   <li><strong>上下文信息：</strong> 访问应用上下文元数据</li>
+ *   <li><strong>类型安全：</strong> 提供类型安全的 Bean 检索泛型方法</li>
+ * </ul>
+ *
+ * <h3>使用示例：</h3>
+ * <pre>{@code
+ * // 通过类型获取 Bean
+ * UserService userService = SpringBeans.getBean(UserService.class);
+ *
+ * // 通过名称获取 Bean
+ * Object myBean = SpringBeans.getBean("myBeanName");
+ *
+ * // 获取配置属性
+ * String appName = SpringBeans.getProperty("spring.application.name");
+ *
+ * // 获取某个类型的所有 Bean
+ * Map<String, UserService> userServices = SpringBeans.getBeansOfType(UserService.class);
+ * }</pre>
+ *
+ * <h3>实现说明：</h3>
+ * <ul>
+ *   <li><strong>延迟初始化：</strong> 使用 @Lazy 注解避免循环依赖</li>
+ *   <li><strong>静态访问：</strong> 提供静态方法以便于访问</li>
+ *   <li><strong>错误处理：</strong> 对于缺失的上下文抛出 BusinessException</li>
+ *   <li><strong>线程安全：</strong> 所有方法都是线程安全的</li>
+ * </ul>
+ *
+ * <p><strong>注意：</strong> 该类通过使用不同的名称和包来避免与 Spring 的
+ * org.springframework.beans.BeanUtils 类发生冲突。
  *
  * @author zhijun.chen
+ * @see ApplicationContext
+ * @see BeanFactory
+ * @see BeanFactoryPostProcessor
+ * @see ApplicationContextAware
  * @since 0.0.1
  */
 @Slf4j
 @Component
 @Lazy
 public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContextAware {
+
+    /**
+     * 在 Spring 上下文初始化期间获得的可配置 Bean 工厂实例。
+     */
     private static ConfigurableListableBeanFactory beanFactory;
+
+    /**
+     * 在 Spring 上下文初始化期间获得的应用上下文实例。
+     */
     private static ApplicationContext applicationContext;
 
+    /**
+     * 来自 BeanFactoryPostProcessor 的回调方法，用于捕获 Bean 工厂。
+     * <p>
+     * 该方法在 Spring 上下文初始化期间被调用，以提供对
+     * ConfigurableListableBeanFactory 的访问。
+     *
+     * @param beanFactory 可配置的 Bean 工厂
+     * @throws BeansException 如果在处理过程中发生错误
+     */
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         SpringBeans.beanFactory = beanFactory;
     }
 
+    /**
+     * 来自 ApplicationContextAware 的回调方法，用于捕获应用上下文。
+     * <p>
+     * 该方法在 Spring 上下文初始化期间被调用，以提供对
+     * ApplicationContext 的访问。
+     *
+     * @param applicationContext 应用上下文
+     */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         SpringBeans.applicationContext = applicationContext;
@@ -253,7 +317,7 @@ public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContext
      */
     public static Set<String> findInfrastructureBeanNames() {
         return findBeanNames(beanDefinition ->
-            beanDefinition != null && beanDefinition.getRole() == org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE);
+                beanDefinition != null && beanDefinition.getRole() == org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE);
     }
 
     /**

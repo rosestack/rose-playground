@@ -5,7 +5,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
  * Aspect-Oriented Programming (AOP) configuration for enabling AspectJ auto-proxying.
- * <p>
+ *
  * This configuration class enables Spring's AspectJ auto-proxy functionality with
  * proxy exposure, allowing aspects to be applied to Spring-managed beans and
  * enabling access to the current proxy object through AopContext.
@@ -66,12 +66,14 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  * </ul>
  *
  * @author Rose Framework Team
+ * @since 1.0.0
  * @see EnableAspectJAutoProxy
  * @see org.springframework.aop.framework.AopContext
  * @see org.springframework.aop.aspectj.annotation.AspectJProxyFactory
- * @since 1.0.0
  */
 @AutoConfiguration
 @EnableAspectJAutoProxy(exposeProxy = true) // Enable proxy exposure for AopContext access
 public class AopConfig {
+    // This configuration class enables AspectJ auto-proxying with proxy exposure.
+    // No additional bean definitions are required as the annotation handles all configuration.
 }
