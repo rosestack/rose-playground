@@ -22,75 +22,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Comprehensive servlet utility class providing HTTP request/response processing capabilities.
- * <p>
- * This utility class serves as a centralized toolkit for common servlet operations in web applications.
- * It provides a wide range of functionality for handling HTTP requests, responses, parameters, headers,
- * cookies, and client information extraction. The class is designed to work seamlessly with Spring's
- * RequestContextHolder to provide convenient access to current request context.
- *
- * <h3>Core Functionality Areas:</h3>
- * <ul>
- *   <li><strong>Parameter Extraction:</strong> Type-safe parameter retrieval with default values</li>
- *   <li><strong>Header Management:</strong> Request header access and response header manipulation</li>
- *   <li><strong>Request Analysis:</strong> HTTP method detection, content type analysis, Ajax detection</li>
- *   <li><strong>Client Information:</strong> IP address extraction, User-Agent parsing, protocol detection</li>
- *   <li><strong>Response Rendering:</strong> JSON, XML, HTML content rendering with proper content types</li>
- *   <li><strong>Cookie Operations:</strong> Cookie creation, retrieval, and management</li>
- *   <li><strong>URL Processing:</strong> URL encoding/decoding with caching for performance</li>
- *   <li><strong>Security Features:</strong> HTTPS detection, real IP extraction through proxies</li>
- * </ul>
- *
- * <h3>Design Principles:</h3>
- * <ul>
- *   <li><strong>Thread Safety:</strong> All methods are thread-safe and stateless</li>
- *   <li><strong>Null Safety:</strong> Comprehensive null checking with graceful degradation</li>
- *   <li><strong>Performance:</strong> Caching mechanisms for expensive operations like URL encoding</li>
- *   <li><strong>Flexibility:</strong> Multiple overloaded methods with sensible defaults</li>
- *   <li><strong>Spring Integration:</strong> Seamless integration with Spring's request context</li>
- * </ul>
- *
- * <h3>Usage Examples:</h3>
- * <pre>{@code
- * // Parameter extraction with type conversion
- * String name = ServletUtils.getParameter("name", "anonymous");
- * Integer age = ServletUtils.getParameterToInt("age", 18);
- *
- * // Client information
- * String clientIp = ServletUtils.getClientIp();
- * String userAgent = ServletUtils.getUserAgent();
- *
- * // Request analysis
- * boolean isAjax = ServletUtils.isAjaxRequest();
- * boolean isJson = ServletUtils.isJsonRequest();
- *
- * // Response rendering
- * ServletUtils.renderJson(response, "{\"status\":\"success\"}");
- * }</pre>
- *
- * <h3>Thread Safety and Performance:</h3>
- * This class is fully thread-safe and designed for high-concurrency web applications.
- * URL encoding/decoding operations are cached using ConcurrentHashMap for improved performance.
- * All methods handle null inputs gracefully and provide meaningful defaults.
- *
- * @author zhijun.chen
- * @see HttpServletRequest
- * @see HttpServletResponse
- * @see RequestContextHolder
- * @since 0.0.1
- */
+
 @Slf4j
 public abstract class ServletUtils {
 
-    /**
-     * Private constructor to prevent instantiation of this utility class.
-     * <p>
-     * This class is designed to be used as a static utility and should not be instantiated.
-     * All methods are static and operate on the current request context or provided parameters.
-     */
     private ServletUtils() {
-        // Utility class - prevent instantiation
     }
 
     // ==================== Constants and Configuration ====================
