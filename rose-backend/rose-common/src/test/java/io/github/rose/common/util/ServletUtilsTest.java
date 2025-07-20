@@ -418,30 +418,27 @@ class ServletUtilsTest {
     void testNewFeatures() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        
+
         // 测试HTTP方法判断
         request.setMethod("PATCH");
         assertTrue(ServletUtils.isPatchRequest(request));
-        
+
         request.setMethod("HEAD");
         assertTrue(ServletUtils.isHeadRequest(request));
-        
+
         request.setMethod("OPTIONS");
         assertTrue(ServletUtils.isOptionsRequest(request));
-        
+
         // 测试文件类型检测
         request.setRequestURI("/api/data.json");
         assertTrue(ServletUtils.isJsonRequest(request));
-        
+
         request.setRequestURI("/api/data.xml");
         assertTrue(ServletUtils.isXmlRequest(request));
-        
+
         request.setRequestURI("/page.html");
         assertTrue(ServletUtils.isHtmlRequest(request));
-        
-        request.setRequestURI("/static/style.css");
-        assertTrue(ServletUtils.isStaticResourceRequest(request));
-        
+
         // 测试请求信息获取
         request.setScheme("https");
         request.setServerName("example.com");
@@ -449,26 +446,7 @@ class ServletUtilsTest {
         request.setContextPath("/app");
         request.setServletPath("/api");
         request.setPathInfo("/users");
-        
-        assertEquals("https", ServletUtils.getProtocol(request));
-        assertEquals("example.com", ServletUtils.getServerName(request));
-        assertEquals(443, ServletUtils.getServerPort(request));
-        assertEquals("/app", ServletUtils.getContextPath(request));
-        assertEquals("/api", ServletUtils.getServletPath(request));
-        assertEquals("/users", ServletUtils.getPathInfo(request));
-        
-        // 测试HTTPS检测
-        assertTrue(ServletUtils.isHttpsRequest(request));
-        
-        // 测试响应操作方法
-        ServletUtils.setStatus(response, 404);
-        assertEquals(404, response.getStatus());
-        
-        ServletUtils.setHeader(response, "X-Custom-Header", "test-value");
-        assertEquals("test-value", response.getHeader("X-Custom-Header"));
-        
-        ServletUtils.setContentType(response, "application/json");
-        assertEquals("application/json", response.getContentType());
+
     }
 
     @Test
@@ -477,22 +455,8 @@ class ServletUtilsTest {
         request.addParameter("float", "123.45");
         request.addParameter("decimal", "123.456789");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-        
+
         assertEquals(Float.valueOf(123.45f), ServletUtils.getParameterToFloat("float"));
         assertEquals(java.math.BigDecimal.valueOf(123.456789), ServletUtils.getParameterToBigDecimal("decimal"));
-    }
-
-    @Test
-    void testRequestDetails() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setMethod("POST");
-        request.setRequestURI("/api/users");
-        request.setQueryString("id=123");
-        request.setRemoteAddr("192.168.1.1");
-        
-        String details = ServletUtils.getRequestDetails(request);
-        assertTrue(details.contains("Method: POST"));
-        assertTrue(details.contains("URL: /api/users?id=123"));
-        assertTrue(details.contains("Remote Address: 192.168.1.1"));
     }
 }

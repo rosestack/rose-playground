@@ -10,28 +10,103 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import java.util.Properties;
 
 /**
- * 校验框架配置类
+ * Validation framework configuration class for Bean Validation setup.
+ * <p>
+ * This configuration class provides a customized Bean Validation setup using Hibernate Validator
+ * with internationalization support and fail-fast behavior. It integrates with Spring's
+ * MessageSource for localized validation messages and configures the validator for optimal
+ * performance in web applications.
+ *
+ * <h3>Key Features:</h3>
+ * <ul>
+ *   <li><strong>Internationalization:</strong> Integrates with Spring MessageSource for localized error messages</li>
+ *   <li><strong>Fail-Fast Mode:</strong> Stops validation on first constraint violation for better performance</li>
+ *   <li><strong>Hibernate Validator:</strong> Uses Hibernate Validator as the JSR-303 implementation</li>
+ *   <li><strong>Auto-Configuration:</strong> Automatically configured when present on classpath</li>
+ * </ul>
+ *
+ * <h3>Validation Behavior:</h3>
+ * The configured validator operates in fail-fast mode, which means it will stop validation
+ * as soon as the first constraint violation is encountered. This improves performance for
+ * objects with multiple validation constraints, especially in scenarios where early
+ * validation failure is acceptable.
+ *
+ * <h3>Message Resolution:</h3>
+ * Validation error messages are resolved through the configured MessageSource, enabling
+ * proper internationalization support. Messages can be customized per locale and will
+ * fall back to default messages if locale-specific versions are not available.
+ *
+ * <h3>Usage:</h3>
+ * This configuration is automatically applied when the class is on the classpath.
+ * The configured Validator can be injected into any Spring-managed component:
+ *
+ * <pre>{@code
+ * @Autowired
+ * private Validator validator;
+ *
+ * public void validateObject(Object obj) {
+ *     Set<ConstraintViolation<Object>> violations = validator.validate(obj);
+ *     // Handle violations...
+ * }
+ * }</pre>
+ *
+ * @author Rose Framework Team
+ * @see Validator
+ * @see HibernateValidator
+ * @see MessageSource
+ * @see LocalValidatorFactoryBean
+ * @since 1.0.0
  */
 @AutoConfiguration
 public class ValidatorConfig {
 
     /**
-     * 配置校验框架 快速返回模式
+     * Creates and configures a Bean Validation Validator with internationalization and fail-fast support.
+     * <p>
+     * This method sets up a LocalValidatorFactoryBean with the following configurations:
+     * <ul>
+     *   <li><strong>Message Source Integration:</strong> Uses the provided MessageSource for i18n support</li>
+     *   <li><strong>Hibernate Validator:</strong> Explicitly sets Hibernate Validator as the provider</li>
+     *   <li><strong>Fail-Fast Mode:</strong> Enables fail-fast validation for improved performance</li>
+     * </ul>
+     *
+     * <p><strong>Fail-Fast Behavior:</strong>
+     * When fail-fast mode is enabled, the validator will stop processing validation constraints
+     * as soon as the first violation is found. This can significantly improve performance for
+     * complex objects with many validation rules, especially when early failure detection is
+     * sufficient for the application's needs.
+     *
+     * <p><strong>Internationalization Support:</strong>
+     * The validator integrates with Spring's MessageSource to provide localized validation
+     * error messages. This allows for proper internationalization of validation messages
+     * based on the user's locale or application configuration.
+     *
+     * <p><strong>Configuration Properties:</strong>
+     * The method sets the following Hibernate Validator properties:
+     * <ul>
+     *   <li><code>hibernate.validator.fail_fast=true</code> - Enables fail-fast validation mode</li>
+     * </ul>
+     *
+     * @param messageSource The Spring MessageSource for internationalized validation messages.
+     *                      Must not be null. Used to resolve validation error messages based on locale.
+     * @return A fully configured Validator instance ready for use in validation operations
+     * @throws IllegalStateException if the LocalValidatorFactoryBean cannot be properly initialized
+     * @see LocalValidatorFactoryBean#setValidationMessageSource(MessageSource)
+     * @see LocalValidatorFactoryBean#setProviderClass(Class)
+     * @see LocalValidatorFactoryBean#setValidationProperties(Properties)
      */
     @Bean
     public Validator validator(MessageSource messageSource) {
         LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
-        // 国际化
+
         factoryBean.setValidationMessageSource(messageSource);
-        // 设置使用 HibernateValidator 校验器
         factoryBean.setProviderClass(HibernateValidator.class);
+
         Properties properties = new Properties();
-        // 设置 快速异常返回
         properties.setProperty("hibernate.validator.fail_fast", "true");
         factoryBean.setValidationProperties(properties);
-        // 加载配置
+
         factoryBean.afterPropertiesSet();
         return factoryBean.getValidator();
     }
-
 }

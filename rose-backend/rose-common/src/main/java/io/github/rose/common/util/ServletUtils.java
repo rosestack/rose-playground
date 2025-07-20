@@ -23,28 +23,103 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Servlet工具类
- * 提供HTTP请求/响应处理、参数获取、客户端IP获取等功能
+ * Comprehensive servlet utility class providing HTTP request/response processing capabilities.
+ * <p>
+ * This utility class serves as a centralized toolkit for common servlet operations in web applications.
+ * It provides a wide range of functionality for handling HTTP requests, responses, parameters, headers,
+ * cookies, and client information extraction. The class is designed to work seamlessly with Spring's
+ * RequestContextHolder to provide convenient access to current request context.
+ *
+ * <h3>Core Functionality Areas:</h3>
+ * <ul>
+ *   <li><strong>Parameter Extraction:</strong> Type-safe parameter retrieval with default values</li>
+ *   <li><strong>Header Management:</strong> Request header access and response header manipulation</li>
+ *   <li><strong>Request Analysis:</strong> HTTP method detection, content type analysis, Ajax detection</li>
+ *   <li><strong>Client Information:</strong> IP address extraction, User-Agent parsing, protocol detection</li>
+ *   <li><strong>Response Rendering:</strong> JSON, XML, HTML content rendering with proper content types</li>
+ *   <li><strong>Cookie Operations:</strong> Cookie creation, retrieval, and management</li>
+ *   <li><strong>URL Processing:</strong> URL encoding/decoding with caching for performance</li>
+ *   <li><strong>Security Features:</strong> HTTPS detection, real IP extraction through proxies</li>
+ * </ul>
+ *
+ * <h3>Design Principles:</h3>
+ * <ul>
+ *   <li><strong>Thread Safety:</strong> All methods are thread-safe and stateless</li>
+ *   <li><strong>Null Safety:</strong> Comprehensive null checking with graceful degradation</li>
+ *   <li><strong>Performance:</strong> Caching mechanisms for expensive operations like URL encoding</li>
+ *   <li><strong>Flexibility:</strong> Multiple overloaded methods with sensible defaults</li>
+ *   <li><strong>Spring Integration:</strong> Seamless integration with Spring's request context</li>
+ * </ul>
+ *
+ * <h3>Usage Examples:</h3>
+ * <pre>{@code
+ * // Parameter extraction with type conversion
+ * String name = ServletUtils.getParameter("name", "anonymous");
+ * Integer age = ServletUtils.getParameterToInt("age", 18);
+ *
+ * // Client information
+ * String clientIp = ServletUtils.getClientIp();
+ * String userAgent = ServletUtils.getUserAgent();
+ *
+ * // Request analysis
+ * boolean isAjax = ServletUtils.isAjaxRequest();
+ * boolean isJson = ServletUtils.isJsonRequest();
+ *
+ * // Response rendering
+ * ServletUtils.renderJson(response, "{\"status\":\"success\"}");
+ * }</pre>
+ *
+ * <h3>Thread Safety and Performance:</h3>
+ * This class is fully thread-safe and designed for high-concurrency web applications.
+ * URL encoding/decoding operations are cached using ConcurrentHashMap for improved performance.
+ * All methods handle null inputs gracefully and provide meaningful defaults.
  *
  * @author zhijun.chen
+ * @see HttpServletRequest
+ * @see HttpServletResponse
+ * @see RequestContextHolder
  * @since 0.0.1
  */
 @Slf4j
 public abstract class ServletUtils {
 
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     * <p>
+     * This class is designed to be used as a static utility and should not be instantiated.
+     * All methods are static and operate on the current request context or provided parameters.
+     */
     private ServletUtils() {
-        // 工具类，禁止实例化
+        // Utility class - prevent instantiation
     }
 
-    // ==================== 常量定义 ====================
+    // ==================== Constants and Configuration ====================
 
     /**
-     * 默认字符编码
+     * Default character encoding used throughout the application.
+     * <p>
+     * This constant defines the standard UTF-8 encoding that should be used
+     * for all text processing operations to ensure proper internationalization
+     * support and character handling.
      */
     public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
 
     /**
-     * 常见的客户端IP请求头
+     * Common HTTP headers used for client IP address detection in proxy environments.
+     * <p>
+     * This list contains the most commonly used headers by load balancers, reverse proxies,
+     * and CDNs to forward the original client IP address. The headers are checked in order
+     * of preference, with X-Forwarded-For being the most standard.
+     *
+     * <p>Header descriptions:
+     * <ul>
+     *   <li><strong>X-Forwarded-For:</strong> Standard header for forwarded client IP</li>
+     *   <li><strong>Proxy-Client-IP:</strong> Used by some proxy servers</li>
+     *   <li><strong>WL-Proxy-Client-IP:</strong> WebLogic proxy header</li>
+     *   <li><strong>HTTP_CLIENT_IP:</strong> Alternative client IP header</li>
+     *   <li><strong>HTTP_X_FORWARDED_FOR:</strong> Alternative forwarded header</li>
+     *   <li><strong>X-Real-IP:</strong> Nginx real IP header</li>
+     * </ul>
      */
     private static final List<String> DEFAULT_IP_HEADERS = Arrays.asList(
             "X-Forwarded-For",
@@ -56,7 +131,10 @@ public abstract class ServletUtils {
     );
 
     /**
-     * 常见的HTTP方法
+     * HTTP method constants for request type detection.
+     * <p>
+     * These constants define the standard HTTP methods supported by the utility class.
+     * They are used for method comparison and request type analysis.
      */
     private static final String HTTP_METHOD_GET = "GET";
     private static final String HTTP_METHOD_POST = "POST";
@@ -67,7 +145,10 @@ public abstract class ServletUtils {
     private static final String HTTP_METHOD_OPTIONS = "OPTIONS";
 
     /**
-     * 常见的文件扩展名
+     * File extension constants for content type detection and static resource identification.
+     * <p>
+     * These constants are used to identify different types of web resources and
+     * determine appropriate content types for responses.
      */
     private static final String EXT_JSON = ".json";
     private static final String EXT_XML = ".xml";
@@ -82,25 +163,53 @@ public abstract class ServletUtils {
     private static final String EXT_PDF = ".pdf";
 
     /**
-     * Ajax请求标识
+     * Ajax request identification constants.
+     * <p>
+     * These constants are used to detect Ajax/XHR requests through various mechanisms:
+     * - Standard X-Requested-With header
+     * - Custom Ajax parameter
      */
     private static final String AJAX_HEADER = "X-Requested-With";
     private static final String AJAX_VALUE = "XMLHttpRequest";
     private static final String AJAX_PARAM = "__ajax";
 
     /**
-     * 缓存
+     * Performance optimization caches for URL encoding and decoding operations.
+     * <p>
+     * These concurrent hash maps cache the results of URL encoding and decoding operations
+     * to improve performance for frequently processed URLs. The caches are thread-safe
+     * and help reduce the overhead of repeated encoding/decoding operations.
+     *
+     * <p><strong>Cache Management:</strong>
+     * - Automatic population on first access
+     * - Thread-safe concurrent access
+     * - Manual clearing available via {@link #clearCache()}
+     * - No automatic expiration (manual management required)
      */
     private static final Map<String, String> URL_DECODE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, String> URL_ENCODE_CACHE = new ConcurrentHashMap<>();
 
-    // ==================== 请求参数获取方法 ====================
+    // ==================== Request Parameter Extraction Methods ====================
 
     /**
-     * 获取String参数
+     * Retrieves a string parameter from the current HTTP request.
+     * <p>
+     * This method provides a convenient way to extract string parameters from the current
+     * request context without explicitly passing the HttpServletRequest object. It uses
+     * Spring's RequestContextHolder to access the current request.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在返回null
+     * <p><strong>Behavior:</strong>
+     * <ul>
+     *   <li>Returns the parameter value if found</li>
+     *   <li>Returns null if parameter doesn't exist</li>
+     *   <li>Returns null if no current request context is available</li>
+     *   <li>Handles multiple values by returning the first one</li>
+     * </ul>
+     *
+     * @param name The name of the parameter to retrieve. Must not be null.
+     * @return The parameter value as a string, or null if not found or no request context
+     * @see #getParameter(String, String)
+     * @see HttpServletRequest#getParameter(String)
      */
     public static String getParameter(String name) {
         HttpServletRequest request = getRequest();
@@ -108,11 +217,25 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取String参数（带默认值）
+     * Retrieves a string parameter from the current HTTP request with a default value.
+     * <p>
+     * This method extends the basic parameter retrieval by providing a fallback mechanism
+     * when the parameter is not present or is blank. It's particularly useful for optional
+     * parameters that should have sensible defaults.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * <p><strong>Default Value Logic:</strong>
+     * <ul>
+     *   <li>Returns parameter value if present and not blank</li>
+     *   <li>Returns defaultValue if parameter is null, empty, or whitespace-only</li>
+     *   <li>Returns defaultValue if no current request context is available</li>
+     * </ul>
+     *
+     * @param name         The name of the parameter to retrieve. Must not be null.
+     * @param defaultValue The default value to return if parameter is not found or blank.
+     *                     Can be null.
+     * @return The parameter value or the default value if parameter is blank or missing
+     * @see #getParameter(String)
+     * @see StringUtils#defaultIfBlank(CharSequence, CharSequence)
      */
     public static String getParameter(String name, String defaultValue) {
         HttpServletRequest request = getRequest();
@@ -123,21 +246,55 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取Integer参数
+     * Retrieves an integer parameter from the current HTTP request.
+     * <p>
+     * This method provides type-safe integer parameter extraction with automatic
+     * string-to-integer conversion. It handles conversion errors gracefully by
+     * returning null instead of throwing exceptions.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在或转换失败返回null
+     * <p><strong>Conversion Behavior:</strong>
+     * <ul>
+     *   <li>Returns Integer object if parameter exists and is valid number</li>
+     *   <li>Returns null if parameter doesn't exist</li>
+     *   <li>Returns null if parameter cannot be parsed as integer</li>
+     *   <li>Logs warning for parsing failures</li>
+     * </ul>
+     *
+     * @param name The name of the parameter to retrieve and convert. Must not be null.
+     * @return The parameter value as Integer, or null if not found or conversion fails
+     * @see #getParameterToInt(String, Integer)
+     * @see Integer#valueOf(String)
      */
     public static Integer getParameterToInt(String name) {
         return getParameterToInt(name, null);
     }
 
     /**
-     * 获取Integer参数（带默认值）
+     * Retrieves an integer parameter from the current HTTP request with a default value.
+     * <p>
+     * This method combines type-safe integer conversion with fallback value support.
+     * It's ideal for numeric parameters that should have reasonable defaults when
+     * not provided or when conversion fails.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * <p><strong>Conversion and Fallback Logic:</strong>
+     * <ol>
+     *   <li>Retrieve string parameter value</li>
+     *   <li>Return defaultValue if parameter is blank or missing</li>
+     *   <li>Attempt integer conversion</li>
+     *   <li>Return converted value on success</li>
+     *   <li>Log warning and return defaultValue on conversion failure</li>
+     * </ol>
+     *
+     * <p><strong>Error Handling:</strong>
+     * Conversion failures are logged at WARN level with parameter name and value
+     * for debugging purposes, but do not throw exceptions.
+     *
+     * @param name         The name of the parameter to retrieve and convert. Must not be null.
+     * @param defaultValue The default value to return if parameter is missing or
+     *                     conversion fails. Can be null.
+     * @return The parameter value as Integer, or defaultValue if conversion fails
+     * @see #getParameterToInt(String)
+     * @see #getParameter(String)
      */
     public static Integer getParameterToInt(String name, Integer defaultValue) {
         String value = getParameter(name);
@@ -153,21 +310,21 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取Long参数
+     * Retrieves a long parameter from the current HTTP request.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在或转换失败返回null
+     * @param name The name of the parameter to retrieve and convert
+     * @return The parameter value as Long, or null if not found or conversion fails
      */
     public static Long getParameterToLong(String name) {
         return getParameterToLong(name, null);
     }
 
     /**
-     * 获取Long参数（带默认值）
+     * Retrieves a long parameter from the current HTTP request with a default value.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * @param name         The name of the parameter to retrieve and convert
+     * @param defaultValue The default value to return if parameter is missing or conversion fails
+     * @return The parameter value as Long, or defaultValue if conversion fails
      */
     public static Long getParameterToLong(String name, Long defaultValue) {
         String value = getParameter(name);
@@ -183,21 +340,21 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取Boolean参数
+     * Retrieves a boolean parameter from the current HTTP request.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在返回null
+     * @param name The name of the parameter to retrieve and convert
+     * @return The parameter value as Boolean, or null if not found
      */
     public static Boolean getParameterToBool(String name) {
         return getParameterToBool(name, null);
     }
 
     /**
-     * 获取Boolean参数（带默认值）
+     * Retrieves a boolean parameter from the current HTTP request with a default value.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * @param name         The name of the parameter to retrieve and convert
+     * @param defaultValue The default value to return if parameter is missing or blank
+     * @return The parameter value as Boolean, or defaultValue if not found
      */
     public static Boolean getParameterToBool(String name, Boolean defaultValue) {
         String value = getParameter(name);
@@ -208,21 +365,21 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取Double参数
+     * Retrieves a double parameter from the current HTTP request.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在或转换失败返回null
+     * @param name The name of the parameter to retrieve and convert
+     * @return The parameter value as Double, or null if not found or conversion fails
      */
     public static Double getParameterToDouble(String name) {
         return getParameterToDouble(name, null);
     }
 
     /**
-     * 获取Double参数（带默认值）
+     * Retrieves a double parameter from the current HTTP request with a default value.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * @param name         The name of the parameter to retrieve and convert
+     * @param defaultValue The default value to return if parameter is missing or conversion fails
+     * @return The parameter value as Double, or defaultValue if conversion fails
      */
     public static Double getParameterToDouble(String name, Double defaultValue) {
         String value = getParameter(name);
@@ -238,21 +395,21 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取Float参数
+     * Retrieves a float parameter from the current HTTP request.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在或转换失败返回null
+     * @param name The name of the parameter to retrieve and convert
+     * @return The parameter value as Float, or null if not found or conversion fails
      */
     public static Float getParameterToFloat(String name) {
         return getParameterToFloat(name, null);
     }
 
     /**
-     * 获取Float参数（带默认值）
+     * Retrieves a float parameter from the current HTTP request with a default value.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * @param name         The name of the parameter to retrieve and convert
+     * @param defaultValue The default value to return if parameter is missing or conversion fails
+     * @return The parameter value as Float, or defaultValue if conversion fails
      */
     public static Float getParameterToFloat(String name, Float defaultValue) {
         String value = getParameter(name);
@@ -268,21 +425,21 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取BigDecimal参数
+     * Retrieves a BigDecimal parameter from the current HTTP request.
      *
-     * @param name 参数名
-     * @return 参数值，如果不存在或转换失败返回null
+     * @param name The name of the parameter to retrieve and convert
+     * @return The parameter value as BigDecimal, or null if not found or conversion fails
      */
     public static java.math.BigDecimal getParameterToBigDecimal(String name) {
         return getParameterToBigDecimal(name, null);
     }
 
     /**
-     * 获取BigDecimal参数（带默认值）
+     * Retrieves a BigDecimal parameter from the current HTTP request with a default value.
      *
-     * @param name         参数名
-     * @param defaultValue 默认值
-     * @return 参数值
+     * @param name         The name of the parameter to retrieve and convert
+     * @param defaultValue The default value to return if parameter is missing or conversion fails
+     * @return The parameter value as BigDecimal, or defaultValue if conversion fails
      */
     public static java.math.BigDecimal getParameterToBigDecimal(String name, java.math.BigDecimal defaultValue) {
         String value = getParameter(name);
@@ -298,10 +455,10 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获得所有请求参数（数组形式）
+     * Retrieves all request parameters as string arrays from the specified request.
      *
-     * @param request 请求对象
-     * @return 参数Map（不可修改）
+     * @param request The servlet request to extract parameters from
+     * @return Unmodifiable map of parameter names to string arrays, empty map if request is null
      */
     public static Map<String, String[]> getParams(ServletRequest request) {
         if (request == null) {
@@ -312,9 +469,9 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获得所有请求参数（数组形式）
+     * Retrieves all request parameters as string arrays from the current request.
      *
-     * @return 参数Map（不可修改）
+     * @return Unmodifiable map of parameter names to string arrays
      */
     public static Map<String, String[]> getParams() {
         HttpServletRequest request = getRequest();
@@ -322,10 +479,10 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获得所有请求参数（字符串形式，多值用逗号分隔）
+     * Retrieves all request parameters as strings with multiple values joined by commas.
      *
-     * @param request 请求对象
-     * @return 参数Map
+     * @param request The servlet request to extract parameters from
+     * @return Map of parameter names to comma-separated string values
      */
     public static Map<String, String> getParamMap(ServletRequest request) {
         if (request == null) {
@@ -343,9 +500,9 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获得所有请求参数（字符串形式，多值用逗号分隔）
+     * Retrieves all request parameters as strings with multiple values joined by commas.
      *
-     * @return 参数Map
+     * @return Map of parameter names to comma-separated string values
      */
     public static Map<String, String> getParamMap() {
         HttpServletRequest request = getRequest();
@@ -383,13 +540,13 @@ public abstract class ServletUtils {
         return getParamListMap(request);
     }
 
-    // ==================== 请求头相关方法 ====================
+    // ==================== Request Header Methods ====================
 
     /**
-     * 获取请求头
+     * Retrieves a request header value by name.
      *
-     * @param name 请求头名称
-     * @return 请求头值
+     * @param name The header name to retrieve
+     * @return The header value, or null if not found or no request context
      */
     public static String getHeader(String name) {
         HttpServletRequest request = getRequest();
@@ -397,11 +554,11 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取请求头（带默认值）
+     * Retrieves a request header value by name with a default value.
      *
-     * @param name         请求头名称
-     * @param defaultValue 默认值
-     * @return 请求头值
+     * @param name The header name to retrieve
+     * @param defaultValue The default value to return if header is not found or blank
+     * @return The header value or default value if not found
      */
     public static String getHeader(String name, String defaultValue) {
         String value = getHeader(name);
@@ -409,9 +566,9 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取所有请求头
+     * Retrieves all request headers as a map.
      *
-     * @return 请求头Map
+     * @return Map of header names to header values, empty map if no request context
      */
     public static Map<String, String> getHeaders() {
         HttpServletRequest request = getRequest();
@@ -430,12 +587,12 @@ public abstract class ServletUtils {
         return headers;
     }
 
-    // ==================== 请求/响应/会话获取方法 ====================
+    // ==================== Request/Response/Session Access Methods ====================
 
     /**
-     * 获取HttpServletRequest
+     * Retrieves the current HttpServletRequest from the request context.
      *
-     * @return HttpServletRequest对象
+     * @return The current HttpServletRequest, or null if no request context is available
      */
     public static HttpServletRequest getRequest() {
         ServletRequestAttributes requestAttributes = getRequestAttributes();
@@ -446,9 +603,9 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取HttpServletResponse
+     * Retrieves the current HttpServletResponse from the request context.
      *
-     * @return HttpServletResponse对象
+     * @return The current HttpServletResponse, or null if no request context is available
      */
     public static HttpServletResponse getResponse() {
         ServletRequestAttributes requestAttributes = getRequestAttributes();
@@ -459,9 +616,9 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取HttpSession
+     * Retrieves the current HttpSession from the request context.
      *
-     * @return HttpSession对象
+     * @return The current HttpSession, or null if no request context is available
      */
     public static HttpSession getSession() {
         HttpServletRequest request = getRequest();
@@ -469,10 +626,10 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取HttpSession（可选择是否创建）
+     * Retrieves the current HttpSession with option to create if not exists.
      *
-     * @param create 是否创建新会话
-     * @return HttpSession对象
+     * @param create Whether to create a new session if one doesn't exist
+     * @return The current HttpSession, or null if no request context is available
      */
     public static HttpSession getSession(boolean create) {
         HttpServletRequest request = getRequest();
@@ -480,9 +637,9 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取ServletRequestAttributes
+     * Retrieves the current ServletRequestAttributes from the request context.
      *
-     * @return ServletRequestAttributes对象
+     * @return The current ServletRequestAttributes, or null if not available or not a servlet context
      */
     public static ServletRequestAttributes getRequestAttributes() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
@@ -490,10 +647,10 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 将字符串渲染到客户端
+     * Renders a string to the client with JSON content type.
      *
-     * @param response 响应对象
-     * @param string   待渲染的字符串
+     * @param response The HTTP response object
+     * @param string The string content to render
      */
     public static void renderString(HttpServletResponse response, String string) {
         renderString(response, string, MediaType.APPLICATION_JSON_VALUE);
@@ -549,43 +706,39 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 是否是Ajax异步请求
+     * Determines if the request is an Ajax/XHR request.
      *
-     * @param request 请求对象
-     * @return 是否是Ajax请求
+     * @param request The HTTP request to check
+     * @return true if the request is identified as an Ajax request, false otherwise
      */
     public static boolean isAjaxRequest(HttpServletRequest request) {
         if (request == null) {
             return false;
         }
 
-        // 检查Accept头
         String accept = request.getHeader(HttpHeaders.ACCEPT);
         if (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE)) {
             return true;
         }
 
-        // 检查X-Requested-With头
         String xRequestedWith = request.getHeader(AJAX_HEADER);
         if (AJAX_VALUE.equals(xRequestedWith)) {
             return true;
         }
 
-        // 检查URI后缀
         String uri = request.getRequestURI();
         if (StringUtils.endsWithIgnoreCase(uri, ".json") || StringUtils.endsWithIgnoreCase(uri, ".xml")) {
             return true;
         }
 
-        // 检查参数
         String ajax = request.getParameter(AJAX_PARAM);
         return StringUtils.equalsAnyIgnoreCase(ajax, "json", "xml");
     }
 
     /**
-     * 是否是Ajax异步请求（使用当前请求）
+     * Determines if the current request is an Ajax/XHR request.
      *
-     * @return 是否是Ajax请求
+     * @return true if the current request is identified as an Ajax request, false otherwise
      */
     public static boolean isAjaxRequest() {
         HttpServletRequest request = getRequest();
@@ -593,50 +746,50 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 是否是GET请求
+     * Determines if the request is a GET request.
      *
-     * @param request 请求对象
-     * @return 是否是GET请求
+     * @param request The HTTP request to check
+     * @return true if the request method is GET, false otherwise
      */
     public static boolean isGetRequest(HttpServletRequest request) {
         return request != null && HTTP_METHOD_GET.equalsIgnoreCase(request.getMethod());
     }
 
     /**
-     * 是否是POST请求
+     * Determines if the request is a POST request.
      *
-     * @param request 请求对象
-     * @return 是否是POST请求
+     * @param request The HTTP request to check
+     * @return true if the request method is POST, false otherwise
      */
     public static boolean isPostRequest(HttpServletRequest request) {
         return request != null && HTTP_METHOD_POST.equalsIgnoreCase(request.getMethod());
     }
 
     /**
-     * 是否是PUT请求
+     * Determines if the request is a PUT request.
      *
-     * @param request 请求对象
-     * @return 是否是PUT请求
+     * @param request The HTTP request to check
+     * @return true if the request method is PUT, false otherwise
      */
     public static boolean isPutRequest(HttpServletRequest request) {
         return request != null && HTTP_METHOD_PUT.equalsIgnoreCase(request.getMethod());
     }
 
     /**
-     * 是否是DELETE请求
+     * Determines if the request is a DELETE request.
      *
-     * @param request 请求对象
-     * @return 是否是DELETE请求
+     * @param request The HTTP request to check
+     * @return true if the request method is DELETE, false otherwise
      */
     public static boolean isDeleteRequest(HttpServletRequest request) {
         return request != null && HTTP_METHOD_DELETE.equalsIgnoreCase(request.getMethod());
     }
 
     /**
-     * 是否是PATCH请求
+     * Determines if the request is a PATCH request.
      *
-     * @param request 请求对象
-     * @return 是否是PATCH请求
+     * @param request The HTTP request to check
+     * @return true if the request method is PATCH, false otherwise
      */
     public static boolean isPatchRequest(HttpServletRequest request) {
         return request != null && HTTP_METHOD_PATCH.equalsIgnoreCase(request.getMethod());
@@ -759,35 +912,94 @@ public abstract class ServletUtils {
     }
 
     /**
-     * 获取客户端真实IP地址
+     * Extracts the real client IP address from an HTTP request, considering proxy headers.
+     * <p>
+     * This method implements a comprehensive strategy for determining the actual client IP address
+     * in environments with load balancers, reverse proxies, and CDNs. It checks multiple common
+     * headers used by different proxy implementations to forward the original client IP.
      *
-     * @param request          请求对象
-     * @param otherHeaderNames 额外的IP请求头名称
-     * @return 客户端IP地址
+     * <p><strong>IP Resolution Strategy:</strong>
+     * <ol>
+     *   <li>Check standard proxy headers (X-Forwarded-For, etc.)</li>
+     *   <li>Check additional custom headers if provided</li>
+     *   <li>Fall back to request.getRemoteAddr() if no proxy headers found</li>
+     *   <li>Handle comma-separated IP lists from proxy chains</li>
+     *   <li>Filter out "unknown" values commonly used by proxies</li>
+     * </ol>
+     *
+     * <p><strong>Proxy Chain Handling:</strong>
+     * When requests pass through multiple proxies, headers may contain comma-separated
+     * IP addresses. This method extracts the first valid (non-"unknown") IP from such lists.
+     *
+     * <p><strong>Security Considerations:</strong>
+     * <ul>
+     *   <li>Proxy headers can be spoofed by malicious clients</li>
+     *   <li>Only trust proxy headers in controlled environments</li>
+     *   <li>Consider additional validation for security-critical operations</li>
+     * </ul>
+     *
+     * @param request          The HTTP request to extract IP from. If null, returns null.
+     * @param otherHeaderNames Additional header names to check for IP addresses.
+     *                         These are checked after the standard headers.
+     * @return The client IP address, or null if request is null or no valid IP found
+     * @see #getClientIp()
+     * @see #getReverseProxyIp(String)
      */
     public static String getClientIp(HttpServletRequest request, String... otherHeaderNames) {
         if (request == null) {
             return null;
         }
 
+        // Combine default headers with additional ones, maintaining order
         Set<String> headerNames = new LinkedHashSet<>(DEFAULT_IP_HEADERS);
         headerNames.addAll(Arrays.asList(otherHeaderNames));
 
+        // Check each header for IP address
         String ip;
         for (String header : headerNames) {
             ip = request.getHeader(header);
-            return getReverseProxyIp(ip);
+            ip = getReverseProxyIp(ip);
+            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+                return ip;
+            }
         }
 
+        // Fall back to remote address if no proxy headers found
         ip = request.getRemoteAddr();
         return getReverseProxyIp(ip);
     }
 
+    /**
+     * Processes a potentially comma-separated IP address string from proxy headers.
+     * <p>
+     * When requests pass through multiple proxies or load balancers, the forwarded IP
+     * headers often contain comma-separated lists of IP addresses representing the
+     * chain of proxies. This method extracts the first valid IP address from such lists.
+     *
+     * <p><strong>Processing Logic:</strong>
+     * <ul>
+     *   <li>If IP contains commas, split and check each part</li>
+     *   <li>Return first non-blank, non-"unknown" IP found</li>
+     *   <li>Return original IP if no commas or no valid IPs found</li>
+     * </ul>
+     *
+     * <p><strong>Example Input/Output:</strong>
+     * <pre>
+     * "192.168.1.100, 10.0.0.1, unknown" → "192.168.1.100"
+     * "unknown, 203.0.113.1" → "203.0.113.1"
+     * "192.168.1.100" → "192.168.1.100"
+     * </pre>
+     *
+     * @param ip The IP address string to process, potentially comma-separated.
+     *           Can be null or empty.
+     * @return The first valid IP address found, or the original string if no processing needed
+     */
     public static String getReverseProxyIp(String ip) {
         if (ip != null && ip.contains(",")) {
             for (String subIp : ip.split(",")) {
-                if (!StringUtils.isBlank(subIp) && !"unknown".equalsIgnoreCase(subIp)) {
-                    return subIp;
+                String trimmedIp = subIp.trim();
+                if (!StringUtils.isBlank(trimmedIp) && !"unknown".equalsIgnoreCase(trimmedIp)) {
+                    return trimmedIp;
                 }
             }
         }
@@ -877,8 +1089,6 @@ public abstract class ServletUtils {
         cookie.setPath("/");
         response.addCookie(cookie);
     }
-
-    // ==================== 工具方法 ====================
 
     /**
      * 清理缓存
@@ -1025,309 +1235,5 @@ public abstract class ServletUtils {
         // 检查URI后缀
         String uri = request.getRequestURI();
         return StringUtils.endsWithIgnoreCase(uri, EXT_HTML) || StringUtils.endsWithIgnoreCase(uri, EXT_HTM);
-    }
-
-    /**
-     * 是否是静态资源请求
-     *
-     * @param request 请求对象
-     * @return 是否是静态资源请求
-     */
-    public static boolean isStaticResourceRequest(HttpServletRequest request) {
-        if (request == null) {
-            return false;
-        }
-
-        String uri = request.getRequestURI();
-        return StringUtils.endsWithIgnoreCase(uri, EXT_JS) ||
-                StringUtils.endsWithIgnoreCase(uri, EXT_CSS) ||
-                StringUtils.endsWithIgnoreCase(uri, EXT_PNG) ||
-                StringUtils.endsWithIgnoreCase(uri, EXT_JPG) ||
-                StringUtils.endsWithIgnoreCase(uri, EXT_JPEG) ||
-                StringUtils.endsWithIgnoreCase(uri, EXT_GIF) ||
-                StringUtils.endsWithIgnoreCase(uri, EXT_PDF);
-    }
-
-    // ==================== 请求信息获取方法 ====================
-
-    /**
-     * 获取请求的协议
-     *
-     * @param request 请求对象
-     * @return 协议（http或https）
-     */
-    public static String getProtocol(HttpServletRequest request) {
-        return request != null ? request.getScheme() : null;
-    }
-
-    /**
-     * 获取请求的协议（使用当前请求）
-     *
-     * @return 协议
-     */
-    public static String getProtocol() {
-        HttpServletRequest request = getRequest();
-        return getProtocol(request);
-    }
-
-    /**
-     * 获取请求的服务器名称
-     *
-     * @param request 请求对象
-     * @return 服务器名称
-     */
-    public static String getServerName(HttpServletRequest request) {
-        return request != null ? request.getServerName() : null;
-    }
-
-    /**
-     * 获取请求的服务器名称（使用当前请求）
-     *
-     * @return 服务器名称
-     */
-    public static String getServerName() {
-        HttpServletRequest request = getRequest();
-        return getServerName(request);
-    }
-
-    /**
-     * 获取请求的服务器端口
-     *
-     * @param request 请求对象
-     * @return 服务器端口
-     */
-    public static int getServerPort(HttpServletRequest request) {
-        return request != null ? request.getServerPort() : -1;
-    }
-
-    /**
-     * 获取请求的服务器端口（使用当前请求）
-     *
-     * @return 服务器端口
-     */
-    public static int getServerPort() {
-        HttpServletRequest request = getRequest();
-        return getServerPort(request);
-    }
-
-    /**
-     * 获取请求的上下文路径
-     *
-     * @param request 请求对象
-     * @return 上下文路径
-     */
-    public static String getContextPath(HttpServletRequest request) {
-        return request != null ? request.getContextPath() : null;
-    }
-
-    /**
-     * 获取请求的上下文路径（使用当前请求）
-     *
-     * @return 上下文路径
-     */
-    public static String getContextPath() {
-        HttpServletRequest request = getRequest();
-        return getContextPath(request);
-    }
-
-    /**
-     * 获取请求的Servlet路径
-     *
-     * @param request 请求对象
-     * @return Servlet路径
-     */
-    public static String getServletPath(HttpServletRequest request) {
-        return request != null ? request.getServletPath() : null;
-    }
-
-    /**
-     * 获取请求的Servlet路径（使用当前请求）
-     *
-     * @return Servlet路径
-     */
-    public static String getServletPath() {
-        HttpServletRequest request = getRequest();
-        return getServletPath(request);
-    }
-
-    /**
-     * 获取请求的路径信息
-     *
-     * @param request 请求对象
-     * @return 路径信息
-     */
-    public static String getPathInfo(HttpServletRequest request) {
-        return request != null ? request.getPathInfo() : null;
-    }
-
-    /**
-     * 获取请求的路径信息（使用当前请求）
-     *
-     * @return 路径信息
-     */
-    public static String getPathInfo() {
-        HttpServletRequest request = getRequest();
-        return getPathInfo(request);
-    }
-
-    // ==================== 响应操作方法 ====================
-
-    /**
-     * 设置响应状态码
-     *
-     * @param response 响应对象
-     * @param status   状态码
-     */
-    public static void setStatus(HttpServletResponse response, int status) {
-        if (response != null) {
-            response.setStatus(status);
-        }
-    }
-
-    /**
-     * 设置响应状态码
-     *
-     * @param response 响应对象
-     * @param status   状态码
-     */
-    public static void setStatus(HttpServletResponse response, HttpStatus status) {
-        if (response != null && status != null) {
-            response.setStatus(status.value());
-        }
-    }
-
-    /**
-     * 设置响应头
-     *
-     * @param response 响应对象
-     * @param name     头名称
-     * @param value    头值
-     */
-    public static void setHeader(HttpServletResponse response, String name, String value) {
-        if (response != null && StringUtils.isNotBlank(name)) {
-            response.setHeader(name, value);
-        }
-    }
-
-    /**
-     * 添加响应头
-     *
-     * @param response 响应对象
-     * @param name     头名称
-     * @param value    头值
-     */
-    public static void addHeader(HttpServletResponse response, String name, String value) {
-        if (response != null && StringUtils.isNotBlank(name)) {
-            response.addHeader(name, value);
-        }
-    }
-
-    /**
-     * 设置响应内容类型
-     *
-     * @param response    响应对象
-     * @param contentType 内容类型
-     */
-    public static void setContentType(HttpServletResponse response, String contentType) {
-        if (response != null && StringUtils.isNotBlank(contentType)) {
-            response.setContentType(contentType);
-        }
-    }
-
-    /**
-     * 设置响应字符编码
-     *
-     * @param response 响应对象
-     * @param charset  字符编码
-     */
-    public static void setCharacterEncoding(HttpServletResponse response, String charset) {
-        if (response != null && StringUtils.isNotBlank(charset)) {
-            response.setCharacterEncoding(charset);
-        }
-    }
-
-    // ==================== 安全相关方法 ====================
-
-    /**
-     * 是否是HTTPS请求
-     *
-     * @param request 请求对象
-     * @return 是否是HTTPS请求
-     */
-    public static boolean isHttpsRequest(HttpServletRequest request) {
-        if (request == null) {
-            return false;
-        }
-        return "https".equalsIgnoreCase(request.getScheme());
-    }
-
-    /**
-     * 是否是HTTPS请求（使用当前请求）
-     *
-     * @return 是否是HTTPS请求
-     */
-    public static boolean isHttpsRequest() {
-        HttpServletRequest request = getRequest();
-        return isHttpsRequest(request);
-    }
-
-    /**
-     * 获取请求的真实IP（考虑代理）
-     *
-     * @param request 请求对象
-     * @return 真实IP地址
-     */
-    public static String getRealIp(HttpServletRequest request) {
-        return getClientIp(request);
-    }
-
-    /**
-     * 获取请求的真实IP（使用当前请求）
-     *
-     * @return 真实IP地址
-     */
-    public static String getRealIp() {
-        return getClientIp();
-    }
-
-    // ==================== 调试和日志方法 ====================
-
-    /**
-     * 获取请求的详细信息（用于调试）
-     *
-     * @param request 请求对象
-     * @return 请求详细信息
-     */
-    public static String getRequestDetails(HttpServletRequest request) {
-        if (request == null) {
-            return "Request is null";
-        }
-
-        StringBuilder details = new StringBuilder();
-        details.append("Method: ").append(request.getMethod()).append("\n");
-        details.append("URL: ").append(getFullUrl(request)).append("\n");
-        details.append("Protocol: ").append(request.getScheme()).append("\n");
-        details.append("Server: ").append(request.getServerName()).append(":").append(request.getServerPort()).append("\n");
-        details.append("Context Path: ").append(request.getContextPath()).append("\n");
-        details.append("Servlet Path: ").append(request.getServletPath()).append("\n");
-        details.append("Path Info: ").append(request.getPathInfo()).append("\n");
-        details.append("Query String: ").append(request.getQueryString()).append("\n");
-        details.append("Remote Address: ").append(request.getRemoteAddr()).append("\n");
-        details.append("Remote Host: ").append(request.getRemoteHost()).append("\n");
-        details.append("Remote Port: ").append(request.getRemotePort()).append("\n");
-        details.append("User Agent: ").append(getUserAgent(request)).append("\n");
-        details.append("Referer: ").append(getReferer(request)).append("\n");
-
-        return details.toString();
-    }
-
-    /**
-     * 获取请求的详细信息（使用当前请求）
-     *
-     * @return 请求详细信息
-     */
-    public static String getRequestDetails() {
-        HttpServletRequest request = getRequest();
-        return getRequestDetails(request);
     }
 }

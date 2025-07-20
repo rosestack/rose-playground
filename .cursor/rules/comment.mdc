@@ -1,0 +1,67 @@
+请为我的Java代码添加详细的英文注释，要求如下：
+
+## 注释要求
+1. **语言**：所有注释必须使用英文，如果存在中文注释请先删除
+2. **格式**：使用标准JavaDoc格式（/** ... */）
+3. **范围**：为类、接口、方法、重要字段添加注释
+4. **内容深度**：提供详细的功能描述、用途说明、注意事项
+
+## 具体内容要求
+
+### 类级别注释应包含：
+- 类的主要功能和用途
+- 设计模式或架构说明
+- 核心特性列表
+- 使用示例代码
+- 依赖关系说明
+- 线程安全性说明（如适用）
+- @author 和 @since 标签
+
+### 方法注释应包含：
+- 方法功能的简洁描述
+- 参数说明（@param）
+- 返回值说明（@return）
+- 可能抛出的异常（@throws）
+- 使用场景或注意事项
+- 相关方法引用（@see）
+
+### 字段注释应包含：
+- 字段的用途和含义
+- 数据类型说明
+- 线程安全性（如适用）
+- 生命周期说明
+
+## 注释风格要求
+- 使用专业的技术英语
+- 采用HTML标签进行格式化（如 <ul>, <li>, <strong>, <code>）
+- 提供实际的代码使用示例
+- 说明最佳实践和常见陷阱
+- 保持注释的简洁性和可读性
+
+## 示例格式
+```java
+/**
+ * Configuration class for Bean Validation framework setup.
+ * 
+ * This class provides customized validation configuration using Hibernate Validator
+ * with internationalization support and fail-fast behavior.
+ * 
+ * <h3>Key Features:</h3>
+ * <ul>
+ *   <li>Internationalization support through MessageSource integration</li>
+ *   <li>Fail-fast validation mode for improved performance</li>
+ * </ul>
+ * 
+ * <h3>Usage Example:</h3>
+ * <pre>{@code
+ * @Autowired
+ * private Validator validator;
+ * 
+ * Set<ConstraintViolation<Object>> violations = validator.validate(object);
+ * }</pre>
+ * 
+ * @author Your Name
+ * @since 1.0.0
+ * @see Validator
+ * @see MessageSource
+ */
