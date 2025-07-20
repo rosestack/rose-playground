@@ -32,8 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * <ul>
  *   <li>类型安全的参数提取和转换</li>
  *   <li>客户端 IP 地址和 User-Agent 获取</li>
- *   <li>请求类型检测（Ajax、JSON、移动端等）</li>
- *   <li>响应内容渲染（JSON、XML、文本）</li>
  *   <li>Cookie 操作和会话管理</li>
  *   <li>URL 编码解码缓存优化</li>
  * </ul>
@@ -42,15 +40,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * <pre>{@code
  * // 参数提取
  * String name = ServletUtils.getParameter("name", "默认值");
- * Integer age = ServletUtils.getParameterToInt("age", 18);
  *
  * // 客户端信息
  * String clientIp = ServletUtils.getClientIp();
- * boolean isMobile = ServletUtils.isMobileDevice();
  *
  * // 响应渲染
  * ServletUtils.renderJson(response, "{\"status\":\"success\"}");
- * ServletUtils.renderText(response, "操作成功");
  * }</pre>
  * <p>
  * <strong>注意：</strong>所有方法都是线程安全的，支持高并发访问。
@@ -122,12 +117,6 @@ public abstract class ServletUtils {
         return getParams(request);
     }
 
-    /**
-     * Retrieves all request parameters as strings with multiple values joined by commas.
-     *
-     * @param request The servlet request to extract parameters from
-     * @return Map of parameter names to comma-separated string values
-     */
     public static Map<String, String> getParamMap(ServletRequest request) {
         if (request == null) {
             return Collections.emptyMap();
@@ -143,11 +132,6 @@ public abstract class ServletUtils {
         return params;
     }
 
-    /**
-     * Retrieves all request parameters as strings with multiple values joined by commas.
-     *
-     * @return Map of parameter names to comma-separated string values
-     */
     public static Map<String, String> getParamMap() {
         HttpServletRequest request = getRequest();
         return getParamMap(request);
@@ -184,8 +168,6 @@ public abstract class ServletUtils {
         return getParamListMap(request);
     }
 
-    // ==================== Request Header Methods ====================
-
     /**
      * Retrieves a request header value by name.
      *
@@ -197,23 +179,11 @@ public abstract class ServletUtils {
         return request != null ? request.getHeader(name) : null;
     }
 
-    /**
-     * Retrieves a request header value by name with a default value.
-     *
-     * @param name         The header name to retrieve
-     * @param defaultValue The default value to return if header is not found or blank
-     * @return The header value or default value if not found
-     */
     public static String getHeader(String name, String defaultValue) {
         String value = getHeader(name);
         return StringUtils.defaultIfBlank(value, defaultValue);
     }
 
-    /**
-     * Retrieves all request headers as a map.
-     *
-     * @return Map of header names to header values, empty map if no request context
-     */
     public static Map<String, String> getHeaders() {
         HttpServletRequest request = getRequest();
         if (request == null) {
@@ -244,11 +214,6 @@ public abstract class ServletUtils {
         return requestAttributes.getRequest();
     }
 
-    /**
-     * Retrieves the current HttpServletResponse from the request context.
-     *
-     * @return The current HttpServletResponse, or null if no request context is available
-     */
     public static HttpServletResponse getResponse() {
         ServletRequestAttributes requestAttributes = getRequestAttributes();
         if (requestAttributes == null) {
@@ -257,32 +222,16 @@ public abstract class ServletUtils {
         return requestAttributes.getResponse();
     }
 
-    /**
-     * Retrieves the current HttpSession from the request context.
-     *
-     * @return The current HttpSession, or null if no request context is available
-     */
     public static HttpSession getSession() {
         HttpServletRequest request = getRequest();
         return request != null ? request.getSession() : null;
     }
 
-    /**
-     * Retrieves the current HttpSession with option to create if not exists.
-     *
-     * @param create Whether to create a new session if one doesn't exist
-     * @return The current HttpSession, or null if no request context is available
-     */
     public static HttpSession getSession(boolean create) {
         HttpServletRequest request = getRequest();
         return request != null ? request.getSession(create) : null;
     }
 
-    /**
-     * Retrieves the current ServletRequestAttributes from the request context.
-     *
-     * @return The current ServletRequestAttributes, or null if not available or not a servlet context
-     */
     public static ServletRequestAttributes getRequestAttributes() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         return attributes instanceof ServletRequestAttributes ? (ServletRequestAttributes) attributes : null;
@@ -317,12 +266,6 @@ public abstract class ServletUtils {
         renderString(response, json, MediaType.APPLICATION_JSON_VALUE);
     }
 
-    /**
-     * Determines if the request is an Ajax/XHR request.
-     *
-     * @param request The HTTP request to check
-     * @return true if the request is identified as an Ajax request, false otherwise
-     */
     public static boolean isAjaxRequest(HttpServletRequest request) {
         if (request == null) {
             return false;
@@ -347,11 +290,6 @@ public abstract class ServletUtils {
         return StringUtils.equalsAnyIgnoreCase(ajax, "json", "xml");
     }
 
-    /**
-     * Determines if the current request is an Ajax/XHR request.
-     *
-     * @return true if the current request is identified as an Ajax request, false otherwise
-     */
     public static boolean isAjaxRequest() {
         HttpServletRequest request = getRequest();
         return isAjaxRequest(request);
@@ -501,8 +439,6 @@ public abstract class ServletUtils {
         HttpServletRequest request = getRequest();
         return getClientIp(request);
     }
-
-    // ==================== Cookie操作方法 ====================
 
     /**
      * 获取Cookie值
