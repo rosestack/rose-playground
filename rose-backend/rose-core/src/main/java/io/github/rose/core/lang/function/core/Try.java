@@ -172,7 +172,7 @@ public final class Try<T> {
     }
 
     /**
-     * 转换为 Optional
+     * 转换为 Option
      */
     public java.util.Optional<T> toOptional() {
         return isSuccess ? java.util.Optional.of(value) : java.util.Optional.empty();
@@ -211,6 +211,15 @@ public final class Try<T> {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         try {
             return success(supplier.get());
+        } catch (Throwable e) {
+            return failure(e);
+        }
+    }
+
+    public static <T, R> Try<R> ofFunction(T input, Function<T, R> function) {
+        Objects.requireNonNull(function, "function cannot be null");
+        try {
+            return success(function.apply(input));
         } catch (Throwable e) {
             return failure(e);
         }

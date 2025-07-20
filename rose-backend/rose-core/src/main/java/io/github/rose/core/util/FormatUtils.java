@@ -48,7 +48,7 @@ public abstract class FormatUtils {
      * @return 格式化后的字符串
      */
     public static String replaceCustomPlaceholder(final String template, String placeholder, final Object... args) {
-        return replaceCustomPlaceholder(template, placeholder, Locale.getDefault(), args);
+        return replaceCustomPlaceholder(template, placeholder, Locale.getDefault(), TimeZone.getDefault(), args);
     }
 
     /**

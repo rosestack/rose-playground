@@ -191,7 +191,7 @@ public final class Either<L, R> {
     }
     
     /**
-     * 转换为 Optional
+     * 转换为 Option
      */
     public java.util.Optional<R> toOptional() {
         return isRight() ? java.util.Optional.of(right) : java.util.Optional.empty();

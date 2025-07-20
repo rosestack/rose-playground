@@ -103,13 +103,13 @@ public final class Streams<T> {
     }
 
     /**
-     * 扁平化转换到 Optional
+     * 扁平化转换到 Option
      */
-    public <R> Streams<R> flatMapOption(Function<T, Optional<R>> mapper) {
+    public <R> Streams<R> flatMapOption(Function<T, Option<R>> mapper) {
         Objects.requireNonNull(mapper, "mapper cannot be null");
         return new Streams<>(delegate.flatMap(t -> {
-            Optional<R> optional = mapper.apply(t);
-            return optional.isPresent() ? Stream.of(optional.get()) : Stream.empty();
+            Option<R> option = mapper.apply(t);
+            return option.isPresent() ? Stream.of(option.get()) : Stream.empty();
         }));
     }
 
@@ -143,40 +143,40 @@ public final class Streams<T> {
     /**
      * 查找第一个元素
      */
-    public Optional<T> findFirst() {
-        return delegate.findFirst().map(Optional::some).orElse(Optional.none());
+    public Option<T> findFirst() {
+        return delegate.findFirst().map(Option::some).orElse(Option.none());
     }
 
     /**
      * 查找第一个匹配条件的元素
      */
-    public Optional<T> findFirst(Predicate<T> predicate) {
+    public Option<T> findFirst(Predicate<T> predicate) {
         Objects.requireNonNull(predicate, "predicate cannot be null");
-        return delegate.filter(predicate).findFirst().map(Optional::some).orElse(Optional.none());
+        return delegate.filter(predicate).findFirst().map(Option::some).orElse(Option.none());
     }
 
     /**
      * 获取最大元素
      */
-    public Optional<T> max(Comparator<T> comparator) {
+    public Option<T> max(Comparator<T> comparator) {
         Objects.requireNonNull(comparator, "comparator cannot be null");
-        return delegate.max(comparator).map(Optional::some).orElse(Optional.none());
+        return delegate.max(comparator).map(Option::some).orElse(Option.none());
     }
 
     /**
      * 获取最小元素
      */
-    public Optional<T> min(Comparator<T> comparator) {
+    public Option<T> min(Comparator<T> comparator) {
         Objects.requireNonNull(comparator, "comparator cannot be null");
-        return delegate.min(comparator).map(Optional::some).orElse(Optional.none());
+        return delegate.min(comparator).map(Option::some).orElse(Option.none());
     }
 
     /**
      * 归约操作
      */
-    public Optional<T> reduce(BinaryOperator<T> accumulator) {
+    public Option<T> reduce(BinaryOperator<T> accumulator) {
         Objects.requireNonNull(accumulator, "accumulator cannot be null");
-        return delegate.reduce(accumulator).map(Optional::some).orElse(Optional.none());
+        return delegate.reduce(accumulator).map(Option::some).orElse(Option.none());
     }
 
     /**
