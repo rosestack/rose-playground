@@ -93,8 +93,6 @@ public abstract class ServletUtils {
         // Utility class - prevent instantiation
     }
 
-    // ==================== Constants and Configuration ====================
-
     /**
      * Default character encoding used throughout the application.
      * <p>
@@ -129,38 +127,6 @@ public abstract class ServletUtils {
             "HTTP_X_FORWARDED_FOR",
             "X-Real-IP"
     );
-
-    /**
-     * HTTP method constants for request type detection.
-     * <p>
-     * These constants define the standard HTTP methods supported by the utility class.
-     * They are used for method comparison and request type analysis.
-     */
-    private static final String HTTP_METHOD_GET = "GET";
-    private static final String HTTP_METHOD_POST = "POST";
-    private static final String HTTP_METHOD_PUT = "PUT";
-    private static final String HTTP_METHOD_DELETE = "DELETE";
-    private static final String HTTP_METHOD_PATCH = "PATCH";
-    private static final String HTTP_METHOD_HEAD = "HEAD";
-    private static final String HTTP_METHOD_OPTIONS = "OPTIONS";
-
-    /**
-     * File extension constants for content type detection and static resource identification.
-     * <p>
-     * These constants are used to identify different types of web resources and
-     * determine appropriate content types for responses.
-     */
-    private static final String EXT_JSON = ".json";
-    private static final String EXT_XML = ".xml";
-    private static final String EXT_HTML = ".html";
-    private static final String EXT_HTM = ".htm";
-    private static final String EXT_JS = ".js";
-    private static final String EXT_CSS = ".css";
-    private static final String EXT_PNG = ".png";
-    private static final String EXT_JPG = ".jpg";
-    private static final String EXT_JPEG = ".jpeg";
-    private static final String EXT_GIF = ".gif";
-    private static final String EXT_PDF = ".pdf";
 
     /**
      * Ajax request identification constants.
@@ -243,215 +209,6 @@ public abstract class ServletUtils {
             return defaultValue;
         }
         return StringUtils.defaultIfBlank(request.getParameter(name), defaultValue);
-    }
-
-    /**
-     * Retrieves an integer parameter from the current HTTP request.
-     * <p>
-     * This method provides type-safe integer parameter extraction with automatic
-     * string-to-integer conversion. It handles conversion errors gracefully by
-     * returning null instead of throwing exceptions.
-     *
-     * <p><strong>Conversion Behavior:</strong>
-     * <ul>
-     *   <li>Returns Integer object if parameter exists and is valid number</li>
-     *   <li>Returns null if parameter doesn't exist</li>
-     *   <li>Returns null if parameter cannot be parsed as integer</li>
-     *   <li>Logs warning for parsing failures</li>
-     * </ul>
-     *
-     * @param name The name of the parameter to retrieve and convert. Must not be null.
-     * @return The parameter value as Integer, or null if not found or conversion fails
-     * @see #getParameterToInt(String, Integer)
-     * @see Integer#valueOf(String)
-     */
-    public static Integer getParameterToInt(String name) {
-        return getParameterToInt(name, null);
-    }
-
-    /**
-     * Retrieves an integer parameter from the current HTTP request with a default value.
-     * <p>
-     * This method combines type-safe integer conversion with fallback value support.
-     * It's ideal for numeric parameters that should have reasonable defaults when
-     * not provided or when conversion fails.
-     *
-     * <p><strong>Conversion and Fallback Logic:</strong>
-     * <ol>
-     *   <li>Retrieve string parameter value</li>
-     *   <li>Return defaultValue if parameter is blank or missing</li>
-     *   <li>Attempt integer conversion</li>
-     *   <li>Return converted value on success</li>
-     *   <li>Log warning and return defaultValue on conversion failure</li>
-     * </ol>
-     *
-     * <p><strong>Error Handling:</strong>
-     * Conversion failures are logged at WARN level with parameter name and value
-     * for debugging purposes, but do not throw exceptions.
-     *
-     * @param name         The name of the parameter to retrieve and convert. Must not be null.
-     * @param defaultValue The default value to return if parameter is missing or
-     *                     conversion fails. Can be null.
-     * @return The parameter value as Integer, or defaultValue if conversion fails
-     * @see #getParameterToInt(String)
-     * @see #getParameter(String)
-     */
-    public static Integer getParameterToInt(String name, Integer defaultValue) {
-        String value = getParameter(name);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        try {
-            return Integer.valueOf(value);
-        } catch (NumberFormatException e) {
-            log.warn("Failed to parse parameter '{}' to Integer: {}", name, value);
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Retrieves a long parameter from the current HTTP request.
-     *
-     * @param name The name of the parameter to retrieve and convert
-     * @return The parameter value as Long, or null if not found or conversion fails
-     */
-    public static Long getParameterToLong(String name) {
-        return getParameterToLong(name, null);
-    }
-
-    /**
-     * Retrieves a long parameter from the current HTTP request with a default value.
-     *
-     * @param name         The name of the parameter to retrieve and convert
-     * @param defaultValue The default value to return if parameter is missing or conversion fails
-     * @return The parameter value as Long, or defaultValue if conversion fails
-     */
-    public static Long getParameterToLong(String name, Long defaultValue) {
-        String value = getParameter(name);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        try {
-            return Long.valueOf(value);
-        } catch (NumberFormatException e) {
-            log.warn("Failed to parse parameter '{}' to Long: {}", name, value);
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Retrieves a boolean parameter from the current HTTP request.
-     *
-     * @param name The name of the parameter to retrieve and convert
-     * @return The parameter value as Boolean, or null if not found
-     */
-    public static Boolean getParameterToBool(String name) {
-        return getParameterToBool(name, null);
-    }
-
-    /**
-     * Retrieves a boolean parameter from the current HTTP request with a default value.
-     *
-     * @param name         The name of the parameter to retrieve and convert
-     * @param defaultValue The default value to return if parameter is missing or blank
-     * @return The parameter value as Boolean, or defaultValue if not found
-     */
-    public static Boolean getParameterToBool(String name, Boolean defaultValue) {
-        String value = getParameter(name);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        return Boolean.valueOf(value);
-    }
-
-    /**
-     * Retrieves a double parameter from the current HTTP request.
-     *
-     * @param name The name of the parameter to retrieve and convert
-     * @return The parameter value as Double, or null if not found or conversion fails
-     */
-    public static Double getParameterToDouble(String name) {
-        return getParameterToDouble(name, null);
-    }
-
-    /**
-     * Retrieves a double parameter from the current HTTP request with a default value.
-     *
-     * @param name         The name of the parameter to retrieve and convert
-     * @param defaultValue The default value to return if parameter is missing or conversion fails
-     * @return The parameter value as Double, or defaultValue if conversion fails
-     */
-    public static Double getParameterToDouble(String name, Double defaultValue) {
-        String value = getParameter(name);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        try {
-            return Double.valueOf(value);
-        } catch (NumberFormatException e) {
-            log.warn("Failed to parse parameter '{}' to Double: {}", name, value);
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Retrieves a float parameter from the current HTTP request.
-     *
-     * @param name The name of the parameter to retrieve and convert
-     * @return The parameter value as Float, or null if not found or conversion fails
-     */
-    public static Float getParameterToFloat(String name) {
-        return getParameterToFloat(name, null);
-    }
-
-    /**
-     * Retrieves a float parameter from the current HTTP request with a default value.
-     *
-     * @param name         The name of the parameter to retrieve and convert
-     * @param defaultValue The default value to return if parameter is missing or conversion fails
-     * @return The parameter value as Float, or defaultValue if conversion fails
-     */
-    public static Float getParameterToFloat(String name, Float defaultValue) {
-        String value = getParameter(name);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        try {
-            return Float.valueOf(value);
-        } catch (NumberFormatException e) {
-            log.warn("Failed to parse parameter '{}' to Float: {}", name, value);
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Retrieves a BigDecimal parameter from the current HTTP request.
-     *
-     * @param name The name of the parameter to retrieve and convert
-     * @return The parameter value as BigDecimal, or null if not found or conversion fails
-     */
-    public static java.math.BigDecimal getParameterToBigDecimal(String name) {
-        return getParameterToBigDecimal(name, null);
-    }
-
-    /**
-     * Retrieves a BigDecimal parameter from the current HTTP request with a default value.
-     *
-     * @param name         The name of the parameter to retrieve and convert
-     * @param defaultValue The default value to return if parameter is missing or conversion fails
-     * @return The parameter value as BigDecimal, or defaultValue if conversion fails
-     */
-    public static java.math.BigDecimal getParameterToBigDecimal(String name, java.math.BigDecimal defaultValue) {
-        String value = getParameter(name);
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        try {
-            return new java.math.BigDecimal(value);
-        } catch (NumberFormatException e) {
-            log.warn("Failed to parse parameter '{}' to BigDecimal: {}", name, value);
-            return defaultValue;
-        }
     }
 
     /**
@@ -556,7 +313,7 @@ public abstract class ServletUtils {
     /**
      * Retrieves a request header value by name with a default value.
      *
-     * @param name The header name to retrieve
+     * @param name         The header name to retrieve
      * @param defaultValue The default value to return if header is not found or blank
      * @return The header value or default value if not found
      */
@@ -650,7 +407,7 @@ public abstract class ServletUtils {
      * Renders a string to the client with JSON content type.
      *
      * @param response The HTTP response object
-     * @param string The string content to render
+     * @param string   The string content to render
      */
     public static void renderString(HttpServletResponse response, String string) {
         renderString(response, string, MediaType.APPLICATION_JSON_VALUE);
@@ -743,96 +500,6 @@ public abstract class ServletUtils {
     public static boolean isAjaxRequest() {
         HttpServletRequest request = getRequest();
         return isAjaxRequest(request);
-    }
-
-    /**
-     * Determines if the request is a GET request.
-     *
-     * @param request The HTTP request to check
-     * @return true if the request method is GET, false otherwise
-     */
-    public static boolean isGetRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_GET.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * Determines if the request is a POST request.
-     *
-     * @param request The HTTP request to check
-     * @return true if the request method is POST, false otherwise
-     */
-    public static boolean isPostRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_POST.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * Determines if the request is a PUT request.
-     *
-     * @param request The HTTP request to check
-     * @return true if the request method is PUT, false otherwise
-     */
-    public static boolean isPutRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_PUT.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * Determines if the request is a DELETE request.
-     *
-     * @param request The HTTP request to check
-     * @return true if the request method is DELETE, false otherwise
-     */
-    public static boolean isDeleteRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_DELETE.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * Determines if the request is a PATCH request.
-     *
-     * @param request The HTTP request to check
-     * @return true if the request method is PATCH, false otherwise
-     */
-    public static boolean isPatchRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_PATCH.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * 是否是HEAD请求
-     *
-     * @param request 请求对象
-     * @return 是否是HEAD请求
-     */
-    public static boolean isHeadRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_HEAD.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * 是否是OPTIONS请求
-     *
-     * @param request 请求对象
-     * @return 是否是OPTIONS请求
-     */
-    public static boolean isOptionsRequest(HttpServletRequest request) {
-        return request != null && HTTP_METHOD_OPTIONS.equalsIgnoreCase(request.getMethod());
-    }
-
-    /**
-     * 获取HTTP方法
-     *
-     * @param request 请求对象
-     * @return HTTP方法，如果请求为null返回null
-     */
-    public static String getHttpMethod(HttpServletRequest request) {
-        return request != null ? request.getMethod() : null;
-    }
-
-    /**
-     * 获取HTTP方法（使用当前请求）
-     *
-     * @return HTTP方法
-     */
-    public static String getHttpMethod() {
-        HttpServletRequest request = getRequest();
-        return getHttpMethod(request);
     }
 
     /**
@@ -1016,8 +683,6 @@ public abstract class ServletUtils {
         return getClientIp(request);
     }
 
-    // ==================== Cookie操作方法 ====================
-
     /**
      * 获取Cookie值
      *
@@ -1146,94 +811,5 @@ public abstract class ServletUtils {
     public static String getUserAgent() {
         HttpServletRequest request = getRequest();
         return getUserAgent(request);
-    }
-
-    public static String getReferer(HttpServletRequest request) {
-        return request != null ? request.getHeader(HttpHeaders.REFERER) : null;
-    }
-
-    public static String getReferer() {
-        HttpServletRequest request = getRequest();
-        return getReferer(request);
-    }
-
-    // ==================== 文件类型检测方法 ====================
-
-    /**
-     * 是否是JSON请求
-     *
-     * @param request 请求对象
-     * @return 是否是JSON请求
-     */
-    public static boolean isJsonRequest(HttpServletRequest request) {
-        if (request == null) {
-            return false;
-        }
-
-        // 检查Accept头
-        String accept = request.getHeader(HttpHeaders.ACCEPT);
-        if (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE)) {
-            return true;
-        }
-
-        // 检查Content-Type头
-        String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
-        if (contentType != null && contentType.contains(MediaType.APPLICATION_JSON_VALUE)) {
-            return true;
-        }
-
-        // 检查URI后缀
-        String uri = request.getRequestURI();
-        return StringUtils.endsWithIgnoreCase(uri, EXT_JSON);
-    }
-
-    /**
-     * 是否是XML请求
-     *
-     * @param request 请求对象
-     * @return 是否是XML请求
-     */
-    public static boolean isXmlRequest(HttpServletRequest request) {
-        if (request == null) {
-            return false;
-        }
-
-        // 检查Accept头
-        String accept = request.getHeader(HttpHeaders.ACCEPT);
-        if (accept != null && accept.contains(MediaType.APPLICATION_XML_VALUE)) {
-            return true;
-        }
-
-        // 检查Content-Type头
-        String contentType = request.getHeader(HttpHeaders.CONTENT_TYPE);
-        if (contentType != null && contentType.contains(MediaType.APPLICATION_XML_VALUE)) {
-            return true;
-        }
-
-        // 检查URI后缀
-        String uri = request.getRequestURI();
-        return StringUtils.endsWithIgnoreCase(uri, EXT_XML);
-    }
-
-    /**
-     * 是否是HTML请求
-     *
-     * @param request 请求对象
-     * @return 是否是HTML请求
-     */
-    public static boolean isHtmlRequest(HttpServletRequest request) {
-        if (request == null) {
-            return false;
-        }
-
-        // 检查Accept头
-        String accept = request.getHeader(HttpHeaders.ACCEPT);
-        if (accept != null && accept.contains(MediaType.TEXT_HTML_VALUE)) {
-            return true;
-        }
-
-        // 检查URI后缀
-        String uri = request.getRequestURI();
-        return StringUtils.endsWithIgnoreCase(uri, EXT_HTML) || StringUtils.endsWithIgnoreCase(uri, EXT_HTM);
     }
 }

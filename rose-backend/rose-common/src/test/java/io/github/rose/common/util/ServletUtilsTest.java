@@ -82,55 +82,6 @@ class ServletUtilsTest {
     }
 
     @Test
-    void testGetParameterToInt() {
-        testRequest.addParameter("valid", "123");
-        testRequest.addParameter("invalid", "abc");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(testRequest));
-
-        assertEquals(Integer.valueOf(123), ServletUtils.getParameterToInt("valid"));
-        assertNull(ServletUtils.getParameterToInt("invalid"));
-        assertNull(ServletUtils.getParameterToInt("nonexistent"));
-        assertEquals(Integer.valueOf(0), ServletUtils.getParameterToInt("nonexistent", 0));
-    }
-
-    @Test
-    void testGetParameterToLong() {
-        testRequest.addParameter("valid", "123456789");
-        testRequest.addParameter("invalid", "abc");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(testRequest));
-
-        assertEquals(Long.valueOf(123456789), ServletUtils.getParameterToLong("valid"));
-        assertNull(ServletUtils.getParameterToLong("invalid"));
-        assertNull(ServletUtils.getParameterToLong("nonexistent"));
-        assertEquals(Long.valueOf(0L), ServletUtils.getParameterToLong("nonexistent", 0L));
-    }
-
-    @Test
-    void testGetParameterToBool() {
-        testRequest.addParameter("true", "true");
-        testRequest.addParameter("false", "false");
-        testRequest.addParameter("other", "other");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(testRequest));
-
-        assertTrue(ServletUtils.getParameterToBool("true"));
-        assertFalse(ServletUtils.getParameterToBool("false"));
-        assertFalse(ServletUtils.getParameterToBool("other"));
-        assertNull(ServletUtils.getParameterToBool("nonexistent"));
-    }
-
-    @Test
-    void testGetParameterToDouble() {
-        testRequest.addParameter("valid", "123.45");
-        testRequest.addParameter("invalid", "abc");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(testRequest));
-
-        assertEquals(Double.valueOf(123.45), ServletUtils.getParameterToDouble("valid"));
-        assertNull(ServletUtils.getParameterToDouble("invalid"));
-        assertNull(ServletUtils.getParameterToDouble("nonexistent"));
-        assertEquals(Double.valueOf(0.0), ServletUtils.getParameterToDouble("nonexistent", 0.0));
-    }
-
-    @Test
     void testGetParams() {
         testRequest.addParameter("name", "test");
         testRequest.addParameter("age", "25", "30");
@@ -265,23 +216,6 @@ class ServletUtilsTest {
     }
 
     @Test
-    void testRequestTypeMethods() {
-        testRequest.setMethod("GET");
-        assertTrue(ServletUtils.isGetRequest(testRequest));
-        assertFalse(ServletUtils.isPostRequest(testRequest));
-
-        testRequest.setMethod("POST");
-        assertTrue(ServletUtils.isPostRequest(testRequest));
-        assertFalse(ServletUtils.isGetRequest(testRequest));
-
-        testRequest.setMethod("PUT");
-        assertTrue(ServletUtils.isPutRequest(testRequest));
-
-        testRequest.setMethod("DELETE");
-        assertTrue(ServletUtils.isDeleteRequest(testRequest));
-    }
-
-    @Test
     void testUrlEncodeAndDecode() throws UnsupportedEncodingException {
         String original = "Hello World!";
         String encoded = ServletUtils.urlEncode(original);
@@ -395,58 +329,15 @@ class ServletUtilsTest {
         // 测试各种null情况
         assertNull(ServletUtils.getParameter("test"));
         assertEquals("default", ServletUtils.getParameter("test", "default"));
-        assertNull(ServletUtils.getParameterToInt("test"));
-        assertNull(ServletUtils.getParameterToLong("test"));
-        assertNull(ServletUtils.getParameterToBool("test"));
-        assertNull(ServletUtils.getParameterToDouble("test"));
 
         assertNull(ServletUtils.getHeader("test"));
         assertEquals("default", ServletUtils.getHeader("test", "default"));
 
         assertFalse(ServletUtils.isAjaxRequest((HttpServletRequest) null));
-        assertFalse(ServletUtils.isGetRequest(null));
-        assertFalse(ServletUtils.isPostRequest(null));
-        assertFalse(ServletUtils.isPutRequest(null));
-        assertFalse(ServletUtils.isDeleteRequest(null));
 
         assertNull(ServletUtils.getClientIp((HttpServletRequest) null));
         assertNull(ServletUtils.getFullUrl((HttpServletRequest) null));
         assertNull(ServletUtils.getUserAgent((HttpServletRequest) null));
-    }
-
-    @Test
-    void testNewFeatures() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-
-        // 测试HTTP方法判断
-        request.setMethod("PATCH");
-        assertTrue(ServletUtils.isPatchRequest(request));
-
-        request.setMethod("HEAD");
-        assertTrue(ServletUtils.isHeadRequest(request));
-
-        request.setMethod("OPTIONS");
-        assertTrue(ServletUtils.isOptionsRequest(request));
-
-        // 测试文件类型检测
-        request.setRequestURI("/api/data.json");
-        assertTrue(ServletUtils.isJsonRequest(request));
-
-        request.setRequestURI("/api/data.xml");
-        assertTrue(ServletUtils.isXmlRequest(request));
-
-        request.setRequestURI("/page.html");
-        assertTrue(ServletUtils.isHtmlRequest(request));
-
-        // 测试请求信息获取
-        request.setScheme("https");
-        request.setServerName("example.com");
-        request.setServerPort(443);
-        request.setContextPath("/app");
-        request.setServletPath("/api");
-        request.setPathInfo("/users");
-
     }
 
     @Test
@@ -456,7 +347,5 @@ class ServletUtilsTest {
         request.addParameter("decimal", "123.456789");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-        assertEquals(Float.valueOf(123.45f), ServletUtils.getParameterToFloat("float"));
-        assertEquals(java.math.BigDecimal.valueOf(123.456789), ServletUtils.getParameterToBigDecimal("decimal"));
     }
 }
