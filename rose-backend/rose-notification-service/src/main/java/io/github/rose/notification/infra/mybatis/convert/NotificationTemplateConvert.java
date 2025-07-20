@@ -1,6 +1,6 @@
 package io.github.rose.notification.infra.mybatis.convert;
 
-import io.github.rose.notification.domain.model.NotificationTemplate;
+import io.github.rose.notification.domain.entity.NotificationTemplate;
 import io.github.rose.notification.infra.mybatis.entity.NotificationTemplateEntity;
 
 public class NotificationTemplateConvert {

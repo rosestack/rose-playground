@@ -1,19 +1,24 @@
 package io.github.rose.notification.infra.mybatis.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.github.rose.notification.domain.model.Notification;
+import io.github.rose.notification.domain.entity.Notification;
 import io.github.rose.notification.domain.repository.NotificationRepository;
+import io.github.rose.notification.domain.value.NotificationStatus;
 import io.github.rose.notification.infra.mybatis.convert.NotificationConvert;
 import io.github.rose.notification.infra.mybatis.entity.NotificationEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+import java.util.Optional;
+
 
 @Mapper
 public interface NotificationMapper extends BaseMapper<NotificationEntity>, NotificationRepository {
-    default Notification findById(String id) {
-        return NotificationConvert.toDomain(selectById(id));
+    default Optional<Notification> findById(String id) {
+        NotificationEntity entity = selectById(id);
+        return entity != null ? Optional.of(NotificationConvert.toDomain(entity)) : Optional.empty();
     }
 
     default void save(Notification notification) {
@@ -31,7 +36,35 @@ public interface NotificationMapper extends BaseMapper<NotificationEntity>, Noti
     @Select("SELECT * FROM notification WHERE request_id = #{requestId} LIMIT 1")
     NotificationEntity selectByRequestId(@Param("requestId") String requestId);
 
-    default Notification findByRequestId(String requestId) {
-        return NotificationConvert.toDomain(selectByRequestId(requestId));
+    default Optional<Notification> findByRequestId(String requestId) {
+        NotificationEntity entity = selectByRequestId(requestId);
+        return entity != null ? Optional.of(NotificationConvert.toDomain(entity)) : Optional.empty();
+    }
+
+    @Select("SELECT * FROM notification WHERE tenant_id = #{tenantId}")
+    List<NotificationEntity> selectByTenantId(@Param("tenantId") String tenantId);
+
+    default List<Notification> findByTenantId(String tenantId) {
+        return selectByTenantId(tenantId).stream()
+                .map(NotificationConvert::toDomain)
+                .toList();
+    }
+
+    @Select("SELECT * FROM notification WHERE target = #{target}")
+    List<NotificationEntity> selectByTarget(@Param("target") String target);
+
+    default List<Notification> findByTarget(String target) {
+        return selectByTarget(target).stream()
+                .map(NotificationConvert::toDomain)
+                .toList();
+    }
+
+    @Select("SELECT * FROM notification WHERE status = #{status}")
+    List<NotificationEntity> selectByStatus(@Param("status") String status);
+
+    default List<Notification> findByStatus(NotificationStatus status) {
+        return selectByStatus(status.name()).stream()
+                .map(NotificationConvert::toDomain)
+                .toList();
     }
 }

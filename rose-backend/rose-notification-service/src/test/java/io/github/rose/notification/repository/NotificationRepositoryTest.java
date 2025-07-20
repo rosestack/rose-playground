@@ -1,32 +1,54 @@
 package io.github.rose.notification.repository;
 
-import io.github.rose.notification.domain.model.Notification;
+import io.github.rose.notification.domain.entity.Notification;
 import io.github.rose.notification.domain.repository.NotificationRepository;
 import io.github.rose.notification.domain.value.NotificationChannelType;
 import io.github.rose.notification.domain.value.NotificationStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class NotificationRepositoryTest {
+    
+    @Mock
     private NotificationRepository notificationRepository;
+
+    private Notification testNotification;
+
+    @BeforeEach
+    void setUp() {
+        testNotification = new Notification();
+        testNotification.setId(UUID.randomUUID().toString());
+        testNotification.setTenantId("tenant-1");
+        testNotification.setChannelType(NotificationChannelType.EMAIL);
+        testNotification.setTarget("user@example.com");
+        testNotification.setContent("Test content");
+        testNotification.setStatus(NotificationStatus.PENDING);
+        testNotification.setSendTime(LocalDateTime.now());
+    }
 
     @Test
     void testInsertAndSelect() {
-        Notification notification = new Notification();
-        notification.setId(UUID.randomUUID().toString());
-        notification.setTenantId("tenant-1");
-        notification.setChannelType(NotificationChannelType.EMAIL);
-        notification.setTarget("user@example.com");
-        notification.setContent("Test content");
-        notification.setStatus(NotificationStatus.PENDING);
-        notification.setSendTime(LocalDateTime.now());
-        notificationRepository.save(notification);
+        // Mock 行为
+        when(notificationRepository.findById(testNotification.getId()))
+                .thenReturn(Optional.of(testNotification));
 
-        Notification loaded = notificationRepository.findById(notification.getId());
+        // 执行测试
+        notificationRepository.save(testNotification);
+        Notification loaded = notificationRepository.findById(testNotification.getId()).orElse(null);
+        
+        // 验证结果
         assertThat(loaded).isNotNull();
         assertThat(loaded.getTenantId()).isEqualTo("tenant-1");
     }

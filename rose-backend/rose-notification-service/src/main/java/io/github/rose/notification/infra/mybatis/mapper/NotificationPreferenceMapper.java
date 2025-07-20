@@ -2,17 +2,20 @@ package io.github.rose.notification.infra.mybatis.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import io.github.rose.notification.domain.model.NotificationPreference;
+import io.github.rose.notification.domain.entity.NotificationPreference;
 import io.github.rose.notification.domain.repository.NotificationPreferenceRepository;
 import io.github.rose.notification.infra.mybatis.convert.NotificationPreferenceConvert;
 import io.github.rose.notification.infra.mybatis.entity.NotificationPreferenceEntity;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Optional;
+
 
 @Mapper
 public interface NotificationPreferenceMapper extends BaseMapper<NotificationPreferenceEntity>, NotificationPreferenceRepository {
-    default NotificationPreference findById(String id) {
-        return NotificationPreferenceConvert.toDomain(selectById(id));
+    default Optional<NotificationPreference> findById(String id) {
+        NotificationPreferenceEntity entity = selectById(id);
+        return entity != null ? Optional.of(NotificationPreferenceConvert.toDomain(entity)) : Optional.empty();
     }
 
     default void save(NotificationPreference notificationPreference) {

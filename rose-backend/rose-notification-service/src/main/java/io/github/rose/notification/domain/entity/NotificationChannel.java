@@ -1,4 +1,4 @@
-package io.github.rose.notification.domain.model;
+package io.github.rose.notification.domain.entity;
 
 import io.github.rose.notification.domain.value.NotificationChannelType;
 import lombok.Data;

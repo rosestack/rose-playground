@@ -5,10 +5,10 @@ import io.github.rose.notice.NoticeService;
 import io.github.rose.notice.SendRequest;
 import io.github.rose.notice.SendResult;
 import io.github.rose.notification.application.command.SendNotificationCommand;
-import io.github.rose.notification.domain.model.Notification;
-import io.github.rose.notification.domain.model.NotificationChannel;
-import io.github.rose.notification.domain.model.NotificationTemplate;
-import io.github.rose.notification.domain.model.NotificationTemplateChannel;
+import io.github.rose.notification.domain.entity.Notification;
+import io.github.rose.notification.domain.entity.NotificationChannel;
+import io.github.rose.notification.domain.entity.NotificationTemplate;
+import io.github.rose.notification.domain.entity.NotificationTemplateChannel;
 import io.github.rose.notification.domain.repository.NotificationChannelRepository;
 import io.github.rose.notification.domain.repository.NotificationRepository;
 import io.github.rose.notification.domain.repository.NotificationTemplateChannelRepository;
@@ -55,11 +55,11 @@ public class NotificationApplicationService {
 
     @Transactional(rollbackFor = Exception.class)
     public void sendNotification(SendNotificationCommand cmd) {
-        NotificationTemplate template = templateRepository.findByIdAndLang(cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage());
-        if (template == null) {
-            log.warn("模板不存在，templateId={}, lang={}", cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage());
-            throw new BusinessException("模板不存在");
-        }
+        NotificationTemplate template = templateRepository.findByIdAndLang(cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage())
+                .orElseThrow(() -> {
+                    log.warn("模板不存在，templateId={}, lang={}", cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage());
+                    return new BusinessException("模板不存在");
+                });
 
         List<NotificationTemplateChannel> notificationTemplateChannels = notificationTemplateChannelRepository.findByTemplateId(cmd.getTemplateId());
         if (notificationTemplateChannels == null || notificationTemplateChannels.isEmpty()) {
@@ -69,11 +69,11 @@ public class NotificationApplicationService {
 
         for (NotificationTemplateChannel notificationTemplateChannel : notificationTemplateChannels) {
             String channelId = notificationTemplateChannel.getChannelId();
-            NotificationChannel channel = notificationChannelRepository.findById(channelId);
-            if (channel == null) {
-                log.warn("渠道不存在，channelId={}", channelId);
-                throw new BusinessException("渠道不存在，channelId=" + channelId);
-            }
+            NotificationChannel channel = notificationChannelRepository.findById(channelId)
+                    .orElseThrow(() -> {
+                        log.warn("渠道不存在，channelId={}", channelId);
+                        return new BusinessException("渠道不存在，channelId=" + channelId);
+                    });
 
             SendRequest sendRequest = SendRequest.builder()
                     .channelType(channel.getChannelType().name().toLowerCase(Locale.ROOT))

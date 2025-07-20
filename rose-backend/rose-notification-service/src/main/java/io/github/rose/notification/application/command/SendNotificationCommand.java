@@ -3,12 +3,14 @@ package io.github.rose.notification.application.command;
 import io.github.rose.notification.domain.value.TargetType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@Builder
 public class SendNotificationCommand {
     /**
      * 幂等ID/请求ID，强烈建议由调用方生成（如UUID）
