@@ -155,8 +155,6 @@ public abstract class ServletUtils {
     private static final Map<String, String> URL_DECODE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, String> URL_ENCODE_CACHE = new ConcurrentHashMap<>();
 
-    // ==================== Request Parameter Extraction Methods ====================
-
     /**
      * Retrieves a string parameter from the current HTTP request.
      * <p>
@@ -404,16 +402,6 @@ public abstract class ServletUtils {
     }
 
     /**
-     * Renders a string to the client with JSON content type.
-     *
-     * @param response The HTTP response object
-     * @param string   The string content to render
-     */
-    public static void renderString(HttpServletResponse response, String string) {
-        renderString(response, string, MediaType.APPLICATION_JSON_VALUE);
-    }
-
-    /**
      * 将字符串渲染到客户端
      *
      * @param response    响应对象
@@ -440,26 +428,6 @@ public abstract class ServletUtils {
      */
     public static void renderJson(HttpServletResponse response, String json) {
         renderString(response, json, MediaType.APPLICATION_JSON_VALUE);
-    }
-
-    /**
-     * 将XML字符串渲染到客户端
-     *
-     * @param response 响应对象
-     * @param xml      XML字符串
-     */
-    public static void renderXml(HttpServletResponse response, String xml) {
-        renderString(response, xml, MediaType.APPLICATION_XML_VALUE);
-    }
-
-    /**
-     * 将HTML字符串渲染到客户端
-     *
-     * @param response 响应对象
-     * @param html     HTML字符串
-     */
-    public static void renderHtml(HttpServletResponse response, String html) {
-        renderString(response, html, MediaType.TEXT_HTML_VALUE);
     }
 
     /**

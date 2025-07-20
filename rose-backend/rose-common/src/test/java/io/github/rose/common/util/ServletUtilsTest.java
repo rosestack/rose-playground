@@ -172,24 +172,6 @@ class ServletUtilsTest {
     }
 
     @Test
-    void testRenderXml() throws UnsupportedEncodingException {
-        ServletUtils.renderXml(testResponse, "<root><name>test</name></root>");
-
-        assertEquals(200, testResponse.getStatus());
-        assertEquals("application/xml;charset=UTF-8", testResponse.getContentType().toString());
-        assertEquals("<root><name>test</name></root>", testResponse.getContentAsString());
-    }
-
-    @Test
-    void testRenderHtml() throws UnsupportedEncodingException {
-        ServletUtils.renderHtml(testResponse, "<html><body>test</body></html>");
-
-        assertEquals(200, testResponse.getStatus());
-        assertEquals("text/html;charset=UTF-8", testResponse.getContentType().toString());
-        assertEquals("<html><body>test</body></html>", testResponse.getContentAsString());
-    }
-
-    @Test
     void testIsAjaxRequest() {
         // 测试Accept头
         testRequest.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
