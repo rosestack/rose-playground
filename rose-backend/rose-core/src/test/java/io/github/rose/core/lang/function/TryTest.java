@@ -1,5 +1,7 @@
-package io.github.rose.core.lang.function.core;
+package io.github.rose.core.lang.function;
 
+import io.github.rose.core.lang.function.Option;
+import io.github.rose.core.lang.function.Try;
 import io.github.rose.core.lang.function.checked.*;
 import org.junit.jupiter.api.Test;
 
@@ -7,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -503,24 +504,5 @@ class TryTest {
         Option<String> option = result.toOption();
 
         assertFalse(option.isPresent());
-    }
-
-    @Test
-    void testToEitherSuccess() {
-        Try<String> result = Try.success("value");
-        Either<Throwable, String> either = result.toEither();
-
-        assertTrue(either.isRight());
-        assertEquals("value", either.getRight());
-    }
-
-    @Test
-    void testToEitherFailure() {
-        RuntimeException exception = new RuntimeException("error");
-        Try<String> result = Try.failure(exception);
-        Either<Throwable, String> either = result.toEither();
-
-        assertFalse(either.isRight());
-        assertEquals(exception, either.getLeft());
     }
 }

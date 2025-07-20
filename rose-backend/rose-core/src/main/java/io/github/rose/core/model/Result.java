@@ -67,10 +67,6 @@ public class Result<T> {
         return new Result(FAIL, message, null);
     }
 
-    public static <T> Result<T> failure(String message, T data) {
-        return new Result(FAIL, message, data);
-    }
-
     public static <T> Boolean isFailure(Result<T> ret) {
         return !isSuccess(ret);
     }

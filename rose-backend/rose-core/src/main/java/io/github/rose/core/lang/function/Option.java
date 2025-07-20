@@ -1,4 +1,4 @@
-package io.github.rose.core.lang.function.core;
+package io.github.rose.core.lang.function;
 
 import io.github.rose.core.lang.function.checked.CheckedFunction;
 
@@ -149,7 +149,7 @@ public final class Option<T> {
     /**
      * 转换值（可能抛出异常）（重载）
      */
-    public <R> Option<R> map(CheckedFunction<T, R> mapper) {
+    public <R> Option<R> mapChecked(CheckedFunction<T, R> mapper) {
         Objects.requireNonNull(mapper, "mapper cannot be null");
         if (isPresent) {
             try {
@@ -212,13 +212,6 @@ public final class Option<T> {
      */
     public Try<T> toTry() {
         return isPresent ? Try.success(value) : Try.failure(new IllegalStateException("Option is empty"));
-    }
-
-    /**
-     * 转换为 Either
-     */
-    public Either<String, T> toEither() {
-        return isPresent ? Either.right(value) : Either.left("Option is empty");
     }
 
     /**

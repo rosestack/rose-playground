@@ -1,4 +1,4 @@
-package io.github.rose.core.lang.function.core;
+package io.github.rose.core.lang.function;
 
 import io.github.rose.core.lang.function.checked.*;
 
@@ -150,14 +150,6 @@ public final class Try<T> {
     public Option<T> toOption() {
         return isSuccess ? Option.some(value) : Option.none();
     }
-
-    /**
-     * 转换为 Either
-     */
-    public Either<Throwable, T> toEither() {
-        return isSuccess ? Either.right(value) : Either.left(cause);
-    }
-
 
     /**
      * 创建成功的 Try

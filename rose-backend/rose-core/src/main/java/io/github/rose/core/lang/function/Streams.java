@@ -1,4 +1,4 @@
-package io.github.rose.core.lang.function.core;
+package io.github.rose.core.lang.function;
 
 import io.github.rose.core.lang.function.checked.CheckedConsumer;
 import io.github.rose.core.lang.function.checked.CheckedFunction;

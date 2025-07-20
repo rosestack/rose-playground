@@ -1,6 +1,6 @@
 package io.github.rose.common.config;
 
-import io.github.rose.core.util.SpringThreadUtils;
+// import io.github.rose.core.util.SpringThreadUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -47,7 +47,7 @@ public class ThreadPoolConfig {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 super.afterExecute(r, t);
-                SpringThreadUtils.printException(r, t);
+                // SpringThreadUtils.printException(r, t);
             }
         };
     }
