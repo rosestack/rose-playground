@@ -3,10 +3,9 @@ package io.github.rose.core.lang.function.core;
 import io.github.rose.core.lang.function.checked.*;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * 简化的异常处理容器
@@ -16,7 +15,6 @@ import java.util.function.Supplier;
  * @author rose
  */
 public final class Try<T> {
-
     private final T value;
     private final Throwable cause;
     private final boolean isSuccess;
@@ -97,21 +95,6 @@ public final class Try<T> {
     }
 
     /**
-     * 转换成功值
-     */
-    public <R> Try<R> map(Function<T, R> mapper) {
-        if (isSuccess) {
-            try {
-                return success(mapper.apply(value));
-            } catch (Throwable e) {
-                return failure(e);
-            }
-        } else {
-            return failure(cause);
-        }
-    }
-
-    /**
      * 转换成功值（可能抛出异常）
      */
     public <R> Try<R> map(CheckedFunction<T, R> mapper) {
@@ -141,20 +124,6 @@ public final class Try<T> {
         }
     }
 
-    /**
-     * 恢复失败
-     */
-    public Try<T> recover(Function<Throwable, T> recovery) {
-        if (isSuccess) {
-            return this;
-        } else {
-            try {
-                return success(recovery.apply(cause));
-            } catch (Throwable e) {
-                return failure(e);
-            }
-        }
-    }
 
     /**
      * 恢复失败（可能抛出异常）
@@ -174,9 +143,21 @@ public final class Try<T> {
     /**
      * 转换为 Option
      */
-    public java.util.Optional<T> toOptional() {
-        return isSuccess ? java.util.Optional.of(value) : java.util.Optional.empty();
+    public Optional<T> toOptional() {
+        return isSuccess ? Optional.of(value) : Optional.empty();
     }
+
+    public Option<T> toOption() {
+        return isSuccess ? Option.some(value) : Option.none();
+    }
+
+    /**
+     * 转换为 Either
+     */
+    public Either<Throwable, T> toEither() {
+        return isSuccess ? Either.right(value) : Either.left(cause);
+    }
+
 
     /**
      * 创建成功的 Try
@@ -192,22 +173,11 @@ public final class Try<T> {
         return new Try<>(null, Objects.requireNonNull(error), false);
     }
 
-    /**
-     * 从可能抛出异常的 Supplier 创建 Try
-     */
-    public static <T> Try<T> of(Supplier<T> supplier) {
-        Objects.requireNonNull(supplier, "supplier cannot be null");
-        try {
-            return success(supplier.get());
-        } catch (Throwable e) {
-            return failure(e);
-        }
+    public static <T> Try<T> ofSupplier(Supplier<T> supplier) {
+        return ofCheckedSupplier(CheckedSupplier.from(supplier));
     }
 
-    /**
-     * 从可能抛出异常的函数创建 Try
-     */
-    public static <T> Try<T> ofSupplier(CheckedSupplier<T> supplier) {
+    public static <T> Try<T> ofCheckedSupplier(CheckedSupplier<T> supplier) {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         try {
             return success(supplier.get());
@@ -217,18 +187,13 @@ public final class Try<T> {
     }
 
     public static <T, R> Try<R> ofFunction(T input, Function<T, R> function) {
-        Objects.requireNonNull(function, "function cannot be null");
-        try {
-            return success(function.apply(input));
-        } catch (Throwable e) {
-            return failure(e);
-        }
+        return ofCheckedFunction(input, CheckedFunction.from(function));
     }
 
     /**
      * 从 CheckedFunction 创建 Try
      */
-    public static <T, R> Try<R> ofFunction(T input, CheckedFunction<T, R> function) {
+    public static <T, R> Try<R> ofCheckedFunction(T input, CheckedFunction<T, R> function) {
         Objects.requireNonNull(function, "function cannot be null");
         try {
             return success(function.apply(input));
@@ -237,10 +202,14 @@ public final class Try<T> {
         }
     }
 
+    public static <T, U, R> Try<R> ofBiFunction(T t, U u, BiFunction<T, U, R> function) {
+        return ofCheckedBiFunction(t, u, CheckedBiFunction.from(function));
+    }
+
     /**
      * 从 CheckedBiFunction 创建 Try
      */
-    public static <T, U, R> Try<R> ofFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
+    public static <T, U, R> Try<R> ofCheckedBiFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
         Objects.requireNonNull(function, "function cannot be null");
         try {
             return success(function.apply(t, u));
@@ -249,10 +218,14 @@ public final class Try<T> {
         }
     }
 
+    public static <T> Try<Void> ofConsumer(T input, Consumer<T> consumer) {
+        return ofCheckedConsumer(input, CheckedConsumer.from(consumer));
+    }
+
     /**
      * 从 CheckedConsumer 创建 Try<Void>
      */
-    public static <T> Try<Void> ofConsumer(T input, CheckedConsumer<T> consumer) {
+    public static <T> Try<Void> ofCheckedConsumer(T input, CheckedConsumer<T> consumer) {
         Objects.requireNonNull(consumer, "consumer cannot be null");
         try {
             consumer.accept(input);
@@ -262,10 +235,14 @@ public final class Try<T> {
         }
     }
 
+    public static <T, U> Try<Void> ofBiConsumer(T t, U u, BiConsumer<T, U> consumer) {
+        return ofCheckedBiConsumer(t, u, CheckedBiConsumer.from(consumer));
+    }
+
     /**
      * 从 CheckedBiConsumer 创建 Try<Void>
      */
-    public static <T, U> Try<Void> ofConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
+    public static <T, U> Try<Void> ofCheckedBiConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
         Objects.requireNonNull(consumer, "consumer cannot be null");
         try {
             consumer.accept(t, u);
@@ -289,14 +266,9 @@ public final class Try<T> {
         }
     }
 
-    static Try<Void> ofRunnable(Runnable runnable) {
-        Objects.requireNonNull(runnable, "runnable is null");
-        return ofRunnable((CheckedRunnable) runnable::run);
-    }
-
     public static <T> Try<T> ofCallable(Callable<T> callable) {
         Objects.requireNonNull(callable, "callable cannot be null");
-        return ofSupplier(callable::call);
+        return ofCheckedSupplier(callable::call);
     }
 
     /**
@@ -314,7 +286,7 @@ public final class Try<T> {
     /**
      * 从 CheckedBiPredicate 创建 Try
      */
-    public static <T, U> Try<Boolean> ofPredicate(T t, U u, CheckedBiPredicate<T, U> predicate) {
+    public static <T, U> Try<Boolean> ofBiPredicate(T t, U u, CheckedBiPredicate<T, U> predicate) {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         try {
             return success(predicate.test(t, u));
@@ -323,12 +295,6 @@ public final class Try<T> {
         }
     }
 
-    /**
-     * 转换为 Either
-     */
-    public Either<Throwable, T> toEither() {
-        return isSuccess ? Either.right(value) : Either.left(cause);
-    }
 
     @Override
     public boolean equals(Object obj) {

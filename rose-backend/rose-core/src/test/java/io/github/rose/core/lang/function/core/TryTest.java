@@ -1,79 +1,169 @@
 package io.github.rose.core.lang.function.core;
 
-import io.github.rose.core.lang.function.checked.CheckedFunction;
-import io.github.rose.core.lang.function.checked.CheckedRunnable;
-import io.github.rose.core.lang.function.checked.CheckedSupplier;
+import io.github.rose.core.lang.function.checked.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Try 测试类
- * 测试函数式异常处理容器的功能
+ * 基于实际代码的全面测试覆盖
  */
 class TryTest {
 
+    // ========== 基本构造和状态测试 ==========
+
     @Test
-    void testOfFunctionSuccess() {
-        // 测试成功的函数执行
-        Try<String> result = Try.ofFunction("hello", (CheckedFunction<String, String>) String::toUpperCase);
+    void testSuccessCreation() {
+        Try<String> result = Try.success("hello");
 
         assertTrue(result.isSuccess());
         assertFalse(result.isFailure());
-        assertEquals("HELLO", result.get());
-
-        // 成功时getCause应该抛出异常
+        assertEquals("hello", result.get());
         assertThrows(IllegalStateException.class, result::getCause);
     }
 
     @Test
-    void testOfFunctionFailure() {
-        // 测试失败的函数执行
-        Try<String> result = Try.ofFunction(null, (CheckedFunction<String, String>) String::toUpperCase);
+    void testFailureCreation() {
+        RuntimeException exception = new RuntimeException("test error");
+        Try<String> result = Try.failure(exception);
 
         assertFalse(result.isSuccess());
         assertTrue(result.isFailure());
-        assertNotNull(result.getCause());
-        assertTrue(result.getCause() instanceof NullPointerException);
-
-        // get()应该抛出异常
+        assertEquals(exception, result.getCause());
         assertThrows(RuntimeException.class, result::get);
     }
 
     @Test
-    void testOfSupplierSuccess() {
-        // 测试成功的Supplier执行
-        Try<String> result = Try.of(() -> "success");
+    void testFailureWithNullThrowable() {
+        assertThrows(NullPointerException.class, () -> Try.failure(null));
+    }
+
+    // ========== of 方法测试 ==========
+    @Test
+    void testOfCheckedSupplierWithNull() {
+        assertThrows(NullPointerException.class, () -> Try.ofCheckedSupplier(null));
+    }
+
+    // ========== ofSupplier (CheckedSupplier) 测试 ==========
+
+    @Test
+    void testOfCheckedSupplierSuccess() {
+        Try<String> result = Try.ofCheckedSupplier(() -> "checked success");
 
         assertTrue(result.isSuccess());
-        assertEquals("success", result.get());
+        assertEquals("checked success", result.get());
     }
 
     @Test
-    void testOfSupplierFailure() {
-        // 测试失败的Supplier执行
-        Try<String> result = Try.of(() -> {
-            throw new RuntimeException("测试异常");
+    void testOfCheckedSupplierFailure() {
+        Try<String> result = Try.ofCheckedSupplier(() -> {
+            throw new Exception("checked supplier error");
         });
 
         assertTrue(result.isFailure());
-        assertEquals("测试异常", result.getCause().getMessage());
+        assertEquals("checked supplier error", result.getCause().getMessage());
+    }
+
+    // ========== ofFunction 测试 ==========
+
+    @Test
+    void testOfFunctionSuccess() {
+        Try<String> result = Try.ofFunction("hello", String::toUpperCase);
+
+        assertTrue(result.isSuccess());
+        assertEquals("HELLO", result.get());
     }
 
     @Test
-    void testOfRunnableSuccess() {
-        // 测试成功的Runnable执行
+    void testOfFunctionFailure() {
+        Try<String> result = Try.ofFunction((String) null, String::toUpperCase);
+
+        assertTrue(result.isFailure());
+        assertTrue(result.getCause() instanceof NullPointerException);
+    }
+
+    @Test
+    void testOfFunctionWithNullFunction() {
+        assertThrows(NullPointerException.class, () ->
+                Try.ofFunction("input", null));
+    }
+
+    // ========== ofBiFunction 测试 ==========
+
+    @Test
+    void testOfBiFunctionSuccess() {
+        Try<String> result = Try.ofBiFunction("hello", " world", (s1, s2) -> s1 + s2);
+
+        assertTrue(result.isSuccess());
+        assertEquals("hello world", result.get());
+    }
+
+    @Test
+    void testOfBiFunctionFailure() {
+        Try<String> result = Try.ofBiFunction("hello", (String) null, (s1, s2) -> s1 + s2.toUpperCase());
+
+
+        assertTrue(result.isFailure());
+        assertTrue(result.getCause() instanceof NullPointerException);
+    }
+
+    // ========== ofConsumer 测试 ==========
+
+    @Test
+    void testOfConsumerSuccess() {
         AtomicBoolean executed = new AtomicBoolean(false);
-        Try<Void> result = Try.ofRunnable((CheckedRunnable) () -> executed.set(true));
+        Try<Void> result = Try.ofConsumer("input", input -> executed.set(true));
+
+        assertTrue(result.isSuccess());
+        assertTrue(executed.get());
+        assertNull(result.get());
+    }
+
+    @Test
+    void testOfConsumerFailure() {
+        Try<Void> result = Try.ofConsumer("input", input -> {
+            throw new RuntimeException("consumer error");
+        });
+
+        assertTrue(result.isFailure());
+        assertEquals("consumer error", result.getCause().getMessage());
+    }
+
+    // ========== ofBiConsumer 测试 ==========
+
+    @Test
+    void testOfBiConsumerSuccess() {
+        AtomicInteger sum = new AtomicInteger(0);
+        Try<Void> result = Try.ofBiConsumer(5, 3, (a, b) -> sum.set(a + b));
+
+        assertTrue(result.isSuccess());
+        assertEquals(8, sum.get());
+        assertNull(result.get());
+    }
+
+    @Test
+    void testOfBiConsumerFailure() {
+        Try<Void> result = Try.ofBiConsumer(1, 2, (a, b) -> {
+            throw new RuntimeException("bi-consumer error");
+        });
+
+        assertTrue(result.isFailure());
+        assertEquals("bi-consumer error", result.getCause().getMessage());
+    }
+
+    // ========== ofRunnable 测试 ==========
+
+    @Test
+    void testOfRunnableSuccess() {
+        AtomicBoolean executed = new AtomicBoolean(false);
+        Try<Void> result = Try.ofRunnable(() -> executed.set(true));
 
         assertTrue(result.isSuccess());
         assertTrue(executed.get());
@@ -82,273 +172,355 @@ class TryTest {
 
     @Test
     void testOfRunnableFailure() {
-        // 测试失败的Runnable执行
-        Try<Void> result = Try.ofRunnable((CheckedRunnable) () -> {
-            throw new RuntimeException("Runnable异常");
+        Try<Void> result = Try.ofRunnable(() -> {
+            throw new RuntimeException("runnable error");
         });
 
         assertTrue(result.isFailure());
-        assertEquals("Runnable异常", result.getCause().getMessage());
+        assertEquals("runnable error", result.getCause().getMessage());
     }
 
     @Test
-    void testMap() {
-        // 测试map操作
-        Try<String> original = Try.of(() -> "hello");
-        Try<String> mapped = original.map((Function<String, String>) String::toUpperCase);
-
-        assertTrue(mapped.isSuccess());
-        assertEquals("HELLO", mapped.get());
-
-        // 测试失败情况下的map
-        Try<String> failed = Try.ofFunction(null, (CheckedFunction<String, String>) String::toUpperCase);
-        Try<String> mappedFailed = failed.map((Function<String, String>) String::toLowerCase);
-
-        assertTrue(mappedFailed.isFailure());
-        assertEquals(failed.getCause().getClass(), mappedFailed.getCause().getClass());
-    }
-
-    @Test
-    void testFlatMap() {
-        // 测试flatMap操作
-        Try<String> original = Try.of(() -> "hello");
-        Try<String> flatMapped = original.flatMap(s -> Try.ofFunction(s, (CheckedFunction<String, String>) String::toUpperCase));
-
-        assertTrue(flatMapped.isSuccess());
-        assertEquals("HELLO", flatMapped.get());
-
-        // 测试flatMap返回失败的情况
-        Try<String> flatMappedFailed = original.flatMap(s -> Try.of(() -> {
-            throw new RuntimeException("flatMap异常");
-        }));
-
-        assertTrue(flatMappedFailed.isFailure());
-        assertEquals("flatMap异常", flatMappedFailed.getCause().getMessage());
-    }
-
-    @Test
-    void testRecover() {
-        // 测试recover操作
-        Try<String> failed = Try.ofFunction(null, (CheckedFunction<String, String>) String::toUpperCase);
-        Try<String> recovered = failed.recover((Function<Throwable, String>) throwable -> "recovered");
-
-        assertTrue(recovered.isSuccess());
-        assertEquals("recovered", recovered.get());
-
-        // 测试成功情况下的recover
-        Try<String> success = Try.of(() -> "hello");
-        Try<String> notRecovered = success.recover((Function<Throwable, String>) throwable -> "should not be called");
-
-        assertTrue(notRecovered.isSuccess());
-        assertEquals("hello", notRecovered.get());
-    }
-
-    @Test
-    void testGetOrElse() {
-        // 测试getOrElse操作
-        Try<String> failed = Try.ofFunction(null, (CheckedFunction<String, String>) String::toUpperCase);
-        String result = failed.getOrElse("default");
-        assertEquals("default", result);
-
-        // 测试成功情况下的getOrElse
-        Try<String> success = Try.of(() -> "hello");
-        String successResult = success.getOrElse("default");
-        assertEquals("hello", successResult);
-    }
-
-    @Test
-    void testGetOrElseGet() {
-        // 测试getOrElseGet操作
-        Try<String> failed = Try.ofFunction(null, (CheckedFunction<String, String>) String::toUpperCase);
-        String result = failed.getOrElseGet(() -> "lazy default");
-        assertEquals("lazy default", result);
-
-        // 验证Supplier只在失败时被调用
-        AtomicBoolean supplierCalled = new AtomicBoolean(false);
-        Try<String> success = Try.of(() -> "hello");
-        String successResult = success.getOrElseGet(() -> {
-            supplierCalled.set(true);
-            return "should not be called";
-        });
-
-        assertEquals("hello", successResult);
-        assertFalse(supplierCalled.get());
-    }
-
-    @Test
-    void testToOptional() {
-        // 测试转换为Optional
-        Try<String> success = Try.of(() -> "hello");
-        java.util.Optional<String> optional = success.toOptional();
-
-        assertTrue(optional.isPresent());
-        assertEquals("hello", optional.get());
-
-        // 测试失败情况
-        Try<String> failed = Try.ofFunction(null, (CheckedFunction<String, String>) String::toUpperCase);
-        java.util.Optional<String> emptyOptional = failed.toOptional();
-
-        assertFalse(emptyOptional.isPresent());
-    }
-
-    @Test
-    void testChaining() {
-        // 测试链式操作
-        Try<String> result = Try.of(() -> "  hello world  ")
-            .map((Function<String, String>) String::trim)
-            .map((Function<String, String>) String::toUpperCase)
-            .map((Function<String, String>) s -> s.replace("WORLD", "JAVA"));
+    void testOfRunnableWithJavaRunnable() {
+        AtomicBoolean executed = new AtomicBoolean(false);
+        Runnable runnable = () -> executed.set(true);
+        Try<Void> result = Try.ofRunnable(CheckedRunnable.from(runnable));
 
         assertTrue(result.isSuccess());
-        assertEquals("HELLO JAVA", result.get());
+        assertTrue(executed.get());
     }
 
+    // ========== ofCallable 测试 ==========
+
     @Test
-    void testComplexChaining() {
-        // 测试复杂的链式操作
-        Try<Integer> result = Try.of(() -> "123")
-            .map((Function<String, String>) String::trim)
-            .flatMap(s -> Try.ofFunction(s, (CheckedFunction<String, Integer>) Integer::parseInt))
-            .map((Function<Integer, Integer>) i -> i * 2);
+    void testOfCallableSuccess() {
+        Callable<String> callable = () -> "callable result";
+        Try<String> result = Try.ofCallable(callable);
 
         assertTrue(result.isSuccess());
-        assertEquals(246, result.get().intValue());
+        assertEquals("callable result", result.get());
     }
 
     @Test
-    void testFailureInChain() {
-        // 测试链式操作中的失败传播
-        Try<String> result = Try.of(() -> "hello")
-            .map((Function<String, String>) String::toUpperCase)
-            .flatMap(s -> Try.ofFunction(null, (CheckedFunction<String, String>) String::toLowerCase)) // 这里会失败
-            .map((Function<String, String>) s -> s + " world"); // 这个不会执行
+    void testOfCallableFailure() {
+        Callable<String> callable = () -> {
+            throw new Exception("callable error");
+        };
+        Try<String> result = Try.ofCallable(callable);
+
+        assertTrue(result.isFailure());
+        assertEquals("callable error", result.getCause().getMessage());
+    }
+
+    // ========== ofPredicate 测试 ==========
+
+    @Test
+    void testOfPredicateTrue() {
+        Try<Boolean> result = Try.ofPredicate("hello", s -> s.length() > 3);
+
+        assertTrue(result.isSuccess());
+        assertTrue(result.get());
+    }
+
+    @Test
+    void testOfPredicateFalse() {
+        Try<Boolean> result = Try.ofPredicate("hi", s -> s.length() > 3);
+
+        assertTrue(result.isSuccess());
+        assertFalse(result.get());
+    }
+
+    @Test
+    void testOfPredicateFailure() {
+        Try<Boolean> result = Try.ofPredicate(null, (CheckedPredicate<String>) s -> s.length() > 3);
 
         assertTrue(result.isFailure());
         assertTrue(result.getCause() instanceof NullPointerException);
     }
 
-    @ParameterizedTest
-    @MethodSource("provideTestCases")
-    void testVariousScenarios(String input, boolean shouldSucceed, String expectedResult) {
-        Try<String> result = Try.ofFunction(input, (CheckedFunction<String, String>) s -> s == null ? null : s.toUpperCase());
+    // ========== ofBiPredicate 测试 ==========
 
-        assertEquals(shouldSucceed, result.isSuccess());
-        if (shouldSucceed) {
-            assertEquals(expectedResult, result.get());
-        }
-    }
+    @Test
+    void testOfBiPredicateTrue() {
+        Try<Boolean> result = Try.ofBiPredicate("hello", "world", (s1, s2) -> s1.length() + s2.length() > 8);
 
-    static Stream<Arguments> provideTestCases() {
-        return Stream.of(
-            Arguments.of("hello", true, "HELLO"),
-            Arguments.of("world", true, "WORLD"),
-            Arguments.of("", true, ""),
-            Arguments.of(null, true, null) // 这个不会抛出异常，因为我们的函数处理了null
-        );
+        assertTrue(result.isSuccess());
+        assertTrue(result.get());
     }
 
     @Test
-    void testPerformance() {
-        // 性能测试 - 确保Try包装不会有显著的性能开销
-        int iterations = 10000;
+    void testOfBiPredicateFalse() {
+        Try<Boolean> result = Try.ofBiPredicate("hi", "bye", (s1, s2) -> s1.length() + s2.length() > 10);
 
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < iterations; i++) {
-            Try<String> result = Try.ofFunction("test" + i, (CheckedFunction<String, String>) String::toUpperCase);
-            result.map((Function<String, String>) s -> s + "_processed");
-        }
-        long endTime = System.currentTimeMillis();
+        assertTrue(result.isSuccess());
+        assertFalse(result.get());
+    }
 
-        // 10000次操作应该在合理时间内完成
-        assertTrue(endTime - startTime < 1000, "Try操作耗时过长: " + (endTime - startTime) + "ms");
+    // ========== getOrElse 和 getOrElseGet 测试 ==========
+
+    @Test
+    void testGetOrElseSuccess() {
+        Try<String> result = Try.success("value");
+        assertEquals("value", result.getOrElse("default"));
     }
 
     @Test
-    void testThreadSafety() throws InterruptedException {
-        // 线程安全测试
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failureCount = new AtomicInteger(0);
-
-        int threadCount = 10;
-        int operationsPerThread = 100;
-        Thread[] threads = new Thread[threadCount];
-
-        for (int i = 0; i < threadCount; i++) {
-            final int threadId = i;
-            threads[i] = new Thread(() -> {
-                for (int j = 0; j < operationsPerThread; j++) {
-                    final int operationId = j;
-                    Try<String> result = Try.ofFunction("test" + threadId + "_" + j, (CheckedFunction<String, String>) s -> {
-                        if (operationId % 10 == 0) {
-                            throw new RuntimeException("测试异常");
-                        }
-                        return s.toUpperCase();
-                    });
-
-                    if (result.isSuccess()) {
-                        successCount.incrementAndGet();
-                    } else {
-                        failureCount.incrementAndGet();
-                    }
-                }
-            });
-        }
-
-        // 启动所有线程
-        for (Thread thread : threads) {
-            thread.start();
-        }
-
-        // 等待所有线程完成
-        for (Thread thread : threads) {
-            thread.join();
-        }
-
-        // 验证结果
-        assertEquals(threadCount * operationsPerThread, successCount.get() + failureCount.get());
-        assertEquals(threadCount * 10, failureCount.get()); // 每个线程有10个失败操作
+    void testGetOrElseFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        assertEquals("default", result.getOrElse("default"));
     }
 
     @Test
-    void testNestedTry() {
-        // 测试嵌套Try操作
-        Try<Try<String>> nested = Try.of(() -> Try.ofFunction("hello", (CheckedFunction<String, String>) String::toUpperCase));
-
-        assertTrue(nested.isSuccess());
-        Try<String> inner = nested.get();
-        assertTrue(inner.isSuccess());
-        assertEquals("HELLO", inner.get());
-
-        // 扁平化嵌套Try
-        Try<String> flattened = nested.flatMap(Function.identity());
-        assertTrue(flattened.isSuccess());
-        assertEquals("HELLO", flattened.get());
+    void testGetOrElseGetSuccess() {
+        Try<String> result = Try.success("value");
+        assertEquals("value", result.getOrElseGet(() -> "default"));
     }
 
     @Test
-    void testOnSuccessAndOnFailure() {
-        // 测试onSuccess和onFailure回调
-        AtomicBoolean successCalled = new AtomicBoolean(false);
-        AtomicBoolean failureCalled = new AtomicBoolean(false);
+    void testGetOrElseGetFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        assertEquals("default", result.getOrElseGet(() -> "default"));
+    }
 
-        Try<String> success = Try.of(() -> "success");
-        success.onSuccess(value -> successCalled.set(true))
-               .onFailure(throwable -> failureCalled.set(true));
+    // ========== onSuccess 和 onFailure 测试 ==========
 
-        assertTrue(successCalled.get());
-        assertFalse(failureCalled.get());
+    @Test
+    void testOnSuccessCallback() {
+        AtomicBoolean called = new AtomicBoolean(false);
+        Try<String> result = Try.success("value");
 
-        // 重置
-        successCalled.set(false);
-        failureCalled.set(false);
+        Try<String> returned = result.onSuccess(value -> called.set(true));
 
-        Try<String> failure = Try.of(() -> {
-            throw new RuntimeException("failure");
+        assertTrue(called.get());
+        assertSame(result, returned); // 应该返回同一个实例
+    }
+
+    @Test
+    void testOnSuccessNotCalledOnFailure() {
+        AtomicBoolean called = new AtomicBoolean(false);
+        Try<String> result = Try.failure(new RuntimeException("error"));
+
+        result.onSuccess(value -> called.set(true));
+
+        assertFalse(called.get());
+    }
+
+    @Test
+    void testOnFailureCallback() {
+        AtomicBoolean called = new AtomicBoolean(false);
+        Try<String> result = Try.failure(new RuntimeException("error"));
+
+        Try<String> returned = result.onFailure(throwable -> called.set(true));
+
+        assertTrue(called.get());
+        assertSame(result, returned); // 应该返回同一个实例
+    }
+
+    @Test
+    void testOnFailureNotCalledOnSuccess() {
+        AtomicBoolean called = new AtomicBoolean(false);
+        Try<String> result = Try.success("value");
+
+        result.onFailure(throwable -> called.set(true));
+
+        assertFalse(called.get());
+    }
+
+    // ========== map 测试 ==========
+
+    @Test
+    void testMapSuccess() {
+        Try<String> result = Try.success("hello");
+        Try<String> mapped = result.map(String::toUpperCase);
+
+        assertTrue(mapped.isSuccess());
+        assertEquals("HELLO", mapped.get());
+    }
+
+    @Test
+    void testMapFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Try<String> mapped = result.map(String::toUpperCase);
+
+        assertTrue(mapped.isFailure());
+        assertEquals("error", mapped.getCause().getMessage());
+    }
+
+    @Test
+    void testMapThrowsException() {
+        Try<String> result = Try.success("hello");
+        Try<String> mapped = result.map(s -> {
+            throw new RuntimeException("map error");
         });
-        failure.onSuccess(value -> successCalled.set(true))
-               .onFailure(throwable -> failureCalled.set(true));
 
-        assertFalse(successCalled.get());
-        assertTrue(failureCalled.get());
+        assertTrue(mapped.isFailure());
+        assertEquals("map error", mapped.getCause().getMessage());
+    }
+
+    @Test
+    void testMapWithCheckedFunction() {
+        Try<String> result = Try.success("hello");
+        Try<String> mapped = result.map((CheckedFunction<String, String>) String::toUpperCase);
+
+        assertTrue(mapped.isSuccess());
+        assertEquals("HELLO", mapped.get());
+    }
+
+    @Test
+    void testMapWithCheckedFunctionThrowsException() {
+        Try<String> result = Try.success("hello");
+        Try<String> mapped = result.map((CheckedFunction<String, String>) s -> {
+            throw new Exception("checked map error");
+        });
+
+        assertTrue(mapped.isFailure());
+        assertEquals("checked map error", mapped.getCause().getMessage());
+    }
+
+    // ========== flatMap 测试 ==========
+
+    @Test
+    void testFlatMapSuccess() {
+        Try<String> result = Try.success("hello");
+        Try<String> flatMapped = result.flatMap(s -> Try.success(s.toUpperCase()));
+
+        assertTrue(flatMapped.isSuccess());
+        assertEquals("HELLO", flatMapped.get());
+    }
+
+    @Test
+    void testFlatMapFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Try<String> flatMapped = result.flatMap(s -> Try.success(s.toUpperCase()));
+
+        assertTrue(flatMapped.isFailure());
+        assertEquals("error", flatMapped.getCause().getMessage());
+    }
+
+    @Test
+    void testFlatMapReturnsFailure() {
+        Try<String> result = Try.success("hello");
+        Try<String> flatMapped = result.flatMap(s -> Try.failure(new RuntimeException("flatMap error")));
+
+        assertTrue(flatMapped.isFailure());
+        assertEquals("flatMap error", flatMapped.getCause().getMessage());
+    }
+
+    @Test
+    void testFlatMapThrowsException() {
+        Try<String> result = Try.success("hello");
+        Try<String> flatMapped = result.flatMap(s -> {
+            throw new RuntimeException("flatMap exception");
+        });
+
+        assertTrue(flatMapped.isFailure());
+        assertEquals("flatMap exception", flatMapped.getCause().getMessage());
+    }
+
+    // ========== recover 测试 ==========
+
+    @Test
+    void testRecoverSuccess() {
+        Try<String> result = Try.success("value");
+        Try<String> recovered = result.recover((CheckedFunction<Throwable, String>) throwable -> "recovered");
+
+        assertTrue(recovered.isSuccess());
+        assertEquals("value", recovered.get()); // 应该保持原值
+        assertSame(result, recovered); // 应该返回同一个实例
+    }
+
+    @Test
+    void testRecoverFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Try<String> recovered = result.recover((CheckedFunction<Throwable, String>) throwable -> "recovered");
+
+        assertTrue(recovered.isSuccess());
+        assertEquals("recovered", recovered.get());
+    }
+
+    @Test
+    void testRecoverThrowsException() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Try<String> recovered = result.recover((CheckedFunction<Throwable, String>) throwable -> {
+            throw new RuntimeException("recover error");
+        });
+
+        assertTrue(recovered.isFailure());
+        assertEquals("recover error", recovered.getCause().getMessage());
+    }
+
+    @Test
+    void testRecoverWithCheckedFunction() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Try<String> recovered = result.recover((CheckedFunction<Throwable, String>) throwable -> "checked recovered");
+
+        assertTrue(recovered.isSuccess());
+        assertEquals("checked recovered", recovered.get());
+    }
+
+    @Test
+    void testRecoverWithCheckedFunctionThrowsException() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Try<String> recovered = result.recover((CheckedFunction<Throwable, String>) throwable -> {
+            throw new Exception("checked recover error");
+        });
+
+        assertTrue(recovered.isFailure());
+        assertEquals("checked recover error", recovered.getCause().getMessage());
+    }
+
+    // ========== 转换方法测试 ==========
+
+    @Test
+    void testToOptionalSuccess() {
+        Try<String> result = Try.success("value");
+        Optional<String> optional = result.toOptional();
+
+        assertTrue(optional.isPresent());
+        assertEquals("value", optional.get());
+    }
+
+    @Test
+    void testToOptionalFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Optional<String> optional = result.toOptional();
+
+        assertFalse(optional.isPresent());
+    }
+
+    @Test
+    void testToOptionSuccess() {
+        Try<String> result = Try.success("value");
+        Option<String> option = result.toOption();
+
+        assertTrue(option.isPresent());
+        assertEquals("value", option.get());
+    }
+
+    @Test
+    void testToOptionFailure() {
+        Try<String> result = Try.failure(new RuntimeException("error"));
+        Option<String> option = result.toOption();
+
+        assertFalse(option.isPresent());
+    }
+
+    @Test
+    void testToEitherSuccess() {
+        Try<String> result = Try.success("value");
+        Either<Throwable, String> either = result.toEither();
+
+        assertTrue(either.isRight());
+        assertEquals("value", either.getRight());
+    }
+
+    @Test
+    void testToEitherFailure() {
+        RuntimeException exception = new RuntimeException("error");
+        Try<String> result = Try.failure(exception);
+        Either<Throwable, String> either = result.toEither();
+
+        assertFalse(either.isRight());
+        assertEquals(exception, either.getLeft());
     }
 }

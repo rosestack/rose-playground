@@ -55,23 +55,23 @@ public class Result<T> {
         return new Result(SUCCESS, SERVER_SUCCESS, data);
     }
 
-    public static <T> Result<T> fail() {
+    public static <T> Result<T> failure() {
         return new Result(FAIL, "error", null);
     }
 
-    public static <T> Result<T> fail(int code, String message) {
+    public static <T> Result<T> failure(int code, String message) {
         return new Result(code, message, null);
     }
 
-    public static <T> Result<T> fail(String message) {
+    public static <T> Result<T> failure(String message) {
         return new Result(FAIL, message, null);
     }
 
-    public static <T> Result<T> fail(String message, T data) {
+    public static <T> Result<T> failure(String message, T data) {
         return new Result(FAIL, message, data);
     }
 
-    public static <T> Boolean isFail(Result<T> ret) {
+    public static <T> Boolean isFailure(Result<T> ret) {
         return !isSuccess(ret);
     }
 
@@ -104,10 +104,10 @@ public class Result<T> {
                 R newData = mapper.apply(data);
                 return success(newData);
             } catch (Exception e) {
-                return fail("数据转换失败: " + e.getMessage());
+                return failure("数据转换失败: " + e.getMessage());
             }
         } else {
-            return fail(this.message);
+            return failure(this.message);
         }
     }
 
@@ -119,10 +119,10 @@ public class Result<T> {
             try {
                 return mapper.apply(data);
             } catch (Exception e) {
-                return fail("数据转换失败: " + e.getMessage());
+                return failure("数据转换失败: " + e.getMessage());
             }
         } else {
-            return fail(this.message);
+            return failure(this.message);
         }
     }
 
@@ -135,10 +135,10 @@ public class Result<T> {
                 if (predicate.test(data)) {
                     return this;
                 } else {
-                    return fail(errorMessage);
+                    return failure(errorMessage);
                 }
             } catch (Exception e) {
-                return fail("数据过滤失败: " + e.getMessage());
+                return failure("数据过滤失败: " + e.getMessage());
             }
         }
         return this;
