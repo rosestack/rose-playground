@@ -2,7 +2,6 @@ package io.github.rose.common.exception;
 
 import io.github.rose.core.exception.BusinessException;
 import io.github.rose.core.spring.SpringBeans;
-import io.github.rose.core.util.FormatUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.StringUtils;
@@ -12,16 +11,35 @@ import java.util.Locale;
 public class ExceptionMessageResolver {
     private static volatile MessageSource messageSource;
 
+    public static String resolveMessage(String messageCode) {
+        return resolveMessage(messageCode, null, LocaleContextHolder.getLocale(), null);
+    }
+
+    public static String resolveMessage(String messageCode, String defaultMessage) {
+        return resolveMessage(messageCode, defaultMessage, LocaleContextHolder.getLocale(), null);
+    }
+
     /**
-     * 解析异常消息
+     * 快速创建国际化异常消息
      *
-     * @param code           消息代码
-     * @param args           消息参数
-     * @param defaultMessage 默认消息
+     * @param messageCode 消息编码
+     * @param args        消息参数
      * @return 解析后的消息
      */
-    public static String resolveMessage(String code, Object[] args, String defaultMessage) {
-        return resolveMessage(code, args, defaultMessage, LocaleContextHolder.getLocale());
+    public static String resolveMessage(String messageCode, Object[] args) {
+        return resolveMessage(messageCode, null, LocaleContextHolder.getLocale(), args);
+    }
+
+    /**
+     * 快速创建国际化异常消息（带默认消息）
+     *
+     * @param messageCode    消息编码
+     * @param defaultMessage 默认消息
+     * @param args           消息参数
+     * @return 解析后的消息
+     */
+    public static String resolveMessage(String messageCode, String defaultMessage, Object[] args) {
+        return resolveMessage(messageCode, defaultMessage, LocaleContextHolder.getLocale(), args);
     }
 
     /**
@@ -33,10 +51,9 @@ public class ExceptionMessageResolver {
      * @param locale         语言环境
      * @return 解析后的消息
      */
-    public static String resolveMessage(String code, Object[] args, String defaultMessage, Locale locale) {
+    public static String resolveMessage(String code, String defaultMessage, Locale locale, Object[] args) {
         String message = null;
 
-        // 1. 尝试从MessageSource获取国际化消息
         if (!StringUtils.isEmpty(code)) {
             MessageSource msgSource = getMessageSource();
             if (msgSource != null) {
@@ -46,14 +63,8 @@ public class ExceptionMessageResolver {
                     // 消息获取失败，继续后续处理
                 }
             }
-
-            // 2. 如果MessageSource获取失败，使用FormatUtils处理占位符
-            if (message == null) {
-                message = FormatUtils.replacePlaceholders(code, args);
-            }
         }
 
-        // 3. 如果仍然为空，使用默认消息
         if (message == null) {
             message = defaultMessage;
         }
@@ -67,8 +78,8 @@ public class ExceptionMessageResolver {
      * @param exception BusinessException实例
      * @return 解析后的消息
      */
-    public static String resolveBusinessExceptionMessage(BusinessException exception) {
-        return resolveBusinessExceptionMessage(exception, LocaleContextHolder.getLocale());
+    public static String resolveMessage(BusinessException exception) {
+        return resolveMessage(exception, LocaleContextHolder.getLocale());
     }
 
     /**
@@ -78,7 +89,7 @@ public class ExceptionMessageResolver {
      * @param locale    语言环境
      * @return 解析后的消息
      */
-    public static String resolveBusinessExceptionMessage(BusinessException exception, Locale locale) {
+    public static String resolveMessage(BusinessException exception, Locale locale) {
         // 如果不需要国际化，直接返回默认消息或getMessage()
         if (!exception.isNeedsInternationalization()) {
             String defaultMessage = exception.getDefaultMessage();
@@ -88,33 +99,10 @@ public class ExceptionMessageResolver {
         // 需要国际化处理
         return resolveMessage(
                 exception.getMessageCode(),
-                exception.getMessageArgs(),
                 exception.getDefaultMessage(),
-                locale
+                locale,
+                exception.getMessageArgs()
         );
-    }
-
-    /**
-     * 快速创建国际化异常消息
-     *
-     * @param messageCode 消息编码
-     * @param args        消息参数
-     * @return 解析后的消息
-     */
-    public static String resolveI18nMessage(String messageCode, Object... args) {
-        return resolveMessage(messageCode, args, null, LocaleContextHolder.getLocale());
-    }
-
-    /**
-     * 快速创建国际化异常消息（带默认消息）
-     *
-     * @param messageCode    消息编码
-     * @param defaultMessage 默认消息
-     * @param args           消息参数
-     * @return 解析后的消息
-     */
-    public static String resolveI18nMessage(String messageCode, String defaultMessage, Object... args) {
-        return resolveMessage(messageCode, args, defaultMessage, LocaleContextHolder.getLocale());
     }
 
     /**

@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<Void>> handleBusinessException(BusinessException e, HttpServletRequest request) {
         log.warn("Business exception occurred: {}", e.getMessage(), e);
 
-        String message = ExceptionMessageResolver.resolveBusinessExceptionMessage(e);
+        String message = ExceptionMessageResolver.resolveMessage(e);
         Result<Void> result = Result.failure(message);
         return ResponseEntity.badRequest().body(result);
     }
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
         log.warn("Rate limit exceeded: {}", e.getMessage(), e);
 
         // 使用ExceptionMessageResolver处理国际化
-        String message = ExceptionMessageResolver.resolveBusinessExceptionMessage(e);
+        String message = ExceptionMessageResolver.resolveMessage(e);
         Result<Void> result = Result.failure(message);
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(result);
     }
@@ -84,10 +84,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<Void>> handleIllegalArgumentException(IllegalArgumentException e, HttpServletRequest request) {
         log.warn("Illegal argument exception occurred: {}", e.getMessage(), e);
 
-        String message = ExceptionMessageResolver.resolveI18nMessage(
-                "illegal.argument",
-                e.getMessage(),
-                e.getMessage()
+        String message = ExceptionMessageResolver.resolveMessage(
+                "illegal.argument"
         );
 
         Result<Void> result = Result.failure(message);
@@ -101,7 +99,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<Void>> handleNullPointerException(NullPointerException e, HttpServletRequest request) {
         log.error("Null pointer exception occurred: {}", e.getMessage(), e);
 
-        String message = ExceptionMessageResolver.resolveI18nMessage(
+        String message = ExceptionMessageResolver.resolveMessage(
                 "null.pointer.error",
                 "Null pointer error occurred"
         );
@@ -117,7 +115,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<Void>> handleSystemException(Exception e, HttpServletRequest request) {
         log.error("System exception occurred: {}", e.getMessage(), e);
 
-        String message = ExceptionMessageResolver.resolveI18nMessage(
+        String message = ExceptionMessageResolver.resolveMessage(
                 "system.error",
                 "Internal server error"
         );
@@ -139,10 +137,9 @@ public class GlobalExceptionHandler {
         }
 
         // 其他运行时异常
-        String message = ExceptionMessageResolver.resolveI18nMessage(
+        String message = ExceptionMessageResolver.resolveMessage(
                 "runtime.error",
-                "Runtime error occurred: " + e.getMessage(),
-                e.getMessage()
+                "Runtime error occurred: " + e.getMessage()
         );
 
         Result<Void> result = Result.failure(message);
@@ -158,9 +155,9 @@ public class GlobalExceptionHandler {
         // 尝试国际化字段错误消息
         String message = ExceptionMessageResolver.resolveMessage(
                 fieldError.getCode(),
-                fieldError.getArguments(),
                 fieldError.getDefaultMessage(),
-                locale
+                locale,
+                fieldError.getArguments()
         );
 
         return fieldError.getField() + ": " + message;

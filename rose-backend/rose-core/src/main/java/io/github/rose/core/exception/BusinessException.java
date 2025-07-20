@@ -15,7 +15,6 @@ import java.io.Serial;
  * 4. 提供清晰的API语义
  */
 @Getter
-@Setter
 public class BusinessException extends RuntimeException {
 
     @Serial
