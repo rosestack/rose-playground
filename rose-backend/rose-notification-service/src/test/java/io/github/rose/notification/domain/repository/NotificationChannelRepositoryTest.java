@@ -1,4 +1,4 @@
-package io.github.rose.notification.repository;
+package io.github.rose.notification.domain.repository;
 
 import io.github.rose.notification.domain.entity.NotificationChannel;
 import io.github.rose.notification.domain.repository.NotificationChannelRepository;
