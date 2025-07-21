@@ -28,13 +28,7 @@ public class ApiResponse<T> {
      */
     private T data;
 
-    /**
-     * 时间戳
-     */
-    private long timestamp;
-
     public ApiResponse() {
-        this.timestamp = System.currentTimeMillis();
     }
 
     public ApiResponse(String code, String message) {

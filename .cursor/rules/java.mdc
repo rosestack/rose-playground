@@ -7,26 +7,92 @@ alwaysApply: true
 
 ## 项目背景
 
-我是一个 Java 开发者，正在开发各种 Java 项目。主要专注于后端开发，包括 Spring Boot 应用、微服务架构、企业级应用等。项目类型涵盖 Web 应用、API 服务、数据处理、系统集成等。
+我是一个 Java 开发者，正在开发各种 Java 项目。主要专注于后端开发，包括 Spring Boot 应用、微服务架构、企业级应用等。项目类型涵盖
+Web 应用、API 服务、数据处理、系统集成等。
 
 ## 技术栈
 
 ### 后端技术栈
-- **Java 17+**：使用最新的 Java 特性
-- **Spring Boot 3.x**：主框架
-- **Spring Security**：安全认证和授权
-- **MyBatis Plus**：数据访问层
-- **MySQL 8.0**：主数据库
-- **Redis**：缓存和会话存储
-- **Maven**：构建工具
-- **JUnit 5 + Mockito**：单元测试
+
+**核心框架：**
+
+- **Java 17+**：使用最新的Java特性，如记录类、模式匹配等
+- **Spring Boot 3.5+**：主框架，提供依赖注入和自动配置
+- **Spring Security 6.x**：安全框架，处理认证和授权
+- **MyBatis Plus 3.x**：数据访问层ORM框架，提供强大的查询能力
+
+**数据存储：**
+
+- **MySQL 8.0**：主数据库，支持JSON字段和窗口函数。使用 mysql-connector-j jdbc 驱动。
+- **HikariCP**：高性能数据库连接池
+- **Redis 7.x**：缓存和会话存储，支持多种数据结构
+- **Elasticsearch**：搜索引擎，用于复杂查询和全文搜索
+
+**构建和部署：**
+
+- **Maven 3.9+**：构建工具和依赖管理
 - **Docker**：容器化部署
+- **Docker Compose**：本地开发环境编排
+
+**监控和运维：**
+
+- **Spring Boot Actuator**：应用监控和健康检查
+- **Micrometer**：指标收集
+- **Logback**：日志框架
+
+**测试框架：**
+
+- **JUnit 5**：单元测试框架，支持参数化测试和动态测试
+- **Mockito 5.x**：模拟框架，用于创建测试替身
+- **AssertJ**：流式断言库，提供更好的测试可读性
+- **TestContainers**：集成测试容器，支持真实数据库和中间件测试
+- **Spring Boot Test**：Spring Boot测试支持，包含各种测试切片
+- **WireMock**：HTTP服务模拟，用于外部API测试
+- **Testcontainers-JUnit5**：JUnit5与TestContainers集成
+
+**开发工具：**
+
+- **Lombok**：减少样板代码，自动生成getter/setter等
+- **Spring Boot DevTools**：开发时热重载和自动重启
+- **Swagger/OpenAPI 3**：API文档生成和在线测试
+- **Spring Boot Configuration Processor**：配置元数据生成
+- **MapStruct**：对象映射工具，编译时生成映射代码
+- **Spotless**：代码格式化工具，保持代码风格一致
+- **ArchUnit**：架构测试工具，验证架构规则
+
+**工具库：**
+
+- **Apache Commons Lang3**：通用工具类库
+- **Jackson**：JSON序列化和反序列化
+- **Validation API**：参数校验
+- **Guava**：Google核心库，提供集合、缓存、并发等工具
+
+**禁止使用的依赖：**
+
+- **Hutool**：避免过度依赖工具库，保持代码的可控性
+- **Fastjson**：存在安全风险，使用Jackson替代
+- **Spring Data JPA**：与MyBatis Plus冲突，统一使用MyBatis Plus
+- **Apache Commons BeanUtils**：性能较差，使用MapStruct替代
+- **Dozer**：映射性能差，使用MapStruct替代
+- **ModelMapper**：运行时映射，性能不如编译时的MapStruct
+- **Gson**：功能不如Jackson完善，统一使用Jackson
+- **Log4j 1.x**：已停止维护且存在安全漏洞，使用Logback
+- **Commons Logging**：桥接复杂，直接使用SLF4J
+- **Quartz**：过于重量级，简单任务使用Spring Task
+- **Ehcache 2.x**：版本过旧，使用Caffeine或Redis
+- **Jedis**：连接池管理复杂，使用Spring Data Redis
+- **HttpClient 4.x**：版本过旧，使用Spring WebClient或OkHttp
+- **Swagger 2.x**：已过时，使用OpenAPI 3
+- **JUnit 4**：功能有限，使用JUnit 5
+- **Hamcrest**：断言不够流畅，使用AssertJ
+- **PowerMock**：与现代JVM不兼容，重构代码以支持Mockito
 
 ## 编码规范
 
 ### Java 编码规范
 
 #### 1. 命名规范
+
 - **类名**：使用 PascalCase，如 `UserService`、`OrderController`
 - **方法名**：使用 camelCase，如 `getUserById`、`createOrder`
 - **变量名**：使用 camelCase，如 `userName`、`orderList`
@@ -34,14 +100,17 @@ alwaysApply: true
 - **包名**：使用小写字母，如 `com.example.user`、`io.github.rose.security`
 
 #### 2. 代码组织
+
 - **DDD 分层架构**：`application`、`domain`、`infrastructure`、`interfaces`
 - **单一职责**：每个类和方法只负责一个功能
 - **依赖注入**：使用构造函数注入，避免字段注入
 - **接口分离**：为服务层定义接口，实现类添加 `Impl` 后缀
+- **代码生成**: 使用 **Lombok** 减少样板代码，自动生成getter/setter等
 
 #### 3. 注释规范
+
 - **语言**：所有注释必须使用中文，如果存在旧注释请先删除
-- **格式**：使用标准JavaDoc格式（/** ... */）
+- **格式**：使用标准 **JavaDoc** 格式（/** ... */）
 - **范围**：为类、接口、枚举、方法、重要字段添加注释
 - **内容原则**：避免冗余和过度描述，突出重点
 - **必要的警告**：标记重要注意事项
@@ -49,6 +118,7 @@ alwaysApply: true
 - **保持更新**：代码变更时同步更新注释
 
 **类/接口/枚举注释模板：**
+
 ```java
 /**
  * [类/接口/枚举]的简要描述（一句话概括其用途）
@@ -68,6 +138,7 @@ alwaysApply: true
 ```
 
 **方法注释模板：**
+
 ```java
 /**
  * 方法的简要描述（一句话概括其功能）
@@ -79,18 +150,21 @@ alwaysApply: true
 ```
 
 **字段注释模板：**
+
 ```java
 /** 字段的简要描述，包括其用途 */
 private Type fieldName;
 ```
 
 **枚举值注释模板：**
+
 ```java
 /** 枚举常量的简要描述 */
 ENUM_VALUE,
 ```
 
 #### 4. 异常处理
+
 - **自定义异常**：为业务异常创建自定义异常类
 - **统一异常处理**：使用 `@ControllerAdvice` 全局处理异常
 - **日志记录**：记录异常信息和堆栈跟踪，包含足够上下文
@@ -103,21 +177,24 @@ ENUM_VALUE,
 ### Spring Boot 最佳实践
 
 #### 1. 配置管理
+
 - **外部化配置**：使用 `application.yml` 进行配置
 - **配置属性类**：使用 `@ConfigurationProperties` 绑定配置
 - **环境区分**：使用 `application-{profile}.yml` 区分环境
 - **敏感信息**：使用环境变量或配置中心管理敏感信息
 
 #### 2. 数据访问
+
 - **仓储模式**：使用 DDD 仓储模式，在领域层定义接口，在基础设施层实现
 - **Mapper 模式**：使用 MyBatis Plus Mapper 实现仓储
 - **事务管理**：在应用层使用 `@Transactional(rollbackFor = Exception.class)`
 - **查询优化**：使用索引、分页、缓存优化查询性能，避免 N+1 查询
 - **数据验证**：使用 JSR-303 Bean Validation，结合 `@Validated`、`@Valid` 注解
 - **连接池**：配置合适的数据库连接池参数
-- **懒加载**：使用 JPA 或其他数据访问技术提供的懒加载功能
+- **懒加载**：使用数据访问技术提供的懒加载功能
 
 #### 3. 安全配置
+
 - **JWT 认证**：使用 JWT 进行无状态认证
 - **RBAC 权限**：实现基于角色的访问控制
 - **多租户隔离**：支持多租户数据隔离
@@ -129,11 +206,13 @@ ENUM_VALUE,
 - **速率限制**：实施速率限制防止滥用
 - **加密传输**：使用 HTTPS 和 TLS/SSL 加密传输数据
 
+### 
 ## 项目结构
 
 ### 常见项目结构
 
 #### 1. DDD 分层架构结构
+
 ```
 src/
 ├── main/
@@ -177,6 +256,7 @@ src/
 ```
 
 #### 2. DDD 微服务项目结构
+
 ```
 project/
 ├── shared/                        # 共享模块
@@ -203,6 +283,7 @@ project/
 ```
 
 #### 3. DDD 多模块项目结构
+
 ```
 project/
 ├── interfaces/                    # 接口层模块
@@ -230,6 +311,7 @@ project/
 ## 开发工作流
 
 ### 1. 功能开发流程
+
 1. **需求分析**：理解业务需求和技术要求
 2. **设计阶段**：设计 API 接口、数据库表结构、服务架构
 3. **开发阶段**：按模块并行开发，遵循 TDD 原则
@@ -238,6 +320,7 @@ project/
 6. **部署阶段**：部署到测试环境，进行功能验证
 
 ### 2. 全栈开发流程（如有前端）
+
 1. **需求分析**：理解业务需求和技术要求
 2. **架构设计**：设计系统架构、API 接口、数据库表结构
 3. **后端开发**：开发 API 服务、数据处理、业务逻辑
@@ -246,11 +329,12 @@ project/
 6. **部署上线**：部署到生产环境，监控运行状态
 
 ### 3. Git 工作流
+
 - **分支策略**：使用 Git Flow 或 GitHub Flow
 - **提交规范**：使用约定式提交（Conventional Commits）
-  - **类型**：feature（新功能）、fix（修复）、refactor（重构）、others（其他）
-  - **描述**：简明扼要说明变更内容，使用祈使句
-  - **正文**：详细阐述变更原因和背景
+    - **类型**：feature（新功能）、fix（修复）、refactor（重构）、others（其他）
+    - **描述**：简明扼要说明变更内容，使用祈使句
+    - **正文**：详细阐述变更原因和背景
 - **原子性提交**：每次提交只包含一个独立、完整的逻辑变更
 - **频繁提交**：及时提交，减少丢失进度风险
 - **PR 模板**：使用标准的 PR 模板
@@ -259,10 +343,11 @@ project/
 - **敏感信息管理**：严禁提交密钥、密码、API Key 等敏感信息
 
 ### 4. 测试策略
+
 - **单元测试**：使用 JUnit 5 + Mockito，覆盖率 > 80%
-  - **测试驱动开发（TDD）**：在编写代码之前编写测试
-  - **测试命名**：使用清晰且描述性的测试名称
-  - **安排-操作-断言**：使用 AAA 模式结构化测试
+    - **测试驱动开发（TDD）**：在编写代码之前编写测试
+    - **测试命名**：使用清晰且描述性的测试名称
+    - **安排-操作-断言**：使用 AAA 模式结构化测试
 - **集成测试**：使用 Spring Boot 测试切片（`@WebMvcTest`、`@DataJpaTest`）
 - **API 测试**：使用 Postman 或 RestAssured 测试 API 接口
 - **端到端测试**：如有前端，使用 Selenium 或无头浏览器测试
@@ -273,17 +358,20 @@ project/
 ## 代码质量
 
 ### 1. 静态代码分析
+
 - **SonarQube**：代码质量分析
 - **SpotBugs**：Bug 检测
 - **Checkstyle**：代码风格检查
 - **PMD**：代码复杂度分析
 
 ### 2. 代码格式化
+
 - **IDE 配置**：使用统一的 IDE 配置
 - **代码模板**：使用代码模板提高开发效率
 - **自动格式化**：提交前自动格式化代码
 
 ### 3. 文档规范
+
 - **API 文档**：使用 Swagger/OpenAPI 生成 API 文档
 - **代码文档**：使用 JavaDoc 生成代码文档
 - **架构文档**：维护系统架构和设计文档
@@ -292,18 +380,21 @@ project/
 ## 性能优化
 
 ### 1. 数据库优化
+
 - **索引优化**：为查询字段创建合适的索引
 - **查询优化**：优化 SQL 查询，避免 N+1 问题
 - **连接池**：配置合适的数据库连接池
 - **分页查询**：大数据量查询使用分页
 
 ### 2. 缓存策略
+
 - **Redis 缓存**：缓存热点数据和计算结果
 - **本地缓存**：使用 Caffeine 进行本地缓存
 - **缓存更新**：实现缓存更新和失效策略
 - **缓存监控**：监控缓存命中率和性能
 
 ### 3. 异步处理
+
 - **异步任务**：使用 `@Async` 处理耗时任务
 - **消息队列**：使用消息队列处理异步消息
 - **线程池**：配置合适的线程池参数
@@ -312,16 +403,17 @@ project/
 - **对象池**：使用对象池复用对象并减少创建开销
 - **避免内存泄漏**：确保对象能够被正确垃圾回收
 
-
 ## 学习资源
 
 ### 1. 官方文档
+
 - [Spring Boot 官方文档](https://spring.io/projects/spring-boot)
 - [Spring Security 官方文档](https://spring.io/projects/spring-security)
 - [MyBatis Plus 官方文档](https://baomidou.com/)
 - [Java 官方文档](https://docs.oracle.com/en/java/)
 
 ### 2. 最佳实践
+
 - [Spring Boot 最佳实践](https://spring.io/guides)
 - [Java 编码规范](https://google.github.io/styleguide/javaguide.html)
 - [REST API 设计指南](https://restfulapi.net/)

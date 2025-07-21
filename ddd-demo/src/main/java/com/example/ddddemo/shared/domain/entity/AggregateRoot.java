@@ -59,7 +59,7 @@ public abstract class AggregateRoot<ID> extends BaseEntity {
     /**
      * 设置ID
      */
-    protected void setId(ID id) {
+    public void setId(ID id) {
         this.id = id;
     }
 }

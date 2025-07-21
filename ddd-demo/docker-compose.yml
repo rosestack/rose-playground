@@ -7,17 +7,17 @@ services:
     container_name: ddd-demo-mysql
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: ddd_demo_dev
-      MYSQL_USER: ddd_demo
-      MYSQL_PASSWORD: ddd_demo123
+      MYSQL_DATABASE: ddd_demo
+      MYSQL_USER: ddd_user
+      MYSQL_PASSWORD: ddd_pass
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+      - ./src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: --default-authentication-plugin=mysql_native_password
     networks:
-      - ddd-demo-network
+      - ddd-network
 
   # Redis缓存
   redis:
@@ -28,31 +28,12 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - ddd-demo-network
-
-  # DDD Demo应用
-  ddd-demo:
-    build: .
-    container_name: ddd-demo-app
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ddd_demo_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 123456
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PORT: 6379
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - ddd-demo-network
+      - ddd-network
 
 volumes:
   mysql_data:
   redis_data:
 
 networks:
-  ddd-demo-network:
+  ddd-network:
     driver: bridge

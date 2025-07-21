@@ -68,9 +68,6 @@ ddd-demo/
 
 #### 2.2 工具类开发
 - [ ] 创建ID生成器（IdGenerator）
-- [ ] 创建对象转换工具（BeanUtils）
-- [ ] 创建字符串工具类（StringUtils）
-- [ ] 创建日期时间工具类（DateTimeUtils）
 
 #### 2.3 配置类开发
 - [ ] 创建全局异常处理器（GlobalExceptionHandler）
