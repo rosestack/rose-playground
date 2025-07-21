@@ -2,269 +2,10 @@
 
 ---
 
-## 1. 概述
 
-### 1.1 DDD 核心理念
+### 3.2 MyBatis-Plus 配置与优化
 
-领域驱动设计（Domain-Driven Design，DDD）是一种软件开发方法论，强调将业务领域的复杂性作为软件设计的核心。通过清晰的分层架构来组织代码，确保业务逻辑的纯净性和系统的可维护性。
-
-**核心概念：**
-- **领域（Domain）**：业务问题空间，包含业务规则和逻辑
-- **实体（Entity）**：具有唯一标识的领域对象
-- **值对象（Value Object）**：没有唯一标识，通过属性值来区分的对象
-- **聚合（Aggregate）**：一组相关实体和值对象的集合
-- **仓储（Repository）**：提供领域对象持久化的抽象接口
-- **领域服务（Domain Service）**：不属于任何实体或值对象的业务逻辑
-
-### 1.2 技术栈
-
-- **Java 17+**：使用最新的Java特性
-- **Spring Boot 3.x**：主框架
-- **MyBatis Plus 3.x**：数据访问层ORM框架
-- **MySQL 8.0**：主数据库
-- **Redis**：缓存和会话存储
-- **Maven**：构建工具
-
----
-
-## 2. 架构设计
-
-### 2.1 四层架构模型
-
-```
-┌─────────────────────────────────────┐
-│           接口层 (Interfaces)        │  ← 用户交互、API接口
-├─────────────────────────────────────┤
-│           应用层 (Application)       │  ← 业务流程编排、事务控制
-├─────────────────────────────────────┤
-│            领域层 (Domain)           │  ← 核心业务逻辑、业务规则
-├─────────────────────────────────────┤
-│         基础设施层 (Infrastructure)   │  ← 技术实现、外部依赖
-└─────────────────────────────────────┘
-```
-
-### 2.2 项目结构
-
-```
-src/main/java/com/example/app/
-├── interfaces/              # 接口层
-│   ├── controller/          # REST 控制器
-│   ├── dto/                 # 数据传输对象
-│   ├── assembler/           # DTO 转换器
-│   ├── facade/              # 外观服务
-│   └── validator/           # 校验器
-├── application/             # 应用层
-│   ├── service/             # 应用服务
-│   ├── command/             # 命令对象
-│   ├── query/               # 查询对象
-│   ├── event/               # 应用事件
-│   └── cache/               # 缓存服务
-├── domain/                  # 领域层
-│   ├── entity/              # 领域实体
-│   ├── valueobject/         # 值对象
-│   ├── service/             # 领域服务
-│   ├── repository/          # 仓储接口
-│   ├── factory/             # 工厂类
-│   └── event/               # 领域事件
-├── infrastructure/          # 基础设施层
-│   ├── persistence/         # 持久化实现
-│   │   ├── mapper/          # MyBatis Plus Mapper
-│   │   ├── entity/          # 数据库实体
-│   │   ├── repository/      # 仓储实现
-│   │   └── converter/       # 实体转换器
-│   ├── config/              # 配置类
-│   ├── external/            # 外部服务集成
-│   ├── i18n/                # 国际化支持
-│   └── util/                # 工具类
-└── shared/                  # 共享层
-    ├── exception/           # 异常处理
-    ├── constant/            # 常量定义
-    ├── response/            # 统一响应格式
-    └── util/                # 通用工具
-```
-
----
-
-### 2.3 分层职责
-
-#### 2.3.1 接口层 (Interfaces Layer)
-
-**职责：**
-- 处理用户请求和响应
-- 数据格式转换（DTO ↔ Domain Object）
-- 输入验证和参数校验
-- 异常处理和错误响应
-- 国际化消息处理
-
-**主要组件：**
-- **Controller**：REST API 控制器
-- **DTO**：数据传输对象
-- **Assembler**：DTO 与领域对象的转换器
-- **Facade**：为复杂操作提供简化接口
-- **Validator**：业务校验器
-
-#### 2.3.2 应用层 (Application Layer)
-
-**职责：**
-- 业务流程编排和协调
-- 事务边界控制
-- 权限验证和安全控制
-- 应用事件发布和处理
-- 缓存管理
-
-**主要组件：**
-- **Application Service**：应用服务，编排业务流程
-- **Command**：命令对象，封装操作请求
-- **Query**：查询对象，封装查询请求
-- **Event Handler**：应用事件处理器
-- **Cache Service**：缓存服务
-
-#### 2.3.3 领域层 (Domain Layer)
-
-**职责：**
-- 核心业务逻辑实现
-- 业务规则和约束
-- 领域模型定义
-- 业务不变性保证
-
-**主要组件：**
-- **Entity**：领域实体
-- **Value Object**：值对象
-- **Domain Service**：领域服务
-- **Repository Interface**：仓储接口
-- **Factory**：领域对象工厂
-- **Domain Event**：领域事件
-
-#### 2.3.4 基础设施层 (Infrastructure Layer)
-
-**职责：**
-- 数据持久化实现
-- 外部服务集成
-- 技术框架配置
-- 横切关注点实现
-- 国际化和时区支持
-
-**主要组件：**
-- **Repository Implementation**：仓储实现
-- **MyBatis Plus Mapper**：数据访问映射
-- **Entity**：数据库实体对象
-- **Converter**：领域对象与数据库实体的转换器
-- **External Service**：外部服务客户端
-- **Configuration**：技术配置
-- **I18n Support**：国际化支持
-
-### 2.4. 最佳实践
-
-#### 2.4.1 依赖管理原则
-
-1. **严格的分层依赖**
-   - 接口层 → 应用层 → 领域层
-   - 基础设施层 → 领域层（实现仓储接口）
-   - 禁止跨层调用和循环依赖
-
-2. **依赖倒置**
-   - 高层模块不依赖低层模块
-   - 抽象不依赖具体实现
-   - 具体实现依赖抽象
-
-#### 2.4.2 事务控制策略
-
-```java
-/**
- * 事务控制最佳实践
- */
-@Service
-@Transactional(readOnly = true)
-public class UserApplicationService {
-    
-    /**
-     * 写操作使用事务
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public UserDTO createUser(CreateUserCommand command) {
-        // 业务逻辑
-        User user = new User(new Username(command.getUsername()), 
-                           new Email(command.getEmail()));
-        
-        // 保存实体
-        User savedUser = userRepository.save(user);
-        
-        // 发布事件（事务提交后执行）
-        eventPublisher.publishAfterCommit(new UserCreatedEvent(savedUser.getId()));
-        
-        return UserAssembler.toDTO(savedUser);
-    }
-    
-    /**
-     * 只读操作不使用事务
-     */
-    public UserDTO findById(String id) {
-        User user = userRepository.findById(new UserId(id))
-                .orElseThrow(() -> UserException.userNotFound(id));
-        
-        return UserAssembler.toDTO(user);
-    }
-}
-```
-
-#### 2.4.3 异常处理策略
-
-1. **分层异常处理**
-   - 领域层：抛出领域异常
-   - 应用层：处理业务流程异常
-   - 接口层：统一异常响应格式
-
-2. **国际化异常消息**
-   - 使用消息键而非硬编码消息
-   - 支持参数化消息
-   - 提供多语言支持
-
-#### 2.4.4 缓存使用策略
-
-1. **缓存层次**
-   - L1：本地缓存（Caffeine）
-   - L2：分布式缓存（Redis）
-   - L3：数据库
-
-2. **缓存更新策略**
-   - 写入时更新（Write-through）
-   - 写入后更新（Write-behind）
-   - 失效时更新（Cache-aside）
-
----
-
-## 4. 核心实现
-
-### 4.1 层间依赖关系
-
-在DDD分层架构中，各层之间的依赖关系遵循严格的规则：
-
-```
-┌─────────────────────────────────────┐
-│           接口层 (Interfaces)        │  ← 依赖应用层
-├─────────────────────────────────────┤
-│           应用层 (Application)       │  ← 依赖领域层
-├─────────────────────────────────────┤
-│            领域层 (Domain)           │  ← 不依赖其他层
-├─────────────────────────────────────┤
-│         基础设施层 (Infrastructure)   │  ← 依赖领域层（实现接口）
-└─────────────────────────────────────┘
-```
-
-**依赖规则：**
-- **接口层** → 应用层：调用应用服务，不直接访问领域层或基础设施层
-- **应用层** → 领域层：编排领域服务和聚合，通过接口访问基础设施层
-- **领域层** → 无依赖：纯业务逻辑，不依赖任何外部框架
-- **基础设施层** → 领域层：实现领域层定义的接口（依赖倒置）
-
-**调用流程：**
-```
-用户请求 → Controller → Application Service → Domain Service/Entity → Repository Interface → Repository Implementation
-```
-
-### 4.2 MyBatis-Plus 配置与优化
-
-#### 4.2.1 核心配置
+#### 3.2.1 核心配置
 
 ```java
 /**
@@ -400,7 +141,7 @@ public class CustomMetaObjectHandler implements MetaObjectHandler {
 }
 ```
 
-#### 4.2.2 MyBatis-Plus配置
+#### 3.2.2 MyBatis-Plus配置
 
 ```yaml
 
@@ -436,7 +177,7 @@ mybatis-plus:
     meta-object-handler: com.example.app.infrastructure.config.CustomMetaObjectHandler
 ```
 
-### 4.3 统一响应格式
+### 3.3 统一响应格式
 
 ```java
 /**
@@ -489,7 +230,7 @@ public class ApiResponse<T> {
 }
 ```
 
-### 4.2 分页响应格式
+### 3.4 分页响应格式
 
 ```java
 /**
@@ -536,7 +277,7 @@ public class PageResponse<T> {
 }
 ```
 
-### 4.3 通用分页请求
+### 3.5 通用分页请求
 
 ```java
 /**
@@ -583,11 +324,11 @@ public class PageRequest {
 
 ---
 
-## 5. 各层完整代码示例
+## 4. 各层完整代码示例
 
-### 5.1 接口层（Interface Layer）
+### 4.1 接口层（Interface Layer）
 
-#### 5.1.1 用户控制器
+#### 4.1.1 用户控制器
 
 ```java
 /**
@@ -714,7 +455,7 @@ public class UserController {
 }
 ```
 
-#### 5.1.2 请求响应对象
+#### 4.1.2 请求响应对象
 
 ```java
 /**
@@ -838,9 +579,9 @@ public class UserDTO {
 }
 ```
 
-### 5.2 应用层（Application Layer）
+### 4.2 应用层（Application Layer）
 
-#### 5.2.1 用户应用服务
+#### 4.2.1 用户应用服务
 
 ```java
 /**
@@ -1005,7 +746,7 @@ public class UserApplicationService {
 }
 ```
 
-#### 5.2.2 用户查询服务
+#### 4.2.2 用户查询服务
 
 ```java
 /**
@@ -1132,9 +873,9 @@ public class UserQueryService {
 }
 ```
 
-### 5.3 领域层（Domain Layer）
+### 4.3 领域层（Domain Layer）
 
-#### 5.3.1 用户聚合根
+#### 4.3.1 用户聚合根
 
 ```java
 /**
@@ -1294,7 +1035,7 @@ public class User extends AggregateRoot<UserId> {
 }
 ```
 
-#### 5.3.2 值对象
+#### 4.3.2 值对象
 
 ```java
 /**
@@ -1431,7 +1172,7 @@ public class Avatar {
 }
 ```
 
-#### 5.3.3 领域服务
+#### 4.3.3 领域服务
 
 ```java
 /**
@@ -1489,7 +1230,7 @@ public class UserDomainService {
 }
 ```
 
-#### 5.3.4 仓储接口
+#### 4.3.4 仓储接口
 
 ```java
 /**
@@ -1539,9 +1280,9 @@ public interface UserRepository extends Repository<User, UserId> {
 }
 ```
 
-### 5.4 基础设施层（Infrastructure Layer）
+### 4.4 基础设施层（Infrastructure Layer）
 
-#### 5.4.1 用户仓储实现
+#### 4.4.1 用户仓储实现
 
 ```java
 /**
@@ -1662,7 +1403,7 @@ public class UserRepositoryImpl implements UserRepository {
 }
 ```
 
-#### 5.4.2 数据访问对象
+#### 4.4.2 数据访问对象
 
 ```java
 /**
@@ -1768,7 +1509,7 @@ public interface UserMapper extends BaseMapper<UserPO> {
 }
 ```
 
-#### 5.4.3 对象转换器
+#### 4.4.3 对象转换器
 
 ```java
 /**
@@ -1883,9 +1624,9 @@ public class UserConverter {
 
 ---
 
-## 6. 异常处理与国际化
+## 5. 异常处理与国际化
 
-### 6.1 异常类
+### 5.1 异常类
 
  * 业务异常基类
 
@@ -1948,7 +1689,7 @@ public class UserConverter {
    }
  }
  ```
-### 6.2 全局异常处理器
+### 5.2 全局异常处理器
 
 ```java
 
@@ -2048,7 +1789,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-### 6.3 国际化配置
+### 5.3 国际化配置
 
 ```java
 /**
@@ -7266,7 +7007,7 @@ public class TestSliceConfig {
      */
     @TestConfiguration
     @EnableJpaRepositories(basePackages = "com.example.user.infrastructure.repository")
-    @EntityScan(basePackages = "com.example.user.domain.entity")
+    @EntityScan(basePackages = "com.example.user.domain.model.entity")
     public static class DataLayerTestConfig {
         
         @Bean
