@@ -26,20 +26,20 @@ ResilienceUtils.CircuitBreaker circuitBreaker =
         new ResilienceUtils.CircuitBreaker(5, Duration.ofMinutes(1));
 
         // 使用断路器包装操作
-        Try<String> result = circuitBreaker.execute(() ->
+        Try<String> apiResponse = circuitBreaker.execute(() ->
                 Try.of(() -> riskyOperation())
         );
 
-if(result.
+if(apiResponse.
 
         isSuccess()){
         System.out.
 
-        println("操作成功: "+result.get());
+        println("操作成功: "+apiResponse.get());
         }else{
         System.out.
 
-        println("操作失败: "+result.getCause().
+        println("操作失败: "+apiResponse.getCause().
 
         getMessage());
         }
@@ -60,7 +60,7 @@ ResilienceUtils.ExponentialBackoffRetry retry = new ResilienceUtils.ExponentialB
 );
 
 // 使用重试策略
-Try<String> result = retry.execute(() -> 
+Try<String> apiResponse = retry.execute(() -> 
     Try.of(() -> networkCall())
 );
 ```
@@ -75,7 +75,7 @@ ResilienceUtils.CompositeResilience resilience =
     ResilienceUtils.createCompositeResilience();
 
 // 使用组合策略
-Try<String> result = resilience.execute(() -> 
+Try<String> apiResponse = resilience.execute(() -> 
     Try.of(() -> complexOperation())
 );
 ```
@@ -239,11 +239,11 @@ System.out.println("失败次数: " + breaker.getFailureCount());
 ### 2. 异常处理
 
 ```java
-Try<String> result = resilience.execute(() -> 
+Try<String> apiResponse = resilience.execute(() -> 
     Try.of(() -> riskyOperation())
 );
 
-result.onSuccess(value -> {
+apiResponse.onSuccess(value -> {
     // 处理成功结果
     log.info("操作成功: {}", value);
 }).onFailure(error -> {

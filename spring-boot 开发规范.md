@@ -9,7 +9,7 @@
 ### 核心框架
 
 - **Java 17+**：使用最新的Java特性，如记录类、模式匹配、文本块等
-- **Spring Boot 3.5+**：主框架，提供依赖注入和自动配置
+- **Spring Boot 3.5+**：使用最新版本，提供依赖注入和自动配置
 - **Spring Security 6.x**：安全框架，处理认证和授权
 - **MyBatis Plus 3.x**：数据访问层ORM框架，提供强大的查询能力
 
@@ -581,14 +581,14 @@ public class PageUtils {
                 .map(converter)
                 .collect(Collectors.toList());
 
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> result =
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> apiResponse =
                 new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        result.setCurrent(sourceIPage.getCurrent());
-        result.setSize(sourceIPage.getSize());
-        result.setTotal(sourceIPage.getTotal());
-        result.setRecords(convertedRecords);
+        apiResponse.setCurrent(sourceIPage.getCurrent());
+        apiResponse.setSize(sourceIPage.getSize());
+        apiResponse.setTotal(sourceIPage.getTotal());
+        apiResponse.setRecords(convertedRecords);
 
-        return result;
+        return apiResponse;
     }
 }
 ```
@@ -837,13 +837,13 @@ class UserServiceTest {
         });
 
         // When
-        User result = userService.createUser(request);
+        User apiResponse = userService.createUser(request);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getUsername()).isEqualTo(request.getUsername());
-        assertThat(result.getEmail()).isEqualTo(request.getEmail());
+        assertThat(apiResponse).isNotNull();
+        assertThat(apiResponse.getId()).isEqualTo(1L);
+        assertThat(apiResponse.getUsername()).isEqualTo(request.getUsername());
+        assertThat(apiResponse.getEmail()).isEqualTo(request.getEmail());
 
         verify(userRepository).existsByEmail(request.getEmail());
         verify(passwordEncoder).encode(request.getPassword());

@@ -1,11 +1,12 @@
 package io.github.rose.core.spring;
 
-import io.github.rose.core.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -125,7 +126,7 @@ public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContext
     public static ListableBeanFactory getBeanFactory() {
         final ListableBeanFactory factory = null == beanFactory ? applicationContext : beanFactory;
         if (null == factory) {
-            throw new BusinessException("No ConfigurableListableBeanFactory or ApplicationContext injected, maybe not in the Spring environment?");
+            throw new RuntimeException("No ConfigurableListableBeanFactory or ApplicationContext injected, maybe not in the Spring environment?");
         }
         return factory;
     }
@@ -248,8 +249,6 @@ public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContext
         return getBeanFactory().getAliases(name);
     }
 
-    // ==================== 配置属性方法 ====================
-
     /**
      * 获取配置属性值
      *
@@ -317,7 +316,7 @@ public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContext
      */
     public static Set<String> findInfrastructureBeanNames() {
         return findBeanNames(beanDefinition ->
-                beanDefinition != null && beanDefinition.getRole() == org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE);
+                beanDefinition != null && beanDefinition.getRole() == BeanDefinition.ROLE_INFRASTRUCTURE);
     }
 
     /**
@@ -326,17 +325,17 @@ public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContext
      * @param predicate 过滤条件
      * @return Bean名称集合
      */
-    public static Set<String> findBeanNames(java.util.function.Predicate<org.springframework.beans.factory.config.BeanDefinition> predicate) {
+    public static Set<String> findBeanNames(java.util.function.Predicate<BeanDefinition> predicate) {
         if (predicate == null) {
             return Collections.emptySet();
         }
 
-        org.springframework.beans.factory.config.ConfigurableListableBeanFactory factory = getConfigurableBeanFactory();
+        ConfigurableListableBeanFactory factory = getConfigurableBeanFactory();
         Set<String> matchedBeanNames = new LinkedHashSet<>();
         String[] beanDefinitionNames = factory.getBeanDefinitionNames();
 
         for (String beanDefinitionName : beanDefinitionNames) {
-            org.springframework.beans.factory.config.BeanDefinition beanDefinition = factory.getBeanDefinition(beanDefinitionName);
+            BeanDefinition beanDefinition = factory.getBeanDefinition(beanDefinitionName);
             if (predicate.test(beanDefinition)) {
                 matchedBeanNames.add(beanDefinitionName);
             }
@@ -350,14 +349,14 @@ public class SpringBeans implements BeanFactoryPostProcessor, ApplicationContext
      *
      * @return ConfigurableListableBeanFactory
      */
-    public static org.springframework.beans.factory.config.ConfigurableListableBeanFactory getConfigurableBeanFactory() {
-        final org.springframework.beans.factory.config.ConfigurableListableBeanFactory factory;
+    public static ConfigurableListableBeanFactory getConfigurableBeanFactory() {
+        final ConfigurableListableBeanFactory factory;
         if (null != beanFactory) {
             factory = beanFactory;
         } else if (applicationContext instanceof ConfigurableApplicationContext) {
             factory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
         } else {
-            throw new BusinessException("No ConfigurableListableBeanFactory from context!");
+            throw new RuntimeException("No ConfigurableListableBeanFactory from context!");
         }
         return factory;
     }

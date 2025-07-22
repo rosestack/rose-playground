@@ -95,14 +95,14 @@ CompletableFuture<Integer> future = SpringThreadUtils.submitCompletable(
 );
 
 // 获取结果
-Integer result = future.get(1, TimeUnit.SECONDS);
-System.out.println("Result: " + result); // 输出: Result: 42
+Integer apiResponse = future.get(1, TimeUnit.SECONDS);
+System.out.println("Result: " + apiResponse); // 输出: ApiResponse: 42
 ```
 
 #### 带超时的任务执行
 ```java
 // 正常超时
-Integer result = SpringThreadUtils.submitWithTimeout(
+Integer apiResponse = SpringThreadUtils.submitWithTimeout(
     executor,
     () -> {
         SpringThreadUtils.sleep(100);
@@ -165,8 +165,8 @@ Integer[] results = SpringThreadUtils.waitForAll(futures);
 var counterTask = SpringThreadUtils.createCounterTask("MyCounter", 5, 50);
 CompletableFuture<Integer> future = SpringThreadUtils.submitCompletable(executor, counterTask);
 
-Integer result = future.get(1, TimeUnit.SECONDS);
-System.out.println("Final count: " + result); // 输出: Final count: 5
+Integer apiResponse = future.get(1, TimeUnit.SECONDS);
+System.out.println("Final count: " + apiResponse); // 输出: Final count: 5
 ```
 
 #### 创建异常任务
@@ -235,8 +235,8 @@ try {
     String[] results = SpringThreadUtils.waitForAll(apiFutures);
     
     // 处理结果
-    for (String result : results) {
-        System.out.println("API result: " + result);
+    for (String apiResponse : results) {
+        System.out.println("API apiResponse: " + apiResponse);
     }
 } finally {
     SpringThreadUtils.shutdownAndAwaitTermination(executor);
@@ -310,7 +310,7 @@ CompletableFuture<Integer> future = SpringThreadUtils.submitCompletable(
 );
 
 try {
-    Integer result = future.get(10, TimeUnit.SECONDS);
+    Integer apiResponse = future.get(10, TimeUnit.SECONDS);
     // 处理成功结果
 } catch (TimeoutException e) {
     log.error("Operation timed out");
@@ -334,8 +334,8 @@ try {
         () -> "Task completed"
     );
     
-    String result = future.get(5, TimeUnit.SECONDS);
-    System.out.println(result);
+    String apiResponse = future.get(5, TimeUnit.SECONDS);
+    System.out.println(apiResponse);
     
 } finally {
     // 确保线程池被正确关闭

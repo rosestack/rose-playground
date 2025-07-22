@@ -1,7 +1,0 @@
-io.github.rose.common.config.AopConfig
-io.github.rose.common.config.AsyncConfig
-io.github.rose.common.config.MessageConfig
-io.github.rose.common.config.MetricConfig
-io.github.rose.common.config.DomainConfig
-io.github.rose.common.config.RedisConfig
-io.github.rose.common.config.GlobalExceptionHandler

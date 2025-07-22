@@ -35,8 +35,7 @@ public class NotificationQueryService {
     public Notification findById(String id) {
         return notificationRepository.findById(id)
                 .orElseThrow(() -> new NotificationException(
-                        NotificationConstants.ErrorCode.NOTIFICATION_NOT_FOUND,
-                        "通知不存在: " + id));
+                        NotificationConstants.ErrorCode.NOTIFICATION_NOT_FOUND));
     }
     
     /**

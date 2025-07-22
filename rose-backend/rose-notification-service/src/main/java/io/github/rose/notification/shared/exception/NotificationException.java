@@ -1,5 +1,7 @@
 package io.github.rose.notification.shared.exception;
 
+import io.github.rose.infrastructure.exception.BaseException;
+
 /**
  * 通知业务异常基类
  * <p>
@@ -8,40 +10,21 @@ package io.github.rose.notification.shared.exception;
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
  */
-public class NotificationException extends RuntimeException {
-    
-    /** 错误码 */
-    private final String errorCode;
-    
-    /**
-     * 构造函数
-     *
-     * @param errorCode 错误码
-     * @param message 错误消息
-     */
-    public NotificationException(String errorCode, String message) {
-        super(message);
-        this.errorCode = errorCode;
+public class NotificationException extends BaseException {
+
+    public NotificationException(String messageKey) {
+        super(messageKey);
     }
-    
-    /**
-     * 构造函数
-     *
-     * @param errorCode 错误码
-     * @param message 错误消息
-     * @param cause 原因异常
-     */
-    public NotificationException(String errorCode, String message, Throwable cause) {
-        super(message, cause);
-        this.errorCode = errorCode;
+
+    protected NotificationException(String messageKey, Throwable cause) {
+        super(messageKey, cause);
     }
-    
-    /**
-     * 获取错误码
-     *
-     * @return 错误码
-     */
-    public String getErrorCode() {
-        return errorCode;
+
+    protected NotificationException(String messageKey, Object... messageArgs) {
+        super(messageKey, messageArgs);
+    }
+
+    protected NotificationException(String messageKey, Throwable cause, Object... messageArgs) {
+        super(messageKey, cause, messageArgs);
     }
 }

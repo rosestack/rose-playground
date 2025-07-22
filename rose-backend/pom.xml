@@ -36,8 +36,9 @@
 
     <modules>
         <module>rose-core</module>
-        <module>rose-common</module>
         <module>rose-i18n</module>
+        <module>rose-shared-api</module>
+        <module>rose-shared-service</module>
         <module>rose-iam-api</module>
         <module>rose-iam-service</module>
         <module>rose-notification-service</module>

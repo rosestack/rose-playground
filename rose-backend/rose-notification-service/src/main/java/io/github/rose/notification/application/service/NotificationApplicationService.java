@@ -1,6 +1,5 @@
 package io.github.rose.notification.application.service;
 
-import io.github.rose.core.exception.BusinessException;
 import io.github.rose.notice.NoticeService;
 import io.github.rose.notice.SendRequest;
 import io.github.rose.notice.SendResult;
@@ -13,6 +12,8 @@ import io.github.rose.notification.domain.repository.NotificationChannelReposito
 import io.github.rose.notification.domain.repository.NotificationRepository;
 import io.github.rose.notification.domain.repository.NotificationTemplateChannelRepository;
 import io.github.rose.notification.domain.repository.NotificationTemplateRepository;
+import io.github.rose.notification.shared.constant.NotificationConstants;
+import io.github.rose.notification.shared.exception.NotificationException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,13 +59,13 @@ public class NotificationApplicationService {
         NotificationTemplate template = templateRepository.findByIdAndLang(cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage())
                 .orElseThrow(() -> {
                     log.warn("模板不存在，templateId={}, lang={}", cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage());
-                    return new BusinessException("模板不存在");
+                    throw new NotificationException(NotificationConstants.ErrorCode.TEMPLATE_NOT_FOUND);
                 });
 
         List<NotificationTemplateChannel> notificationTemplateChannels = notificationTemplateChannelRepository.findByTemplateId(cmd.getTemplateId());
         if (notificationTemplateChannels == null || notificationTemplateChannels.isEmpty()) {
             log.warn("模板未配置任何渠道，templateId={}", cmd.getTemplateId());
-            throw new BusinessException("模板未配置任何渠道");
+            throw new NotificationException(NotificationConstants.ErrorCode.CHANNEL_NOT_FOUND);
         }
 
         for (NotificationTemplateChannel notificationTemplateChannel : notificationTemplateChannels) {
@@ -72,7 +73,7 @@ public class NotificationApplicationService {
             NotificationChannel channel = notificationChannelRepository.findById(channelId)
                     .orElseThrow(() -> {
                         log.warn("渠道不存在，channelId={}", channelId);
-                        return new BusinessException("渠道不存在，channelId=" + channelId);
+                        throw new NotificationException(NotificationConstants.ErrorCode.CHANNEL_NOT_FOUND);
                     });
 
             SendRequest sendRequest = SendRequest.builder()

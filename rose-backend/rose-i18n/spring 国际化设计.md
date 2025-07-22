@@ -758,7 +758,7 @@ public class EnhancedMessageSource implements MessageSource {
     
     // 批量消息获取
     public Map<String, String> getMessages(Set<String> codes, Locale locale) {
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> apiResponse = new HashMap<>();
         Set<String> missedKeys = new HashSet<>();
         
         // 先从L1缓存获取
@@ -766,7 +766,7 @@ public class EnhancedMessageSource implements MessageSource {
             String cacheKey = buildCacheKey(code, locale);
             String message = localCache.getIfPresent(cacheKey);
             if (message != null) {
-                result.put(code, message);
+                apiResponse.put(code, message);
             } else {
                 missedKeys.add(code);
             }
@@ -782,7 +782,7 @@ public class EnhancedMessageSource implements MessageSource {
             // 处理L2缓存结果...
         }
         
-        return result;
+        return apiResponse;
     }
 }
 ```
@@ -1138,20 +1138,20 @@ public class MessageKeyValidator implements I18nIDESupport {
     
     @Override
     public ValidationResult validateMessageKey(String key, Set<Locale> locales) {
-        ValidationResult result = new ValidationResult();
+        ValidationResult apiResponse = new ValidationResult();
         
         for (Locale locale : locales) {
             try {
                 String message = messageSource.getMessage(key, null, locale);
                 if (message == null || message.equals(key)) {
-                    result.addWarning("Message key '" + key + "' not found for locale " + locale);
+                    apiResponse.addWarning("Message key '" + key + "' not found for locale " + locale);
                 }
             } catch (NoSuchMessageException e) {
-                result.addError("Message key '" + key + "' missing for locale " + locale);
+                apiResponse.addError("Message key '" + key + "' missing for locale " + locale);
             }
         }
         
-        return result;
+        return apiResponse;
     }
     
     @Override

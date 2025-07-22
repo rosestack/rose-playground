@@ -1201,14 +1201,14 @@ public class PageUtils {
                 .map(converter)
                 .collect(Collectors.toList());
 
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> result =
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> apiResponse =
                 new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        result.setCurrent(sourceIPage.getCurrent());
-        result.setSize(sourceIPage.getSize());
-        result.setTotal(sourceIPage.getTotal());
-        result.setRecords(convertedRecords);
+        apiResponse.setCurrent(sourceIPage.getCurrent());
+        apiResponse.setSize(sourceIPage.getSize());
+        apiResponse.setTotal(sourceIPage.getTotal());
+        apiResponse.setRecords(convertedRecords);
 
-        return result;
+        return apiResponse;
     }
 }
 ```
@@ -1669,13 +1669,13 @@ class UserServiceTest {
         });
 
         // When
-        User result = userService.createUser(request);
+        User apiResponse = userService.createUser(request);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getUsername()).isEqualTo(request.getUsername());
-        assertThat(result.getEmail()).isEqualTo(request.getEmail());
+        assertThat(apiResponse).isNotNull();
+        assertThat(apiResponse.getId()).isEqualTo(1L);
+        assertThat(apiResponse.getUsername()).isEqualTo(request.getUsername());
+        assertThat(apiResponse.getEmail()).isEqualTo(request.getEmail());
 
         verify(userRepository).existsByEmail(request.getEmail());
         verify(passwordEncoder).encode(request.getPassword());
@@ -1895,7 +1895,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(key = "#result.id")
+    @CacheEvict(key = "#apiResponse.id")
     public User updateUser(Long id, UserUpdateRequest request) {
         // 更新逻辑
     }

@@ -1,6 +1,6 @@
 package io.github.rose.user.api;
 
-import io.github.rose.core.model.Result;
+import io.github.rose.interfaces.dto.ApiResponse;
 import io.github.rose.user.dto.UserLoginDTO;
 import io.github.rose.user.dto.UserRegisterDTO;
 import io.github.rose.user.vo.LoginVO;
@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 public interface AuthApi {
     @PostMapping("/api/auth/register")
-    Result<RegisterVO> register(@RequestBody UserRegisterDTO dto);
+    ApiResponse<RegisterVO> register(@RequestBody UserRegisterDTO dto);
 
     @PostMapping("/api/auth/login")
-    Result<LoginVO> login(@RequestBody UserLoginDTO dto);
+    ApiResponse<LoginVO> login(@RequestBody UserLoginDTO dto);
 
     @PostMapping("/api/auth/logout")
-    Result<Void> logout();
+    ApiResponse<Void> logout();
 }
