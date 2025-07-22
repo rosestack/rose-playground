@@ -66,11 +66,12 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- 函数式编程支持 -->
             <dependency>
-                <groupId>io.vavr</groupId>
-                <artifactId>vavr</artifactId>
-                <version>0.10.4</version>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-bom</artifactId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>3.5.12</version>
             </dependency>
             <!-- 网络工具库 -->
             <dependency>
