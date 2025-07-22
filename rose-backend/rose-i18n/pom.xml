@@ -10,7 +10,6 @@
     </parent>
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-i18n</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>rose-i18n</name>
 

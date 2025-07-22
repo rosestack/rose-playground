@@ -10,9 +10,7 @@
     </parent>
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>rose-server</name>
-    <description>Demo project for Spring Boot</description>
 
     <dependencies>
         <dependency>

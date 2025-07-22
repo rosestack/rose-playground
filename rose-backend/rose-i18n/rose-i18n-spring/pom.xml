@@ -12,7 +12,6 @@
 
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-i18n-spring</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>

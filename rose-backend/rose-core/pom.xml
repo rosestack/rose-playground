@@ -10,7 +10,6 @@
     </parent>
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>rose-core</name>
     <description>Demo project for Spring Boot</description>
 

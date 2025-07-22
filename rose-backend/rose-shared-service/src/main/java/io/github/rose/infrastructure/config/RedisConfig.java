@@ -148,7 +148,7 @@ public class RedisConfig {
     }
 
     @Slf4j
-    public class CacheEvictionListener implements MessageListener {
+    public static class CacheEvictionListener implements MessageListener {
         @Override
         public void onMessage(Message message, byte[] pattern) {
             try {
