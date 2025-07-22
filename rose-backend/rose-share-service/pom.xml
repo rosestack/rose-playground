@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-common</artifactId>
+    <artifactId>rose-share-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>rose-common</name>
     <description>Demo project for Spring Boot</description>

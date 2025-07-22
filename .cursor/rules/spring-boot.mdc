@@ -265,7 +265,7 @@ private UserStatus status;
 public class ApiResponse<T> {
 
     /** 响应状态码 */
-    private String code;
+    private int code;
 
     /** 响应数据 */
     private T data;
@@ -278,7 +278,7 @@ public class ApiResponse<T> {
      */
     public static <T> ApiResponse<T> success() {
         return ApiResponse.<T>builder()
-                .code("SUCCESS")
+                .code(200)
                 .message("操作成功")
                 .build();
     }
@@ -288,7 +288,7 @@ public class ApiResponse<T> {
      */
     public static <T> ApiResponse<T> success(T data) {
         return ApiResponse.<T>builder()
-                .code("SUCCESS")
+                .code(200)
                 .data(data)
                 .message("操作成功")
                 .build();
@@ -299,7 +299,7 @@ public class ApiResponse<T> {
      */
     public static <T> ApiResponse<T> success(T data, String message) {
         return ApiResponse.<T>builder()
-                .code("SUCCESS")
+                .code(200)
                 .data(data)
                 .message(message)
                 .build();
@@ -308,7 +308,7 @@ public class ApiResponse<T> {
     /**
      * 失败响应
      */
-    public static <T> ApiResponse<T> error(String code, String message) {
+    public static <T> ApiResponse<T> error(int code, String message) {
         return ApiResponse.<T>builder()
                 .code(code)
                 .message(message)
@@ -318,7 +318,7 @@ public class ApiResponse<T> {
     /**
      * 失败响应（带数据）
      */
-    public static <T> ApiResponse<T> error(String code, String message, T data) {
+    public static <T> ApiResponse<T> error(int code, String message, T data) {
         return ApiResponse.<T>builder()
                 .code(code)
                 .message(message)
@@ -346,31 +346,22 @@ public class ApiResponse<T> {
  */
 public abstract class BusinessException extends RuntimeException {
 
-    /** 错误代码 */
-    private final String errorCode;
-
     /** 国际化消息键 */
     private final String messageKey;
 
     /** 消息参数 */
     private final Object[] messageArgs;
 
-    protected BusinessException(String errorCode, String message) {
+    protected BusinessException(String message) {
         super(message);
-        this.errorCode = errorCode;
         this.messageKey = null;
         this.messageArgs = null;
     }
 
-    protected BusinessException(String errorCode, String messageKey, Object... messageArgs) {
+    protected BusinessException(String messageKey, Object... messageArgs) {
         super(messageKey);
-        this.errorCode = errorCode;
         this.messageKey = messageKey;
         this.messageArgs = messageArgs;
-    }
-
-    public String getErrorCode() {
-        return errorCode;
     }
 
     public String getMessageKey() {
@@ -387,7 +378,7 @@ public abstract class BusinessException extends RuntimeException {
  */
 public class UserNotFoundException extends BusinessException {
     public UserNotFoundException(Long userId) {
-        super("USER_NOT_FOUND", "user.not.found", userId);
+        super("user.not.found", userId);
     }
 }
 
@@ -396,11 +387,11 @@ public class UserNotFoundException extends BusinessException {
  */
 public class ValidationException extends BusinessException {
     public ValidationException(String message) {
-        super("VALIDATION_FAILED", message);
+        super(message);
     }
 
     public ValidationException(String messageKey, Object... messageArgs) {
-        super("VALIDATION_FAILED", messageKey, messageArgs);
+        super(messageKey, messageArgs);
     }
 }
 ```
@@ -464,7 +455,7 @@ public class GlobalExceptionHandler {
         log.warn("业务异常: {}", e.getMessage());
 
         String message = getLocalizedMessage(e, request);
-        ApiResponse<Void> response = ApiResponse.error(e.getErrorCode(), message);
+        ApiResponse<Void> response = ApiResponse.error(400, message);
 
         return response;
     }
@@ -485,7 +476,7 @@ public class GlobalExceptionHandler {
         });
 
         String message = getLocalizedMessage("validation.failed", request);
-        ApiResponse<Map<String, String>> response = ApiResponse.error("VALIDATION_FAILED", message, errors);
+        ApiResponse<Map<String, String>> response = ApiResponse.error(400, message, errors);
 
         return response;
     }
@@ -498,7 +489,7 @@ public class GlobalExceptionHandler {
         log.error("系统异常", e);
 
         String message = getLocalizedMessage("system.error", request);
-        ApiResponse<Void> response = ApiResponse.error("SYSTEM_ERROR", message);
+        ApiResponse<Void> response = ApiResponse.error(500, message);
 
         return response;
     }
@@ -535,719 +526,6 @@ public class GlobalExceptionHandler {
 }
 ```
 
-## Spring Boot 开发规范
-
-### 1. 控制器规范
-
-- 避免字段注入
-
-```java
-/**
- * 用户管理控制器
- */
-@RestController
-@RequestMapping("/api/v1/users")
-@Validated
-@Slf4j
-@Tag(name = "用户管理", description = "用户增删改查接口")
-public class UserController {
-
-    private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
-    /**
-     * 创建用户
-     */
-    @PostMapping
-    @Operation(summary = "创建用户", description = "创建新用户账号")
-    public ApiResponse<UserResponse> createUser(
-            @Valid @RequestBody UserCreateRequest request) {
-        log.info("创建用户请求: {}", request);
-        User user = userService.createUser(request);
-        UserResponse response = UserMapper.INSTANCE.toResponse(user);
-        return ApiResponse.success(response, "用户创建成功");
-    }
-
-    /**
-     * 获取用户详情
-     */
-    @GetMapping("/{id}")
-    @Operation(summary = "获取用户详情")
-    public ApiResponse<UserResponse> getUser(
-            @PathVariable @Positive Long id) {
-        User user = userService.getUserById(id);
-        UserResponse response = UserMapper.INSTANCE.toResponse(user);
-        return ApiResponse.success(response);
-    }
-
-    /**
-     * 分页查询用户
-     */
-    @GetMapping
-    @Operation(summary = "分页查询用户")
-    public ApiResponse<Page<UserResponse>> pageUsers(
-            @Valid UserQuery query) {
-        Page<User> userPage = userService.pageUsers(query);
-        Page<UserResponse> response = userPage.map(UserMapper.INSTANCE::toResponse);
-        return ApiResponse.success(response);
-    }
-}
-```
-
-### 2. 服务层规范
-
-```java
-/**
- * 用户服务接口
- */
-public interface UserService {
-
-    /**
-     * 创建用户
-     */
-    User createUser(UserCreateRequest request);
-
-    /**
-     * 根据ID获取用户
-     */
-    User getUserById(Long id);
-
-    /**
-     * 分页查询用户
-     */
-    Page<User> pageUsers(UserQuery query);
-
-    /**
-     * 更新用户
-     */
-    User updateUser(Long id, UserUpdateRequest request);
-
-    /**
-     * 删除用户
-     */
-    void deleteUser(Long id);
-}
-
-/**
- * 用户服务实现类
- */
-@Service
-@Transactional(rollbackFor = Exception.class)
-@Slf4j
-public class UserServiceImpl implements UserService {
-
-    private final UserRepository userRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
-
-    public UserServiceImpl(UserRepository userRepository,
-                           RedisTemplate<String, Object> redisTemplate) {
-        this.userRepository = userRepository;
-        this.redisTemplate = redisTemplate;
-    }
-
-    @Override
-    public User createUser(UserCreateRequest request) {
-        log.info("创建用户: {}", request.getEmail());
-
-        // 验证邮箱唯一性
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("EMAIL_EXISTS", "邮箱已存在");
-        }
-
-        // 创建用户实体
-        User user = User.builder()
-                .email(request.getEmail())
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .status(UserStatus.ACTIVE)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        // 保存用户
-        User savedUser = userRepository.save(user);
-        log.info("用户创建成功: {}", savedUser.getId());
-
-        return savedUser;
-    }
-
-    @Override
-    @Cacheable(value = "users", key = "#id")
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-    }
-}
-```
-
-### 3. 配置类规范
-
-```java
-/**
- * Redis 配置
- */
-@Configuration
-@EnableCaching
-@Slf4j
-public class RedisConfig {
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-
-        // 设置序列化器
-        Jackson2JsonRedisSerializer<Object> serializer =
-                new Jackson2JsonRedisSerializer<>(Object.class);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        mapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL);
-        serializer.setObjectMapper(mapper);
-
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(serializer);
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(serializer);
-
-        template.afterPropertiesSet();
-        return template;
-    }
-
-    @Bean
-    public CacheManager cacheManager(RedisConnectionFactory factory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(1))
-                .serializeKeysWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new Jackson2JsonRedisSerializer<>(Object.class)));
-
-        return RedisCacheManager.builder(factory)
-                .cacheDefaults(config)
-                .build();
-    }
-}
-```
-
-### 4. 依赖注入规范
-
-#### 构造函数注入
-
-可以使用 Lombok 的注解简化代码开发。
-
-```java
-/**
- * 用户服务实现类
- */
-@Service
-@Transactional(rollbackFor = Exception.class)
-@Slf4j
-public class UserServiceImpl implements UserService {
-
-    private final UserRepository userRepository;
-    private final UserValidator userValidator;
-    private final PasswordEncoder passwordEncoder;
-    private final CacheManager cacheManager;
-
-    /**
-     * 构造函数注入
-     */
-    public UserServiceImpl(
-            UserRepository userRepository,
-            UserValidator userValidator,
-            PasswordEncoder passwordEncoder,
-            CacheManager cacheManager) {
-        this.userRepository = userRepository;
-        this.userValidator = userValidator;
-        this.passwordEncoder = passwordEncoder;
-        this.cacheManager = cacheManager;
-    }
-
-    // 服务方法实现
-}
-```
-
-#### 避免字段注入
-
-可以使用 Lombok 的注解简化代码开发。
-
-```java
-// ❌ 不推荐：字段注入
-@Autowired
-private UserRepository userRepository;
-
-// ✅ 推荐：构造函数注入
-private final UserRepository userRepository;
-
-public UserServiceImpl(UserRepository userRepository) {
-    this.userRepository = userRepository;
-}
-```
-
-### 5. 事务管理
-
-#### 事务注解使用
-
-```java
-/**
- * 用户服务
- */
-@Service
-@Transactional(rollbackFor = Exception.class)
-public class UserService {
-
-    /**
-     * 创建用户（只读事务）
-     */
-    @Transactional(readOnly = true)
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("用户不存在"));
-    }
-
-    /**
-     * 创建用户（写事务）
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public User createUser(CreateUserCommand command) {
-        // 业务逻辑
-        return userRepository.save(user);
-    }
-
-    /**
-     * 批量操作（新事务）
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void batchProcessUsers(List<User> users) {
-        // 批量处理逻辑
-    }
-}
-```
-
-### 6. 缓存使用
-
-#### 缓存注解
-
-```java
-/**
- * 用户服务
- */
-@Service
-@Transactional(rollbackFor = Exception.class)
-public class UserService {
-
-    /**
-     * 根据ID获取用户（带缓存）
-     */
-    @Cacheable(value = "users", key = "#userId")
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("用户不存在"));
-    }
-
-    /**
-     * 更新用户（清除缓存）
-     */
-    @CacheEvict(value = "users", key = "#user.id")
-    public User updateUser(User user) {
-        return userRepository.save(user);
-    }
-
-    /**
-     * 删除用户（清除缓存）
-     */
-    @CacheEvict(value = "users", key = "#userId")
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
-    }
-}
-```
-
-## MyBatis Plus 开发规范
-
-### 1. 实体类定义
-
-#### 基础实体类
-
-```java
-/**
- * 基础实体类
- */
-@Data
-@MappedSuperclass
-public abstract class BaseEntity {
-
-    /** 创建时间 */
-    @TableField(value = "created_time", fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
-
-    /** 更新时间 */
-    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
-
-    /** 创建人 */
-    @TableField(value = "created_by", fill = FieldFill.INSERT)
-    private String createdBy;
-
-    /** 更新人 */
-    @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
-    private String updatedBy;
-
-    /** 逻辑删除标识 */
-    @TableLogic
-    @TableField("deleted")
-    private Boolean deleted;
-
-    /** 版本号（乐观锁） */
-    @Version
-    @TableField("version")
-    private Integer version;
-}
-```
-
-#### 用户实体
-
-```java
-/**
- * 用户实体
- */
-@Data
-@TableName("user")
-@EqualsAndHashCode(callSuper = true)
-public class User extends BaseEntity {
-
-    /** 用户ID */
-    @TableId(type = IdType.AUTO)
-    private Long id;
-
-    /** 用户名 */
-    @TableField("username")
-    private String username;
-
-    /** 邮箱 */
-    @TableField("email")
-    private String email;
-
-    /** 密码 */
-    @TableField("password")
-    private String password;
-
-    /** 用户状态 */
-    @TableField("status")
-    private UserStatus status;
-}
-```
-
-### 2. Mapper 接口规范
-
-```java
-/**
- * 用户数据访问接口
- */
-@Mapper
-public interface UserMapper extends BaseMapper<User> {
-
-    /**
-     * 根据邮箱查询用户
-     */
-    @Select("SELECT * FROM t_user WHERE email = #{email} AND deleted = 0")
-    User selectByEmail(@Param("email") String email);
-
-    /**
-     * 分页查询活跃用户
-     */
-    @Select("SELECT * FROM t_user WHERE status = 'ACTIVE' AND deleted = 0")
-    IPage<User> selectActiveUsers(IPage<User> page);
-
-    /**
-     * 批量更新用户状态
-     */
-    @Update("UPDATE t_user SET status = #{status} WHERE id IN " +
-            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>" +
-            "#{id}" +
-            "</foreach>")
-    int updateStatusByIds(@Param("ids") List<Long> ids, @Param("status") UserStatus status);
-
-    /**
-     * 统计用户数量按状态分组
-     */
-    List<UserStatusCount> countUsersByStatus();
-}
-```
-
-### 3. Service 层规范
-
-```java
-/**
- * 用户服务实现（继承 MyBatis Plus 服务）
- */
-@Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
-
-    @Override
-    public User createUser(UserCreateRequest request) {
-        // 检查邮箱唯一性
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
-                .eq(User::getEmail, request.getEmail());
-
-        if (this.count(wrapper) > 0) {
-            throw new BusinessException("EMAIL_EXISTS", "邮箱已存在");
-        }
-
-        // 创建用户
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .status(UserStatus.ACTIVE)
-                .build();
-
-        this.save(user);
-        return user;
-    }
-
-    @Override
-    public Page<User> pageUsers(UserQuery query) {
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
-                .like(StringUtils.hasText(query.getUsername()), User::getUsername, query.getUsername())
-                .eq(Objects.nonNull(query.getStatus()), User::getStatus, query.getStatus())
-                .between(Objects.nonNull(query.getStartDate()) && Objects.nonNull(query.getEndDate()),
-                        User::getCreatedAt, query.getStartDate(), query.getEndDate())
-                .orderByDesc(User::getCreatedAt);
-
-        Page<User> page = new Page<>(query.getPageNum(), query.getPageSize());
-        return this.page(page, wrapper);
-    }
-}
-```
-
-### 4. 分页工具类
-
-#### PageUtils - 分页对象转换工具
-
-```java
-/**
- * 分页工具类
- * <p>
- * 提供 Spring Data Page 和 MyBatis-Plus IPage 之间的转换功能。
- * </p>
- */
-@UtilityClass
-public class PageUtils {
-
-    /**
-     * 将 MyBatis-Plus IPage 转换为 Spring Data Page
-     *
-     * @param iPage MyBatis-Plus 分页对象
-     * @param <T>   数据类型
-     * @return Spring Data Page 对象
-     */
-    public static <T> Page<T> toSpringPage(IPage<T> iPage) {
-        if (iPage == null) {
-            return Page.empty();
-        }
-
-        Pageable pageable = PageRequest.of(
-                (int) (iPage.getCurrent() - 1), // MyBatis-Plus 页码从1开始，Spring Data 从0开始
-                (int) iPage.getSize()
-        );
-
-        return new PageImpl<>(
-                iPage.getRecords(),
-                pageable,
-                iPage.getTotal()
-        );
-    }
-
-    /**
-     * 将 Spring Data Page 转换为 MyBatis-Plus IPage
-     *
-     * @param page Spring Data 分页对象
-     * @param <T>  数据类型
-     * @return MyBatis-Plus IPage 对象
-     */
-    public static <T> IPage<T> toMybatisPage(Page<T> page) {
-        if (page == null) {
-            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        }
-
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> iPage =
-                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-
-        iPage.setCurrent(page.getNumber() + 1); // Spring Data 页码从0开始，MyBatis-Plus 从1开始
-        iPage.setSize(page.getSize());
-        iPage.setTotal(page.getTotalElements());
-        iPage.setRecords(page.getContent());
-
-        return iPage;
-    }
-
-    /**
-     * 创建 MyBatis-Plus 分页对象
-     *
-     * @param pageNum  页码（从1开始）
-     * @param pageSize 页大小
-     * @param <T>      数据类型
-     * @return MyBatis-Plus IPage 对象
-     */
-    public static <T> IPage<T> createMybatisPage(int pageNum, int pageSize) {
-        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize);
-    }
-
-    /**
-     * 创建 Spring Data 分页对象
-     *
-     * @param pageNum  页码（从0开始）
-     * @param pageSize 页大小
-     * @return Spring Data Pageable 对象
-     */
-    public static Pageable createSpringPageable(int pageNum, int pageSize) {
-        return PageRequest.of(pageNum, pageSize);
-    }
-
-    /**
-     * 创建带排序的 Spring Data 分页对象
-     *
-     * @param pageNum  页码（从0开始）
-     * @param pageSize 页大小
-     * @param sort     排序条件
-     * @return Spring Data Pageable 对象
-     */
-    public static Pageable createSpringPageable(int pageNum, int pageSize, Sort sort) {
-        return PageRequest.of(pageNum, pageSize, sort);
-    }
-
-    /**
-     * 将分页查询结果进行类型转换
-     *
-     * @param sourcePage 源分页对象
-     * @param converter  转换函数
-     * @param <S>        源类型
-     * @param <T>        目标类型
-     * @return 转换后的分页对象
-     */
-    public static <S, T> Page<T> convertPage(Page<S> sourcePage, Function<S, T> converter) {
-        return sourcePage.map(converter);
-    }
-
-    /**
-     * 将 IPage 查询结果进行类型转换
-     *
-     * @param sourceIPage 源分页对象
-     * @param converter   转换函数
-     * @param <S>         源类型
-     * @param <T>         目标类型
-     * @return 转换后的分页对象
-     */
-    public static <S, T> IPage<T> convertIPage(IPage<S> sourceIPage, Function<S, T> converter) {
-        if (sourceIPage == null || sourceIPage.getRecords() == null) {
-            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        }
-
-        List<T> convertedRecords = sourceIPage.getRecords().stream()
-                .map(converter)
-                .collect(Collectors.toList());
-
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> result =
-                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        result.setCurrent(sourceIPage.getCurrent());
-        result.setSize(sourceIPage.getSize());
-        result.setTotal(sourceIPage.getTotal());
-        result.setRecords(convertedRecords);
-
-        return result;
-    }
-}
-```
-
-使用示例：
-
-```java
-/**
- * 在 Service 层使用分页工具类
- */
-@Service
-public class UserServiceImpl implements UserService {
-
-    @Autowired
-    private UserMapper userMapper;
-
-    /**
-     * 使用 MyBatis-Plus 查询并转换为 Spring Data Page
-     */
-    @Override
-    public Page<User> pageUsers(UserQuery query) {
-        // 创建 MyBatis-Plus 分页对象
-        IPage<User> mybatisPage = PageUtils.createMybatisPage(query.getPageNum(), query.getPageSize());
-
-        // 构建查询条件
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
-                .like(StringUtils.hasText(query.getUsername()), User::getUsername, query.getUsername())
-                .eq(Objects.nonNull(query.getStatus()), User::getStatus, query.getStatus())
-                .orderByDesc(User::getCreatedAt);
-
-        // 执行分页查询
-        IPage<User> resultPage = userMapper.selectPage(mybatisPage, wrapper);
-
-        // 转换为 Spring Data Page
-        return PageUtils.toSpringPage(resultPage);
-    }
-
-    /**
-     * 使用 Spring Data Page 并转换为 MyBatis-Plus IPage
-     */
-    public IPage<UserResponse> pageUserResponses(UserQuery query) {
-        // 先获取 Spring Data Page
-        Page<User> userPage = pageUsers(query);
-
-        // 转换数据类型
-        Page<UserResponse> responsePage = PageUtils.convertPage(userPage, UserMapper.INSTANCE::toResponse);
-
-        // 转换为 MyBatis-Plus IPage
-        return PageUtils.toMybatisPage(responsePage);
-    }
-}
-```
-
-### 5. 查询条件构建
-
-#### Lambda查询
-
-```java
-/**
- * 使用Lambda查询构建器
- */
-public List<User> getActiveUsersByKeyword(String keyword) {
-    LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
-    queryWrapper.eq(User::getStatus, UserStatus.ACTIVE)
-            .and(StringUtils.hasText(keyword), wrapper ->
-                    wrapper.like(User::getUsername, keyword)
-                            .or()
-                            .like(User::getEmail, keyword))
-            .orderByDesc(User::getCreatedAt);
-
-    return userMapper.selectList(queryWrapper);
-}
-```
-
-#### 更新条件构建
-
-```java
-/**
- * 批量更新用户状态
- */
-public void updateUserStatus(List<Long> userIds, UserStatus status) {
-    LambdaUpdateWrapper<User> updateWrapper = Wrappers.lambdaUpdate();
-    updateWrapper.in(User::getId, userIds)
-            .set(User::getStatus, status)
-            .set(User::getUpdatedAt, LocalDateTime.now());
-
-    userMapper.update(null, updateWrapper);
-}
-```
 
 ## Maven 项目结构规范
 
@@ -1638,60 +916,718 @@ project/
 </project>
 ```
 
-## 代码质量规范
+## MyBatis Plus 开发规范
 
-### 1. 静态代码分析
+### 1. 实体类定义
 
-#### SonarQube配置
+#### 基础实体类
 
-```xml
-<!-- Maven SonarQube Plugin -->
-<plugin>
-    <groupId>org.sonarsource.scanner.maven</groupId>
-    <artifactId>sonar-maven-plugin</artifactId>
-    <version>3.10.0.2594</version>
-</plugin>
+```java
+/**
+ * 基础实体类
+ */
+@Data
+@MappedSuperclass
+public abstract class BaseEntity {
+
+    /** 创建时间 */
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    private LocalDateTime createdTime;
+
+    /** 更新时间 */
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedTime;
+
+    /** 创建人 */
+    @TableField(value = "created_by", fill = FieldFill.INSERT)
+    private String createdBy;
+
+    /** 更新人 */
+    @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
+    private String updatedBy;
+
+    /** 逻辑删除标识 */
+    @TableLogic
+    @TableField("deleted")
+    private Boolean deleted;
+
+    /** 版本号（乐观锁） */
+    @Version
+    @TableField("version")
+    private Integer version;
+}
 ```
 
-#### SpotBugs配置
+#### 用户实体
 
-```xml
-<!-- SpotBugs Maven Plugin -->
-<plugin>
-    <groupId>com.github.spotbugs</groupId>
-    <artifactId>spotbugs-maven-plugin</artifactId>
-    <version>4.7.3.6</version>
-    <configuration>
-        <effort>Max</effort>
-        <threshold>Low</threshold>
-        <xmlOutput>true</xmlOutput>
-    </configuration>
-</plugin>
+```java
+/**
+ * 用户实体
+ */
+@Data
+@TableName("user")
+@EqualsAndHashCode(callSuper = true)
+public class User extends BaseEntity {
+
+    /** 用户ID */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /** 用户名 */
+    @TableField("username")
+    private String username;
+
+    /** 邮箱 */
+    @TableField("email")
+    private String email;
+
+    /** 密码 */
+    @TableField("password")
+    private String password;
+
+    /** 用户状态 */
+    @TableField("status")
+    private UserStatus status;
+}
 ```
 
-### 2. 代码格式化
+### 2. Mapper 接口规范
 
-#### Spotless配置
+```java
+/**
+ * 用户数据访问接口
+ */
+@Mapper
+public interface UserMapper extends BaseMapper<User> {
 
-```xml
-<!-- Spotless Maven Plugin -->
-<plugin>
-    <groupId>com.diffplug.spotless</groupId>
-    <artifactId>spotless-maven-plugin</artifactId>
-    <version>2.43.0</version>
-    <configuration>
-        <java>
-            <googleJavaFormat>
-                <version>1.18.1</version>
-                <style>GOOGLE</style>
-            </googleJavaFormat>
-            <removeUnusedImports/>
-            <importOrder>
-                <order>java,javax,org,com,</order>
-            </importOrder>
-        </java>
-    </configuration>
-</plugin>
+    /**
+     * 根据邮箱查询用户
+     */
+    @Select("SELECT * FROM t_user WHERE email = #{email} AND deleted = 0")
+    User selectByEmail(@Param("email") String email);
+
+    /**
+     * 分页查询活跃用户
+     */
+    @Select("SELECT * FROM t_user WHERE status = 'ACTIVE' AND deleted = 0")
+    IPage<User> selectActiveUsers(IPage<User> page);
+
+    /**
+     * 批量更新用户状态
+     */
+    @Update("UPDATE t_user SET status = #{status} WHERE id IN " +
+            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>" +
+            "#{id}" +
+            "</foreach>")
+    int updateStatusByIds(@Param("ids") List<Long> ids, @Param("status") UserStatus status);
+
+    /**
+     * 统计用户数量按状态分组
+     */
+    List<UserStatusCount> countUsersByStatus();
+}
+```
+
+### 3. Service 层规范
+
+```java
+/**
+ * 用户服务实现（继承 MyBatis Plus 服务）
+ */
+@Service
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    @Override
+    public User createUser(UserCreateRequest request) {
+        // 检查邮箱唯一性
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, request.getEmail());
+
+        if (this.count(wrapper) > 0) {
+            throw new BusinessException("EMAIL_EXISTS", "邮箱已存在");
+        }
+
+        // 创建用户
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        this.save(user);
+        return user;
+    }
+
+    @Override
+    public Page<User> pageUsers(UserQuery query) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .like(StringUtils.hasText(query.getUsername()), User::getUsername, query.getUsername())
+                .eq(Objects.nonNull(query.getStatus()), User::getStatus, query.getStatus())
+                .between(Objects.nonNull(query.getStartDate()) && Objects.nonNull(query.getEndDate()),
+                        User::getCreatedAt, query.getStartDate(), query.getEndDate())
+                .orderByDesc(User::getCreatedAt);
+
+        Page<User> page = new Page<>(query.getPageNum(), query.getPageSize());
+        return this.page(page, wrapper);
+    }
+}
+```
+
+### 4. 分页工具类
+
+#### PageUtils - 分页对象转换工具
+
+```java
+/**
+ * 分页工具类
+ * <p>
+ * 提供 Spring Data Page 和 MyBatis-Plus IPage 之间的转换功能。
+ * </p>
+ */
+@UtilityClass
+public class PageUtils {
+
+    /**
+     * 将 MyBatis-Plus IPage 转换为 Spring Data Page
+     *
+     * @param iPage MyBatis-Plus 分页对象
+     * @param <T>   数据类型
+     * @return Spring Data Page 对象
+     */
+    public static <T> Page<T> toSpringPage(IPage<T> iPage) {
+        if (iPage == null) {
+            return Page.empty();
+        }
+
+        Pageable pageable = PageRequest.of(
+                (int) (iPage.getCurrent() - 1), // MyBatis-Plus 页码从1开始，Spring Data 从0开始
+                (int) iPage.getSize()
+        );
+
+        return new PageImpl<>(
+                iPage.getRecords(),
+                pageable,
+                iPage.getTotal()
+        );
+    }
+
+    /**
+     * 将 Spring Data Page 转换为 MyBatis-Plus IPage
+     *
+     * @param page Spring Data 分页对象
+     * @param <T>  数据类型
+     * @return MyBatis-Plus IPage 对象
+     */
+    public static <T> IPage<T> toMybatisPage(Page<T> page) {
+        if (page == null) {
+            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+        }
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> iPage =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+
+        iPage.setCurrent(page.getNumber() + 1); // Spring Data 页码从0开始，MyBatis-Plus 从1开始
+        iPage.setSize(page.getSize());
+        iPage.setTotal(page.getTotalElements());
+        iPage.setRecords(page.getContent());
+
+        return iPage;
+    }
+
+    /**
+     * 创建 MyBatis-Plus 分页对象
+     *
+     * @param pageNum  页码（从1开始）
+     * @param pageSize 页大小
+     * @param <T>      数据类型
+     * @return MyBatis-Plus IPage 对象
+     */
+    public static <T> IPage<T> createMybatisPage(int pageNum, int pageSize) {
+        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize);
+    }
+
+    /**
+     * 创建 Spring Data 分页对象
+     *
+     * @param pageNum  页码（从0开始）
+     * @param pageSize 页大小
+     * @return Spring Data Pageable 对象
+     */
+    public static Pageable createSpringPageable(int pageNum, int pageSize) {
+        return PageRequest.of(pageNum, pageSize);
+    }
+
+    /**
+     * 创建带排序的 Spring Data 分页对象
+     *
+     * @param pageNum  页码（从0开始）
+     * @param pageSize 页大小
+     * @param sort     排序条件
+     * @return Spring Data Pageable 对象
+     */
+    public static Pageable createSpringPageable(int pageNum, int pageSize, Sort sort) {
+        return PageRequest.of(pageNum, pageSize, sort);
+    }
+
+    /**
+     * 将分页查询结果进行类型转换
+     *
+     * @param sourcePage 源分页对象
+     * @param converter  转换函数
+     * @param <S>        源类型
+     * @param <T>        目标类型
+     * @return 转换后的分页对象
+     */
+    public static <S, T> Page<T> convertPage(Page<S> sourcePage, Function<S, T> converter) {
+        return sourcePage.map(converter);
+    }
+
+    /**
+     * 将 IPage 查询结果进行类型转换
+     *
+     * @param sourceIPage 源分页对象
+     * @param converter   转换函数
+     * @param <S>         源类型
+     * @param <T>         目标类型
+     * @return 转换后的分页对象
+     */
+    public static <S, T> IPage<T> convertIPage(IPage<S> sourceIPage, Function<S, T> converter) {
+        if (sourceIPage == null || sourceIPage.getRecords() == null) {
+            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+        }
+
+        List<T> convertedRecords = sourceIPage.getRecords().stream()
+                .map(converter)
+                .collect(Collectors.toList());
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> result =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+        result.setCurrent(sourceIPage.getCurrent());
+        result.setSize(sourceIPage.getSize());
+        result.setTotal(sourceIPage.getTotal());
+        result.setRecords(convertedRecords);
+
+        return result;
+    }
+}
+```
+
+使用示例：
+
+```java
+/**
+ * 在 Service 层使用分页工具类
+ */
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private UserMapper userMapper;
+
+    /**
+     * 使用 MyBatis-Plus 查询并转换为 Spring Data Page
+     */
+    @Override
+    public Page<User> pageUsers(UserQuery query) {
+        // 创建 MyBatis-Plus 分页对象
+        IPage<User> mybatisPage = PageUtils.createMybatisPage(query.getPageNum(), query.getPageSize());
+
+        // 构建查询条件
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .like(StringUtils.hasText(query.getUsername()), User::getUsername, query.getUsername())
+                .eq(Objects.nonNull(query.getStatus()), User::getStatus, query.getStatus())
+                .orderByDesc(User::getCreatedAt);
+
+        // 执行分页查询
+        IPage<User> resultPage = userMapper.selectPage(mybatisPage, wrapper);
+
+        // 转换为 Spring Data Page
+        return PageUtils.toSpringPage(resultPage);
+    }
+
+    /**
+     * 使用 Spring Data Page 并转换为 MyBatis-Plus IPage
+     */
+    public IPage<UserResponse> pageUserResponses(UserQuery query) {
+        // 先获取 Spring Data Page
+        Page<User> userPage = pageUsers(query);
+
+        // 转换数据类型
+        Page<UserResponse> responsePage = PageUtils.convertPage(userPage, UserDtoConverter.INSTANCE::toResponse);
+
+        // 转换为 MyBatis-Plus IPage
+        return PageUtils.toMybatisPage(responsePage);
+    }
+}
+```
+
+### 5. 查询条件构建
+
+#### Lambda查询
+
+```java
+/**
+ * 使用Lambda查询构建器
+ */
+public List<User> getActiveUsersByKeyword(String keyword) {
+    LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
+    queryWrapper.eq(User::getStatus, UserStatus.ACTIVE)
+            .and(StringUtils.hasText(keyword), wrapper ->
+                    wrapper.like(User::getUsername, keyword)
+                            .or()
+                            .like(User::getEmail, keyword))
+            .orderByDesc(User::getCreatedAt);
+
+    return userMapper.selectList(queryWrapper);
+}
+```
+
+#### 更新条件构建
+
+```java
+/**
+ * 批量更新用户状态
+ */
+public void updateUserStatus(List<Long> userIds, UserStatus status) {
+    LambdaUpdateWrapper<User> updateWrapper = Wrappers.lambdaUpdate();
+    updateWrapper.in(User::getId, userIds)
+            .set(User::getStatus, status)
+            .set(User::getUpdatedAt, LocalDateTime.now());
+
+    userMapper.update(null, updateWrapper);
+}
+```
+
+## Spring Boot 开发规范
+
+### 1. 控制器规范
+
+- 避免字段注入
+
+```java
+/**
+ * 用户管理控制器
+ */
+@RestController
+@RequestMapping("/api/v1/users")
+@Validated
+@Slf4j
+@Tag(name = "用户管理", description = "用户增删改查接口")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    /**
+     * 创建用户
+     */
+    @PostMapping
+    @Operation(summary = "创建用户", description = "创建新用户账号")
+    public ApiResponse<UserResponse> createUser(
+            @Valid @RequestBody UserCreateRequest request) {
+        log.info("创建用户请求: {}", request);
+        User user = userService.createUser(request);
+        UserResponse response = UserConverter.INSTANCE.toResponse(user);
+        return ApiResponse.success(response, "用户创建成功");
+    }
+
+    /**
+     * 获取用户详情
+     */
+    @GetMapping("/{id}")
+    @Operation(summary = "获取用户详情")
+    public ApiResponse<UserResponse> getUser(
+            @PathVariable @Positive Long id) {
+        User user = userService.getUserById(id);
+        UserResponse response = UserConverter.INSTANCE.toResponse(user);
+        return ApiResponse.success(response);
+    }
+
+    /**
+     * 分页查询用户
+     */
+    @GetMapping
+    @Operation(summary = "分页查询用户")
+    public ApiResponse<Page<UserResponse>> pageUsers(
+            @Valid UserQuery query) {
+        Page<User> userPage = userService.pageUsers(query);
+        Page<UserResponse> response = userPage.map(UserConverter.INSTANCE::toResponse);
+        return ApiResponse.success(response);
+    }
+}
+```
+
+### 2. 服务层规范
+
+```java
+/**
+ * 用户服务接口
+ */
+public interface UserService {
+
+    /**
+     * 创建用户
+     */
+    User createUser(UserCreateRequest request);
+
+    /**
+     * 根据ID获取用户
+     */
+    User getUserById(Long id);
+
+    /**
+     * 分页查询用户
+     */
+    Page<User> pageUsers(UserQuery query);
+
+    /**
+     * 更新用户
+     */
+    User updateUser(Long id, UserUpdateRequest request);
+
+    /**
+     * 删除用户
+     */
+    void deleteUser(Long id);
+}
+
+/**
+ * 用户服务实现类
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+@Slf4j
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public UserServiceImpl(UserRepository userRepository,
+                           RedisTemplate<String, Object> redisTemplate) {
+        this.userRepository = userRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
+    @Override
+    public User createUser(UserCreateRequest request) {
+        log.info("创建用户: {}", request.getEmail());
+
+        // 验证邮箱唯一性
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException("EMAIL_EXISTS", "邮箱已存在");
+        }
+
+        // 创建用户实体
+        User user = User.builder()
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .status(UserStatus.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        // 保存用户
+        User savedUser = userRepository.save(user);
+        log.info("用户创建成功: {}", savedUser.getId());
+
+        return savedUser;
+    }
+
+    @Override
+    @Cacheable(value = "users", key = "#id")
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }
+}
+```
+
+### 3. 配置类规范
+
+```java
+/**
+ * Redis 配置
+ */
+@Configuration
+@EnableCaching
+@Slf4j
+public class RedisConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        // 设置序列化器
+        Jackson2JsonRedisSerializer<Object> serializer =
+                new Jackson2JsonRedisSerializer<>(Object.class);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        mapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL);
+        serializer.setObjectMapper(mapper);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory factory) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofHours(1))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new Jackson2JsonRedisSerializer<>(Object.class)));
+
+        return RedisCacheManager.builder(factory)
+                .cacheDefaults(config)
+                .build();
+    }
+}
+```
+
+### 4. 依赖注入规范
+
+#### 构造函数注入
+
+可以使用 Lombok 的注解简化代码开发。
+
+```java
+/**
+ * 用户服务实现类
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+@Slf4j
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+    private final UserValidator userValidator;
+    private final PasswordEncoder passwordEncoder;
+    private final CacheManager cacheManager;
+
+    /**
+     * 构造函数注入
+     */
+    public UserServiceImpl(
+            UserRepository userRepository,
+            UserValidator userValidator,
+            PasswordEncoder passwordEncoder,
+            CacheManager cacheManager) {
+        this.userRepository = userRepository;
+        this.userValidator = userValidator;
+        this.passwordEncoder = passwordEncoder;
+        this.cacheManager = cacheManager;
+    }
+
+    // 服务方法实现
+}
+```
+
+#### 避免字段注入
+
+可以使用 Lombok 的注解简化代码开发。
+
+```java
+// ❌ 不推荐：字段注入
+@Autowired
+private UserRepository userRepository;
+
+// ✅ 推荐：构造函数注入
+private final UserRepository userRepository;
+
+public UserServiceImpl(UserRepository userRepository) {
+    this.userRepository = userRepository;
+}
+```
+
+### 5. 事务管理
+
+#### 事务注解使用
+
+```java
+/**
+ * 用户服务
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class UserService {
+
+    /**
+     * 创建用户（只读事务）
+     */
+    @Transactional(readOnly = true)
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("用户不存在"));
+    }
+
+    /**
+     * 创建用户（写事务）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public User createUser(CreateUserCommand command) {
+        // 业务逻辑
+        return userRepository.save(user);
+    }
+
+    /**
+     * 批量操作（新事务）
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void batchProcessUsers(List<User> users) {
+        // 批量处理逻辑
+    }
+}
+```
+
+### 6. 缓存使用
+
+#### 缓存注解
+
+```java
+/**
+ * 用户服务
+ */
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class UserService {
+
+    /**
+     * 根据ID获取用户（带缓存）
+     */
+    @Cacheable(value = "users", key = "#userId")
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("用户不存在"));
+    }
+
+    /**
+     * 更新用户（清除缓存）
+     */
+    @CacheEvict(value = "users", key = "#user.id")
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+    /**
+     * 删除用户（清除缓存）
+     */
+    @CacheEvict(value = "users", key = "#userId")
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+}
 ```
 
 ## 测试规范
@@ -1815,6 +1751,63 @@ class UserControllerIntegrationTest {
         assertThat(savedUser.get().getUsername()).isEqualTo(request.getUsername());
     }
 }
+```
+
+
+## 代码质量规范
+
+### 1. 静态代码分析
+
+#### SonarQube配置
+
+```xml
+<!-- Maven SonarQube Plugin -->
+<plugin>
+    <groupId>org.sonarsource.scanner.maven</groupId>
+    <artifactId>sonar-maven-plugin</artifactId>
+    <version>3.10.0.2594</version>
+</plugin>
+```
+
+#### SpotBugs配置
+
+```xml
+<!-- SpotBugs Maven Plugin -->
+<plugin>
+    <groupId>com.github.spotbugs</groupId>
+    <artifactId>spotbugs-maven-plugin</artifactId>
+    <version>4.7.3.6</version>
+    <configuration>
+        <effort>Max</effort>
+        <threshold>Low</threshold>
+        <xmlOutput>true</xmlOutput>
+    </configuration>
+</plugin>
+```
+
+### 2. 代码格式化
+
+#### Spotless配置
+
+```xml
+<!-- Spotless Maven Plugin -->
+<plugin>
+    <groupId>com.diffplug.spotless</groupId>
+    <artifactId>spotless-maven-plugin</artifactId>
+    <version>2.43.0</version>
+    <configuration>
+        <java>
+            <googleJavaFormat>
+                <version>1.18.1</version>
+                <style>GOOGLE</style>
+            </googleJavaFormat>
+            <removeUnusedImports/>
+            <importOrder>
+                <order>java,javax,org,com,</order>
+            </importOrder>
+        </java>
+    </configuration>
+</plugin>
 ```
 
 ## 安全规范
@@ -2083,7 +2076,7 @@ management:
 4. **使用 Spring Boot 最佳实践**，充分利用框架特性
 5. **正确使用 MyBatis Plus**，提高开发效率
 6. **合理组织项目结构**，便于维护和扩展
-7. **编写充分的测试用例**，保证代码质量
+7. **编写全面的测试用例**，保证代码质量
 8. **注重安全性**，防范常见安全漏洞
 9. **优化性能**，使用缓存和异步处理
 10. **规范日志记录**，便于问题排查

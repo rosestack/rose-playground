@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-common</artifactId>
+            <artifactId>rose-share-service</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
