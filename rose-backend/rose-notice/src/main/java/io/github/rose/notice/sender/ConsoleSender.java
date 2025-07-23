@@ -1,6 +1,7 @@
 package io.github.rose.notice.sender;
 
 import io.github.rose.notice.SendRequest;
+import io.github.rose.notice.SenderConfiguration;
 import io.github.rose.notice.spi.AbstractConfigure;
 import io.github.rose.notice.spi.Sender;
 import lombok.extern.slf4j.Slf4j;
@@ -23,4 +24,9 @@ public class ConsoleSender extends AbstractConfigure implements Sender {
 
     @Override
     public void destroy() {}
+
+    @Override
+    public void doConfigure(SenderConfiguration config) throws Exception {
+
+    }
 }

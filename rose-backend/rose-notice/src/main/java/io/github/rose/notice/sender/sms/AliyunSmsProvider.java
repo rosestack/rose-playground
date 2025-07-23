@@ -25,10 +25,10 @@ public class AliyunSmsProvider extends AbstractConfigure implements SmsProvider 
     }
 
     public void doConfigure(SenderConfiguration config) throws Exception {
-        String accessKeyId = config.getConfig().get("aliyun.sms.accessKeyId").asText();
+        String accessKeyId = config.getConfig().get("aliyun.sms.accessKeyId").toString();
         String accessKeySecret =
-                config.getConfig().get("aliyun.sms.accessKeySecret").asText();
-        String endpoint = config.getConfig().get("aliyun.sms.endpoint").asText();
+                config.getConfig().get("aliyun.sms.accessKeySecret").toString();
+        String endpoint = config.getConfig().get("aliyun.sms.endpoint").toString();
 
         if (isAnyBlank(accessKeyId, accessKeySecret, endpoint)) {
             throw new NoticeException("阿里云短信配置或参数不完整");
@@ -43,8 +43,8 @@ public class AliyunSmsProvider extends AbstractConfigure implements SmsProvider 
 
     @Override
     public String send(SendRequest request) throws Exception {
-        String signName = config.getConfig().get("aliyun.sms.signName").asText();
-        String templateCode = config.getConfig().get("aliyun.sms.templateCode").asText();
+        String signName = config.getConfig().get("aliyun.sms.signName").toString();
+        String templateCode = config.getConfig().get("aliyun.sms.templateCode").toString();
         String phoneNumber = request.getTarget();
         String templateParam = request.getTemplateContent(); // 建议为 JSON 字符串
         if (isAnyBlank(signName, templateCode, phoneNumber)) {

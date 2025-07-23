@@ -3,6 +3,7 @@ package io.github.rose.notification.application.service;
 import io.github.rose.notice.NoticeService;
 import io.github.rose.notice.SendRequest;
 import io.github.rose.notice.SendResult;
+import io.github.rose.notice.SenderConfiguration;
 import io.github.rose.notification.application.command.SendNotificationCommand;
 import io.github.rose.notification.domain.entity.Notification;
 import io.github.rose.notification.domain.entity.NotificationChannel;
@@ -77,13 +78,16 @@ public class NotificationApplicationService {
                     });
 
             SendRequest sendRequest = SendRequest.builder()
-                    .channelType(channel.getChannelType().name().toLowerCase(Locale.ROOT))
                     .target(cmd.getTarget())
                     .requestId(cmd.getRequestId())
-                    .channelConfig(channel.getConfig())
                     .templateContent(template.getContent())
                     .build();
-            SendResult sendResult = noticeService.send(sendRequest);
+            SenderConfiguration configuration = SenderConfiguration.builder()
+                    .channelType(channel.getChannelType().name())
+                    .config(channel.getConfig())
+                    .templateType(template.getType())
+                    .build();
+            SendResult sendResult = noticeService.send(sendRequest,configuration);
 
             Notification notification = new Notification();
             notification.setChannelId(channelId);

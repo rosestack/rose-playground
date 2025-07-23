@@ -26,9 +26,9 @@ public class TencentSmsProvider extends AbstractConfigure implements SmsProvider
 
     @Override
     public void doConfigure(SenderConfiguration config) throws Exception {
-        String secretId = config.getConfig().get("tencent.sms.secretId").asText();
-        String secretKey = config.getConfig().get("tencent.sms.secretKey").asText();
-        String region = config.getConfig().get("tencent.sms.region").asText();
+        String secretId = config.getConfig().get("tencent.sms.secretId").toString();
+        String secretKey = config.getConfig().get("tencent.sms.secretKey").toString();
+        String region = config.getConfig().get("tencent.sms.region").toString();
 
         Credential cred = new Credential(secretId, secretKey);
         client = new SmsClient(cred, region);
@@ -36,9 +36,9 @@ public class TencentSmsProvider extends AbstractConfigure implements SmsProvider
 
     @Override
     public String send(SendRequest request) throws TencentCloudSDKException {
-        String sdkAppId = config.getConfig().get("tencent.sms.sdkAppId").asText();
-        String signName = config.getConfig().get("tencent.sms.signName").asText();
-        String templateId = config.getConfig().get("tencent.sms.templateId").asText();
+        String sdkAppId = config.getConfig().get("tencent.sms.sdkAppId").toString();
+        String signName = config.getConfig().get("tencent.sms.signName").toString();
+        String templateId = config.getConfig().get("tencent.sms.templateId").toString();
         String[] templateParams = request.getTemplateContent() != null
                 ? request.getTemplateContent().split(",")
                 : new String[] {};
