@@ -1,5 +1,5 @@
 ---
-description: Maven 项目构建和管理规范
+description: Spring Boot 开发规范
 alwaysApply: true
 ---
 
@@ -7,160 +7,1282 @@ alwaysApply: true
 
 ## 角色定义
 
-你是一个资深的 Java 后端开发专家，专注于 Spring Boot 应用开发。你需要严格遵循以下开发规范和最佳实践，编写高质量、可维护、安全的后端代码。
+你是一个资深的 Java 后端开发专家，专注于 Spring Boot 应用开发。你需要严格遵循以下开发规范和最佳实践，编写高质量、可维护、安全、高性能的后端代码。
 
-## 技术栈要求
+## 技术栈规范
 
-### 核心框架
+### 1. 核心框架
 
-- **Java 17+**：使用最新的Java特性，如记录类、模式匹配、文本块等
-- **Spring Boot 3.5+**：使用最新版本，提供依赖注入和自动配置
+#### Spring 生态
+- **Spring Boot 3.5+**：主框架，提供依赖注入和自动配置
 - **Spring Security 6.x**：安全框架，处理认证和授权
-- **MyBatis Plus 3.x**：数据访问层ORM框架，提供强大的查询能力
-
-### 数据存储
-
-- **MySQL 8.0**：主数据库，支持JSON字段和窗口函数
-- **HikariCP**：高性能数据库连接池
-- **Redis 7.x**：缓存和会话存储，支持多种数据结构
-
-### 构建和部署
-
-- **Maven 3.9+**：构建工具和依赖管理
-- **Docker**：容器化部署
-- **Docker Compose**：本地开发环境编排
-
-### 监控和运维
-
+- **Spring Web MVC**：Web 层框架，构建 RESTful API
+- **Spring AOP**：面向切面编程，处理横切关注点
+- **Spring Cache**：缓存抽象，支持多种缓存实现
+- **Spring Validation**：数据校验框架
 - **Spring Boot Actuator**：应用监控和健康检查
-- **Micrometer**：指标收集
-- **Logback**：日志框架
 
-### 测试框架
+#### Java 版本
+- **Java 17+**：使用最新的 Java 特性
+  - **记录类 (Records)**：不可变数据载体
+  - **模式匹配**：增强的 instanceof 和 switch 表达式
+  - **文本块**：多行字符串字面量
+  - **密封类 (Sealed Classes)**：限制继承层次
+  - **虚拟线程 (Virtual Threads)**：轻量级并发
 
-- **JUnit 5**：单元测试框架，支持参数化测试和动态测试
-- **Mockito 5.x**：模拟框架，用于创建测试替身
-- **AssertJ**：流式断言库，提供更好的测试可读性
-- **TestContainers**：集成测试容器，支持真实数据库和中间件测试
-- **Spring Boot Test**：Spring Boot测试支持，包含各种测试切片
+### 2. 数据访问层
 
-### 开发工具
+#### ORM 框架
+- **MyBatis Plus 3.x**：主要 ORM 框架
+  - 强大的 CRUD 操作
+  - 代码生成器
+  - 分页插件
+  - 逻辑删除
+  - 乐观锁
+  - 多租户支持
 
-- **Lombok**：减少样板代码，自动生成getter/setter等
-- **Spring Boot DevTools**：开发时热重载和自动重启
-- **Swagger/OpenAPI 3**：API文档生成和在线测试
+#### 数据库
+- **MySQL 8.0+**：主数据库
+- **HikariCP**：高性能数据库连接池
+
+#### 缓存
+- **Redis 7.x**：分布式缓存
+- **Caffeine**：本地缓存（可选）
+
+### 4. 构建和部署
+
+#### 构建工具
+- **Maven 3.9+**：项目构建和依赖管理
+- **Maven Wrapper**：确保构建环境一致性
+
+#### 容器化
+- **Docker**：应用容器化
+- **Docker Compose**：本地开发环境编排
+- **多阶段构建**：优化镜像大小
+
+### 4. 监控和运维
+
+#### 监控组件
+- **Micrometer**：指标收集和监控
+- **Prometheus**：指标存储和查询
+- **Grafana**：指标可视化
+- **Zipkin/Jaeger**：分布式链路追踪
+
+#### 日志管理
+- **SLF4J + Logback**：日志框架
+- **结构化日志**：JSON 格式输出
+- **日志聚合**：ELK Stack 或类似方案
+
+### 5. 测试框架
+
+#### 单元测试
+- **JUnit 5**：测试框架
+  - 参数化测试
+  - 动态测试
+  - 嵌套测试
+  - 条件测试
+- **Mockito 5.x**：模拟框架
+- **AssertJ**：流式断言库
+
+#### 集成测试
+- **Spring Boot Test**：Spring Boot 测试支持
+  - `@SpringBootTest`：完整应用上下文测试
+  - `@WebMvcTest`：Web 层测试
+  - `@DataJpaTest`：数据层测试
+  - `@JsonTest`：JSON 序列化测试
+- **TestContainers**：容器化集成测试
+  - 真实数据库测试
+  - 中间件集成测试
+  - 网络隔离测试
+
+### 6. 开发工具
+
+#### 代码生成和简化
+- **Lombok**：减少样板代码
+  - `@Data`、`@Builder`、`@Value`
+  - `@Slf4j`：日志注解
+  - `@RequiredArgsConstructor`：构造函数注入
+- **MapStruct**：对象映射工具
+  - 编译时生成映射代码
+  - 类型安全
+  - 高性能
+
+#### 开发辅助
+- **Spring Boot DevTools**：开发时热重载
 - **Spring Boot Configuration Processor**：配置元数据生成
-- **MapStruct**：对象映射工具，编译时生成映射代码
+- **OpenAPI 3 (Swagger)**：API 文档生成
 
-### 工具库
+#### 工具库
+- **Apache Commons Lang3**：通用工具类
+- **Jackson**：JSON 处理
+- **Jakarta Validation**：参数校验
+- **Guava**：Google 核心库
 
-- **Apache Commons Lang3**：通用工具类库
-- **Jackson**：JSON序列化和反序列化
-- **Validation API**：参数校验
-- **Guava**：Google核心库，提供集合、缓存、并发等工具
+### 7. 禁止使用的技术
 
-### 禁止使用
+#### 过时或有问题的库
+- **Fastjson**：存在安全风险，使用 Jackson
+- **Gson**：功能不如 Jackson 完善
+- **Log4j 1.x**：安全漏洞，使用 Logback
+- **Commons Logging**：桥接复杂，使用 SLF4J
+- **JUnit 4**：功能有限，使用 JUnit 5
+- **Hamcrest**：断言不够流畅，使用 AssertJ
+- **PowerMock**：与现代 JVM 不兼容
 
-- **Hutool**：避免过度依赖工具库，保持代码的可控性
-- **Fastjson**：存在安全风险，使用Jackson替代
-- **Spring Data JPA**：与MyBatis Plus冲突，统一使用MyBatis Plus
-- **Apache Commons BeanUtils**：性能较差，使用MapStruct替代
-- **Dozer**：映射性能差，使用MapStruct替代
-- **ModelMapper**：运行时映射，性能不如编译时的MapStruct
-- **Gson**：功能不如Jackson完善，统一使用Jackson
-- **Log4j 1.x**：已停止维护且存在安全漏洞，使用Logback
-- **Commons Logging**：桥接复杂，直接使用SLF4J
-- **Quartz**：过于重量级，简单任务使用Spring Task
-- **Ehcache 2.x**：版本过旧，使用Caffeine或Redis
-- **Jedis**：连接池管理复杂，使用Spring Data Redis
-- **HttpClient 4.x**：版本过旧，使用Spring WebClient或OkHttp
-- **Swagger 2.x**：已过时，使用OpenAPI 3
-- **JUnit 4**：功能有限，使用JUnit 5
-- **Hamcrest**：断言不够流畅，使用AssertJ
-- **PowerMock**：与现代JVM不兼容，重构代码以支持Mockito
+#### 性能或架构问题
+- **Apache Commons BeanUtils**：性能差，使用 MapStruct
+- **Dozer**：运行时映射性能差
+- **ModelMapper**：运行时映射，不如编译时
+- **Jedis**：连接池管理复杂，使用 Spring Data Redis
+- **HttpClient 4.x**：版本过旧，使用 WebClient
+- **Ehcache 2.x**：版本过旧，使用 Caffeine 或 Redis
 
-## 最佳实践
+#### 架构冲突
+- **Spring Data JPA**：与 MyBatis Plus 冲突
+- **Quartz**：过于重量级，使用 Spring Task
+- **Hutool**：避免过度依赖，保持代码可控性
 
-- 不要使用字段注入，也更使用构造方法注入，可以使用 lombok 注解
-- 控制器层返回统一对象 ApiResponse
-- 需要事务的方法使用事务注解 @Transactional(rollbackFor = Exception.class)
-- 服务层实现类可以使用缓存注解
-- 在控制器层进行输入校验，基于 jakarta validation 的注解
-- 控制器只负责数据校验，不包括具体的业务逻辑，业务逻辑在服务层实现
-- 分页查询使用 Mybatis Plus 的 Page 和 IPage 对象
+## 架构设计规范
 
-## 配置文件规范
+### 1. 技术分层架构
 
-### 1. application.yml
+采用经典的三层架构模式，与 MyBatis Plus 和 Java 规范保持一致：
 
+#### 控制器层 (Controller Layer)
+- **职责**：处理 HTTP 请求、参数校验、响应格式化
+- **命名规范**：`[业务]Controller`，如 `UserController`
+- **注解要求**：`@RestController`、`@RequestMapping`、`@Validated`
+
+```java
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+@Slf4j
+@Validated
+public class UserController {
+    
+    private final UserService userService;
+    
+    @PostMapping
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
+        log.info("创建用户请求: {}", request.getUsername());
+        UserResponse response = userService.createUser(request);
+        return ApiResponse.success(response);
+    }
+    
+    @GetMapping("/{id}")
+    public ApiResponse<UserResponse> getUserById(@PathVariable @Min(1) Long id) {
+        log.debug("查询用户，ID: {}", id);
+        UserResponse response = userService.getUserById(id);
+        return ApiResponse.success(response);
+    }
+
+    // 分页查询实现请参考 MyBatis Plus 规范文件
+}
+```
+
+#### 服务层 (Service Layer)
+- **职责**：业务逻辑处理、事务管理、缓存控制
+- **命名规范**：接口 `[业务]Service`，实现类 `[业务]ServiceImpl`
+- **继承要求**：详细的继承规范请参考 MyBatis Plus 规范文件
+
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(rollbackFor = Exception.class)
+public class UserServiceImpl implements UserService {
+    
+    private final UserMapper userMapper;
+    private final UserConverter userConverter;
+    
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#id")
+    public UserResponse getUserById(Long id) {
+        log.debug("查询用户，ID: {}", id);
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        return userConverter.toResponse(user);
+    }
+    
+    @Override
+    public UserResponse createUser(UserCreateRequest request) {
+        log.info("创建用户: {}", request.getUsername());
+        
+        // 业务校验
+        if (userMapper.existsByUsername(request.getUsername())) {
+            throw new BusinessException("用户名已存在");
+        }
+        
+        // 创建用户
+        User user = userConverter.toEntity(request);
+        userMapper.insert(user);
+        
+        return userConverter.toResponse(user);
+    }
+    
+    // 分页查询实现请参考 MyBatis Plus 规范文件
+}
+```
+
+#### 数据访问层 (Data Access Layer)
+- **职责**：数据库操作、查询条件构建
+- **命名规范**：`[实体]Mapper`，如 `UserMapper`
+- **继承要求**：详细的继承规范请参考 MyBatis Plus 规范文件
+
+### 2. 实体类规范
+
+#### 实体类定义（遵循 MyBatis Plus 规范）
+- 实体类必须继承 `BaseEntity` 或 `BaseTenantEntity`
+- 使用 MyBatis Plus 注解进行映射配置
+- 详细的实体类定义规范请参考 MyBatis Plus 规范文件
+
+#### 请求响应对象（遵循 Java 命名规范）
+```java
+// 创建请求对象
+@Data
+public class UserCreateRequest {
+    
+    @NotBlank(message = "用户名不能为空")
+    @Size(min = 3, max = 20, message = "用户名长度必须在3-20之间")
+    private String username;
+    
+    @NotBlank(message = "邮箱不能为空")
+    @Email(message = "邮箱格式不正确")
+    private String email;
+    
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    private String phone;
+}
+
+// 响应对象
+@Data
+public class UserResponse {
+    
+    private Long id;
+    private String username;
+    private String email;
+    private String phone;
+    private UserStatus status;
+    private LocalDateTime createdTime;
+}
+
+// 用户查询请求对象
+@Data
+public class UserPageRequest {
+    
+    private String username;
+    private UserStatus status;
+    
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
+    
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
+}
+```
+
+### 3. 对象转换规范
+
+#### MapStruct 转换器（遵循 Java 命名规范）
+```java
+@Mapper(componentModel = "spring")
+public interface UserConverter {
+    
+    /**
+     * 请求对象转实体
+     */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", constant = "ACTIVE")
+    User toEntity(UserCreateRequest request);
+    
+    /**
+     * 实体转响应对象
+     */
+    UserResponse toResponse(User user);
+    
+    /**
+     * 实体列表转响应列表
+     */
+    List<UserResponse> toResponseList(List<User> users);
+    
+    // 分页对象转换请参考 MyBatis Plus 规范文件
+}
+```
+
+### 4. 依赖注入规范
+
+#### 推荐：构造函数注入
+```java
+@Service
+@RequiredArgsConstructor // Lombok 生成构造函数
+@Slf4j
+public class UserServiceImpl implements UserService {
+    
+    private final UserMapper userMapper;
+    private final UserConverter userConverter;
+    private final EmailService emailService;
+    
+    // 业务方法实现
+}
+```
+
+#### 禁止：字段注入
+```java
+@Service
+public class UserService {
+    
+    @Autowired // 禁止使用
+    private UserMapper userMapper;
+}
+```
+
+### 5. 异常处理规范
+
+#### 全局异常处理（支持国际化）
+```java
+@RestControllerAdvice
+@Slf4j
+@RequiredArgsConstructor
+public class GlobalExceptionHandler {
+    
+    private final MessageSource messageSource;
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException e, Locale locale) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> {
+                    String fieldName = error.getField();
+                    String defaultMessage = error.getDefaultMessage();
+                    // 尝试从国际化资源文件获取消息
+                    try {
+                        return messageSource.getMessage("validation." + fieldName + "." + error.getCode(), 
+                                error.getArguments(), defaultMessage, locale);
+                    } catch (NoSuchMessageException ex) {
+                        return defaultMessage;
+                    }
+                })
+                .collect(Collectors.joining(", "));
+        log.warn("参数校验失败: {}", message);
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error(400, message));
+    }
+    
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e, Locale locale) {
+        String message;
+        try {
+            // 尝试从国际化资源文件获取业务异常消息
+            message = messageSource.getMessage(e.getCode(), e.getArgs(), e.getMessage(), locale);
+        } catch (NoSuchMessageException ex) {
+            message = e.getMessage();
+        }
+        log.warn("业务异常: {}", message);
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error(400, message));
+    }
+    
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException e, Locale locale) {
+        String message = messageSource.getMessage("error.access.denied", null, "访问被拒绝", locale);
+        log.warn("访问被拒绝: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.error(403, message));
+    }
+    
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthentication(AuthenticationException e, Locale locale) {
+        String message = messageSource.getMessage("error.authentication.failed", null, "认证失败", locale);
+        log.warn("认证失败: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(401, message));
+    }
+    
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException e, Locale locale) {
+        String message = messageSource.getMessage("error.data.integrity", null, "数据完整性约束违反", locale);
+        log.error("数据完整性异常", e);
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error(400, message));
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception e, Locale locale) {
+        String message = messageSource.getMessage("error.system.internal", null, "系统内部错误", locale);
+        log.error("系统异常", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.error(500, message));
+    }
+}
+
+
+```
+
+### 6. 数据校验规范
+
+#### 请求参数校验
+```java
+public class UserCreateRequest {
+    
+    @NotBlank(message = "用户名不能为空")
+    @Size(min = 3, max = 20, message = "用户名长度必须在3-20之间")
+    private String username;
+    
+    @NotBlank(message = "邮箱不能为空")
+    @Email(message = "邮箱格式不正确")
+    private String email;
+    
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    private String phone;
+}
+```
+
+#### 控制器校验
+```java
+@RestController
+@RequestMapping("/api/users")
+@Validated
+@RequiredArgsConstructor
+public class UserController {
+    
+    @PostMapping
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
+        // 校验通过后的业务逻辑
+    }
+    
+    @GetMapping("/{id}")
+    public ApiResponse<UserResponse> getUser(@PathVariable @Min(1) Long id) {
+        // 路径参数校验
+    }
+}
+```
+
+### 7. 缓存使用规范
+
+#### 声明式缓存
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserServiceImpl implements UserService {
+    
+    @Cacheable(value = "users", key = "#id")
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(Long id) {
+        log.debug("从数据库查询用户，ID: {}", id);
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException("USER_NOT_FOUND", id);
+        }
+        return userConverter.toResponse(user);
+    }
+    
+    @CacheEvict(value = "users", key = "#id")
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        log.info("更新用户，ID: {}", id);
+        // 更新逻辑
+    }
+    
+    @CacheEvict(value = "users", allEntries = true)
+    public void clearAllUsersCache() {
+        log.info("清除所有用户缓存");
+    }
+}
+```
+
+#### 编程式缓存
+```java
+@Service
+@RequiredArgsConstructor
+public class UserService {
+    
+    private final CacheManager cacheManager;
+    private final UserMapper userMapper;
+    
+    public UserResponse getUserWithCustomCache(Long id) {
+        Cache cache = cacheManager.getCache("users");
+        UserResponse cached = cache.get(id, UserResponse.class);
+        
+        if (cached != null) {
+            return cached;
+        }
+        
+        User user = userMapper.selectById(id);
+        UserResponse response = userConverter.toResponse(user);
+        cache.put(id, response);
+        return response;
+    }
+}
+```
+
+## 编码最佳实践
+
+### 1. 控制器层最佳实践
+
+#### 职责边界
+- **仅处理 HTTP 相关逻辑**：请求解析、参数校验、响应格式化
+- **不包含业务逻辑**：所有业务逻辑委托给服务层
+- **统一响应格式**：使用 `ApiResponse<T>` 包装所有响应
+
+```java
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+@Slf4j
+@Validated
+public class UserController {
+    
+    private final UserService userService;
+    
+    @PostMapping
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
+        UserResponse response = userService.createUser(request);
+        return ApiResponse.success(response);
+    }
+    
+    @PutMapping("/{id}")
+    public ApiResponse<UserResponse> updateUser(
+            @PathVariable @Min(1) Long id,
+            @Valid @RequestBody UserUpdateRequest request) {
+        UserResponse response = userService.updateUser(id, request);
+        return ApiResponse.success(response);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteUser(@PathVariable @Min(1) Long id) {
+        userService.deleteUser(id);
+        return ApiResponse.success();
+    }
+}
+```
+
+### 2. 服务层最佳实践
+
+#### 事务管理（遵循 Spring 事务规范）
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(rollbackFor = Exception.class)
+public class UserServiceImpl implements UserService {
+    
+    private final UserMapper userMapper;
+    private final UserConverter userConverter;
+    
+    // 只读事务
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(Long id) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        return userConverter.toResponse(user);
+    }
+    
+    // 读写事务（默认）
+    @Override
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        
+        // 更新字段
+        userConverter.updateEntity(user, request);
+        userMapper.updateById(user);
+        
+        return userConverter.toResponse(user);
+    }
+    
+    // 批量操作事务（具体实现请参考 MyBatis Plus 规范文件）
+    @Override
+    public void batchCreateUsers(List<UserCreateRequest> requests) {
+        List<User> users = requests.stream()
+                .map(userConverter::toEntity)
+                .collect(Collectors.toList());
+        // 批量插入实现请参考 MyBatis Plus 规范文件
+    }
+}
+```
+
+#### 缓存策略（遵循 Spring Cache 规范）
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserServiceImpl implements UserService {
+    
+    private final UserMapper userMapper;
+    private final UserConverter userConverter;
+    
+    @Override
+    @Cacheable(value = "users", key = "#id")
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(Long id) {
+        log.debug("从数据库查询用户，ID: {}", id);
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        return userConverter.toResponse(user);
+    }
+    
+    @Override
+    @CacheEvict(value = "users", key = "#id")
+    public UserResponse updateUser(Long id, UserUpdateRequest request) {
+        log.info("更新用户，ID: {}", id);
+        // 更新逻辑
+        return userConverter.toResponse(updatedUser);
+    }
+    
+    @Override
+    @CacheEvict(value = "users", allEntries = true)
+    public void clearAllUsersCache() {
+        log.info("清除所有用户缓存");
+    }
+}
+```
+
+### 3. 数据访问层最佳实践
+
+#### MyBatis Plus 使用
+- 优先使用 Wrapper 构建查询条件
+- 避免使用注解式 SQL，除非极简单的查询
+- 合理使用分页查询，设置分页限制
+- 详细的 MyBatis Plus 使用规范请参考 MyBatis Plus 规范文件
+
+#### 分页查询规范
+- 使用 MyBatis Plus 分页对象进行分页查询
+- 设置合理的分页限制，防止大数据量查询
+- 详细的分页查询实现请参考 MyBatis Plus 规范文件
+
+### 4. 对象映射规范
+
+#### MapStruct 转换器（遵循 Java 命名规范）
+```java
+@Mapper(componentModel = "spring")
+public interface UserConverter {
+    
+    UserResponse toResponse(User user);
+    
+    User toEntity(UserCreateRequest request);
+    
+    // 分页对象转换请参考 MyBatis Plus 规范文件
+}
+```
+
+## 5. 配置文件规范
+
+### 应用配置结构（遵循 Maven 项目结构）
+
+#### 主配置文件 (application.yml)
 ```yaml
-server:
-  port: 8080
-
+# 应用基本信息
 spring:
   application:
     name: project-service
-
   profiles:
     active: dev
-
+  
+  # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/project_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:password}
+    url: jdbc:mysql://localhost:3306/${MYSQL_HOST:project}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: password
     hikari:
-      minimum-idle: 5
       maximum-pool-size: 20
-      idle-timeout: 300000
-      connection-timeout: 20000
-      max-lifetime: 1200000
-
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # Redis 配置
   data:
     redis:
       host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      port: 6379
+      password: 
       database: 0
+      timeout: 5000ms
       lettuce:
-      pool:
-        max-active: 20
-        max-idle: 10
-        min-idle: 5
-        max-wait: 2000ms
-
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        shutdown-timeout: 100ms
+  
+  # Jackson 序列化配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+      indent-output: false
+    deserialization:
+      fail-on-unknown-properties: false
+      accept-empty-string-as-null-object: true
+  
+  # Spring Boot 标准缓存配置
   cache:
     type: redis
     redis:
-      time-to-live: 3600000
+      time-to-live: 600000  # 默认缓存时间（毫秒）
       cache-null-values: false
+      key-prefix: "project:cache:"
+      use-key-prefix: true
+  
+  # Spring Boot 标准任务执行配置
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 20
+        queue-capacity: 100
+        keep-alive: 60s
+      thread-name-prefix: async-
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      location: /tmp/uploads
+  
+  # 安全配置
+  security:
+    user:
+      name: admin
+      password: admin123
 
+# MyBatis Plus 配置（详细配置请参考 MyBatis Plus 规范文件）
 mybatis-plus:
   configuration:
+    # 开启驼峰命名转换
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  global-config:
-    db-config:
-      id-type: auto
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
-  mapper-locations: classpath*:mapper/*.xml
+    # 关闭二级缓存
+    cache-enabled: false
 
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.company: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/project-service.log
+    max-size: 100MB
+    max-history: 30
 
+# 监控配置
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: when-authorized
+
+# 自定义应用配置
+app:
+  # JWT 配置
+  jwt:
+    secret: mySecretKey
+    expiration: 86400
+    refresh-expiration: 604800
+  
+  # 业务配置
+  business:
+    max-login-attempts: 5
+    password-expiry-days: 90
+    session-timeout: 1800
+  
+  # 安全配置
+  security:
+    cors:
+      allowed-origins: http://localhost:3000
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
+    rate-limit:
+      enabled: true
+      requests-per-minute: 60
 ```
+
+#### 开发环境配置 (application-dev.yml)
+```yaml
+spring:
+  # 开发环境数据源
+  datasource:
+    url: jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: password
+    hikari:
+      maximum-pool-size: 10
+  
+  # 开发环境 Redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  
+  # 开发环境 Jackson 配置
+  jackson:
+    serialization:
+      indent-output: true
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.company: DEBUG
+    org.springframework.web: DEBUG
+    com.baomidou.mybatisplus.core.mapper: DEBUG
+
+# MyBatis Plus 开发配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+```
+
+#### 测试环境配置 (application-test.yml)
+```yaml
+spring:
+  # 测试环境数据源
+  datasource:
+    url: jdbc:mysql://test-db:3306/project_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: test_user
+    password: test_password
+    hikari:
+      maximum-pool-size: 15
+  
+  # 测试环境 Redis
+  data:
+    redis:
+      host: test-redis
+      port: 6379
+      database: 1
+
+# 日志配置
+logging:
+  level:
+    root: WARN
+    com.company: INFO
+```
+
+#### 生产环境配置 (application-prod.yml)
+```yaml
+spring:
+  # 生产环境数据源
+  datasource:
+    url: jdbc:mysql://prod-db:3306/project_prod?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: prod_user
+    password: prod_password
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+  
+  # 生产环境 Redis
+  data:
+    redis:
+      host: prod-redis
+      port: 6379
+      password: redis_prod_password
+      database: 0
+  
+  # 生产环境 Jackson 配置
+  jackson:
+    serialization:
+      indent-output: false
+  
+  # 国际化配置
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    cache-duration: 3600
+    fallback-to-system-locale: false
+    always-use-message-format: false
+    use-code-as-default-message: false
+## 6. 性能优化规范
+
+### 数据库连接池优化（遵循 MyBatis Plus 规范）
+```yaml
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+```
+
+### MyBatis Plus 性能配置
+- 详细的 MyBatis Plus 性能配置请参考 MyBatis Plus 规范文件
+
+### 缓存优化配置（使用 Spring Boot 标准配置）
+```java
+@Configuration
+@EnableCaching
+@RequiredArgsConstructor
+public class CacheConfig {
+    
+    private final CacheProperties cacheProperties;
+    
+    /**
+     * Redis 缓存管理器配置
+     * 使用 Spring Boot 的 CacheProperties 自动配置
+     */
+    @Bean
+    @Primary
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        // 使用 Spring Boot 的缓存配置属性
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+        
+        // 应用 Spring Boot 配置属性
+        if (cacheProperties.getRedis().getTimeToLive() != null) {
+            defaultConfig = defaultConfig.entryTtl(cacheProperties.getRedis().getTimeToLive());
+        }
+        if (cacheProperties.getRedis().getKeyPrefix() != null) {
+            defaultConfig = defaultConfig.prefixCacheNameWith(cacheProperties.getRedis().getKeyPrefix());
+        }
+        if (!cacheProperties.getRedis().isCacheNullValues()) {
+            defaultConfig = defaultConfig.disableCachingNullValues();
+        }
+        
+        // 特定缓存配置（可选）
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        
+        // 用户缓存配置（30分钟）
+        cacheConfigurations.put("users", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+        
+        // 系统配置缓存（1小时）
+        cacheConfigurations.put("system", defaultConfig.entryTtl(Duration.ofHours(1)));
+        
+        // 短期缓存（5分钟）
+        cacheConfigurations.put("temp", defaultConfig.entryTtl(Duration.ofMinutes(5)));
+        
+        return RedisCacheManager.builder(redisConnectionFactory)
+            .cacheDefaults(defaultConfig)
+            .withInitialCacheConfigurations(cacheConfigurations)
+            .transactionAware()
+            .build();
+    }
+}
+```
+
+### 异步处理配置（使用 Spring Boot 标准配置）
+```java
+@Configuration
+@EnableAsync
+@RequiredArgsConstructor
+public class AsyncConfig implements AsyncConfigurer {
+    
+    private final TaskExecutionProperties taskExecutionProperties;
+    
+    /**
+     * 异步任务执行器配置
+     * 使用 Spring Boot 的 TaskExecutionProperties 自动配置
+     */
+    @Override
+    @Bean(name = "taskExecutor")
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        
+        // 使用 Spring Boot 配置属性
+        TaskExecutionProperties.Pool pool = taskExecutionProperties.getPool();
+        executor.setCorePoolSize(pool.getCoreSize());
+        executor.setMaxPoolSize(pool.getMaxSize());
+        executor.setQueueCapacity(pool.getQueueCapacity());
+        executor.setKeepAliveSeconds((int) pool.getKeepAlive().getSeconds());
+        executor.setThreadNamePrefix(taskExecutionProperties.getThreadNamePrefix());
+        
+        // 关闭配置
+        TaskExecutionProperties.Shutdown shutdown = taskExecutionProperties.getShutdown();
+        executor.setWaitForTasksToCompleteOnShutdown(shutdown.isAwaitTermination());
+        if (shutdown.getAwaitTerminationPeriod() != null) {
+            executor.setAwaitTerminationSeconds((int) shutdown.getAwaitTerminationPeriod().getSeconds());
+        }
+        
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
+    
+    /**
+     * 异步异常处理器
+     */
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        return new SimpleAsyncUncaughtExceptionHandler();
+    }
+}
+```
+
+## 7. 安全规范
+
+### Spring Security 配置
+```java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+    
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**", "/actuator/health").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .build();
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+}
+```
+
+### 数据校验安全（遵循 Java 规范）
+```java
+public class UserCreateRequest {
+    
+    @NotBlank(message = "用户名不能为空")
+    @Size(min = 3, max = 20, message = "用户名长度必须在3-20之间")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "用户名只能包含字母、数字和下划线")
+    private String username;
+    
+    @NotBlank(message = "密码不能为空")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", 
+             message = "密码必须包含大小写字母、数字和特殊字符，长度至少8位")
+    private String password;
+    
+    @NotBlank(message = "邮箱不能为空")
+    @Email(message = "邮箱格式不正确")
+    @Size(max = 100, message = "邮箱长度不能超过100字符")
+    private String email;
+}
+```
+
+## 8. 测试规范
+
+### 单元测试（遵循 Java 规范）
+```java
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+    
+    @Mock
+    private UserMapper userMapper;
+    
+    @InjectMocks
+    private UserServiceImpl userService;
+    
+    @Test
+    @DisplayName("根据ID查询用户 - 成功")
+    void getUserById_Success() {
+        // Given
+        Long userId = 1L;
+        User user = User.builder()
+            .id(userId)
+            .username("testuser")
+            .email("test@example.com")
+            .build();
+        
+        when(userMapper.selectById(userId)).thenReturn(user);
+        
+        // When
+        UserResponse result = userService.getUserById(userId);
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(userId);
+        assertThat(result.getUsername()).isEqualTo("testuser");
+        
+        verify(userMapper).selectById(userId);
+    }
+}
+```
+
+### 集成测试
+```java
+@SpringBootTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+class UserControllerIntegrationTest {
+    
+    @Container
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+        .withDatabaseName("testdb")
+        .withUsername("test")
+        .withPassword("test");
+    
+    @Autowired
+    private TestRestTemplate restTemplate;
+    
+    @Test
+    @DisplayName("创建用户 - 成功")
+    void createUser_Success() {
+        // Given
+        UserCreateRequest request = UserCreateRequest.builder()
+            .username("testuser")
+            .email("test@example.com")
+            .password("Test123!@#")
+            .build();
+        
+        // When
+        ResponseEntity<ApiResponse<UserResponse>> response = restTemplate.postForEntity(
+            "/api/users", request, new ParameterizedTypeReference<ApiResponse<UserResponse>>() {});
+        
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().isSuccess()).isTrue();
+        assertThat(response.getBody().getData().getUsername()).isEqualTo("testuser");
+    }
+}
+```
+
+## 9. 部署规范
+
+### Docker 配置（遵循 Maven 项目结构）
+```dockerfile
+# 多阶段构建
+FROM maven:3.9-openjdk-17 AS builder
+
+WORKDIR /app
+
+# 复制 pom.xml 和源代码
+COPY pom.xml .
+COPY src ./src
+
+# 构建应用
+RUN mvn clean package -DskipTests
+
+# 运行阶段
+FROM openjdk:17-jdk-slim
+
+# 创建非 root 用户
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /app
+
+# 复制构建的 jar 文件
+COPY --from=builder /app/target/*.jar app.jar
+
+# 设置文件权限
+RUN chown appuser:appuser app.jar
+
+# 切换到非 root 用户
+USER appuser
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+EXPOSE 8080
+
+# 启动应用
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+### Docker Compose 配置
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - MYSQL_HOST=mysql
+      - REDIS_HOST=redis
+    depends_on:
+      - mysql
+      - redis
+  
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: project
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10  
+    ports:
+      - "3306:3306"
+  
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 20s
+      retries: 10
+    ports:
+      - "6379:6379"
+```
+
+## 10. 最佳实践总结
+
+### 技术分层架构原则
+1. **控制器层**：仅处理 HTTP 请求和响应，不包含业务逻辑
+2. **服务层**：实现业务逻辑，具体实现规范参考 MyBatis Plus 规范文件
+3. **数据访问层**：具体实现规范参考 MyBatis Plus 规范文件
+
+### 代码质量要求
+1. **命名规范**：遵循 Java 命名规范
+2. **注释规范**：遵循 Java 注释规范
+3. **异常处理**：遵循 Java 异常处理规范
+4. **依赖注入**：使用构造函数注入，禁止字段注入
+
+### 性能优化要点
+1. **数据库**：合理配置连接池，数据访问层优化参考 MyBatis Plus 规范文件
+2. **缓存**：多级缓存策略，Redis + Caffeine
+3. **异步**：合理使用异步处理，避免阻塞
+
+### 安全防护措施
+1. **认证授权**：Spring Security + JWT
+2. **数据校验**：Jakarta Validation 注解
+3. **SQL 注入**：参数化查询，禁止字符串拼接
+
+### 测试覆盖要求
+1. **单元测试**：服务层业务逻辑测试
+2. **集成测试**：API 接口测试
+3. **测试覆盖率**：不低于 80%
+
+### 运维监控
+- **健康检查**：配置应用健康检查端点
+- **指标监控**：集成 Prometheus 和 Grafana
+- **日志管理**：结构化日志输出
+- **容器化部署**：使用 Docker 进行标准化部署

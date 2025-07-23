@@ -19,16 +19,16 @@ services:
       - ./rose-server/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
 
   rose-redis:
-    image: redis:6
+    image: redis:7-alpine
     container_name: rose-redis
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: redis123456
       REDIS_DATABASE: 0
       REDIS_TIMEOUT: 10s
     ports:
       - "6379:6379"
     restart: always
-    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    command: redis-server --appendonly yes --requirepass redis123456
 
   rose-rabbitmq:
     image: rabbitmq:3.12-management

@@ -88,6 +88,43 @@ public class MybatisPlusConfig {
 }
 ```
 
+### 应用配置文件
+
+```yaml
+# MyBatis Plus 配置
+mybatis-plus:
+  configuration:
+    # 驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 关闭二级缓存
+    cache-enabled: false
+    # 空值处理
+    call-setters-on-nulls: true
+    jdbc-type-for-null: null
+    # 日志实现
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      # 主键策略
+      id-type: ASSIGN_ID
+      # 逻辑删除配置
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      # 字段策略
+      update-strategy: NOT_NULL
+      insert-strategy: NOT_NULL
+      select-strategy: NOT_EMPTY
+    # 关闭 banner
+    banner: false
+  # Mapper XML 文件位置
+  mapper-locations: classpath*:mapper/**/*.xml
+  # 实体类包路径
+  type-aliases-package: com.rose.**.entity
+  # 类型处理器包路径
+  type-handlers-package: com.rose.**.handler
+```
+
 ## 实体类规范
 
 ### 实体继承体系
@@ -111,6 +148,53 @@ public class User extends BaseTenantEntity {
 ### 实体分类
 - **系统级实体**：继承BaseEntity，不包含租户ID，用于系统配置等
 - **租户级实体**：继承BaseTenantEntity，包含租户ID，用于业务数据
+
+### BaseTenantEntity 多租户实体类
+
+```java
+/**
+ * 多租户基础实体类
+ *
+ * @author 开发者姓名
+ * @since 版本号
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+public abstract class BaseTenantEntity extends BaseEntity {
+
+    /**
+     * 租户ID
+     */
+    @TableField(value = "tenant_id")
+    private String tenantId;
+}
+```
+
+### 业务实体类定义示例
+
+```java
+@Data
+@EqualsAndHashCode(callSuper = true)
+@TableName("user")
+public class User extends BaseTenantEntity {
+    
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
+    
+    @TableField("username")
+    private String username;
+    
+    @TableField("email")
+    private String email;
+    
+    @TableField("phone")
+    private String phone;
+    
+    @TableField("status")
+    @EnumValue
+    private UserStatus status;
+}
+```
 
 ### BaseEntity 基础实体类
 
@@ -234,17 +318,106 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 }
 ```
 
-## Controller 层规范
+### 分页查询规范
 
 ```java
-@GetMapping
-public ApiResponse<IPage<UserVO>> pageUsers(Page<User> page, UserQueryRequest request) {
-    return ApiResponse.success(userService.pageUsers(request));
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+    
+    private final UserConverter userConverter;
+    
+    @Override
+    @Transactional(readOnly = true)
+    public IPage<UserResponse> pageUsers(Page<User> page, UserPageRequest request) {
+        // 设置分页限制
+        if (page.getSize() > 1000) {
+            page.setSize(1000);
+        }
+        
+        // 构建查询条件
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(request.getUsername()), User::getUsername, request.getUsername())
+                .eq(StringUtils.hasText(request.getEmail()), User::getEmail, request.getEmail())
+                .eq(request.getStatus() != null, User::getStatus, request.getStatus())
+                .eq(User::getDeleted, false)
+                .orderByDesc(User::getCreatedTime);
+        
+        // 执行分页查询
+        IPage<User> userPage = page(page, wrapper);
+        
+        // 转换响应对象
+        return userConverter.toPageResponse(userPage);
+    }
 }
+```
 
+## Controller 层规范
+
+### 分页查询调用
+
+```java
+// 控制器中的分页调用（使用 MyBatis-Plus 的 Page 对象）
+@GetMapping
+public ApiResponse<IPage<UserResponse>> pageUsers(Page<User> page, @Valid UserPageRequest request) {
+    IPage<UserResponse> response = userService.pageUsers(page, request);
+    return ApiResponse.success(response);
+}
+```
+
+## 对象映射规范
+
+### MapStruct 转换器（分页对象转换）
+
+```java
+@Mapper(componentModel = "spring")
+public interface UserConverter {
+    
+    UserResponse toResponse(User user);
+    
+    User toEntity(UserCreateRequest request);
+    
+    /**
+     * 分页对象转换（使用 MyBatis Plus 分页对象）
+     */
+    default IPage<UserResponse> toPageResponse(IPage<User> userPage) {
+        IPage<UserResponse> responsePage = new Page<>();
+        responsePage.setCurrent(userPage.getCurrent());
+        responsePage.setSize(userPage.getSize());
+        responsePage.setTotal(userPage.getTotal());
+        responsePage.setPages(userPage.getPages());
+        
+        List<UserResponse> records = userPage.getRecords().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        responsePage.setRecords(records);
+        
+        return responsePage;
+    }
+}
 ```
 
 ## 性能优化规范
+
+### MyBatis Plus 性能配置
+
+```yaml
+mybatis-plus:
+  configuration:
+    # 开启二级缓存
+    cache-enabled: true
+    # 延迟加载
+    lazy-loading-enabled: true
+    aggressive-lazy-loading: false
+    # 批量操作
+    default-executor-type: reuse
+  global-config:
+    # 性能分析插件（仅开发环境）
+    db-config:
+      # 批量插入优化
+      batch-size: 1000
+```
 
 ### 查询优化
 
