@@ -495,12 +495,14 @@ iot/
 CREATE TABLE iot_product_category (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '分类ID',
     name VARCHAR(128) NOT NULL COMMENT '分类名称',
-    code VARCHAR(64) UNIQUE NOT NULL COMMENT '分类编码',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '分类标识符',
     parent_id BIGINT COMMENT '父分类ID',
     level INT DEFAULT 1 COMMENT '分类层级',
     sort_order INT DEFAULT 0 COMMENT '排序',
     icon VARCHAR(255) COMMENT '分类图标',
     description TEXT COMMENT '分类描述',
+    type ENUM('STANDARD', 'CUSTOM') DEFAULT 'CUSTOM' COMMENT '分类类型：标准行业分类/自定义分类',
+    template_id BIGINT COMMENT '关联的物模型模板ID',
     status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE' COMMENT '分类状态',
     tenant_id BIGINT COMMENT '租户ID',
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -509,52 +511,66 @@ CREATE TABLE iot_product_category (
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_parent_id (parent_id),
-    INDEX idx_code (code),
-    INDEX idx_status (status),
-    INDEX idx_tenant_id (tenant_id)
+    INDEX idx_product_category_parent_id (parent_id),
+    INDEX idx_product_category_code (code),
+    INDEX idx_product_category_type (type),
+    INDEX idx_product_category_status (status),
+    INDEX idx_product_category_tenant_id (tenant_id),
+    INDEX idx_product_category_template_id (template_id)
 );
 
--- 产品模板表
-CREATE TABLE iot_product_template (
+-- 物模型模板表
+CREATE TABLE iot_thing_model_template (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '模板ID',
     name VARCHAR(128) NOT NULL COMMENT '模板名称',
-    code VARCHAR(64) UNIQUE NOT NULL COMMENT '模板编码',
-    category_id BIGINT COMMENT '所属分类ID',
-    logo VARCHAR(255) COMMENT '模板Logo',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '模板标识符',
     description TEXT COMMENT '模板描述',
-    node_type ENUM('DIRECT', 'GATEWAY', 'SUB_DEVICE') NOT NULL COMMENT '节点类型',
-    auth_type ENUM('KEY', 'CERT', 'NONE') NOT NULL COMMENT '认证方式',
-    network_type ENUM('WIFI', 'ETHERNET', 'CELLULAR', 'OTHER') COMMENT '网络类型',
-    protocol_type ENUM('BLE', 'ZIGBEE', 'MODBUS', 'OPC_UA', 'CUSTOM') COMMENT '协议类型',
-    data_format ENUM('JSON', 'CUSTOM') DEFAULT 'JSON' COMMENT '数据格式',
-    template_config JSON COMMENT '模板配置信息',
-    thing_model_content JSON COMMENT '预定义物模型内容',
+    
+    -- 物模型内容（TSL格式）
+    content JSON NOT NULL COMMENT '物模型模板内容(TSL)',
+    
+    -- 分类关联
+    category_id BIGINT COMMENT '关联的产品分类ID',
+    industry_type VARCHAR(64) COMMENT '行业类型',
+    
+    -- 模板类型和状态
+    type ENUM('STANDARD', 'CUSTOM') DEFAULT 'CUSTOM' COMMENT '模板类型：标准模板/自定义模板',
+    status ENUM('ACTIVE', 'INACTIVE', 'DEPRECATED') DEFAULT 'ACTIVE' COMMENT '模板状态',
+    publish_status ENUM('DRAFT', 'PUBLISHED', 'OFFLINE') DEFAULT 'DRAFT' COMMENT '发布状态',
+    
+    -- 版本信息
+    version VARCHAR(32) DEFAULT '1.0' COMMENT '模板版本',
+    change_log TEXT COMMENT '变更说明',
+    
+    -- 使用统计
+    usage_count INT DEFAULT 0 COMMENT '使用次数',
+    last_used_time DATETIME COMMENT '最后使用时间',
+    
+    -- 标签和备注
     tags JSON COMMENT '模板标签',
-    status ENUM('DRAFT', 'PUBLISHED', 'DEPRECATED') DEFAULT 'DRAFT' COMMENT '模板状态',
-    version VARCHAR(32) DEFAULT '1.0.0' COMMENT '模板版本',
-    download_count INT DEFAULT 0 COMMENT '下载次数',
-    rating DECIMAL(3,2) DEFAULT 0.00 COMMENT '评分',
-    tenant_id BIGINT COMMENT '租户ID',
+    remarks TEXT COMMENT '备注信息',
+    
+    -- 审计字段
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     created_by VARCHAR(64) COMMENT '创建人',
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
-    version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_category_id (category_id),
-    INDEX idx_code (code),
-    INDEX idx_status (status),
-    INDEX idx_node_type (node_type),
-    INDEX idx_network_type (network_type),
-    INDEX idx_protocol_type (protocol_type),
-    INDEX idx_tenant_id (tenant_id)
+    version_num INT DEFAULT 1 COMMENT '版本号',
+    
+    -- 索引
+    INDEX idx_thing_model_template_category_id (category_id),
+    INDEX idx_thing_model_template_code (code),
+    INDEX idx_thing_model_template_type (type),
+    INDEX idx_thing_model_template_status (status),
+    INDEX idx_thing_model_template_publish_status (publish_status),
+    INDEX idx_thing_model_template_industry_type (industry_type)
 );
 
 -- 产品表
 CREATE TABLE iot_product (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '产品ID',
-    identifier VARCHAR(64) UNIQUE NOT NULL COMMENT '产品唯一标识',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '产品标识符',
     name VARCHAR(128) NOT NULL COMMENT '产品名称',
     logo VARCHAR(255) COMMENT '产品Logo',
     description TEXT COMMENT '产品描述',
@@ -563,33 +579,53 @@ CREATE TABLE iot_product (
     network_type ENUM('WIFI', 'ETHERNET', 'CELLULAR', 'OTHER') COMMENT '网络类型',
     protocol_type ENUM('BLE', 'ZIGBEE', 'MODBUS', 'OPC_UA', 'CUSTOM') COMMENT '协议类型',
     data_format ENUM('JSON', 'CUSTOM') DEFAULT 'JSON' COMMENT '数据格式',
-    category_id BIGINT COMMENT '产品分类ID',
-    template_id BIGINT COMMENT '基于的模板ID',
+    category_id BIGINT NOT NULL COMMENT '产品分类ID',
     tags JSON COMMENT '产品标签',
     status ENUM('DEVELOPING', 'PUBLISHED', 'OFFLINE') DEFAULT 'DEVELOPING' COMMENT '产品状态',
-    device_count INT DEFAULT 0 COMMENT '设备数量',
-    message_count BIGINT DEFAULT 0 COMMENT '消息数量',
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     created_by VARCHAR(64) COMMENT '创建人',
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_category_id (category_id),
-    INDEX idx_template_id (template_id),
-    INDEX idx_status (status),
-    INDEX idx_node_type (node_type),
-    INDEX idx_network_type (network_type),
-    INDEX idx_protocol_type (protocol_type)
+    INDEX idx_product_category_id (category_id),
+    INDEX idx_product_code (code),
+    INDEX idx_product_status (status),
+    INDEX idx_product_node_type (node_type),
+    INDEX idx_product_network_type (network_type),
+    INDEX idx_product_protocol_type (protocol_type)
+);
+
+-- 物模型表
+CREATE TABLE iot_thing_model (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '物模型ID',
+    name VARCHAR(128) NOT NULL COMMENT '物模型名称',
+    product_id BIGINT NOT NULL COMMENT '产品ID',
+    content JSON NOT NULL COMMENT '物模型内容(TSL)',
+    status ENUM('DRAFT', 'PUBLISHED', 'DEPRECATED') DEFAULT 'DRAFT' COMMENT '模型状态',
+    description TEXT COMMENT '模型描述',
+    change_log TEXT COMMENT '变更说明',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_thing_model_product_id (product_id),
+    INDEX idx_thing_model_status (status),
+    INDEX idx_thing_model_version (version),
+    UNIQUE KEY uk_thing_model_product_version (product_id, version)
+    -- 注意：MySQL不支持WHERE子句的唯一约束，需要在应用层确保一个产品只能有一个已发布的物模型
 );
 
 -- 设备表
 CREATE TABLE iot_device (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '设备ID',
     name VARCHAR(128) NOT NULL COMMENT '设备名称',
-    identifier VARCHAR(64) UNIQUE NOT NULL COMMENT '设备唯一标识',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '设备标识符',
     product_id BIGINT NOT NULL COMMENT '产品ID',
     secret VARCHAR(128) COMMENT '设备密钥',
+    nickname VARCHAR(128) COMMENT '设备昵称',
     status ENUM('ONLINE', 'OFFLINE', 'FAULT', 'MAINTENANCE') DEFAULT 'OFFLINE' COMMENT '设备状态',
     last_online_time DATETIME COMMENT '最后在线时间',
     last_offline_time DATETIME COMMENT '最后离线时间',
@@ -605,29 +641,125 @@ CREATE TABLE iot_device (
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_product_id (product_id),
-    INDEX idx_status (status),
-    INDEX idx_last_online_time (last_online_time)
+    INDEX idx_device_product_id (product_id),
+    INDEX idx_device_code (code),
+    INDEX idx_device_status (status),
+    INDEX idx_device_last_online_time (last_online_time)
 );
 
--- 物模型表
-CREATE TABLE iot_thing_model (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '物模型ID',
-    name VARCHAR(128) NOT NULL COMMENT '模型名称',
-    version VARCHAR(32) NOT NULL COMMENT '模型版本',
-    product_id BIGINT NOT NULL COMMENT '产品ID',
-    content JSON NOT NULL COMMENT '物模型内容(TSL)',
-    status ENUM('DRAFT', 'PUBLISHED', 'DEPRECATED') DEFAULT 'DRAFT' COMMENT '模型状态',
-    description TEXT COMMENT '模型描述',
+
+-- 设备属性表（时序数据）
+CREATE TABLE iot_device_property (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '属性记录ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    code VARCHAR(64) NOT NULL COMMENT '属性标识符',
+    value JSON NOT NULL COMMENT '属性值',
+    timestamp DATETIME NOT NULL COMMENT '时间戳',
+    quality INT DEFAULT 1 COMMENT '数据质量(0-1)',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_device_property_device_code_timestamp (device_id, code, timestamp),
+    INDEX idx_device_property_timestamp (timestamp)
+);
+
+-- 设备影子表（最新状态）
+CREATE TABLE iot_device_shadow (
+    device_id BIGINT PRIMARY KEY COMMENT '设备ID',
+    properties JSON COMMENT '当前属性值',
+    desired_properties JSON COMMENT '期望属性值',
+    reported_properties JSON COMMENT '上报属性值',
+    version BIGINT DEFAULT 1 COMMENT '版本号',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_device_shadow_version (version)
+);
+
+-- 设备事件表
+CREATE TABLE iot_device_event (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '事件ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    code VARCHAR(64) NOT NULL COMMENT '事件标识符',
+    data JSON COMMENT '事件数据',
+    type ENUM('PROPERTY_CHANGED', 'DEVICE_ONLINE', 'DEVICE_OFFLINE', 'DEVICE_FAULT', 'CUSTOM') NOT NULL COMMENT '事件类型',
+    timestamp DATETIME NOT NULL COMMENT '事件时间',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_device_event_device_code_timestamp (device_id, code, timestamp),
+    INDEX idx_device_event_timestamp (timestamp)
+);
+
+-- 设备服务调用表
+CREATE TABLE iot_device_service (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '服务调用ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    service_code VARCHAR(64) NOT NULL COMMENT '服务标识符',
+    input_params JSON COMMENT '输入参数',
+    output_params JSON COMMENT '输出参数',
+    status ENUM('PENDING', 'SUCCESS', 'FAILED', 'TIMEOUT') DEFAULT 'PENDING' COMMENT '调用状态',
+    request_id VARCHAR(64) COMMENT '请求ID',
+    timestamp DATETIME NOT NULL COMMENT '调用时间',
+    response_time INT COMMENT '响应时间(毫秒)',
+    error_message TEXT COMMENT '错误信息',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_device_service_device_code_timestamp (device_id, service_code, timestamp),
+    INDEX idx_device_service_status (status),
+    INDEX idx_device_service_request_id (request_id)
+);
+
+-- 设备分组表
+CREATE TABLE iot_device_group (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '分组ID',
+    name VARCHAR(128) NOT NULL COMMENT '分组名称',
+    parent_id BIGINT COMMENT '父分组ID',
+    level INT DEFAULT 1 COMMENT '分组层级',
+    sort_order INT DEFAULT 0 COMMENT '排序',
+    description TEXT COMMENT '分组描述',
+    tenant_id BIGINT COMMENT '租户ID',
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     created_by VARCHAR(64) COMMENT '创建人',
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_product_id (product_id),
-    INDEX idx_status (status)
+    INDEX idx_device_group_parent_id (parent_id),
+    INDEX idx_device_group_tenant_id (tenant_id)
 );
+
+-- 设备分组关联表
+CREATE TABLE iot_device_group_relation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '关联ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    group_id BIGINT NOT NULL COMMENT '分组ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_device_group_relation_device_id (device_id),
+    INDEX idx_device_group_relation_group_id (group_id),
+    UNIQUE KEY uk_device_group_relation_device_group (device_id, group_id)
+);
+
+-- 设备标签表
+CREATE TABLE iot_device_tag (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '标签ID',
+    name VARCHAR(64) NOT NULL COMMENT '标签名称',
+    color VARCHAR(7) COMMENT '标签颜色',
+    description TEXT COMMENT '标签描述',
+    tenant_id BIGINT COMMENT '租户ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_device_tag_tenant_id (tenant_id)
+);
+
+-- 设备标签关联表
+CREATE TABLE iot_device_tag_relation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '关联ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    tag_id BIGINT NOT NULL COMMENT '标签ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_device_tag_relation_device_id (device_id),
+    INDEX idx_device_tag_relation_tag_id (tag_id),
+    UNIQUE KEY uk_device_tag_relation_device_tag (device_id, tag_id)
+);
+
 ```
 
 **用户权限相关表**
@@ -652,16 +784,17 @@ CREATE TABLE iot_user (
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_email (email),
-    INDEX idx_tenant_id (tenant_id),
-    INDEX idx_status (status)
+    INDEX idx_user_username (username),
+    INDEX idx_user_email (email),
+    INDEX idx_user_tenant_id (tenant_id),
+    INDEX idx_user_status (status)
 );
 
 -- 角色表
 CREATE TABLE iot_role (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '角色ID',
     name VARCHAR(64) NOT NULL COMMENT '角色名称',
-    code VARCHAR(64) UNIQUE NOT NULL COMMENT '角色编码',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '角色标识符',
     type ENUM('SYSTEM', 'CUSTOM') DEFAULT 'CUSTOM' COMMENT '角色类型',
     description TEXT COMMENT '角色描述',
     tenant_id BIGINT COMMENT '租户ID',
@@ -671,15 +804,15 @@ CREATE TABLE iot_role (
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_code (code),
-    INDEX idx_tenant_id (tenant_id)
+    INDEX idx_role_code (code),
+    INDEX idx_role_tenant_id (tenant_id)
 );
 
 -- 权限表
 CREATE TABLE iot_permission (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '权限ID',
     name VARCHAR(128) NOT NULL COMMENT '权限名称',
-    code VARCHAR(128) UNIQUE NOT NULL COMMENT '权限编码',
+    code VARCHAR(128) UNIQUE NOT NULL COMMENT '权限标识符',
     type ENUM('MENU', 'BUTTON', 'API') NOT NULL COMMENT '权限类型',
     resource_path VARCHAR(255) COMMENT '资源路径',
     parent_id BIGINT COMMENT '父权限ID',
@@ -691,8 +824,289 @@ CREATE TABLE iot_permission (
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_code (code),
-    INDEX idx_parent_id (parent_id)
+    INDEX idx_permission_code (code),
+    INDEX idx_permission_parent_id (parent_id)
+);
+
+-- 用户角色关联表
+CREATE TABLE iot_user_role (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '关联ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    tenant_id BIGINT COMMENT '租户ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_user_role_user_id (user_id),
+    INDEX idx_user_role_role_id (role_id),
+    INDEX idx_user_role_tenant_id (tenant_id),
+    UNIQUE KEY uk_user_role (user_id, role_id)
+);
+
+-- 角色权限关联表
+CREATE TABLE iot_role_permission (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '关联ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    permission_id BIGINT NOT NULL COMMENT '权限ID',
+    tenant_id BIGINT COMMENT '租户ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_role_permission_role_id (role_id),
+    INDEX idx_role_permission_permission_id (permission_id),
+    INDEX idx_role_permission_tenant_id (tenant_id),
+    UNIQUE KEY uk_role_permission (role_id, permission_id)
+);
+
+-- 告警规则表
+CREATE TABLE iot_alarm_rule (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '告警规则ID',
+    name VARCHAR(128) NOT NULL COMMENT '规则名称',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '规则标识符',
+    type ENUM('THRESHOLD', 'TREND', 'PATTERN', 'CUSTOM') NOT NULL COMMENT '告警类型',
+    product_id BIGINT COMMENT '产品ID（为空表示所有产品）',
+    device_id BIGINT COMMENT '设备ID（为空表示所有设备）',
+    trigger_condition JSON NOT NULL COMMENT '触发条件',
+    severity ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') DEFAULT 'MEDIUM' COMMENT '告警级别',
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE' COMMENT '规则状态',
+    description TEXT COMMENT '规则描述',
+    tenant_id BIGINT COMMENT '租户ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_alarm_rule_code (code),
+    INDEX idx_alarm_rule_type (type),
+    INDEX idx_alarm_rule_product_id (product_id),
+    INDEX idx_alarm_rule_device_id (device_id),
+    INDEX idx_alarm_rule_severity (severity),
+    INDEX idx_alarm_rule_status (status),
+    INDEX idx_alarm_rule_tenant_id (tenant_id)
+);
+
+-- 告警记录表
+CREATE TABLE iot_alarm_record (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '告警记录ID',
+    alarm_rule_id BIGINT NOT NULL COMMENT '告警规则ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    severity ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL COMMENT '告警级别',
+    status ENUM('ACTIVE', 'ACKNOWLEDGED', 'RESOLVED', 'CLOSED') DEFAULT 'ACTIVE' COMMENT '告警状态',
+    title VARCHAR(255) NOT NULL COMMENT '告警标题',
+    content TEXT COMMENT '告警内容',
+    trigger_data JSON COMMENT '触发数据',
+    acknowledged_by VARCHAR(64) COMMENT '确认人',
+    acknowledged_time DATETIME COMMENT '确认时间',
+    resolved_by VARCHAR(64) COMMENT '解决人',
+    resolved_time DATETIME COMMENT '解决时间',
+    resolved_note TEXT COMMENT '解决说明',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_alarm_record_alarm_rule_id (alarm_rule_id),
+    INDEX idx_alarm_record_device_id (device_id),
+    INDEX idx_alarm_record_severity (severity),
+    INDEX idx_alarm_record_status (status),
+    INDEX idx_alarm_record_created_time (created_time)
+);
+
+-- 告警通知表
+CREATE TABLE iot_alarm_notification (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '通知ID',
+    alarm_record_id BIGINT NOT NULL COMMENT '告警记录ID',
+    notification_type ENUM('EMAIL', 'SMS', 'WEBHOOK', 'DINGTALK', 'WECHAT') NOT NULL COMMENT '通知类型',
+    recipient VARCHAR(255) NOT NULL COMMENT '接收人',
+    content TEXT NOT NULL COMMENT '通知内容',
+    status ENUM('PENDING', 'SENT', 'FAILED') DEFAULT 'PENDING' COMMENT '发送状态',
+    sent_time DATETIME COMMENT '发送时间',
+    error_message TEXT COMMENT '错误信息',
+    retry_count TINYINT DEFAULT 0 COMMENT '重试次数',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_alarm_notification_alarm_record_id (alarm_record_id),
+    INDEX idx_alarm_notification_type (notification_type),
+    INDEX idx_alarm_notification_status (status),
+    INDEX idx_alarm_notification_created_time (created_time)
+);
+
+-- 操作日志表
+CREATE TABLE iot_operation_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
+    user_id BIGINT COMMENT '操作用户ID',
+    username VARCHAR(64) COMMENT '操作用户名',
+    operation_type ENUM('CREATE', 'UPDATE', 'DELETE', 'QUERY', 'LOGIN', 'LOGOUT', 'OTHER') NOT NULL COMMENT '操作类型',
+    resource_type VARCHAR(64) COMMENT '资源类型',
+    resource_id BIGINT COMMENT '资源ID',
+    operation_desc VARCHAR(255) COMMENT '操作描述',
+    request_url VARCHAR(500) COMMENT '请求URL',
+    request_method VARCHAR(10) COMMENT '请求方法',
+    request_params JSON COMMENT '请求参数',
+    response_result JSON COMMENT '响应结果',
+    ip_address VARCHAR(45) COMMENT 'IP地址',
+    user_agent VARCHAR(500) COMMENT '用户代理',
+    status ENUM('SUCCESS', 'FAILED') DEFAULT 'SUCCESS' COMMENT '操作状态',
+    error_message TEXT COMMENT '错误信息',
+    execution_time INT COMMENT '执行时间(毫秒)',
+    tenant_id BIGINT COMMENT '租户ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_operation_log_user_id (user_id),
+    INDEX idx_operation_log_operation_type (operation_type),
+    INDEX idx_operation_log_resource_type (resource_type),
+    INDEX idx_operation_log_status (status),
+    INDEX idx_operation_log_tenant_id (tenant_id),
+    INDEX idx_operation_log_created_time (created_time)
+);
+
+-- 设备日志表
+CREATE TABLE iot_device_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    log_type ENUM('CONNECT', 'DISCONNECT', 'MESSAGE', 'ERROR', 'WARNING', 'INFO') NOT NULL COMMENT '日志类型',
+    log_level ENUM('DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL') DEFAULT 'INFO' COMMENT '日志级别',
+    title VARCHAR(255) COMMENT '日志标题',
+    content TEXT COMMENT '日志内容',
+    data JSON COMMENT '相关数据',
+    ip_address VARCHAR(45) COMMENT '设备IP地址',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_device_log_device_id (device_id),
+    INDEX idx_device_log_log_type (log_type),
+    INDEX idx_device_log_log_level (log_level),
+    INDEX idx_device_log_created_time (created_time)
+);
+
+-- 系统日志表
+CREATE TABLE iot_system_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
+    log_type ENUM('SYSTEM', 'SECURITY', 'PERFORMANCE', 'BUSINESS') NOT NULL COMMENT '日志类型',
+    log_level ENUM('DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL') DEFAULT 'INFO' COMMENT '日志级别',
+    module VARCHAR(64) COMMENT '模块名称',
+    title VARCHAR(255) COMMENT '日志标题',
+    content TEXT COMMENT '日志内容',
+    data JSON COMMENT '相关数据',
+    stack_trace TEXT COMMENT '堆栈信息',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_system_log_log_type (log_type),
+    INDEX idx_system_log_log_level (log_level),
+    INDEX idx_system_log_module (module),
+    INDEX idx_system_log_created_time (created_time)
+);
+
+-- 设备统计表
+CREATE TABLE iot_device_statistics (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '统计ID',
+    tenant_id BIGINT COMMENT '租户ID',
+    product_id BIGINT COMMENT '产品ID',
+    date DATE NOT NULL COMMENT '统计日期',
+    total_devices INT DEFAULT 0 COMMENT '设备总数',
+    online_devices INT DEFAULT 0 COMMENT '在线设备数',
+    offline_devices INT DEFAULT 0 COMMENT '离线设备数',
+    fault_devices INT DEFAULT 0 COMMENT '故障设备数',
+    new_devices INT DEFAULT 0 COMMENT '新增设备数',
+    active_devices INT DEFAULT 0 COMMENT '活跃设备数',
+    message_count BIGINT DEFAULT 0 COMMENT '消息总数',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_device_statistics_tenant_id (tenant_id),
+    INDEX idx_device_statistics_product_id (product_id),
+    INDEX idx_device_statistics_date (date),
+    UNIQUE KEY uk_device_statistics_tenant_product_date (tenant_id, product_id, date)
+);
+
+-- 消息统计表
+CREATE TABLE iot_message_statistics (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '统计ID',
+    tenant_id BIGINT COMMENT '租户ID',
+    product_id BIGINT COMMENT '产品ID',
+    device_id BIGINT COMMENT '设备ID',
+    date DATE NOT NULL COMMENT '统计日期',
+    hour TINYINT COMMENT '统计小时(0-23)',
+    message_type ENUM('UP', 'DOWN') NOT NULL COMMENT '消息类型',
+    message_count BIGINT DEFAULT 0 COMMENT '消息数量',
+    success_count BIGINT DEFAULT 0 COMMENT '成功数量',
+    failed_count BIGINT DEFAULT 0 COMMENT '失败数量',
+    avg_response_time INT DEFAULT 0 COMMENT '平均响应时间(毫秒)',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_message_statistics_tenant_id (tenant_id),
+    INDEX idx_message_statistics_product_id (product_id),
+    INDEX idx_message_statistics_device_id (device_id),
+    INDEX idx_message_statistics_date (date),
+    INDEX idx_message_statistics_type (message_type),
+    UNIQUE KEY uk_message_statistics_tenant_product_device_date_hour_type (tenant_id, product_id, device_id, date, hour, message_type)
+);
+
+-- 系统配置表
+CREATE TABLE iot_system_config (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '配置ID',
+    config_key VARCHAR(128) UNIQUE NOT NULL COMMENT '配置键',
+    config_value TEXT COMMENT '配置值',
+    config_type ENUM('STRING', 'NUMBER', 'BOOLEAN', 'JSON', 'FILE') DEFAULT 'STRING' COMMENT '配置类型',
+    description TEXT COMMENT '配置描述',
+    is_system TINYINT DEFAULT 0 COMMENT '是否系统配置',
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE' COMMENT '配置状态',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_system_config_config_key (config_key),
+    INDEX idx_system_config_is_system (is_system),
+    INDEX idx_system_config_status (status)
+);
+
+-- 租户配置表
+CREATE TABLE iot_tenant_config (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '配置ID',
+    tenant_id BIGINT NOT NULL COMMENT '租户ID',
+    config_key VARCHAR(128) NOT NULL COMMENT '配置键',
+    config_value TEXT COMMENT '配置值',
+    config_type ENUM('STRING', 'NUMBER', 'BOOLEAN', 'JSON', 'FILE') DEFAULT 'STRING' COMMENT '配置类型',
+    description TEXT COMMENT '配置描述',
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE' COMMENT '配置状态',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_tenant_config_tenant_id (tenant_id),
+    INDEX idx_tenant_config_config_key (config_key),
+    INDEX idx_tenant_config_status (status),
+    UNIQUE KEY uk_tenant_config (tenant_id, config_key)
+);
+
+-- 租户表
+CREATE TABLE iot_tenant (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '租户ID',
+    name VARCHAR(128) NOT NULL COMMENT '租户名称',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '租户标识符',
+    type ENUM('ENTERPRISE', 'PERSONAL', 'TRIAL') DEFAULT 'ENTERPRISE' COMMENT '租户类型',
+    status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') DEFAULT 'ACTIVE' COMMENT '租户状态',
+    contact_name VARCHAR(64) COMMENT '联系人姓名',
+    contact_email VARCHAR(128) COMMENT '联系人邮箱',
+    contact_phone VARCHAR(20) COMMENT '联系人电话',
+    address TEXT COMMENT '地址信息',
+    max_device_count INT DEFAULT 1000 COMMENT '最大设备数量',
+    max_user_count INT DEFAULT 100 COMMENT '最大用户数量',
+    subscription_plan VARCHAR(32) COMMENT '订阅计划',
+    subscription_start_time DATETIME COMMENT '订阅开始时间',
+    subscription_end_time DATETIME COMMENT '订阅结束时间',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_tenant_code (code),
+    INDEX idx_tenant_type (type),
+    INDEX idx_tenant_status (status),
+    INDEX idx_tenant_subscription_end_time (subscription_end_time)
 );
 ```
 
@@ -714,16 +1128,18 @@ CREATE TABLE iot_message (
     delivered_time DATETIME COMMENT '送达时间',
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX idx_device_id (device_id),
-    INDEX idx_type (type),
-    INDEX idx_status (status),
-    INDEX idx_created_time (created_time)
+    INDEX idx_message_device_id (device_id),
+    INDEX idx_message_identifier (identifier),
+    INDEX idx_message_type (type),
+    INDEX idx_message_status (status),
+    INDEX idx_message_created_time (created_time)
 );
 
 -- 规则引擎表
 CREATE TABLE iot_rule (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '规则ID',
     name VARCHAR(128) NOT NULL COMMENT '规则名称',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '规则标识符',
     type ENUM('DATA_FORWARD', 'ALARM', 'ACTION') NOT NULL COMMENT '规则类型',
     trigger_condition JSON NOT NULL COMMENT '触发条件',
     action_config JSON NOT NULL COMMENT '动作配置',
@@ -737,10 +1153,112 @@ CREATE TABLE iot_rule (
     updated_by VARCHAR(64) COMMENT '更新人',
     deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
     version INT DEFAULT 1 COMMENT '版本号',
-    INDEX idx_type (type),
-    INDEX idx_status (status),
-    INDEX idx_tenant_id (tenant_id)
+    INDEX idx_rule_code (code),
+    INDEX idx_rule_type (type),
+    INDEX idx_rule_status (status),
+    INDEX idx_rule_tenant_id (tenant_id)
 );
+
+-- 固件管理表
+CREATE TABLE iot_firmware (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '固件ID',
+    name VARCHAR(128) NOT NULL COMMENT '固件名称',
+    version VARCHAR(64) NOT NULL COMMENT '固件版本',
+    product_id BIGINT NOT NULL COMMENT '产品ID',
+    type ENUM('FULL', 'DIFF') DEFAULT 'FULL' COMMENT '固件类型',
+    size BIGINT COMMENT '固件大小(字节)',
+    url VARCHAR(500) COMMENT '固件下载地址',
+    md5 VARCHAR(32) COMMENT '固件MD5值',
+    sha256 VARCHAR(64) COMMENT '固件SHA256值',
+    description TEXT COMMENT '固件描述',
+    change_log TEXT COMMENT '变更日志',
+    status ENUM('DRAFT', 'PUBLISHED', 'OFFLINE') DEFAULT 'DRAFT' COMMENT '固件状态',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version_num INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_firmware_product_id (product_id),
+    INDEX idx_firmware_version (version),
+    INDEX idx_firmware_status (status),
+    UNIQUE KEY uk_firmware_product_version (product_id, version)
+);
+
+-- 固件升级任务表
+CREATE TABLE iot_firmware_upgrade_task (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '升级任务ID',
+    name VARCHAR(128) NOT NULL COMMENT '任务名称',
+    firmware_id BIGINT NOT NULL COMMENT '固件ID',
+    target_devices JSON COMMENT '目标设备列表',
+    upgrade_strategy ENUM('BATCH', 'GRADUAL', 'SINGLE') DEFAULT 'BATCH' COMMENT '升级策略',
+    batch_size INT DEFAULT 100 COMMENT '批次大小',
+    retry_count INT DEFAULT 3 COMMENT '重试次数',
+    timeout_seconds INT DEFAULT 300 COMMENT '超时时间(秒)',
+    status ENUM('PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'CANCELLED') DEFAULT 'PENDING' COMMENT '任务状态',
+    progress INT DEFAULT 0 COMMENT '进度百分比',
+    success_count INT DEFAULT 0 COMMENT '成功数量',
+    failed_count INT DEFAULT 0 COMMENT '失败数量',
+    start_time DATETIME COMMENT '开始时间',
+    end_time DATETIME COMMENT '结束时间',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_firmware_upgrade_task_firmware_id (firmware_id),
+    INDEX idx_firmware_upgrade_task_status (status),
+    INDEX idx_firmware_upgrade_task_created_time (created_time)
+);
+
+-- 数据流转规则表
+CREATE TABLE iot_data_forward_rule (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '规则ID',
+    name VARCHAR(128) NOT NULL COMMENT '规则名称',
+    code VARCHAR(64) UNIQUE NOT NULL COMMENT '规则标识符',
+    product_id BIGINT COMMENT '产品ID（为空表示所有产品）',
+    topic_filter VARCHAR(255) NOT NULL COMMENT '主题过滤器',
+    destination_type ENUM('HTTP', 'MQTT', 'AMQP', 'KAFKA', 'OTS', 'RDS') NOT NULL COMMENT '目标类型',
+    destination_config JSON NOT NULL COMMENT '目标配置',
+    data_format ENUM('JSON', 'BINARY', 'CUSTOM') DEFAULT 'JSON' COMMENT '数据格式',
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE' COMMENT '规则状态',
+    description TEXT COMMENT '规则描述',
+    tenant_id BIGINT COMMENT '租户ID',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(64) COMMENT '创建人',
+    updated_by VARCHAR(64) COMMENT '更新人',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除标识',
+    version INT DEFAULT 1 COMMENT '版本号',
+    INDEX idx_data_forward_rule_code (code),
+    INDEX idx_data_forward_rule_product_id (product_id),
+    INDEX idx_data_forward_rule_destination_type (destination_type),
+    INDEX idx_data_forward_rule_status (status),
+    INDEX idx_data_forward_rule_tenant_id (tenant_id)
+);
+
+-- 数据流转记录表
+CREATE TABLE iot_data_forward_record (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录ID',
+    rule_id BIGINT NOT NULL COMMENT '规则ID',
+    device_id BIGINT NOT NULL COMMENT '设备ID',
+    topic VARCHAR(255) NOT NULL COMMENT '消息主题',
+    payload JSON COMMENT '消息内容',
+    destination_type ENUM('HTTP', 'MQTT', 'AMQP', 'KAFKA', 'OTS', 'RDS') NOT NULL COMMENT '目标类型',
+    status ENUM('PENDING', 'SUCCESS', 'FAILED', 'TIMEOUT') DEFAULT 'PENDING' COMMENT '转发状态',
+    retry_count TINYINT DEFAULT 0 COMMENT '重试次数',
+    error_message TEXT COMMENT '错误信息',
+    sent_time DATETIME COMMENT '发送时间',
+    response_time INT COMMENT '响应时间(毫秒)',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_data_forward_record_rule_id (rule_id),
+    INDEX idx_data_forward_record_device_id (device_id),
+    INDEX idx_data_forward_record_status (status),
+    INDEX idx_data_forward_record_created_time (created_time)
+);
+
+
 ```
 
 #### 3.1.3 数据存储策略
@@ -757,7 +1275,40 @@ CREATE TABLE iot_rule (
 
 ### 3.2 接口设计
 
-#### 3.2.1 RESTful API设计规范
+#### 3.2.1 接口分层架构
+
+**接口分类**
+- **管理端接口（Admin API）**：面向管理员的Web管理界面
+- **设备端API接口（Device API）**：面向设备的通信接口，按协议划分
+- **开发者API接口（Developer API）**：面向开发者的RESTful API
+
+**接口架构图**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    物联网平台接口层                            │
+├─────────────────────────────────────────────────────────────┤
+│  管理端接口 (Admin API)    │  设备端API (Device API)        │
+│  ┌─────────────────────┐  │  ┌─────────────────────────────┐ │
+│  │ 产品管理接口        │  │  │ MQTT协议接口                │ │
+│  │ 设备管理接口        │  │  │ HTTP/HTTPS协议接口          │ │
+│  │ 用户管理接口        │  │  │ WebSocket协议接口           │ │
+│  │ 系统管理接口        │  │  │ CoAP协议接口                │ │
+│  └─────────────────────┘  │  └─────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│                    开发者API接口 (Developer API)              │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │ RESTful API        │ SDK接口        │ Webhook接口      │ │
+│  └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 3.2.2 管理端接口（Admin API）
+
+**接口特点**
+- **认证方式**：JWT Token认证
+- **权限控制**：基于RBAC的细粒度权限控制
+- **响应格式**：统一的JSON响应格式
+- **文档规范**：OpenAPI 3.0规范
 
 **通用响应格式**
 ```json
@@ -778,323 +1329,304 @@ CREATE TABLE iot_rule (
 - **404**：资源不存在
 - **500**：服务器内部错误
 
-#### 3.2.2 核心业务接口
+**核心管理接口**
 
-**设备管理接口**
+```
+# 产品分类管理接口
+POST   /admin/api/product/categories
+GET    /admin/api/product/categories/{categoryId}
+PUT    /admin/api/product/categories/{categoryId}
+DELETE /admin/api/product/categories/{categoryId}
 
-```java
-/**
- * 设备管理控制器
- */
-@RestController
-@RequestMapping("/api/v1/devices")
-@Tag(name = "设备管理", description = "设备增删改查接口")
-public class DeviceController {
+# 产品分类列表
+GET    /admin/api/product/categories?parentId={parentId}&pageNo={pageNo}&pageSize={pageSize}
 
-    /**
-     * 创建设备
-     */
-    @PostMapping
-    @Operation(summary = "创建设备")
-    public ApiResponse<DeviceResponse> createDevice(
-            @Valid @RequestBody DeviceCreateRequest request);
+# 产品分类树
+GET    /admin/api/product/categories/tree
 
-    /**
-     * 获取设备详情
-     */
-    @GetMapping("/{deviceId}")
-    @Operation(summary = "获取设备详情")
-    public ApiResponse<DeviceResponse> getDevice(
-            @PathVariable @Positive Long deviceId);
+# 产品管理接口
+POST   /admin/api/products
+GET    /admin/api/products/{productId}
+PUT    /admin/api/products/{productId}
+DELETE /admin/api/products/{productId}
 
-    /**
-     * 更新设备信息
-     */
-    @PutMapping("/{deviceId}")
-    @Operation(summary = "更新设备信息")
-    public ApiResponse<DeviceResponse> updateDevice(
-            @PathVariable @Positive Long deviceId,
-            @Valid @RequestBody DeviceUpdateRequest request);
+# 产品列表
+GET    /admin/api/products?categoryId={categoryId}&pageNo={pageNo}&pageSize={pageSize}
 
-    /**
-     * 删除设备
-     */
-    @DeleteMapping("/{deviceId}")
-    @Operation(summary = "删除设备")
-    public ApiResponse<Void> deleteDevice(
-            @PathVariable @Positive Long deviceId);
+# 产品统计
+GET    /admin/api/products/{productId}/statistics
 
-    /**
-     * 分页查询设备
-     */
-    @GetMapping
-    @Operation(summary = "分页查询设备")
-    public ApiResponse<Page<DeviceResponse>> pageDevices(
-            @Valid DeviceQueryRequest request);
+# 物模型管理接口
+POST   /admin/api/products/{productId}/thingmodel
+GET    /admin/api/products/{productId}/thingmodel
+PUT    /admin/api/products/{productId}/thingmodel
+DELETE /admin/api/products/{productId}/thingmodel
 
-    /**
-     * 设备上线
-     */
-    @PostMapping("/{deviceId}/online")
-    @Operation(summary = "设备上线")
-    public ApiResponse<Void> deviceOnline(
-            @PathVariable @Positive Long deviceId);
+# 物模型发布
+POST   /admin/api/products/{productId}/thingmodel/publish
 
-    /**
-     * 设备下线
-     */
-    @PostMapping("/{deviceId}/offline")
-    @Operation(summary = "设备下线")
-    public ApiResponse<Void> deviceOffline(
-            @PathVariable @Positive Long deviceId);
+# 物模型版本
+GET    /admin/api/products/{productId}/thingmodel/versions
+
+# 设备管理接口
+POST   /admin/api/devices
+GET    /admin/api/devices/{deviceId}
+PUT    /admin/api/devices/{deviceId}
+DELETE /admin/api/devices/{deviceId}
+
+# 设备列表
+GET    /admin/api/devices?productId={productId}&pageNo={pageNo}&pageSize={pageSize}
+
+# 批量创建设备
+POST   /admin/api/devices/batch
+
+# 设备状态
+GET    /admin/api/devices/{deviceId}/status
+
+# 设备拓扑关系
+GET    /admin/api/devices/{deviceId}/topology
+POST   /admin/api/devices/{deviceId}/topology
+DELETE /admin/api/devices/{deviceId}/topology
+
+# 用户管理接口
+POST   /admin/api/users
+GET    /admin/api/users/{userId}
+PUT    /admin/api/users/{userId}
+DELETE /admin/api/users/{userId}
+
+# 用户列表
+GET    /admin/api/users?pageNo={pageNo}&pageSize={pageSize}
+
+# 角色管理接口
+POST   /admin/api/roles
+GET    /admin/api/roles/{roleId}
+PUT    /admin/api/roles/{roleId}
+DELETE /admin/api/roles/{roleId}
+
+# 角色列表
+GET    /admin/api/roles?pageNo={pageNo}&pageSize={pageSize}
+
+# 权限管理接口
+POST   /admin/api/permissions
+GET    /admin/api/permissions/{permissionId}
+PUT    /admin/api/permissions/{permissionId}
+DELETE /admin/api/permissions/{permissionId}
+
+# 权限列表
+GET    /admin/api/permissions?pageNo={pageNo}&pageSize={pageSize}
+```
+
+#### 3.2.3 设备端API接口（Device API）
+
+**接口特点**
+- **多协议支持**：MQTT、HTTP/HTTPS、WebSocket、CoAP
+- **设备认证**：基于设备密钥或证书的认证
+- **消息格式**：JSON格式，支持二进制数据
+- **QoS支持**：支持不同级别的服务质量保证
+
+**1. MQTT协议接口**
+
+**系统主题（$sys开头）**
+```
+# 设备属性上报
+Topic: $sys/{productKey}/{deviceName}/thing/event/property/post
+Payload: {
+  "id": "123",
+  "version": "1.0",
+  "params": {
+    "temperature": 25.5,
+    "humidity": 60.2
+  },
+  "method": "thing.event.property.post"
+}
+
+# 设备属性设置响应
+Topic: $sys/{productKey}/{deviceName}/thing/service/property/set
+Payload: {
+  "id": "123",
+  "code": 200,
+  "data": {}
+}
+
+# 设备事件上报
+Topic: $sys/{productKey}/{deviceName}/thing/event/{eventName}/post
+Payload: {
+  "id": "123",
+  "version": "1.0",
+  "params": {
+    "value": "event_value"
+  },
+  "method": "thing.event.{eventName}.post"
+}
+
+# 设备服务调用
+Topic: $sys/{productKey}/{deviceName}/thing/service/{serviceName}
+Payload: {
+  "id": "123",
+  "version": "1.0",
+  "params": {
+    "param1": "value1"
+  },
+  "method": "thing.service.{serviceName}"
+}
+
+# 设备服务响应
+Topic: $sys/{productKey}/{deviceName}/thing/service/{serviceName}/reply
+Payload: {
+  "id": "123",
+  "code": 200,
+  "data": {
+    "result": "success"
+  }
+}
+
+# 设备生命周期事件
+Topic: $sys/{productKey}/{deviceName}/thing/lifecycle
+Payload: {
+  "id": "123",
+  "version": "1.0",
+  "params": {
+    "status": "online"
+  },
+  "method": "thing.lifecycle"
+}
+
+# 设备拓扑关系变更
+Topic: $sys/{productKey}/{deviceName}/thing/topo/lifecycle
+Payload: {
+  "id": "123",
+  "version": "1.0",
+  "params": {
+    "action": "add",
+    "subDevice": "sub_device_name"
+  },
+  "method": "thing.topo.lifecycle"
 }
 ```
 
-**消息通信接口**
+**自定义主题**
+```
+# 用户自定义主题格式
+Topic: /{productKey}/{deviceName}/user/{topic}
 
-```java
-/**
- * 消息通信控制器
- */
-@RestController
-@RequestMapping("/api/v1/messages")
-@Tag(name = "消息通信", description = "消息发送和查询接口")
-public class MessageController {
+# 示例：设备状态上报
+Topic: /{productKey}/{deviceName}/user/status
+Payload: {"status": "online", "timestamp": 1640995200000}
 
-    /**
-     * 发送消息到设备
-     */
-    @PostMapping("/send")
-    @Operation(summary = "发送消息到设备")
-    public ApiResponse<MessageResponse> sendMessage(
-            @Valid @RequestBody MessageSendRequest request);
-
-    /**
-     * 查询消息历史
-     */
-    @GetMapping("/history")
-    @Operation(summary = "查询消息历史")
-    public ApiResponse<Page<MessageResponse>> getMessageHistory(
-            @Valid MessageQueryRequest request);
-
-    /**
-     * 获取消息详情
-     */
-    @GetMapping("/{messageId}")
-    @Operation(summary = "获取消息详情")
-    public ApiResponse<MessageResponse> getMessage(
-            @PathVariable String messageId);
-
-    /**
-     * 批量发送消息
-     */
-    @PostMapping("/batch-send")
-    @Operation(summary = "批量发送消息")
-    public ApiResponse<List<MessageResponse>> batchSendMessage(
-            @Valid @RequestBody BatchMessageRequest request);
-}
+# 示例：设备日志上报
+Topic: /{productKey}/{deviceName}/user/log
+Payload: {"level": "info", "message": "device started", "timestamp": 1640995200000}
 ```
 
-**数据查询接口**
+**主题权限控制**
+```
+# 设备发布权限
+- $sys/{productKey}/{deviceName}/thing/event/property/post
+- $sys/{productKey}/{deviceName}/thing/event/{eventName}/post
+- $sys/{productKey}/{deviceName}/thing/service/{serviceName}/reply
+- $sys/{productKey}/{deviceName}/thing/lifecycle
+- $sys/{productKey}/{deviceName}/thing/topo/lifecycle
+- /{productKey}/{deviceName}/user/{topic}
 
-```java
-/**
- * 数据查询控制器
- */
-@RestController
-@RequestMapping("/api/v1/data")
-@Tag(name = "数据查询", description = "设备数据查询接口")
-public class DataController {
-
-    /**
-     * 查询设备属性数据
-     */
-    @GetMapping("/properties/{deviceId}")
-    @Operation(summary = "查询设备属性数据")
-    public ApiResponse<List<PropertyDataResponse>> getPropertyData(
-            @PathVariable @Positive Long deviceId,
-            @Valid PropertyDataQueryRequest request);
-
-    /**
-     * 查询设备事件数据
-     */
-    @GetMapping("/events/{deviceId}")
-    @Operation(summary = "查询设备事件数据")
-    public ApiResponse<List<EventDataResponse>> getEventData(
-            @PathVariable @Positive Long deviceId,
-            @Valid EventDataQueryRequest request);
-
-    /**
-     * 查询设备服务调用记录
-     */
-    @GetMapping("/services/{deviceId}")
-    @Operation(summary = "查询设备服务调用记录")
-    public ApiResponse<List<ServiceDataResponse>> getServiceData(
-            @PathVariable @Positive Long deviceId,
-            @Valid ServiceDataQueryRequest request);
-
-    /**
-     * 导出设备数据
-     */
-    @GetMapping("/export/{deviceId}")
-    @Operation(summary = "导出设备数据")
-    public ResponseEntity<Resource> exportDeviceData(
-            @PathVariable @Positive Long deviceId,
-            @Valid DataExportRequest request);
-}
+# 设备订阅权限
+- $sys/{productKey}/{deviceName}/thing/service/property/set
+- $sys/{productKey}/{deviceName}/thing/service/{serviceName}
+- $sys/{productKey}/{deviceName}/thing/config/push
 ```
 
-#### 3.2.3 WebSocket接口设计
+**主题设计原则**
+- **层次化结构**：使用/分隔符构建层次化主题结构
+- **产品隔离**：通过productKey实现产品级别的主题隔离
+- **设备隔离**：通过deviceName实现设备级别的主题隔离
+- **系统区分**：使用$sys前缀区分系统主题和用户主题
+- **权限控制**：基于主题的发布订阅权限控制
 
-**实时数据推送接口**
+**2. HTTP/HTTPS协议接口**
 
-```java
-/**
- * WebSocket消息处理器
- */
-@Component
-@Slf4j
-public class WebSocketMessageHandler {
+**设备数据接口**
+```
+# 设备属性上报
+POST /api/device/{deviceName}/properties
+Content-Type: application/json
+Payload: {
+  "properties": {
+    "temperature": 25.5,
+    "humidity": 60.2
+  }
+}
 
-    /**
-     * 设备状态变更推送
-     */
-    public void pushDeviceStatusChange(DeviceStatusChangeEvent event) {
-        // 推送给订阅了设备状态变更的用户
+# 设备事件上报
+POST /api/device/{deviceName}/events/{eventName}
+Content-Type: application/json
+Payload: {
+  "eventData": {
+    "value": "event_value"
+  }
+}
+
+# 设备服务调用
+POST /api/device/{deviceName}/services/{serviceName}
+Content-Type: application/json
+Payload: {
+  "params": {
+    "param1": "value1"
+  }
+}
+
+# 设备属性查询
+GET /api/device/{deviceName}/properties
+
+# 设备事件查询
+GET /api/device/{deviceName}/events
+```
+
+**设备影子接口**
+```
+# 获取设备影子
+GET /api/device/{deviceName}/shadow
+
+# 更新设备影子
+PUT /api/device/{deviceName}/shadow
+Content-Type: application/json
+Payload: {
+  "state": {
+    "desired": {
+      "temperature": 26.0
+    },
+    "reported": {
+      "temperature": 25.5
     }
-
-    /**
-     * 设备数据实时推送
-     */
-    public void pushDeviceData(DeviceDataEvent event) {
-        // 推送给订阅了设备数据的用户
-    }
-
-    /**
-     * 告警消息推送
-     */
-    public void pushAlarmMessage(AlarmEvent event) {
-        // 推送给订阅了告警消息的用户
-    }
+  }
 }
 ```
 
-### 3.3 安全设计
+**3. WebSocket协议接口**
 
-#### 3.3.1 认证授权机制
+**连接URL**
+```
+# 设备连接
+ws://iot-platform.com/ws/device/{deviceId}
+```
 
-**设备认证**
-- **一机一密**：每个设备使用唯一的密钥进行认证
-- **证书认证**：支持X.509证书认证，适用于高安全场景
-- **Token认证**：支持JWT Token认证，适用于API调用
+**消息格式**
+```json
+{
+  "type": "property_report",
+  "deviceId": "device_001",
+  "timestamp": 1640995200000,
+  "data": {
+    "temperature": 25.5,
+    "humidity": 60.2
+  }
+}
+```
 
-**用户认证**
-- **用户名密码**：基础的用户名密码认证
-- **多因子认证**：支持短信、邮箱、TOTP等多因子认证
-- **第三方登录**：支持OAuth2、LDAP等第三方认证
+**支持的消息类型**
+- **property_report**: 设备属性上报
+- **event_report**: 设备事件上报
+- **command_response**: 命令响应
+- **status_update**: 状态更新
+- **error**: 错误消息
 
-**权限控制**
-- **RBAC模型**：基于角色的访问控制
-- **细粒度权限**：支持API权限、数据权限、功能权限
-- **动态权限**：支持运行时权限变更
 
-#### 3.3.2 数据安全
-
-**传输加密**
-- **TLS/SSL**：所有网络通信使用TLS加密
-- **端到端加密**：敏感数据端到端加密传输
-- **签名验证**：消息签名验证，防止篡改
-
-**存储加密**
-- **数据库加密**：敏感数据在数据库中加密存储
-- **文件加密**：重要文件加密存储
-- **密钥管理**：统一的密钥管理和轮换机制
-
-#### 3.3.3 安全审计
-
-**操作日志**
-- **用户操作**：记录所有用户操作日志
-- **系统操作**：记录系统关键操作日志
-- **安全事件**：记录安全相关事件日志
-
-**审计追踪**
-- **数据变更**：记录重要数据的变更历史
-- **权限变更**：记录权限变更历史
-- **访问记录**：记录敏感资源的访问记录
-
-### 3.4 性能设计
-
-#### 3.4.1 高并发处理
-
-**连接池管理**
-- **数据库连接池**：HikariCP连接池，支持高并发数据库访问
-- **Redis连接池**：Lettuce连接池，支持高并发缓存访问
-- **MQTT连接池**：EMQ X连接池，支持大规模设备接入
-
-**异步处理**
-- **消息队列**：使用RabbitMQ进行异步消息处理
-- **线程池**：使用线程池处理并发任务
-- **响应式编程**：使用WebFlux进行响应式编程
-
-#### 3.4.2 缓存策略
-
-**多级缓存**
-- **本地缓存**：使用Caffeine进行本地缓存
-- **分布式缓存**：使用Redis进行分布式缓存
-- **CDN缓存**：使用CDN缓存静态资源
-
-**缓存策略**
-- **热点数据**：热点数据优先缓存
-- **缓存预热**：系统启动时预热缓存
-- **缓存更新**：支持缓存自动更新和失效
-
-#### 3.4.3 数据库优化
-
-**索引优化**
-- **复合索引**：根据查询模式创建复合索引
-- **覆盖索引**：使用覆盖索引减少回表查询
-- **索引维护**：定期维护和优化索引
-
-**查询优化**
-- **分页查询**：使用分页减少数据传输量
-- **批量操作**：使用批量操作提高性能
-- **读写分离**：使用读写分离提高查询性能
-
-### 3.5 监控设计
-
-#### 3.5.1 系统监控
-
-**应用监控**
-- **性能指标**：CPU、内存、线程、GC等性能指标
-- **业务指标**：设备数量、消息数量、用户数量等业务指标
-- **异常监控**：异常捕获、错误统计、告警通知
-
-**基础设施监控**
-- **服务器监控**：服务器资源使用情况监控
-- **数据库监控**：数据库性能监控
-- **网络监控**：网络连接和流量监控
-
-#### 3.5.2 业务监控
-
-**设备监控**
-- **设备状态**：设备在线状态监控
-- **设备性能**：设备性能指标监控
-- **设备告警**：设备异常告警监控
-
-**数据监控**
-- **数据质量**：数据完整性、准确性监控
-- **数据处理**：数据处理性能监控
-- **数据存储**：存储空间使用情况监控
-
-#### 3.5.3 告警机制
-
-**告警规则**
-- **阈值告警**：基于阈值的告警规则
-- **趋势告警**：基于趋势的告警规则
-- **异常告警**：基于异常的告警规则
-
-**告警通知**
-- **多渠道通知**：邮件、短信、Webhook等多种通知方式
-- **告警升级**：告警升级和自动处理机制
-- **告警抑制**：告警抑制和去重机制
 
