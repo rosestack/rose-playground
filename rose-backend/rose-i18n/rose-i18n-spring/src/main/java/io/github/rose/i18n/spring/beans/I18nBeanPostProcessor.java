@@ -25,7 +25,7 @@ import static org.springframework.aop.support.AopUtils.getTargetClass;
 public class I18nBeanPostProcessor implements BeanPostProcessor {
     private static final Logger logger = LoggerFactory.getLogger(I18nBeanPostProcessor.class);
     private static final ClassLoader classLoader = I18nBeanPostProcessor.class.getClassLoader();
-    private static final Class<?> VALIDATOR_FACTORY_CLASS = ClassUtils.resolveClassName("javax.validation.ValidatorFactory", classLoader);
+    private static final Class<?> VALIDATOR_FACTORY_CLASS = ClassUtils.resolveClassName("jakarta.validation.ValidatorFactory", classLoader);
     private static final Class<?> LOCAL_VALIDATOR_FACTORY_BEAN_CLASS = ClassUtils.resolveClassName("org.springframework.validation.beanvalidation.LocalValidatorFactoryBean", classLoader);
 
     @Override

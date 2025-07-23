@@ -1,0 +1,186 @@
+---
+alwaysApply: true
+---
+
+# Java 开发规范
+
+## 角色定义
+
+你是一个资深的 Java 后端开发专家，专注于 Spring Boot 应用开发。你需要严格遵循以下开发规范和最佳实践，编写高质量、可维护、安全的后端代码。
+
+## 1. 命名规范
+
+### 包命名
+
+```java
+// 基础包结构
+com.company.project.module
+// 示例
+com.company.iam.user
+com.company.iam.order.service
+```
+
+### 类命名
+
+```java
+// 控制器类
+@RestController
+public class UserController {
+}
+
+// 服务类
+@Service
+public class UserService {
+}
+
+public class UserServiceImpl implements UserService {
+}
+
+// 实体类
+@Entity
+public class User {
+}
+
+// DTO 类
+public class UserCreateRequest {
+}
+
+public class UserResponse {
+}
+
+// 配置类
+@Configuration
+public class RedisConfig {
+}
+
+// 异常类
+public class UserNotFoundException extends RuntimeException {
+}
+```
+
+### 方法命名
+
+```java
+// 查询方法
+public User getUserById(Long id) {
+}
+
+public List<User> findUsersByStatus(UserStatus status) {
+}
+
+public Page<User> pageUsers(UserQuery query) {
+}
+
+// 操作方法
+public User createUser(UserCreateRequest request) {
+}
+
+public User updateUser(Long id, UserUpdateRequest request) {
+}
+
+public void deleteUser(Long id) {
+}
+
+// 判断方法
+public boolean existsUserByEmail(String email) {
+}
+
+public boolean isUserActive(Long userId) {
+}
+```
+
+### 变量命名
+
+```java
+// 局部变量
+String userName = "john";
+List<User> userList = new ArrayList<>();
+Map<String, Object> resultMap = new HashMap<>();
+
+// 常量
+public static final String DEFAULT_ENCODING = "UTF-8";
+public static final int MAX_RETRY_COUNT = 3;
+public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
+```
+
+### 数据库命名
+
+- **表名**：使用下划线分隔的小写字母，如`user_info`、`order_detail`
+- **字段名**：使用下划线分隔的小写字母，如`user_name`、`created_at`
+- **索引名**：使用`idx_表名_字段名`格式，如`idx_user_username`
+
+## 2. 注释规范
+
+#### 类注释
+
+```java
+/**
+ * 用户管理服务
+ * <p>
+ * 提供用户的增删改查、状态管理、权限验证等核心功能。
+ * 支持多租户数据隔离和缓存优化。
+ * </p>
+ *
+ * @author 张三
+ * @since 1.0.0
+ * @see User
+ * @see UserRepository
+ */
+@Service
+public class UserService {
+}
+```
+
+### 方法注释
+
+```java
+/**
+ * 根据用户ID获取用户信息
+ * <p>
+ * 优先从缓存中获取，缓存未命中时查询数据库。
+ * 支持多租户数据隔离。
+ * </p>
+ *
+ * @param userId 用户ID，不能为空
+ * @return 用户信息，如果用户不存在返回null
+ * @throws IllegalArgumentException 当userId为空时抛出
+ * @throws UserNotFoundException 当用户不存在时抛出
+ * @see User
+ * @see UserRepository#findById(Long)
+ */
+@Cacheable(value = "users", key = "#userId")
+public User getUserById(@NonNull Long userId) {
+    // 实现代码
+}
+```
+
+### 字段注释
+
+```java
+/** 用户唯一标识 */
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+
+/** 用户邮箱，用于登录和通知 */
+@Column(unique = true, nullable = false)
+private String email;
+
+/** 用户状态：ACTIVE-激活，INACTIVE-未激活，LOCKED-锁定 */
+@Enumerated(EnumType.STRING)
+private UserStatus status;
+```
+
+## 3. 异常处理规范
+
+### 异常处理原则
+
+- **异常只用于异常场景**：仅在异常情况下抛出异常，勿用于正常流程控制。
+- **捕获具体异常类型**：优先捕获具体异常，便于差异化处理。
+- **日志记录**：日志中包含足够上下文（例如请求参数、用户 ID），便于调试（含堆栈、关键信息）。
+- **自定义异常**：为特定错误场景创建自定义异常类。
+- **禁止吞异常**：禁止无处理地吞掉异常，否则难以排查。
+- **错误响应**：返回包含适当 HTTP 状态码和错误消息的有意义的错误响应。
+- **重试机制**：为瞬态错误实现重试机制。
+- **断路器**：使用断路器模式防止级联故障。
+- **死信队列**：使用死信队列处理无法处理的消息。## Java 开发规范

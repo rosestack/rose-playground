@@ -1,0 +1,274 @@
+---
+alwaysApply: true
+---
+
+# Mybatis Plus 开发规范
+
+## 角色定义
+
+你是一个资深的 Java 后端开发专家，专注于 Mybatis Plus 应用开发。你需要严格遵循以下开发规范和最佳实践，编写高质量、可维护、安全的后端代码。
+
+## 技术栈要求
+
+### 核心框架
+
+- **Java 17+**：使用最新的Java特性，如记录类、模式匹配、文本块等
+- **Spring Boot 3.5+**：使用最新版本，提供依赖注入和自动配置
+- **Spring Security 6.x**：安全框架，处理认证和授权
+- **MyBatis Plus 3.x**：数据访问层ORM框架，提供强大的查询能力
+
+### 数据存储
+
+- **MySQL 8.0**：主数据库，支持JSON字段和窗口函数
+- **HikariCP**：高性能数据库连接池
+- **Redis 7.x**：缓存和会话存储，支持多种数据结构
+
+## MyBatis Plus 开发规范
+
+### 1. 实体类定义
+
+#### 基础实体类
+
+```java
+/**
+ * 基础实体类
+ */
+@Data
+public abstract class BaseEntity {
+
+    /** 创建时间 */
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    private LocalDateTime createdTime;
+
+    /** 更新时间 */
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedTime;
+
+    /** 创建人 */
+    @TableField(value = "created_by", fill = FieldFill.INSERT)
+    private String createdBy;
+
+    /** 更新人 */
+    @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
+    private String updatedBy;
+
+    /** 逻辑删除标识 */
+    @TableLogic
+    @TableField("deleted")
+    private Boolean deleted;
+
+    /** 版本号（乐观锁） */
+    @Version
+    @TableField("version")
+    private Integer version;
+}
+```
+
+#### 用户实体
+
+```java
+/**
+ * 用户实体
+ */
+@Data
+@TableName("user")
+@EqualsAndHashCode(callSuper = true)
+public class User extends BaseEntity {
+
+    /** 用户ID */
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    /** 用户名 */
+    @TableField("username")
+    private String username;
+
+    /** 邮箱 */
+    @TableField("email")
+    private String email;
+
+    /** 密码 */
+    @TableField("password")
+    private String password;
+
+    /** 用户状态 */
+    @TableField("status")
+    private UserStatus status;
+}
+```
+
+### 2. Mapper 接口规范
+
+```java
+/**
+ * 用户数据访问接口
+ */
+@Mapper
+public interface UserMapper extends BaseMapper<User> {
+
+    /**
+     * 根据邮箱查询用户
+     */
+    @Select("SELECT * FROM t_user WHERE email = #{email} AND deleted = 0")
+    User selectByEmail(@Param("email") String email);
+
+    /**
+     * 分页查询活跃用户
+     */
+    @Select("SELECT * FROM t_user WHERE status = 'ACTIVE' AND deleted = 0")
+    IPage<User> selectActiveUsers(IPage<User> page);
+
+    /**
+     * 批量更新用户状态
+     */
+    @Update("UPDATE t_user SET status = #{status} WHERE id IN " +
+            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>" +
+            "#{id}" +
+            "</foreach>")
+    int updateStatusByIds(@Param("ids") List<Long> ids, @Param("status") UserStatus status);
+
+    /**
+     * 统计用户数量按状态分组
+     */
+    List<UserStatusCount> countUsersByStatus();
+}
+```
+
+### 3. 分页工具类
+
+#### PageUtils - 分页对象转换工具
+
+```java
+/**
+ * 分页工具类
+ * <p>
+ * 提供 Spring Data Page 和 MyBatis-Plus IPage 之间的转换功能。
+ * </p>
+ */
+@UtilityClass
+public class PageUtils {
+
+    /**
+     * 将 MyBatis-Plus IPage 转换为 Spring Data Page
+     *
+     * @param iPage MyBatis-Plus 分页对象
+     * @param <T>   数据类型
+     * @return Spring Data Page 对象
+     */
+    public static <T> Page<T> toSpringPage(IPage<T> iPage) {
+        if (iPage == null) {
+            return Page.empty();
+        }
+
+        Pageable pageable = PageRequest.of(
+                (int) (iPage.getCurrent() - 1), // MyBatis-Plus 页码从1开始，Spring Data 从0开始
+                (int) iPage.getSize()
+        );
+
+        return new PageImpl<>(
+                iPage.getRecords(),
+                pageable,
+                iPage.getTotal()
+        );
+    }
+
+    /**
+     * 将 Spring Data Page 转换为 MyBatis-Plus IPage
+     *
+     * @param page Spring Data 分页对象
+     * @param <T>  数据类型
+     * @return MyBatis-Plus IPage 对象
+     */
+    public static <T> IPage<T> toMybatisPage(Page<T> page) {
+        if (page == null) {
+            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+        }
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> iPage =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+
+        iPage.setCurrent(page.getNumber() + 1); // Spring Data 页码从0开始，MyBatis-Plus 从1开始
+        iPage.setSize(page.getSize());
+        iPage.setTotal(page.getTotalElements());
+        iPage.setRecords(page.getContent());
+
+        return iPage;
+    }
+
+    /**
+     * 创建 MyBatis-Plus 分页对象
+     *
+     * @param pageNum  页码（从1开始）
+     * @param pageSize 页大小
+     * @param <T>      数据类型
+     * @return MyBatis-Plus IPage 对象
+     */
+    public static <T> IPage<T> createMybatisPage(int pageNum, int pageSize) {
+        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize);
+    }
+
+    /**
+     * 创建 Spring Data 分页对象
+     *
+     * @param pageNum  页码（从0开始）
+     * @param pageSize 页大小
+     * @return Spring Data Pageable 对象
+     */
+    public static Pageable createSpringPageable(int pageNum, int pageSize) {
+        return PageRequest.of(pageNum, pageSize);
+    }
+
+    /**
+     * 创建带排序的 Spring Data 分页对象
+     *
+     * @param pageNum  页码（从0开始）
+     * @param pageSize 页大小
+     * @param sort     排序条件
+     * @return Spring Data Pageable 对象
+     */
+    public static Pageable createSpringPageable(int pageNum, int pageSize, Sort sort) {
+        return PageRequest.of(pageNum, pageSize, sort);
+    }
+
+    /**
+     * 将分页查询结果进行类型转换
+     *
+     * @param sourcePage 源分页对象
+     * @param converter  转换函数
+     * @param <S>        源类型
+     * @param <T>        目标类型
+     * @return 转换后的分页对象
+     */
+    public static <S, T> Page<T> convertPage(Page<S> sourcePage, Function<S, T> converter) {
+        return sourcePage.map(converter);
+    }
+
+    /**
+     * 将 IPage 查询结果进行类型转换
+     *
+     * @param sourceIPage 源分页对象
+     * @param converter   转换函数
+     * @param <S>         源类型
+     * @param <T>         目标类型
+     * @return 转换后的分页对象
+     */
+    public static <S, T> IPage<T> convertIPage(IPage<S> sourceIPage, Function<S, T> converter) {
+        if (sourceIPage == null || sourceIPage.getRecords() == null) {
+            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+        }
+
+        List<T> convertedRecords = sourceIPage.getRecords().stream()
+                .map(converter)
+                .collect(Collectors.toList());
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> apiResponse =
+                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
+        apiResponse.setCurrent(sourceIPage.getCurrent());
+        apiResponse.setSize(sourceIPage.getSize());
+        apiResponse.setTotal(sourceIPage.getTotal());
+        apiResponse.setRecords(convertedRecords);
+
+        return apiResponse;
+    }
+}
+```

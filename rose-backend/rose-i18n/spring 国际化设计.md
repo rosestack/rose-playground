@@ -448,8 +448,8 @@ public class ValidationConfig {
 }
 
 // 验证消息配置 (ValidationMessages.properties)
-javax.validation.constraints.NotNull.message=Field cannot be null
-javax.validation.constraints.Size.message=Size must be between {min} and {max}
+jakarta.validation.constraints.NotNull.message=Field cannot be null
+jakarta.validation.constraints.Size.message=Size must be between {min} and {max}
 ```
 
 ### 5. 存在的缺陷和不足
@@ -1042,7 +1042,7 @@ public class UserService {
 ```java
 // 消息管理REST API
 @RestController
-@RequestMapping("/admin/i18n")
+@RequestMapping("/i18n")
 public class I18nManagementController {
     
     @Autowired
@@ -1093,7 +1093,7 @@ public class I18nManagementController {
 
 // Web管理界面
 @Controller
-@RequestMapping("/admin/i18n/ui")
+@RequestMapping("/i18n/ui")
 public class I18nManagementUIController {
     
     @GetMapping("/")

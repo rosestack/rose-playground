@@ -1333,87 +1333,87 @@ CREATE TABLE iot_data_forward_record (
 
 ```
 # 产品分类管理接口
-POST   /admin/api/product/categories
-GET    /admin/api/product/categories/{categoryId}
-PUT    /admin/api/product/categories/{categoryId}
-DELETE /admin/api/product/categories/{categoryId}
+POST   /api/product/categories
+GET    /api/product/categories/{categoryId}
+PUT    /api/product/categories/{categoryId}
+DELETE /api/product/categories/{categoryId}
 
 # 产品分类列表
-GET    /admin/api/product/categories?parentId={parentId}&pageNo={pageNo}&pageSize={pageSize}
+GET    /api/product/categories?parentId={parentId}&pageNo={pageNo}&pageSize={pageSize}
 
 # 产品分类树
-GET    /admin/api/product/categories/tree
+GET    /api/product/categories/tree
 
 # 产品管理接口
-POST   /admin/api/products
-GET    /admin/api/products/{productId}
-PUT    /admin/api/products/{productId}
-DELETE /admin/api/products/{productId}
+POST   /api/products
+GET    /api/products/{productId}
+PUT    /api/products/{productId}
+DELETE /api/products/{productId}
 
 # 产品列表
-GET    /admin/api/products?categoryId={categoryId}&pageNo={pageNo}&pageSize={pageSize}
+GET    /api/products?categoryId={categoryId}&pageNo={pageNo}&pageSize={pageSize}
 
 # 产品统计
-GET    /admin/api/products/{productId}/statistics
+GET    /api/products/{productId}/statistics
 
 # 物模型管理接口
-POST   /admin/api/products/{productId}/thingmodel
-GET    /admin/api/products/{productId}/thingmodel
-PUT    /admin/api/products/{productId}/thingmodel
-DELETE /admin/api/products/{productId}/thingmodel
+POST   /api/products/{productId}/thingmodel
+GET    /api/products/{productId}/thingmodel
+PUT    /api/products/{productId}/thingmodel
+DELETE /api/products/{productId}/thingmodel
 
 # 物模型发布
-POST   /admin/api/products/{productId}/thingmodel/publish
+POST   /api/products/{productId}/thingmodel/publish
 
 # 物模型版本
-GET    /admin/api/products/{productId}/thingmodel/versions
+GET    /api/products/{productId}/thingmodel/versions
 
 # 设备管理接口
-POST   /admin/api/devices
-GET    /admin/api/devices/{deviceId}
-PUT    /admin/api/devices/{deviceId}
-DELETE /admin/api/devices/{deviceId}
+POST   /api/devices
+GET    /api/devices/{deviceId}
+PUT    /api/devices/{deviceId}
+DELETE /api/devices/{deviceId}
 
 # 设备列表
-GET    /admin/api/devices?productId={productId}&pageNo={pageNo}&pageSize={pageSize}
+GET    /api/devices?productId={productId}&pageNo={pageNo}&pageSize={pageSize}
 
 # 批量创建设备
-POST   /admin/api/devices/batch
+POST   /api/devices/batch
 
 # 设备状态
-GET    /admin/api/devices/{deviceId}/status
+GET    /api/devices/{deviceId}/status
 
 # 设备拓扑关系
-GET    /admin/api/devices/{deviceId}/topology
-POST   /admin/api/devices/{deviceId}/topology
-DELETE /admin/api/devices/{deviceId}/topology
+GET    /api/devices/{deviceId}/topology
+POST   /api/devices/{deviceId}/topology
+DELETE /api/devices/{deviceId}/topology
 
 # 用户管理接口
-POST   /admin/api/users
-GET    /admin/api/users/{userId}
-PUT    /admin/api/users/{userId}
-DELETE /admin/api/users/{userId}
+POST   /api/users
+GET    /api/users/{userId}
+PUT    /api/users/{userId}
+DELETE /api/users/{userId}
 
 # 用户列表
-GET    /admin/api/users?pageNo={pageNo}&pageSize={pageSize}
+GET    /api/users?pageNo={pageNo}&pageSize={pageSize}
 
 # 角色管理接口
-POST   /admin/api/roles
-GET    /admin/api/roles/{roleId}
-PUT    /admin/api/roles/{roleId}
-DELETE /admin/api/roles/{roleId}
+POST   /api/roles
+GET    /api/roles/{roleId}
+PUT    /api/roles/{roleId}
+DELETE /api/roles/{roleId}
 
 # 角色列表
-GET    /admin/api/roles?pageNo={pageNo}&pageSize={pageSize}
+GET    /api/roles?pageNo={pageNo}&pageSize={pageSize}
 
 # 权限管理接口
-POST   /admin/api/permissions
-GET    /admin/api/permissions/{permissionId}
-PUT    /admin/api/permissions/{permissionId}
-DELETE /admin/api/permissions/{permissionId}
+POST   /api/permissions
+GET    /api/permissions/{permissionId}
+PUT    /api/permissions/{permissionId}
+DELETE /api/permissions/{permissionId}
 
 # 权限列表
-GET    /admin/api/permissions?pageNo={pageNo}&pageSize={pageSize}
+GET    /api/permissions?pageNo={pageNo}&pageSize={pageSize}
 ```
 
 #### 3.2.3 设备端API接口（Device API）
