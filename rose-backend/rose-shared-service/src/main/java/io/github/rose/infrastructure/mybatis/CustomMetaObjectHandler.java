@@ -55,17 +55,9 @@ public class CustomMetaObjectHandler implements MetaObjectHandler {
         }
     }
 
-    /**
-     * 获取当前用户名
-     * <p>
-     * 根据实际项目的认证方式获取当前用户信息
-     */
     private String getCurrentUsername() {
         try {
-            String name = ServletUtils.getRequest().getUserPrincipal().getName();
-            if (name != null) {
-                return name;
-            }
+            // todo 从Spring Security上下文获取
             return "system";
         } catch (Exception e) {
             log.warn("获取当前用户名失败", e);

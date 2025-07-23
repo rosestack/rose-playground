@@ -118,9 +118,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
 
 # 日志配置
@@ -129,14 +129,15 @@ logging:
     io.github.rose.iot: INFO
     org.springframework.security: DEBUG
     com.baomidou.mybatisplus: DEBUG
-    com.alibaba.druid: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{50}] - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{50}] - %msg%n"
   file:
     name: logs/iot-platform.log
-    max-size: 100MB
-    max-history: 30
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
 
 # IoT平台配置
 iot:

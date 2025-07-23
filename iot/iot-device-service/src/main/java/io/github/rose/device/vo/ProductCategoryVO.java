@@ -132,5 +132,5 @@ public class ProductCategoryVO {
      * 产品数量
      */
     @Schema(description = "产品数量", example = "10")
-    private Integer productCount;
+    private Long productCount;
 } 

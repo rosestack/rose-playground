@@ -61,8 +61,6 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
-
-
         <!-- Redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
