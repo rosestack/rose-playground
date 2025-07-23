@@ -46,7 +46,7 @@ public class DefaultMessageRenderer implements MessageRenderer {
 
             // 处理 {name} 命名参数
             if (NAMED_PARAMETER_PATTERN.matcher(message).find()) {
-                return FormatUtils.replacePlaceholders(message, mapArgs);
+                return FormatUtils.replaceNamedParameters(message, locale, mapArgs);
             }
         }
 

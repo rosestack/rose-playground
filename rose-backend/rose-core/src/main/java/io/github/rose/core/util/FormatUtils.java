@@ -27,6 +27,10 @@ public abstract class FormatUtils {
         return replacePlaceholders(template, Locale.getDefault(), TimeZone.getDefault(), args);
     }
 
+    public static String replacePlaceholders(final String template, final Locale locale, final Object... args) {
+        return replacePlaceholders(template, locale, TimeZone.getDefault(), args);
+    }
+
     /**
      * 格式化占位符（使用默认占位符 {}，支持本地化）
      *
@@ -92,6 +96,11 @@ public abstract class FormatUtils {
     public static String replaceNamedParameters(final String template, final Map<String, ?> map) {
         return replaceNamedParameters(template, Locale.getDefault(), TimeZone.getDefault(), map);
     }
+
+    public static String replaceNamedParameters(final String template, final Locale locale, final Map<String, ?> map) {
+        return replaceNamedParameters(template, locale, TimeZone.getDefault(), map);
+    }
+
 
     /**
      * 格式化命名参数（使用正则表达式，更高效，支持本地化）

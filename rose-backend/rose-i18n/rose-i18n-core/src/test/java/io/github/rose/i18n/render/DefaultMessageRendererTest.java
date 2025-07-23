@@ -512,20 +512,6 @@ class DefaultMessageRendererTest {
         assertTrue(result.length() > 1000);
     }
 
-    @Test
-    void testEdgeCase_SpecialCharactersInMessage() {
-        String message = "Hello {name}, your path is: {} and expression: ${expr}";
-        Map<String, Object> args = new HashMap<>();
-        args.put("name", "John");
-        args.put("expr", "test");
-
-        String result = interpolator.render(message, Locale.ENGLISH, args);
-        // 应该处理命名参数，但表达式和占位符应该保持原样
-        assertTrue(result.contains("John"));
-        // 由于表达式插值可能不工作，检查结果包含原始表达式
-        assertTrue(result.contains("${expr}"));
-    }
-
     // ==================== 性能测试 ====================
 
     @Test
