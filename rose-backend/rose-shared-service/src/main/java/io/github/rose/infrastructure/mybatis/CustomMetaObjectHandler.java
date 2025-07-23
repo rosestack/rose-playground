@@ -1,7 +1,6 @@
 package io.github.rose.infrastructure.mybatis;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import io.github.rose.infrastructure.util.ServletUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
@@ -24,18 +23,18 @@ public class CustomMetaObjectHandler implements MetaObjectHandler {
         log.debug("开始执行插入填充");
 
         // 判断属性是否存在，存在则自动填充
-        if (metaObject.hasSetter("createTime")) {
-            this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
+        if (metaObject.hasSetter("createdTime")) {
+            this.strictInsertFill(metaObject, "createdTime", LocalDateTime.class, LocalDateTime.now());
         }
 
-        if (metaObject.hasSetter("updateTime")) {
-            this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        if (metaObject.hasSetter("updatedTime")) {
+            this.strictInsertFill(metaObject, "updatedTime", LocalDateTime.class, LocalDateTime.now());
         }
 
         // 创建人（如果有需要）
-        if (metaObject.hasSetter("createBy")) {
+        if (metaObject.hasSetter("createdBy")) {
             String currentUsername = getCurrentUsername();
-            this.strictInsertFill(metaObject, "createBy", String.class, currentUsername);
+            this.strictInsertFill(metaObject, "createdBy", String.class, currentUsername);
         }
     }
 
@@ -44,14 +43,14 @@ public class CustomMetaObjectHandler implements MetaObjectHandler {
         log.debug("开始执行更新填充");
 
         // 更新时间
-        if (metaObject.hasSetter("updateTime")) {
-            this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+        if (metaObject.hasSetter("updatedTime")) {
+            this.strictUpdateFill(metaObject, "updatedTime", LocalDateTime.class, LocalDateTime.now());
         }
 
         // 更新人（如果有需要）
-        if (metaObject.hasSetter("updateBy")) {
+        if (metaObject.hasSetter("updatedBy")) {
             String currentUsername = getCurrentUsername();
-            this.strictUpdateFill(metaObject, "updateBy", String.class, currentUsername);
+            this.strictUpdateFill(metaObject, "updatedBy", String.class, currentUsername);
         }
     }
 

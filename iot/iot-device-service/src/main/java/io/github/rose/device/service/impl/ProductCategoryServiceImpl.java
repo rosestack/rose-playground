@@ -2,7 +2,6 @@ package io.github.rose.device.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.github.rose.device.dto.ProductCategoryCreateRequest;
@@ -20,16 +19,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * 产品分类服务实现类
- * <p>
- * 提供产品分类的业务逻辑实现，包括创建、更新、删除、查询等功能。
- * 支持树形结构管理和分页查询。
- * 遵循MyBatis Plus MDC规范，优先使用Wrapper进行查询。
- * </p>
  *
  * @author rose
  * @since 2024-01-01
@@ -37,345 +30,214 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMapper, ProductCategory>
-        implements ProductCategoryService {
+public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMapper, ProductCategory> implements ProductCategoryService {
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public ProductCategoryVO createCategory(ProductCategoryCreateRequest request) {
-        try {
-            // 检查分类标识符是否已存在
-            if (existsByCode(request.getCode(), request.getTenantId(), null)) {
-                throw new BusinessException("分类标识符已存在：" + request.getCode());
-            }
+        log.info("开始创建产品分类，请求参数：{}", request);
 
-            // 构建分类实体
-            ProductCategory category = new ProductCategory();
-            BeanUtils.copyProperties(request, category);
-
-            // 设置默认值
-            if (category.getLevel() == null) {
-                category.setLevel(1);
-            }
-            if (category.getSortOrder() == null) {
-                category.setSortOrder(0);
-            }
-            if (category.getType() == null) {
-                category.setType(ProductCategory.CategoryType.CUSTOM);
-            }
-            if (category.getStatus() == null) {
-                category.setStatus(ProductCategory.CategoryStatus.ACTIVE);
-            }
-
-            // 如果有父分类，计算层级
-            if (category.getParentId() != null) {
-                ProductCategory parentCategory = this.getById(category.getParentId());
-                if (parentCategory == null) {
-                    throw new BusinessException("父分类不存在：" + category.getParentId());
-                }
-                category.setLevel(parentCategory.getLevel() + 1);
-            }
-
-            // 保存分类
-            this.save(category);
-
-            log.info("产品分类创建成功，分类ID：{}，分类名称：{}", category.getId(), category.getName());
-
-            return convertToVO(category);
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("创建产品分类异常，请求参数：{}", request, e);
-            throw new BusinessException("创建产品分类失败：" + e.getMessage());
+        // 检查分类标识符是否已存在
+        if (existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("分类标识符已存在：" + request.getCode());
         }
+
+        // 检查父分类是否存在
+        if (request.getParentId() != null) {
+            ProductCategory parentCategory = getById(request.getParentId());
+            if (parentCategory == null) {
+                throw new IllegalArgumentException("父分类不存在：" + request.getParentId());
+            }
+        }
+
+        // 创建分类实体
+        ProductCategory category = new ProductCategory();
+        BeanUtils.copyProperties(request, category);
+
+        // 设置分类层级
+        if (request.getParentId() != null) {
+            ProductCategory parentCategory = getById(request.getParentId());
+            category.setLevel(parentCategory.getLevel() + 1);
+        } else {
+            category.setLevel(1);
+        }
+
+        // 保存分类
+        save(category);
+
+        log.info("产品分类创建成功，分类ID：{}", category.getId());
+
+        return convertToVO(category);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ProductCategoryVO updateCategory(ProductCategoryUpdateRequest request) {
-        try {
-            // 检查分类是否存在
-            ProductCategory existingCategory = this.getById(request.getId());
-            if (existingCategory == null) {
-                throw new BusinessException("分类不存在：" + request.getId());
-            }
+    public ProductCategoryVO updateCategory(Long id, ProductCategoryUpdateRequest request) {
+        log.info("开始更新产品分类，分类ID：{}，请求参数：{}", id, request);
 
-            // 检查分类标识符是否已存在（排除当前分类）
-            if (StringUtils.hasText(request.getCode()) &&
-                    existsByCode(request.getCode(), existingCategory.getTenantId(), request.getId())) {
-                throw new BusinessException("分类标识符已存在：" + request.getCode());
-            }
-
-            // 更新分类信息
-            BeanUtils.copyProperties(request, existingCategory);
-
-            // 如果有父分类，计算层级
-            if (existingCategory.getParentId() != null) {
-                ProductCategory parentCategory = this.getById(existingCategory.getParentId());
-                if (parentCategory == null) {
-                    throw new BusinessException("父分类不存在：" + existingCategory.getParentId());
-                }
-                existingCategory.setLevel(parentCategory.getLevel() + 1);
-            }
-
-            // 保存更新
-            this.updateById(existingCategory);
-
-            log.info("产品分类更新成功，分类ID：{}，分类名称：{}", existingCategory.getId(), existingCategory.getName());
-
-            return convertToVO(existingCategory);
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("更新产品分类异常，请求参数：{}", request, e);
-            throw new BusinessException("更新产品分类失败：" + e.getMessage());
+        // 检查分类是否存在
+        ProductCategory category = getById(id);
+        if (category == null) {
+            throw new IllegalArgumentException("分类不存在：" + id);
         }
+
+        // 检查分类标识符是否重复（排除自身）
+        if (StringUtils.hasText(request.getCode()) && !request.getCode().equals(category.getCode())) {
+            if (existsByCode(request.getCode())) {
+                throw new IllegalArgumentException("分类标识符已存在：" + request.getCode());
+            }
+        }
+
+        // 检查父分类是否存在且不能是自己
+        if (request.getParentId() != null) {
+            if (request.getParentId().equals(id)) {
+                throw new IllegalArgumentException("父分类不能是自己");
+            }
+            ProductCategory parentCategory = getById(request.getParentId());
+            if (parentCategory == null) {
+                throw new IllegalArgumentException("父分类不存在：" + request.getParentId());
+            }
+        }
+
+        // 更新分类信息
+        BeanUtils.copyProperties(request, category);
+
+        // 更新分类层级
+        if (request.getParentId() != null) {
+            ProductCategory parentCategory = getById(request.getParentId());
+            category.setLevel(parentCategory.getLevel() + 1);
+        } else {
+            category.setLevel(1);
+        }
+
+        // 保存更新
+        updateById(category);
+
+        log.info("产品分类更新成功，分类ID：{}", id);
+
+        return convertToVO(category);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean deleteCategory(Long categoryId) {
-        try {
-            // 检查分类是否存在
-            ProductCategory category = this.getById(categoryId);
-            if (category == null) {
-                throw new BusinessException("分类不存在：" + categoryId);
-            }
+    public void deleteCategory(Long id) {
+        log.info("开始删除产品分类，分类ID：{}", id);
 
-            // 检查是否有子分类（使用Wrapper查询）
-            LambdaQueryWrapper<ProductCategory> childWrapper = new LambdaQueryWrapper<>();
-            childWrapper.eq(ProductCategory::getParentId, categoryId)
-                    .eq(ProductCategory::getDeleted, false);
-            long childCount = this.count(childWrapper);
-            if (childCount > 0) {
-                throw new BusinessException("分类下存在子分类，无法删除");
-            }
-
-            // 检查是否有产品
-            long productCount = countProductsByCategory(categoryId);
-            if (productCount > 0) {
-                throw new BusinessException("分类下存在产品，无法删除");
-            }
-
-            // 删除分类
-            boolean result = this.removeById(categoryId);
-
-            log.info("产品分类删除成功，分类ID：{}，分类名称：{}", categoryId, category.getName());
-
-            return result;
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("删除产品分类异常，分类ID：{}", categoryId, e);
-            throw new BusinessException("删除产品分类失败：" + e.getMessage());
+        // 检查分类是否存在
+        ProductCategory category = getById(id);
+        if (category == null) {
+            throw new IllegalArgumentException("分类不存在：" + id);
         }
+
+        // 检查是否有子分类
+        List<ProductCategory> children = baseMapper.selectByParentId(id);
+        if (!children.isEmpty()) {
+            throw new IllegalArgumentException("存在子分类，无法删除");
+        }
+
+        // 逻辑删除分类
+        removeById(id);
+
+        log.info("产品分类删除成功，分类ID：{}", id);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ProductCategoryVO getCategoryById(Long categoryId) {
-        try {
-            ProductCategory category = this.getById(categoryId);
-            return category != null ? convertToVO(category) : null;
-        } catch (Exception e) {
-            log.error("获取产品分类异常，分类ID：{}", categoryId, e);
-            throw new BusinessException("获取产品分类失败：" + e.getMessage());
-        }
+    public ProductCategoryVO getCategoryById(Long id) {
+        ProductCategory category = getById(id);
+        return category != null ? convertToVO(category) : null;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public IPage<ProductCategoryVO> pageCategories(ProductCategoryQueryRequest request) {
-        try {
-            // 构建分页参数
-            Page<ProductCategory> page = new Page<>(request.getPageNo(), request.getPageSize());
+    public IPage<ProductCategoryVO> pageCategories(Page<ProductCategory> page, ProductCategoryQueryRequest request) {
+        log.info("开始分页查询产品分类，请求参数：{}", request);
 
-            // 使用Wrapper构建查询条件
-            LambdaQueryWrapper<ProductCategory> wrapper = buildQueryWrapper(request);
-
-            // 执行分页查询
-            IPage<ProductCategory> categoryPage = this.page(page, wrapper);
-
-            // 转换为VO
-            IPage<ProductCategoryVO> voPage = new Page<>();
-            BeanUtils.copyProperties(categoryPage, voPage);
-
-            List<ProductCategoryVO> voList = categoryPage.getRecords().stream()
-                    .map(this::convertToVO)
-                    .collect(Collectors.toList());
-            voPage.setRecords(voList);
-
-            return voPage;
-        } catch (Exception e) {
-            log.error("分页查询产品分类异常，请求参数：{}", request, e);
-            throw new BusinessException("分页查询产品分类失败：" + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProductCategoryVO> getCategoryTree(Long tenantId) {
-        try {
-            // 使用Wrapper查询所有分类
-            LambdaQueryWrapper<ProductCategory> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(ProductCategory::getDeleted, false)
-                    .eq(tenantId != null, ProductCategory::getTenantId, tenantId)
-                    .orderByAsc(ProductCategory::getSortOrder)
-                    .orderByDesc(ProductCategory::getCreatedTime);
-
-            List<ProductCategory> allCategories = this.list(wrapper);
-
-            // 构建分类树
-            return buildCategoryTree(allCategories);
-        } catch (Exception e) {
-            log.error("查询分类树异常，租户ID：{}", tenantId, e);
-            throw new BusinessException("查询分类树失败：" + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProductCategoryVO> getCategoriesByParentId(Long parentId, Long tenantId) {
-        try {
-            // 使用Wrapper查询子分类
-            LambdaQueryWrapper<ProductCategory> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(ProductCategory::getDeleted, false)
-                    .eq(parentId != null, ProductCategory::getParentId, parentId)
-                    .isNull(parentId == null, ProductCategory::getParentId)
-                    .eq(tenantId != null, ProductCategory::getTenantId, tenantId)
-                    .orderByAsc(ProductCategory::getSortOrder)
-                    .orderByDesc(ProductCategory::getCreatedTime);
-
-            List<ProductCategory> categories = this.list(wrapper);
-
-            return categories.stream()
-                    .map(this::convertToVO)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            log.error("查询子分类异常，父分类ID：{}，租户ID：{}", parentId, tenantId, e);
-            throw new BusinessException("查询子分类失败：" + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsByCode(String code, Long tenantId, Long excludeId) {
-        try {
-            LambdaQueryWrapper<ProductCategory> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(ProductCategory::getCode, code)
-                    .eq(ProductCategory::getTenantId, tenantId)
-                    .eq(ProductCategory::getDeleted, false);
-
-            if (excludeId != null) {
-                wrapper.ne(ProductCategory::getId, excludeId);
-            }
-
-            return this.count(wrapper) > 0;
-        } catch (Exception e) {
-            log.error("检查分类标识符异常，code：{}，tenantId：{}，excludeId：{}", code, tenantId, excludeId, e);
-            throw new BusinessException("检查分类标识符失败：" + e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean batchDeleteCategories(List<Long> categoryIds) {
-        try {
-            for (Long categoryId : categoryIds) {
-                deleteCategory(categoryId);
-            }
-
-            log.info("批量删除产品分类成功，分类ID列表：{}", categoryIds);
-            return true;
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("批量删除产品分类异常，分类ID列表：{}", categoryIds, e);
-            throw new BusinessException("批量删除产品分类失败：" + e.getMessage());
-        }
-    }
-
-    /**
-     * 构建查询条件Wrapper
-     *
-     * @param request 查询请求
-     * @return 查询条件Wrapper
-     */
-    private LambdaQueryWrapper<ProductCategory> buildQueryWrapper(ProductCategoryQueryRequest request) {
+        // 构建查询条件
         LambdaQueryWrapper<ProductCategory> wrapper = new LambdaQueryWrapper<>();
-
-        wrapper.eq(ProductCategory::getDeleted, false)
+        wrapper.like(StringUtils.hasText(request.getName()), ProductCategory::getName, request.getName())
+                .eq(StringUtils.hasText(request.getCode()), ProductCategory::getCode, request.getCode())
                 .eq(request.getParentId() != null, ProductCategory::getParentId, request.getParentId())
-                .like(StringUtils.hasText(request.getName()), ProductCategory::getName, request.getName())
-                .like(StringUtils.hasText(request.getCode()), ProductCategory::getCode, request.getCode())
                 .eq(request.getType() != null, ProductCategory::getType, request.getType())
                 .eq(request.getStatus() != null, ProductCategory::getStatus, request.getStatus())
-                .eq(request.getTenantId() != null, ProductCategory::getTenantId, request.getTenantId())
                 .orderByAsc(ProductCategory::getSortOrder)
-                .orderByDesc(ProductCategory::getCreatedTime);
+                .orderByAsc(ProductCategory::getId);
 
-        return wrapper;
+        // 执行分页查询
+        IPage<ProductCategory> categoryPage = page(page, wrapper);
+
+        // 转换为VO
+        IPage<ProductCategoryVO> result = new Page<>();
+        BeanUtils.copyProperties(categoryPage, result);
+        result.setRecords(categoryPage.getRecords().stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList()));
+
+        log.info("产品分类分页查询完成，总记录数：{}", result.getTotal());
+
+        return result;
     }
 
-    /**
-     * 统计分类下的产品数量
-     *
-     * @param categoryId 分类ID
-     * @return 产品数量
-     */
-    private long countProductsByCategory(Long categoryId) {
-        try {
-            return baseMapper.selectCount(Wrappers.lambdaQuery(ProductCategory.class).eq(ProductCategory::getId, categoryId));
-        } catch (Exception e) {
-            log.warn("统计产品数量失败，分类ID：{}", categoryId, e);
-            return 0;
+    @Override
+    public List<ProductCategoryVO> getCategoryTree(Long parentId) {
+        log.info("开始查询分类树结构，父分类ID：{}", parentId);
+
+        List<ProductCategory> categories = baseMapper.selectCategoryTree(parentId);
+        List<ProductCategoryVO> result = categories.stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
+
+        // 递归构建树结构
+        for (ProductCategoryVO category : result) {
+            category.setChildren(getCategoryTree(category.getId()));
         }
+
+        log.info("分类树结构查询完成，记录数：{}", result.size());
+
+        return result;
     }
 
-    /**
-     * 构建分类树
-     *
-     * @param categories 所有分类列表
-     * @return 分类树
-     */
-    private List<ProductCategoryVO> buildCategoryTree(List<ProductCategory> categories) {
-        if (categories == null || categories.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // 按父分类ID分组
-        Map<Long, List<ProductCategory>> parentMap = categories.stream()
-                .collect(Collectors.groupingBy(category ->
-                        category.getParentId() == null ? 0L : category.getParentId()));
-
-        // 递归构建树
-        return buildTreeRecursive(0L, parentMap);
+    @Override
+    public ProductCategoryVO getCategoryByCode(String code) {
+        ProductCategory category = baseMapper.selectByCode(code);
+        return category != null ? convertToVO(category) : null;
     }
 
-    /**
-     * 递归构建分类树
-     *
-     * @param parentId  父分类ID
-     * @param parentMap 父分类映射
-     * @return 子分类列表
-     */
-    private List<ProductCategoryVO> buildTreeRecursive(Long parentId, Map<Long, List<ProductCategory>> parentMap) {
-        List<ProductCategory> children = parentMap.get(parentId);
-        if (children == null) {
-            return new ArrayList<>();
-        }
+    @Override
+    public boolean existsByCode(String code) {
+        return baseMapper.existsByCode(code);
+    }
 
-        return children.stream()
-                .map(category -> {
-                    ProductCategoryVO vo = convertToVO(category);
-                    vo.setChildren(buildTreeRecursive(category.getId(), parentMap));
-                    return vo;
-                })
+    @Override
+    public List<ProductCategoryVO> getCategoriesByType(ProductCategory.CategoryType type) {
+        List<ProductCategory> categories = baseMapper.selectByType(type);
+        return categories.stream()
+                .map(this::convertToVO)
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<ProductCategoryVO> getCategoriesByStatus(ProductCategory.CategoryStatus status) {
+        List<ProductCategory> categories = baseMapper.selectByStatus(status);
+        return categories.stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateCategoryStatus(Long id, ProductCategory.CategoryStatus status) {
+        log.info("开始更新分类状态，分类ID：{}，新状态：{}", id, status);
+
+        // 检查分类是否存在
+        ProductCategory category = getById(id);
+        if (category == null) {
+            throw new IllegalArgumentException("分类不存在：" + id);
+        }
+
+        // 更新状态
+        category.setStatus(status);
+        updateById(category);
+
+        log.info("分类状态更新成功，分类ID：{}，新状态：{}", id, status);
+    }
+
     /**
-     * 转换为VO
+     * 将实体转换为VO
      *
      * @param category 分类实体
      * @return 分类VO
@@ -387,29 +249,8 @@ public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMappe
 
         ProductCategoryVO vo = new ProductCategoryVO();
         BeanUtils.copyProperties(category, vo);
-
-        // 统计产品数量
-        try {
-            long productCount = countProductsByCategory(category.getId());
-            vo.setProductCount(productCount);
-        } catch (Exception e) {
-            log.warn("统计产品数量失败，分类ID：{}", category.getId(), e);
-            vo.setProductCount(0L);
-        }
+        vo.setChildren(new ArrayList<>()); // 初始化子分类列表
 
         return vo;
     }
-
-    /**
-     * 业务异常类
-     */
-    public static class BusinessException extends RuntimeException {
-        public BusinessException(String message) {
-            super(message);
-        }
-
-        public BusinessException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-} 
+}

@@ -1,61 +1,560 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: Maven 项目构建和管理规范
+alwaysApply: true
 ---
 
-## Maven 插件使用
+# Maven 开发规范
 
-### 1. 静态代码分析
+## 项目结构规范
 
-SonarQube配置
-
-```xml
-<!-- Maven SonarQube Plugin -->
-<plugin>
-    <groupId>org.sonarsource.scanner.maven</groupId>
-    <artifactId>sonar-maven-plugin</artifactId>
-    <version>3.10.0.2594</version>
-</plugin>
+### 1. 标准目录结构
+```
+project/
+├── pom.xml                    # 项目对象模型文件
+├── src/
+├── target/                   # 构建输出目录
+└── README.md
 ```
 
-SpotBugs配置
+### 2. 多模块项目结构
+```
+parent/
+├── pom.xml                   # 父 POM
+├── parent-a/
+│   ├── pom.xml
+│   └── src/
+├── parent-b/
+│   ├── pom.xml
+│   └── src/
+└── parent-shared/
+    ├── pom.xml
+    └── src/
+```
 
+## POM 文件规范
+
+### 1. 基本信息配置
 ```xml
-<!-- SpotBugs Maven Plugin -->
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 继承 Spring Boot Starter Parent -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.1</version>
+        <relativePath/>
+    </parent>
+
+    <!-- 项目基本信息 -->
+    <groupId>io.github.rose</groupId>
+    <artifactId>rose-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    
+    <name>Rose Backend</name>
+    <description>Rose 后端服务</description>
+    <url>https://github.com/chensoul/rose-monolithic</url>
+    
+    <!-- 开发者信息 -->
+    <developers>
+        <developer>
+            <id>chensoul</id>
+            <name>Chen Soul</name>
+            <email>ichensoul@gmail.com</email>
+        </developer>
+    </developers>
+    
+    <!-- 许可证信息 -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+</project>
+```
+
+### 2. 属性配置
+```xml
+<properties>
+    <!-- Java 版本（Spring Boot 3.5.1 默认使用 Java 17） -->
+    <java.version>17</java.version>
+    
+    <!-- 依赖版本管理（仅管理 Spring Boot Parent 未包含的依赖） -->
+    <mybatis-plus.version>3.5.12</mybatis-plus.version>
+    <!-- 测试框架版本（TestContainers 等） -->
+    <testcontainers.version>1.19.1</testcontainers.version>
+    
+    <!-- 插件版本（仅管理 Spring Boot Parent 未包含的插件） -->
+    <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+    <spotbugs-maven-plugin.version>4.7.3.6</spotbugs-maven-plugin.version>
+    <sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
+</properties>
+```
+
+### 3. 依赖管理
+```xml
+<dependencyManagement>
+    <dependencies>
+        <!-- TestContainers BOM（Spring Boot Parent 未包含） -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-bom</artifactId>
+            <version>${testcontainers.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        
+        <!-- MyBatis Plus（Spring Boot Parent 未包含） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-bom</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+### 4. 常用依赖示例
+```xml
+<dependencies>
+    <!-- Spring Boot Starters（版本由 parent 管理） -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+    
+    <!-- 数据库驱动（版本由 parent 管理） -->
+    <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+    </dependency>
+    
+    <!-- MyBatis Plus（版本由 dependencyManagement 管理） -->
+    <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-jsqlparser</artifactId>
+    </dependency>
+    
+    <!-- Lombok（版本由 parent 管理） -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <optional>true</optional>
+    </dependency>
+    
+    <!-- 测试依赖（版本由 parent 管理） -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+    
+    <!-- TestContainers（版本由 dependencyManagement 管理） -->
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
+
+## 构建配置
+
+### 1. 基础构建插件
+```xml
+<build>
+    <plugins>
+        <!-- Spring Boot Maven Plugin（由 parent 自动配置） -->
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <excludes>
+                    <exclude>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                    </exclude>
+                </excludes>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+### 2. 额外插件配置（可选）
+```xml
+<build>
+    <plugins>
+        <!-- 代码覆盖率插件 -->
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-maven-plugin.version}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>report</id>
+                    <phase>test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        
+        <!-- 代码格式化插件 -->
+        <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>${spotless-maven-plugin.version}</version>
+            <configuration>
+                <java>
+                    <googleJavaFormat>
+                        <version>1.17.0</version>
+                        <style>GOOGLE</style>
+                    </googleJavaFormat>
+                    <removeUnusedImports />
+                    <formatAnnotations />
+                </java>
+            </configuration>
+        </plugin>
+        
+        <!-- 静态代码分析插件 -->
+        <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>${spotbugs-maven-plugin.version}</version>
+            <configuration>
+                <effort>Max</effort>
+                <threshold>Low</threshold>
+                <xmlOutput>true</xmlOutput>
+            </configuration>
+        </plugin>
+        
+        <!-- SonarQube 插件 -->
+        <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>${sonar-maven-plugin.version}</version>
+        </plugin>
+    </plugins>
+</build>
+```
+
+## 测试配置
+
+### 1. 基础测试配置
+
+Spring Boot Parent 已自动配置了以下测试插件：
+- `maven-surefire-plugin`：单元测试
+- `maven-failsafe-plugin`：集成测试
+
+### 2. 测试依赖示例
+```xml
+<dependencies>
+    <!-- Spring Boot 测试启动器（包含 JUnit 5、Mockito、AssertJ 等） -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+    
+    <!-- TestContainers -->
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <scope>test</scope>
+    </dependency>
+    
+    <!-- Spring Security 测试 -->
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
+
+### 3. 测试配置文件
+```yaml
+# src/test/resources/application-test.yml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  test:
+    database:
+      replace: none
+```
+
+## 代码质量配置
+
+### 1. 代码质量插件说明
+以下插件可根据项目需要选择性添加到构建配置中：
+
+### 2. SonarQube 配置
+```xml
+<!-- 在 properties 中配置 SonarQube 属性 -->
+<properties>
+    <sonar.host.url>http://localhost:9000</sonar.host.url>
+    <sonar.projectKey>rose-monolithic</sonar.projectKey>
+    <sonar.projectName>Rose Monolithic</sonar.projectName>
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+</properties>
+```
+
+### 3. 代码格式化配置
+```xml
+<!-- Spotless 配置文件：.spotless.yml -->
+java:
+  googleJavaFormat:
+    version: '1.17.0'
+    style: GOOGLE
+  removeUnusedImports: true
+  formatAnnotations: true
+  importOrder:
+    - java
+    - javax
+    - org
+    - com
+    - ''
+```
+
+### 4. 代码质量检查配置
+```xml
+<!-- SpotBugs 排除规则：spotbugs-exclude.xml -->
+<FindBugsFilter>
+    <Match>
+        <Class name="~.*\.dto\..*"/>
+    </Match>
+    <Match>
+        <Class name="~.*\.entity\..*"/>
+    </Match>
+    <Match>
+        <Class name="~.*\.config\..*"/>
+    </Match>
+</FindBugsFilter>
+```
+
+## 文档和部署
+
+### 1. JavaDoc 生成（可选）
+```xml
 <plugin>
-    <groupId>com.github.spotbugs</groupId>
-    <artifactId>spotbugs-maven-plugin</artifactId>
-    <version>4.7.3.6</version>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-javadoc-plugin</artifactId>
     <configuration>
-        <effort>Max</effort>
-        <threshold>Low</threshold>
-        <xmlOutput>true</xmlOutput>
+        <encoding>UTF-8</encoding>
+        <charset>UTF-8</charset>
+        <docencoding>UTF-8</docencoding>
+        <doclint>none</doclint>
     </configuration>
+    <executions>
+        <execution>
+            <id>attach-javadocs</id>
+            <goals>
+                <goal>jar</goal>
+            </goals>
+        </execution>
+    </executions>
 </plugin>
 ```
 
-### 2. 代码格式化
-
-Spotless配置
-
+### 2. 代码质量检查环境
 ```xml
-<!-- Spotless Maven Plugin -->
-<plugin>
-    <groupId>com.diffplug.spotless</groupId>
-    <artifactId>spotless-maven-plugin</artifactId>
-    <version>2.43.0</version>
-    <configuration>
-        <java>
-            <googleJavaFormat>
-                <version>1.18.1</version>
-                <style>GOOGLE</style>
-            </googleJavaFormat>
-            <removeUnusedImports/>
-            <importOrder>
-                <order>java,javax,org,com,</order>
-            </importOrder>
-        </java>
-    </configuration>
-</plugin>
+<profile>
+    <id>quality</id>
+    <build>
+        <plugins>
+            <!-- 激活所有代码质量检查插件 -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</profile>
 ```
+
+## 常用命令
+
+### 1. 基础命令
+```bash
+# 清理项目
+mvn clean
+
+# 编译项目
+mvn compile
+
+# 运行测试
+mvn test
+
+# 打包项目
+mvn package
+
+# 安装到本地仓库
+mvn install
+
+# 跳过测试打包
+mvn package -DskipTests
+
+# 运行 Spring Boot 应用
+mvn spring-boot:run
+
+# 指定 Profile 运行
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+### 2. 代码质量命令
+```bash
+# 代码格式化
+mvn spotless:apply
+
+# 代码格式检查
+mvn spotless:check
+
+# 运行 SpotBugs 分析
+mvn spotbugs:check
+
+# 生成代码覆盖率报告
+mvn jacoco:report
+
+# SonarQube 分析
+mvn sonar:sonar
+
+# 运行所有代码质量检查
+mvn clean verify -Pquality
+```
+
+### 3. 构建和部署命令
+```bash
+# 生产环境打包
+mvn clean package -Pprod
+
+# 生成 JavaDoc
+mvn javadoc:javadoc
+
+# 完整构建流程
+mvn clean install -Pprod
+```
+
+## 最佳实践
+
+### 1. 依赖管理原则
+- **继承 Spring Boot Parent**：充分利用 Spring Boot 3.5.1 的依赖管理
+- **最小化版本声明**：仅在 `dependencyManagement` 中声明 Spring Boot Parent 未包含的依赖版本
+- **避免重复配置**：不要重复声明 Spring Boot Parent 已管理的依赖和插件
+- **使用 BOM 管理**：对于第三方库集合（如 TestContainers），使用 BOM 统一管理版本
+
+### 2. 插件配置原则
+- **依赖 Parent 配置**：Spring Boot Parent 已配置了常用插件，避免重复配置
+- **按需添加插件**：仅添加项目特定需要的插件（如代码质量、格式化等）
+- **版本统一管理**：在 `properties` 中统一管理额外插件的版本
+
+### 3. 项目结构规范
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/example/project/
+│   │       ├── Application.java
+│   │       ├── config/
+│   │       ├── controller/
+│   │       ├── service/
+│   │       ├── repository/
+│   │       ├── entity/
+│   │       └── dto/
+│   └── resources/
+│       ├── application.yml
+│       ├── application-dev.yml
+│       ├── application-test.yml
+│       └── application-prod.yml
+└── test/
+    ├── java/
+    └── resources/
+        └── application-test.yml
+```
+
+### 4. 配置文件管理
+- **使用 YAML 格式**：优先使用 `.yml` 而非 `.properties`
+- **环境分离**：为不同环境创建独立的配置文件
+- **敏感信息外置**：使用环境变量或外部配置管理敏感信息
+- **配置验证**：使用 `@ConfigurationProperties` 和 `@Validated` 验证配置
+
+### 5. 测试策略
+- **分层测试**：单元测试、集成测试、端到端测试
+- **使用 TestContainers**：集成测试中使用真实的数据库和中间件
+- **测试配置隔离**：使用独立的测试配置文件
+- **覆盖率要求**：保持合理的代码覆盖率（建议 80% 以上）
+
+### 6. 代码质量保证
+- **自动化格式化**：使用 Spotless 保持代码风格一致
+- **静态分析**：定期运行 SpotBugs 检查潜在问题
+- **持续集成**：在 CI/CD 流水线中集成代码质量检查
+- **代码审查**：建立代码审查机制
+
+### 7. 性能优化
+- **依赖优化**：定期清理不必要的依赖
+- **构建优化**：使用 Maven 并行构建和增量编译
+- **镜像优化**：使用分层构建优化 Docker 镜像大小
+- **启动优化**：合理配置 JVM 参数和 Spring Boot 启动参数

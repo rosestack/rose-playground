@@ -30,19 +30,24 @@ public class MyBatisPlusConfig {
      */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+
         // 动态表名插件
         DynamicTableNameInnerInterceptor dynamicTableNameInnerInterceptor = new DynamicTableNameInnerInterceptor();
         dynamicTableNameInnerInterceptor.setTableNameHandler(DynamicTableNameFactory.tableNameHandler());
+        interceptor.addInnerInterceptor(dynamicTableNameInnerInterceptor);
 
-        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 分页插件
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        PaginationInnerInterceptor paginationInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
+        paginationInterceptor.setMaxLimit(1000L); // 最大分页数量限制
+        paginationInterceptor.setOverflow(false); // 溢出总页数后是否进行处理
+        interceptor.addInnerInterceptor(paginationInterceptor);
+
         // 乐观锁插件
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
         // 防止全表更新与删除插件
         interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
 
-        log.info("MyBatis Plus插件配置完成");
         return interceptor;
     }
 
@@ -54,7 +59,6 @@ public class MyBatisPlusConfig {
     public SqlPerformanceInterceptor sqlPerformanceInterceptor() {
         SqlPerformanceInterceptor interceptor = new SqlPerformanceInterceptor();
         interceptor.setMaxTime(1000); // 超过1秒记录警告
-        log.info("SQL性能分析插件配置完成");
         return interceptor;
     }
 

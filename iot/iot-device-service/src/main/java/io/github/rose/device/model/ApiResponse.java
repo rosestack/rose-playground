@@ -1,10 +1,8 @@
-package io.github.rose.common.model;
+package io.github.rose.device.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * 通用API响应对象
@@ -33,16 +31,6 @@ public class ApiResponse<T> {
     private String message;
 
     /**
-     * 响应时间戳
-     */
-    private LocalDateTime timestamp;
-
-    /**
-     * 请求ID
-     */
-    private String requestId;
-
-    /**
      * 成功响应（无数据）
      */
     public static <T> ApiResponse<T> success() {
@@ -57,7 +45,16 @@ public class ApiResponse<T> {
         response.setCode(200);
         response.setData(data);
         response.setMessage("操作成功");
-        response.setTimestamp(LocalDateTime.now());
+        return response;
+    }
+
+    /**
+     * 失败响应
+     */
+    public static <T> ApiResponse<T> error(String message) {
+        ApiResponse<T> response = new ApiResponse<>();
+        response.setCode(500);
+        response.setMessage(message);
         return response;
     }
 
@@ -68,7 +65,6 @@ public class ApiResponse<T> {
         ApiResponse<T> response = new ApiResponse<>();
         response.setCode(code);
         response.setMessage(message);
-        response.setTimestamp(LocalDateTime.now());
         return response;
     }
 
@@ -80,7 +76,6 @@ public class ApiResponse<T> {
         response.setCode(code);
         response.setMessage(message);
         response.setData(data);
-        response.setTimestamp(LocalDateTime.now());
         return response;
     }
 } 

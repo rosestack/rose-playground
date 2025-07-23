@@ -1,53 +1,31 @@
 package io.github.rose.device.dto;
 
+import io.github.rose.device.entity.ProductCategory;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
- * 产品分类查询请求
+ * 产品分类查询请求DTO
  *
  * @author rose
  * @since 2024-01-01
  */
 @Data
+@Schema(description = "产品分类查询请求")
 public class ProductCategoryQueryRequest {
 
-    /**
-     * 父分类ID
-     */
-    private Long parentId;
-
-    /**
-     * 分类名称（模糊查询）
-     */
+    @Schema(description = "分类名称", example = "智能家居")
     private String name;
 
-    /**
-     * 分类标识符（模糊查询）
-     */
+    @Schema(description = "分类标识符", example = "smart_home")
     private String code;
 
-    /**
-     * 分类类型：STANDARD-标准行业分类，CUSTOM-自定义分类
-     */
-    private String type;
+    @Schema(description = "父分类ID", example = "1")
+    private Long parentId;
 
-    /**
-     * 分类状态：ACTIVE-激活，INACTIVE-未激活
-     */
-    private String status;
+    @Schema(description = "分类类型", example = "CUSTOM")
+    private ProductCategory.CategoryType type;
 
-    /**
-     * 租户ID
-     */
-    private Long tenantId;
-
-    /**
-     * 页码
-     */
-    private Integer pageNo = 1;
-
-    /**
-     * 页大小
-     */
-    private Integer pageSize = 10;
-} 
+    @Schema(description = "分类状态", example = "ACTIVE")
+    private ProductCategory.CategoryStatus status;
+}

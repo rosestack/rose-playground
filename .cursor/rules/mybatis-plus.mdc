@@ -1,4 +1,5 @@
 ---
+description: MyBatis Plus 开发规范
 alwaysApply: true
 ---
 
@@ -9,6 +10,7 @@ alwaysApply: true
 作为 MyBatis Plus 开发专家，请严格遵循以下开发规范，确保代码质量、可维护性和数据库兼容性。
 
 ## 设计理念
+
 - **数据库无关性**：避免使用数据库特定功能，确保代码可在不同数据库间迁移
 - **简洁优雅**：优先使用 MyBatis Plus 提供的 API，减少手写 SQL
 - **性能优先**：关注查询性能，合理使用索引和批量操作
@@ -36,25 +38,25 @@ alwaysApply: true
 在子模块中，如果是 Spring Boot3 项目，则引入 mybatis-plus-spring-boot3-starter 依赖：
 
 ```xml
-<dependency>
-    <groupId>com.baomidou</groupId>
-    <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-</dependency>
-<!--分页插件-->
-<dependency>
-    <groupId>com.baomidou</groupId>
-    <artifactId>mybatis-plus-jsqlparser</artifactId>
-</dependency>
+    <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+    </dependency>
+            
+    <!--分页插件-->
+    <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-jsqlparser</artifactId>
+    </dependency>
 ```
 
 如果是 Spring Boot2 项目，则引入 mybatis-plus-boot-starter 依赖：
 
 ```xml
-
-<dependency>
-    <groupId>com.baomidou</groupId>
-    <artifactId>mybatis-plus-boot-starter</artifactId>
-</dependency>
+    <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-boot-starter</artifactId>
+    </dependency>
 ```
 
 ## 配置规范
@@ -68,383 +70,94 @@ public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        
+
         // 分页插件
         PaginationInnerInterceptor paginationInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
         paginationInterceptor.setMaxLimit(1000L); // 最大分页数量限制
         paginationInterceptor.setOverflow(false); // 溢出总页数后是否进行处理
         interceptor.addInnerInterceptor(paginationInterceptor);
-        
+
         // 乐观锁插件
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
-        
+
         // 防全表更新与删除插件
         interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
-        
+
         return interceptor;
     }
-    
-    /**
-     * 元数据对象处理器
-     */
-    @Bean
-    public MetaObjectHandler metaObjectHandler() {
-        return new CustomMetaObjectHandler();
-    }
-    
-    /**
-     * SQL 性能监控
-     */
-    @Bean
-    @Profile({"dev", "test"})
-    public SqlPerformanceInterceptor performanceInterceptor() {
-        SqlPerformanceInterceptor performanceInterceptor = new SqlPerformanceInterceptor();
-        performanceInterceptor.setMaxTime(1000); // SQL执行最大时长，超过则停止运行
-        performanceInterceptor.setFormat(true); // 格式化SQL
-        return performanceInterceptor;
-    }
 }
-```
-
-CustomMetaObjectHandler：
-```java
-/**
- * 自定义元数据处理器
- * <p>
- * 用于自动填充实体类中的创建时间、更新时间等字段，减少重复代码
- * 需要在实体类的字段上添加@TableField注解，并设置fill属性
- * 例如：@TableField(fill = FieldFill.INSERT) 或 @TableField(fill = FieldFill.INSERT_UPDATE)
- */
-@Slf4j
-@Component
-public class CustomMetaObjectHandler implements MetaObjectHandler {
-
-    @Override
-    public void insertFill(MetaObject metaObject) {
-        log.debug("开始执行插入填充");
-
-        if (metaObject.hasSetter("deleted")) {
-            this.strictInsertFill(metaObject, "deleted", Boolean.class, false);
-        }
-
-        if (metaObject.hasSetter("createdTime")) {
-            this.strictInsertFill(metaObject, "createdTime", LocalDateTime.class, LocalDateTime.now());
-        }
-
-        if (metaObject.hasSetter("updatedTime")) {
-            this.strictInsertFill(metaObject, "updatedTime", LocalDateTime.class, LocalDateTime.now());
-        }
-
-        if (metaObject.hasSetter("createdBy")) {
-            String currentUsername = getCurrentUsername();
-            this.strictInsertFill(metaObject, "createdBy", String.class, currentUsername);
-        }
-    }
-
-    @Override
-    public void updateFill(MetaObject metaObject) {
-        log.debug("开始执行更新填充");
-
-        if (metaObject.hasSetter("updatedTime")) {
-            this.strictUpdateFill(metaObject, "updatedTime", LocalDateTime.class, LocalDateTime.now());
-        }
-
-        if (metaObject.hasSetter("updatedBy")) {
-            String currentUsername = getCurrentUsername();
-            this.strictUpdateFill(metaObject, "updatedBy", String.class, currentUsername);
-        }
-    }
-
-    private String getCurrentUsername() {
-        try {
-            // todo 从Spring Security上下文获取
-            return "system";
-        } catch (Exception e) {
-            log.warn("获取当前用户名失败", e);
-            return "system";
-        }
-    }
-}
-```
-
-SqlPerformanceInterceptor：
-
-```java
-@Slf4j
-@Data
-public class SqlPerformanceInterceptor implements InnerInterceptor {
-
-    /**
-     * 最大执行时间，单位毫秒
-     */
-    private long maxTime = 1000; // 默认超过1秒的SQL会被记录为慢SQL
-
-    /**
-     * 是否格式化SQL
-     */
-    private boolean format = false;
-
-    /**
-     * 是否输出实际参数值
-     */
-    private boolean showParams = true;
-
-    /**
-     * 是否记录所有SQL，false则只记录慢SQL
-     */
-    private boolean logAllSql = false;
-
-    /**
-     * 是否写入慢SQL日志文件
-     */
-    private boolean writeIntoFile = false;
-
-    /**
-     * 慢SQL日志文件路径
-     */
-    private String slowSqlLogFilePath = "logs/slow-sql.log";
-
-    @Override
-    public void beforePrepare(StatementHandler sh, Connection connection, Integer transactionTimeout) {
-        MetaObject metaObject = MetaObject.forObject(sh, new DefaultObjectFactory(), new DefaultObjectWrapperFactory(), new DefaultReflectorFactory());
-        MappedStatement mappedStatement = (MappedStatement) metaObject.getValue("delegate.mappedStatement");
-        String sqlId = mappedStatement.getId();
-        BoundSql boundSql = sh.getBoundSql();
-        String sql = boundSql.getSql();
-        Object parameterObject = boundSql.getParameterObject();
-        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-
-        // 格式化SQL
-        String formattedSql = sql;
-        if (showParams) {
-            formattedSql = formatSql(mappedStatement.getConfiguration(), sql, parameterObject, parameterMappings);
-        }
-
-        if (format) {
-            formattedSql = beautifySql(formattedSql);
-        }
-
-        long start = System.currentTimeMillis();
-        try {
-            // 执行SQL
-            InnerInterceptor.super.beforePrepare(sh, connection, transactionTimeout);
-        } finally {
-            long end = System.currentTimeMillis();
-            long timing = end - start;
-
-            // 记录慢SQL
-            if (timing > maxTime) {
-                String slowSqlMessage = String.format("慢SQL检测 - 执行耗时: %d ms, SQL ID: %s, SQL: %s", timing, sqlId, formattedSql);
-                log.warn(slowSqlMessage);
-
-                // 写入慢SQL日志文件
-                if (writeIntoFile) {
-                    writeSlowSqlLog(slowSqlMessage);
-                }
-            } else if (logAllSql) {
-                // 记录所有SQL
-                log.debug("SQL执行 - 耗时: {} ms, SQL ID: {}, SQL: {}", timing, sqlId, formattedSql);
-            }
-        }
-    }
-
-    /**
-     * 写入慢SQL日志到文件
-     */
-    private void writeSlowSqlLog(String slowSqlMessage) {
-        try {
-            Files.write(
-                    Paths.get(slowSqlLogFilePath),
-                    (LocalDateTime.now() + " - " + slowSqlMessage + "\n").getBytes(),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND
-            );
-        } catch (Exception e) {
-            log.error("写入慢SQL日志文件失败", e);
-        }
-    }
-
-    /**
-     * 美化SQL
-     */
-    private String beautifySql(String sql) {
-        sql = sql.replaceAll("(?i)SELECT", "\nSELECT")
-                .replaceAll("(?i)FROM", "\nFROM")
-                .replaceAll("(?i)WHERE", "\nWHERE")
-                .replaceAll("(?i)AND", "\n  AND")
-                .replaceAll("(?i)OR", "\n   OR")
-                .replaceAll("(?i)GROUP BY", "\nGROUP BY")
-                .replaceAll("(?i)HAVING", "\nHAVING")
-                .replaceAll("(?i)ORDER BY", "\nORDER BY")
-                .replaceAll("(?i)LIMIT", "\nLIMIT")
-                .replaceAll("(?i)OFFSET", "\nOFFSET")
-                .replaceAll("(?i)UPDATE", "\nUPDATE")
-                .replaceAll("(?i)DELETE", "\nDELETE")
-                .replaceAll("(?i)INSERT", "\nINSERT")
-                .replaceAll("(?i)VALUES", "\nVALUES");
-        return sql;
-    }
-
-    /**
-     * 格式化SQL，将占位符替换为实际参数值
-     */
-    private String formatSql(Configuration configuration, String sql, Object parameterObject, List<ParameterMapping> parameterMappings) {
-        if (sql == null || sql.length() == 0 || parameterObject == null) {
-            return sql;
-        }
-
-        // 替换换行符
-        sql = sql.replaceAll("[\\s\\n ]+", " ");
-
-        if (parameterMappings == null || parameterMappings.isEmpty()) {
-            return sql;
-        }
-
-        TypeHandlerRegistry typeHandlerRegistry = configuration.getTypeHandlerRegistry();
-
-        try {
-            // 替换参数
-            for (ParameterMapping parameterMapping : parameterMappings) {
-                if (parameterMapping.getMode() != ParameterMode.IN) {
-                    continue;
-                }
-
-                String propertyName = parameterMapping.getProperty();
-                Object value;
-
-                if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-                    value = parameterObject;
-                } else if (parameterObject instanceof java.util.Map) {
-                    value = ((java.util.Map<?, ?>) parameterObject).get(propertyName);
-                } else {
-                    MetaObject metaObject = configuration.newMetaObject(parameterObject);
-                    if (metaObject.hasGetter(propertyName)) {
-                        value = metaObject.getValue(propertyName);
-                    } else {
-                        continue; // 找不到属性，跳过
-                    }
-                }
-
-                String paramValue = formatParameterValue(value);
-                sql = sql.replaceFirst("\\?", Matcher.quoteReplacement(paramValue));
-            }
-        } catch (Exception e) {
-            log.debug("SQL参数替换失败", e);
-            return sql;
-        }
-
-        return sql;
-    }
-
-    /**
-     * 格式化参数值
-     */
-    private String formatParameterValue(Object value) {
-        if (value == null) {
-            return "null";
-        }
-
-        if (value instanceof String) {
-            return "'" + value.toString().replaceAll("'", "''") + "'";
-        }
-
-        if (value instanceof Date) {
-            DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, Locale.CHINA);
-            return "'" + dateFormat.format(value) + "'";
-        }
-
-        if (value instanceof java.time.temporal.Temporal) {
-            return "'" + value + "'";
-        }
-
-        return String.valueOf(value);
-    }
-}
-```
-
-### 数据源配置
-
-```yaml
-# application.yml
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/project_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:password}
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      idle-timeout: 300000
-      connection-timeout: 20000
-      max-lifetime: 1200000
-
-# MyBatis Plus 配置
-mybatis-plus:
-  configuration:
-    # 开启驼峰命名转换
-    map-underscore-to-camel-case: true
-    # 开启二级缓存
-    cache-enabled: true
-    # 打印SQL日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  
-  # 全局配置
-  global-config:
-    db-config:
-      # 主键策略
-      id-type: ASSIGN_ID
-      # 逻辑删除字段
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
-      # 字段验证策略
-      insert-strategy: NOT_NULL
-      update-strategy: NOT_NULL
-      select-strategy: NOT_EMPTY
 ```
 
 ## 实体类规范
 
-### 基础实体基类
+### 实体继承体系
+```java
+// 基础实体类 - 所有实体的父类
+public abstract class BaseEntity {
+    // 通用字段：createdTime, updatedTime, createdBy, updatedBy, deleted, version
+}
+
+// 多租户实体类 - 需要租户隔离的实体
+public abstract class BaseTenantEntity extends BaseEntity {
+    // 增加租户字段：tenantId
+}
+
+// 业务实体类 - 具体的业务实体
+public class User extends BaseTenantEntity {
+    // 业务字段
+}
+```
+
+### 实体分类
+- **系统级实体**：继承BaseEntity，不包含租户ID，用于系统配置等
+- **租户级实体**：继承BaseTenantEntity，包含租户ID，用于业务数据
+
+### BaseEntity 基础实体类
 
 ```java
+/**
+ * 基础实体类
+ *
+ * @author 开发者姓名
+ * @since 版本号
+ */
 @Data
 @EqualsAndHashCode(callSuper = false)
 public abstract class BaseEntity implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * 创建时间
      */
     @TableField(value = "created_time", fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
-    
+
     /**
      * 更新时间
      */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-    
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedTime;
+
     /**
      * 创建人
      */
     @TableField(value = "created_by", fill = FieldFill.INSERT)
-    private Long createdBy;
-    
+    private String createdBy;
+
     /**
      * 更新人
      */
     @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
-    private Long updatedBy;
-    
+    private String updatedBy;
+
     /**
      * 逻辑删除标识
      */
     @TableLogic
     @TableField(value = "deleted")
-    private Integer deleted;
-    
+    private Boolean deleted;
+
     /**
      * 乐观锁版本号
      */
@@ -456,61 +169,53 @@ public abstract class BaseEntity implements Serializable {
 
 ## Mapper接口规范
 
-### 基础规范
+### 接口定义
 
-#### 接口定义
 ```java
-/**
- * 用户数据访问接口
- * <p>
- * 提供用户的数据库操作，包括基础的CRUD操作和自定义查询方法。
- * </p>
- *
- * @author 开发者姓名
- * @since 版本号
- */
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
     // 方法定义
 }
 ```
 
-#### 继承关系
+### 继承关系
+
 - **必须继承**：`BaseMapper<T>` 接口
 - **必须添加**：`@Mapper` 注解
 - **命名规范**：`[实体类名]Mapper`，如 `UserMapper`
 
 ### 方法命名规范
 
-- **查询方法**：`selectBy[Field]`、`findBy[Condition]`、`listBy[Condition]`
+- **查询方法**：`selectBy[Field]`、`findBy[Condition]`、`listBy[Condition]`、`page[Entities]`
 - **判断方法**：`existsBy[Field]`、`isActive`、`hasPermission`
 - **操作方法**：`updateBy[Condition]`、`deleteBy[Field]`
 - **统计方法**：`countBy[Condition]`
 
 ### 优先级规则
+
 1. **优先使用 Wrapper**：复杂查询使用 LambdaQueryWrapper
 2. **简单 SQL 用注解**：单表简单操作使用 @Select、@Update 等
 3. **禁用复杂 SQL**：避免多表 JOIN、子查询、数据库特定函数
 
 ### Mapper接口可以定义default方法
+
 ```java
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
-    
     /**
      * 根据邮箱查询用户
      */
     @Select("SELECT * FROM user WHERE email = #{email} AND deleted = 0")
     User selectByEmail(@Param("email") String email);
-    
+
     /**
      * 根据状态查询用户列表
      */
     default List<User> selectByStatus(UserStatus status) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getStatus, status)
-               .eq(User::getDeleted, false)
-               .orderByDesc(User::getCreatedTime);
+                .eq(User::getDeleted, false)
+                .orderByDesc(User::getCreatedTime);
         return selectList(wrapper);
     }
 }
@@ -518,16 +223,9 @@ public interface UserMapper extends BaseMapper<User> {
 
 ## Service 层规范
 
-### 基础规范
+### 继承关系
 
-#### 继承关系
 ```java
-/**
- * 用户服务实现类
- *
- * @author 开发者姓名
- * @since 版本号
- */
 @Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -536,146 +234,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 }
 ```
 
-## 分页处理规范
+## Controller 层规范
 
-#### 使用Spring Data分页请求对象和分页结果对象
 ```java
-// Controller层，使用@PageableDefault注解
-@GetMapping("/users")
-public ApiResponse<Page<UserVO>> pageUsers(Pageable pageable,
-        UserQueryRequest request) {
-    Pageable pageable = PageRequest.of(page, size);
-    Page<UserVO> result = userService.pageUsers(pageable, request);
-    return ApiResponse.success(result);
+@GetMapping
+public ApiResponse<IPage<UserVO>> pageUsers(Page<User> page, UserQueryRequest request) {
+    return ApiResponse.success(userService.pageUsers(request));
 }
 
-//全局分页配置
-@Configuration
-public class WebConfig implements WebMvcConfigurer {
-    
-    @Bean
-    public PageableHandlerMethodArgumentResolver pageableResolver() {
-        PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
-        resolver.setFallbackPageable(PageRequest.of(0, 10, Sort.by("createdTime").descending()));
-        resolver.setMaxPageSize(100); // 设置最大页大小
-        return resolver;
-    }
-}
-
-// Service接口
-public interface UserService {
-    Page<UserVO> pageUsers(Pageable pageable, UserQueryRequest request);
-}
-
-// Service实现
-@Override
-@Transactional(readOnly = true)
-public Page<UserVO> pageUsers(Pageable pageable, UserQueryRequest request) {
-    // 转换为MyBatis Plus分页对象
-    com.baomidou.mybatisplus.extension.plugins.pagination.Page<User> page = 
-        new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
-            pageable.getPageNumber() + 1, pageable.getPageSize());
-    
-    // 构建查询条件
-    LambdaQueryWrapper<User> wrapper = buildQueryWrapper(request);
-    
-    // 执行查询
-    IPage<User> userPage = this.page(page, wrapper);
-    
-    // 转换为Spring Data Page
-    return PageUtils.toSpringPage(userPage).map(this::convertToVO);
-}
-```
-
-#### 不要在DTO对象中定义分页请求参数
-```java
-// ✅ 推荐：分页参数通过方法参数传递
-public Page<UserVO> pageUsers(Pageable pageable, UserQueryRequest request);
-
-// ❌ 不推荐：在DTO中定义分页参数
-public class UserQueryRequest {
-    private Integer pageNumber;  // 不推荐
-    private Integer pageSize; // 不推荐
-    private String name;
-    private String email;
-}
-```
-
-#### 分页工具类
-```java
-/**
- * 分页工具类
- */
-@UtilityClass
-public class PageUtils {
-    public static <T> Page<T> toSpringPage(IPage<T> iPage) {
-        if (iPage == null) {
-            return Page.empty();
-        }
-
-        // MyBatis-Plus 页码从1开始，Spring Data 从0开始
-        Pageable pageable = PageRequest.of((int) (iPage.getCurrent() - 1), (int) iPage.getSize());
-
-        return new PageImpl<>(iPage.getRecords(), pageable, iPage.getTotal()
-        );
-    }
-
-    public static <T> IPage<T> toMybatisPage(Page<T> page) {
-        if (page == null) {
-            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        }
-
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> iPage =
-                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-
-        iPage.setCurrent(page.getNumber() + 1); // Spring Data 页码从0开始，MyBatis-Plus 从1开始
-        iPage.setSize(page.getSize());
-        iPage.setTotal(page.getTotalElements());
-        iPage.setRecords(page.getContent());
-
-        return iPage;
-    }
-
-    public static <T> IPage<T> createMybatisPage(int pageNum, int pageSize) {
-        return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize);
-    }
-
-    public static Pageable createSpringPageable(int pageNum, int pageSize) {
-        return PageRequest.of(pageNum, pageSize);
-    }
-
-    public static Pageable createSpringPageable(int pageNum, int pageSize, Sort sort) {
-        return PageRequest.of(pageNum, pageSize, sort);
-    }
-
-    public static <S, T> Page<T> convertPage(Page<S> sourcePage, Function<S, T> converter) {
-        return sourcePage.map(converter);
-    }
-
-    public static <S, T> IPage<T> convertIPage(IPage<S> sourceIPage, Function<S, T> converter) {
-        if (sourceIPage == null || sourceIPage.getRecords() == null) {
-            return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        }
-
-        List<T> convertedRecords = sourceIPage.getRecords().stream()
-                .map(converter)
-                .collect(Collectors.toList());
-
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> apiResponse =
-                new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>();
-        apiResponse.setCurrent(sourceIPage.getCurrent());
-        apiResponse.setSize(sourceIPage.getSize());
-        apiResponse.setTotal(sourceIPage.getTotal());
-        apiResponse.setRecords(convertedRecords);
-
-        return apiResponse;
-    }
-}
 ```
 
 ## 性能优化规范
 
 ### 查询优化
+
 ```java
 // ✅ 推荐：使用索引字段查询
 wrapper.eq(User::getEmail, email);  // email字段有索引
@@ -691,12 +263,13 @@ wrapper.like(User::getName, "张三%");  // 可以使用索引
 ```
 
 ### 批量操作
+
 ```java
 // ✅ 推荐：批量插入
 this.saveBatch(userList, 1000);
 
 // ✅ 推荐：批量更新
-this.updateBatchById(userList, 1000);
+this.pdateBatchById(userList, 1000);
 
 // ✅ 推荐：批量删除
 this.removeByIds(userIds);
@@ -705,6 +278,7 @@ this.removeByIds(userIds);
 ## 禁止使用的功能
 
 ### 数据库特定功能（严格禁止）
+
 - ❌ **递归查询**：`WITH RECURSIVE`
 - ❌ **多表联合查询**：`JOIN` 语句
 - ❌ **数据库函数**：`DATE_FORMAT`、`CONCAT` 等
@@ -713,16 +287,17 @@ this.removeByIds(userIds);
 - ❌ **窗口函数**：`ROW_NUMBER() OVER()`
 
 ### 复杂 SQL（避免使用）
+
 - ❌ **复杂动态 SQL**：`<script>` 标签
 - ❌ **复杂子查询**
 - ❌ **多层嵌套查询**
-
 
 ## 检查清单
 
 在编写 MyBatis Plus 代码时，请确保：
 
 ### Mapper 接口检查
+
 - [ ] 继承了 `BaseMapper<T>`
 - [ ] 添加了 `@Mapper` 注解
 - [ ] 方法命名符合规范
@@ -731,19 +306,21 @@ this.removeByIds(userIds);
 - [ ] 没有使用数据库特定功能
 
 ### Service 层检查
+
 - [ ] 继承了 `ServiceImpl<Mapper, Entity>`
 - [ ] 添加了事务注解
-- [ ] 分页方法使用 Spring Data Pageable
 - [ ] 查询条件构建合理
 - [ ] 包含适当的日志记录
 
 ### 性能检查
+
 - [ ] 查询使用了索引字段
 - [ ] 避免了全表扫描
 - [ ] 批量操作使用了批量方法
 - [ ] 分页查询设置了合理的限制
 
 ### 安全检查
+
 - [ ] 使用了参数化查询
 - [ ] 没有 SQL 注入风险
 - [ ] 输入参数进行了验证

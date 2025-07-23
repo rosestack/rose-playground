@@ -1,24 +1,27 @@
 package io.github.rose.device.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.github.rose.common.model.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
 /**
- * 产品分类实体
+ * 产品分类实体类
  * <p>
- * 用于管理物联网产品的分类信息，支持树形结构分类管理。
- * 支持标准行业分类和自定义分类两种类型。
+ * 用于管理物联网产品的分类信息，支持多级分类结构和物模型模板关联。
  * </p>
  *
  * @author rose
  * @since 2024-01-01
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @TableName("iot_product_category")
-public class ProductCategory extends BaseEntity {
+public class ProductCategory implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 分类ID
@@ -69,7 +72,7 @@ public class ProductCategory extends BaseEntity {
     private String description;
 
     /**
-     * 分类类型：标准行业分类/自定义分类
+     * 分类类型：STANDARD-标准行业分类，CUSTOM-自定义分类
      */
     @TableField("type")
     private CategoryType type;
@@ -81,7 +84,7 @@ public class ProductCategory extends BaseEntity {
     private Long templateId;
 
     /**
-     * 分类状态
+     * 分类状态：ACTIVE-激活，INACTIVE-未激活
      */
     @TableField("status")
     private CategoryStatus status;
@@ -93,12 +96,54 @@ public class ProductCategory extends BaseEntity {
     private Long tenantId;
 
     /**
+     * 创建时间
+     */
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    private LocalDateTime createdTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedTime;
+
+    /**
+     * 创建人
+     */
+    @TableField(value = "created_by", fill = FieldFill.INSERT)
+    private String createdBy;
+
+    /**
+     * 更新人
+     */
+    @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
+    private String updatedBy;
+
+    /**
+     * 逻辑删除标识
+     */
+    @TableLogic
+    @TableField("deleted")
+    private Boolean deleted;
+
+    /**
+     * 乐观锁版本号
+     */
+    @Version
+    @TableField("version")
+    private Integer version;
+
+    /**
      * 分类类型枚举
      */
     public enum CategoryType {
-        /** 标准行业分类 */
+        /**
+         * 标准行业分类
+         */
         STANDARD,
-        /** 自定义分类 */
+        /**
+         * 自定义分类
+         */
         CUSTOM
     }
 
@@ -106,9 +151,13 @@ public class ProductCategory extends BaseEntity {
      * 分类状态枚举
      */
     public enum CategoryStatus {
-        /** 激活 */
+        /**
+         * 激活
+         */
         ACTIVE,
-        /** 未激活 */
+        /**
+         * 未激活
+         */
         INACTIVE
     }
 } 

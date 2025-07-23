@@ -1055,8 +1055,8 @@ public class I18nManagementController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         
-        PageRequest pageRequest = PageRequest.of(page, size);
-        Page<MessageInfo> messages = messageSourceManager.findMessages(locale, key, pageRequest);
+        PageQuery pageQuery = PageQuery.of(page, size);
+        Page<MessageInfo> messages = messageSourceManager.findMessages(locale, key, pageQuery);
         return ResponseEntity.ok(PageResult.of(messages));
     }
     

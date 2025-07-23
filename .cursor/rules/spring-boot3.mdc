@@ -1,8 +1,9 @@
 ---
+description: Maven 项目构建和管理规范
 alwaysApply: true
 ---
 
-# Spring Boot 后端开发提示词
+# Spring Boot 开发规范
 
 ## 角色定义
 
@@ -86,6 +87,7 @@ alwaysApply: true
 - 服务层实现类可以使用缓存注解
 - 在控制器层进行输入校验，基于 jakarta validation 的注解
 - 控制器只负责数据校验，不包括具体的业务逻辑，业务逻辑在服务层实现
+- 分页查询使用 Mybatis Plus 的 Page 和 IPage 对象
 
 ## 配置文件规范
 

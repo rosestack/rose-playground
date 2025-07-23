@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DynamicTableNameFactory {
-    public static final String TENANT_ID = "ROOR";
+    public static final String TENANT_ID = "ROOT";
 
     public static TableNameHandler tableNameHandler() {
         return new TableNameHandler() {

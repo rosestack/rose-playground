@@ -1,10 +1,12 @@
 package io.github.rose.device.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import io.github.rose.common.model.ApiResponse;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.github.rose.device.dto.ProductCategoryCreateRequest;
 import io.github.rose.device.dto.ProductCategoryQueryRequest;
 import io.github.rose.device.dto.ProductCategoryUpdateRequest;
+import io.github.rose.device.entity.ProductCategory;
+import io.github.rose.device.model.ApiResponse;
 import io.github.rose.device.service.ProductCategoryService;
 import io.github.rose.device.vo.ProductCategoryVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +24,7 @@ import java.util.List;
 /**
  * 产品分类管理控制器
  * <p>
- * 提供产品分类的增删改查接口，支持树形结构管理和分页查询。
+ * 提供产品分类的RESTful API接口，包括分类的增删改查、树结构查询等功能。
  * </p>
  *
  * @author rose
@@ -30,7 +32,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/product/categories")
+@RequestMapping("/api/product/categories")
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "产品分类管理", description = "产品分类的增删改查接口")
@@ -47,94 +49,82 @@ public class ProductCategoryController {
     @PostMapping
     @Operation(summary = "创建产品分类", description = "创建新的产品分类")
     public ApiResponse<ProductCategoryVO> createCategory(@Valid @RequestBody ProductCategoryCreateRequest request) {
-        log.info("开始创建产品分类，请求参数：{}", request);
-        
+        log.info("接收到创建产品分类请求：{}", request);
+
         try {
             ProductCategoryVO category = productCategoryService.createCategory(request);
-            log.info("产品分类创建成功，分类ID：{}", category.getId());
             return ApiResponse.success(category);
         } catch (Exception e) {
             log.error("创建产品分类失败，请求参数：{}", request, e);
-            return ApiResponse.error(500, "创建产品分类失败：" + e.getMessage());
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     /**
      * 更新产品分类
      *
-     * @param categoryId 分类ID
+     * @param id      分类ID
      * @param request 更新请求
      * @return 更新后的分类信息
      */
-    @PutMapping("/{categoryId}")
-    @Operation(summary = "更新产品分类", description = "根据分类ID更新产品分类信息")
+    @PutMapping("/{id}")
+    @Operation(summary = "更新产品分类", description = "根据ID更新产品分类信息")
     public ApiResponse<ProductCategoryVO> updateCategory(
-            @Parameter(description = "分类ID") @PathVariable @NotNull Long categoryId,
+            @Parameter(description = "分类ID", example = "1") @PathVariable @NotNull Long id,
             @Valid @RequestBody ProductCategoryUpdateRequest request) {
-        log.info("开始更新产品分类，分类ID：{}，请求参数：{}", categoryId, request);
-        
+        log.info("接收到更新产品分类请求，分类ID：{}，请求参数：{}", id, request);
+
         try {
-            request.setId(categoryId);
-            ProductCategoryVO category = productCategoryService.updateCategory(request);
-            log.info("产品分类更新成功，分类ID：{}", categoryId);
+            ProductCategoryVO category = productCategoryService.updateCategory(id, request);
             return ApiResponse.success(category);
         } catch (Exception e) {
-            log.error("更新产品分类失败，分类ID：{}，请求参数：{}", categoryId, request, e);
-            return ApiResponse.error(500, "更新产品分类失败：" + e.getMessage());
+            log.error("更新产品分类失败，分类ID：{}，请求参数：{}", id, request, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     /**
      * 删除产品分类
      *
-     * @param categoryId 分类ID
-     * @return 删除结果
+     * @param id 分类ID
+     * @return 操作结果
      */
-    @DeleteMapping("/{categoryId}")
-    @Operation(summary = "删除产品分类", description = "根据分类ID删除产品分类")
+    @DeleteMapping("/{id}")
+    @Operation(summary = "删除产品分类", description = "根据ID删除产品分类")
     public ApiResponse<Void> deleteCategory(
-            @Parameter(description = "分类ID") @PathVariable @NotNull Long categoryId) {
-        log.info("开始删除产品分类，分类ID：{}", categoryId);
-        
+            @Parameter(description = "分类ID", example = "1") @PathVariable @NotNull Long id) {
+        log.info("接收到删除产品分类请求，分类ID：{}", id);
+
         try {
-            boolean success = productCategoryService.deleteCategory(categoryId);
-            if (success) {
-                log.info("产品分类删除成功，分类ID：{}", categoryId);
-                return ApiResponse.success();
-            } else {
-                log.warn("产品分类删除失败，分类ID：{}", categoryId);
-                return ApiResponse.error(500, "删除产品分类失败");
-            }
+            productCategoryService.deleteCategory(id);
+            return ApiResponse.success();
         } catch (Exception e) {
-            log.error("删除产品分类失败，分类ID：{}", categoryId, e);
-            return ApiResponse.error(500, "删除产品分类失败：" + e.getMessage());
+            log.error("删除产品分类失败，分类ID：{}", id, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     /**
      * 根据ID获取产品分类
      *
-     * @param categoryId 分类ID
+     * @param id 分类ID
      * @return 分类信息
      */
-    @GetMapping("/{categoryId}")
-    @Operation(summary = "获取产品分类详情", description = "根据分类ID获取产品分类详细信息")
-    public ApiResponse<ProductCategoryVO> getCategory(
-            @Parameter(description = "分类ID") @PathVariable @NotNull Long categoryId) {
-        log.info("开始获取产品分类详情，分类ID：{}", categoryId);
-        
+    @GetMapping("/{id}")
+    @Operation(summary = "获取产品分类", description = "根据ID获取产品分类详细信息")
+    public ApiResponse<ProductCategoryVO> getCategoryById(
+            @Parameter(description = "分类ID", example = "1") @PathVariable @NotNull Long id) {
+        log.info("接收到获取产品分类请求，分类ID：{}", id);
+
         try {
-            ProductCategoryVO category = productCategoryService.getCategoryById(categoryId);
-            if (category != null) {
-                log.info("获取产品分类详情成功，分类ID：{}", categoryId);
-                return ApiResponse.success(category);
-            } else {
-                log.warn("产品分类不存在，分类ID：{}", categoryId);
-                return ApiResponse.error(404, "产品分类不存在");
+            ProductCategoryVO category = productCategoryService.getCategoryById(id);
+            if (category == null) {
+                return ApiResponse.error(404, "分类不存在");
             }
+            return ApiResponse.success(category);
         } catch (Exception e) {
-            log.error("获取产品分类详情失败，分类ID：{}", categoryId, e);
-            return ApiResponse.error(500, "获取产品分类详情失败：" + e.getMessage());
+            log.error("获取产品分类失败，分类ID：{}", id, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
 
@@ -146,62 +136,60 @@ public class ProductCategoryController {
      */
     @GetMapping
     @Operation(summary = "分页查询产品分类", description = "根据条件分页查询产品分类列表")
-    public ApiResponse<IPage<ProductCategoryVO>> pageCategories(ProductCategoryQueryRequest request) {
-        log.info("开始分页查询产品分类，请求参数：{}", request);
-        
+    public ApiResponse<IPage<ProductCategoryVO>> pageCategories(Page<ProductCategory> page, ProductCategoryQueryRequest request) {
+        log.info("接收到分页查询产品分类请求：{}", request);
+
         try {
-            IPage<ProductCategoryVO> page = productCategoryService.pageCategories(request);
-            log.info("分页查询产品分类成功，总记录数：{}", page.getTotal());
-            return ApiResponse.success(page);
+            IPage<ProductCategoryVO> result = productCategoryService.pageCategories(page, request);
+            return ApiResponse.success(result);
         } catch (Exception e) {
             log.error("分页查询产品分类失败，请求参数：{}", request, e);
-            return ApiResponse.error(500, "分页查询产品分类失败：" + e.getMessage());
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     /**
-     * 查询分类树
+     * 查询分类树结构
      *
-     * @param tenantId 租户ID
+     * @param parentId 父分类ID，为null时查询根分类
      * @return 分类树列表
      */
     @GetMapping("/tree")
-    @Operation(summary = "查询分类树", description = "查询产品分类的树形结构")
+    @Operation(summary = "查询分类树结构", description = "查询产品分类的树形结构")
     public ApiResponse<List<ProductCategoryVO>> getCategoryTree(
-            @Parameter(description = "租户ID") @RequestParam(required = false) Long tenantId) {
-        log.info("开始查询分类树，租户ID：{}", tenantId);
-        
+            @Parameter(description = "父分类ID，为空时查询根分类", example = "1") @RequestParam(required = false) Long parentId) {
+        log.info("接收到查询分类树结构请求，父分类ID：{}", parentId);
+
         try {
-            List<ProductCategoryVO> tree = productCategoryService.getCategoryTree(tenantId);
-            log.info("查询分类树成功，分类数量：{}", tree.size());
+            List<ProductCategoryVO> tree = productCategoryService.getCategoryTree(parentId);
             return ApiResponse.success(tree);
         } catch (Exception e) {
-            log.error("查询分类树失败，租户ID：{}", tenantId, e);
-            return ApiResponse.error(500, "查询分类树失败：" + e.getMessage());
+            log.error("查询分类树结构失败，父分类ID：{}", parentId, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     /**
-     * 根据父分类ID查询子分类
+     * 根据分类标识符获取分类
      *
-     * @param parentId 父分类ID
-     * @param tenantId 租户ID
-     * @return 子分类列表
+     * @param code 分类标识符
+     * @return 分类信息
      */
-    @GetMapping("/children")
-    @Operation(summary = "查询子分类", description = "根据父分类ID查询子分类列表")
-    public ApiResponse<List<ProductCategoryVO>> getCategoriesByParentId(
-            @Parameter(description = "父分类ID") @RequestParam(required = false) Long parentId,
-            @Parameter(description = "租户ID") @RequestParam(required = false) Long tenantId) {
-        log.info("开始查询子分类，父分类ID：{}，租户ID：{}", parentId, tenantId);
-        
+    @GetMapping("/code/{code}")
+    @Operation(summary = "根据标识符获取分类", description = "根据分类标识符获取分类详细信息")
+    public ApiResponse<ProductCategoryVO> getCategoryByCode(
+            @Parameter(description = "分类标识符", example = "smart_home") @PathVariable @NotNull String code) {
+        log.info("接收到根据标识符获取分类请求，分类标识符：{}", code);
+
         try {
-            List<ProductCategoryVO> categories = productCategoryService.getCategoriesByParentId(parentId, tenantId);
-            log.info("查询子分类成功，子分类数量：{}", categories.size());
-            return ApiResponse.success(categories);
+            ProductCategoryVO category = productCategoryService.getCategoryByCode(code);
+            if (category == null) {
+                return ApiResponse.error(404, "分类不存在");
+            }
+            return ApiResponse.success(category);
         } catch (Exception e) {
-            log.error("查询子分类失败，父分类ID：{}，租户ID：{}", parentId, tenantId, e);
-            return ApiResponse.error(500, "查询子分类失败：" + e.getMessage());
+            log.error("根据标识符获取分类失败，分类标识符：{}", code, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
 
@@ -209,54 +197,85 @@ public class ProductCategoryController {
      * 检查分类标识符是否存在
      *
      * @param code 分类标识符
-     * @param tenantId 租户ID
-     * @param excludeId 排除的分类ID
      * @return 是否存在
      */
-    @GetMapping("/check-code")
-    @Operation(summary = "检查分类标识符", description = "检查分类标识符是否已存在")
-    public ApiResponse<Boolean> checkCodeExists(
-            @Parameter(description = "分类标识符") @RequestParam @NotNull String code,
-            @Parameter(description = "租户ID") @RequestParam(required = false) Long tenantId,
-            @Parameter(description = "排除的分类ID") @RequestParam(required = false) Long excludeId) {
-        log.info("开始检查分类标识符是否存在，code：{}，tenantId：{}，excludeId：{}", code, tenantId, excludeId);
-        
+    @GetMapping("/exists/{code}")
+    @Operation(summary = "检查分类标识符是否存在", description = "检查指定的分类标识符是否已存在")
+    public ApiResponse<Boolean> existsByCode(
+            @Parameter(description = "分类标识符", example = "smart_home") @PathVariable @NotNull String code) {
+        log.info("接收到检查分类标识符是否存在请求，分类标识符：{}", code);
+
         try {
-            boolean exists = productCategoryService.existsByCode(code, tenantId, excludeId);
-            log.info("检查分类标识符完成，code：{}，存在：{}", code, exists);
+            boolean exists = productCategoryService.existsByCode(code);
             return ApiResponse.success(exists);
         } catch (Exception e) {
-            log.error("检查分类标识符失败，code：{}，tenantId：{}，excludeId：{}", code, tenantId, excludeId, e);
-            return ApiResponse.error(500, "检查分类标识符失败：" + e.getMessage());
+            log.error("检查分类标识符是否存在失败，分类标识符：{}", code, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     /**
-     * 批量删除产品分类
+     * 根据分类类型查询分类列表
      *
-     * @param categoryIds 分类ID列表
-     * @return 删除结果
+     * @param type 分类类型
+     * @return 分类列表
      */
-    @DeleteMapping("/batch")
-    @Operation(summary = "批量删除产品分类", description = "批量删除多个产品分类")
-    public ApiResponse<Void> batchDeleteCategories(
-            @Parameter(description = "分类ID列表") @RequestBody @NotNull List<Long> categoryIds) {
-        log.info("开始批量删除产品分类，分类ID列表：{}", categoryIds);
-        
+    @GetMapping("/type/{type}")
+    @Operation(summary = "根据类型查询分类", description = "根据分类类型查询分类列表")
+    public ApiResponse<List<ProductCategoryVO>> getCategoriesByType(
+            @Parameter(description = "分类类型", example = "CUSTOM") @PathVariable @NotNull ProductCategory.CategoryType type) {
+        log.info("接收到根据类型查询分类请求，分类类型：{}", type);
+
         try {
-            boolean success = productCategoryService.batchDeleteCategories(categoryIds);
-            if (success) {
-                log.info("批量删除产品分类成功，分类ID列表：{}", categoryIds);
-                return ApiResponse.success();
-            } else {
-                log.warn("批量删除产品分类失败，分类ID列表：{}", categoryIds);
-                return ApiResponse.error(500, "批量删除产品分类失败");
-            }
+            List<ProductCategoryVO> categories = productCategoryService.getCategoriesByType(type);
+            return ApiResponse.success(categories);
         } catch (Exception e) {
-            log.error("批量删除产品分类失败，分类ID列表：{}", categoryIds, e);
-            return ApiResponse.error(500, "批量删除产品分类失败：" + e.getMessage());
+            log.error("根据类型查询分类失败，分类类型：{}", type, e);
+            return ApiResponse.error(e.getMessage());
         }
     }
-}
 
- 
+    /**
+     * 根据分类状态查询分类列表
+     *
+     * @param status 分类状态
+     * @return 分类列表
+     */
+    @GetMapping("/status/{status}")
+    @Operation(summary = "根据状态查询分类", description = "根据分类状态查询分类列表")
+    public ApiResponse<List<ProductCategoryVO>> getCategoriesByStatus(
+            @Parameter(description = "分类状态", example = "ACTIVE") @PathVariable @NotNull ProductCategory.CategoryStatus status) {
+        log.info("接收到根据状态查询分类请求，分类状态：{}", status);
+
+        try {
+            List<ProductCategoryVO> categories = productCategoryService.getCategoriesByStatus(status);
+            return ApiResponse.success(categories);
+        } catch (Exception e) {
+            log.error("根据状态查询分类失败，分类状态：{}", status, e);
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 更新分类状态
+     *
+     * @param id     分类ID
+     * @param status 新状态
+     * @return 操作结果
+     */
+    @PutMapping("/{id}/status")
+    @Operation(summary = "更新分类状态", description = "更新产品分类的状态")
+    public ApiResponse<Void> updateCategoryStatus(
+            @Parameter(description = "分类ID", example = "1") @PathVariable @NotNull Long id,
+            @Parameter(description = "新状态", example = "ACTIVE") @RequestParam @NotNull ProductCategory.CategoryStatus status) {
+        log.info("接收到更新分类状态请求，分类ID：{}，新状态：{}", id, status);
+
+        try {
+            productCategoryService.updateCategoryStatus(id, status);
+            return ApiResponse.success();
+        } catch (Exception e) {
+            log.error("更新分类状态失败，分类ID：{}，新状态：{}", id, status, e);
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+} 
