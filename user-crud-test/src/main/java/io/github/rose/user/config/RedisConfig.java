@@ -1,9 +1,10 @@
-package io.github.rose.infrastructure.config;
+package io.github.rose.user.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.CacheResolver;
 import org.springframework.cache.interceptor.KeyGenerator;
@@ -59,6 +60,7 @@ import java.util.Map;
  */
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(CacheProperties.class)
 public class RedisConfig {
     private final CacheProperties cacheProperties;
 

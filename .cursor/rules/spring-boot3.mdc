@@ -348,77 +348,107 @@ public class UserService {
 @Slf4j
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
-    
-    private final MessageSource messageSource;
-    
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException e, Locale locale) {
-        String message = e.getBindingResult().getFieldErrors().stream()
-                .map(error -> {
-                    String fieldName = error.getField();
-                    String defaultMessage = error.getDefaultMessage();
-                    // 尝试从国际化资源文件获取消息
-                    try {
-                        return messageSource.getMessage("validation." + fieldName + "." + error.getCode(), 
-                                error.getArguments(), defaultMessage, locale);
-                    } catch (NoSuchMessageException ex) {
-                        return defaultMessage;
-                    }
-                })
-                .collect(Collectors.joining(", "));
-        log.warn("参数校验失败: {}", message);
-        return ResponseEntity.badRequest()
+
+  private final MessageSource messageSource;
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException e, Locale locale) {
+    String message = e.getBindingResult().getFieldErrors().stream()
+            .map(error -> {
+              String fieldName = error.getField();
+              String defaultMessage = error.getDefaultMessage();
+              // 尝试从国际化资源文件获取消息
+              try {
+                return messageSource.getMessage("validation." + fieldName + "." + error.getCode(),
+                        error.getArguments(), defaultMessage, locale);
+              } catch (NoSuchMessageException ex) {
+                return defaultMessage;
+              }
+            })
+            .collect(Collectors.joining(", "));
+    log.warn("参数校验失败: {}", message);
+    return ResponseEntity.badRequest()
             .body(ApiResponse.error(400, message));
+  }
+
+  @ExceptionHandler(BusinessException.class)
+  public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e, Locale locale) {
+    String message;
+    try {
+      // 尝试从国际化资源文件获取业务异常消息
+      message = messageSource.getMessage(e.getMessageKey(), e.getMessageArgs(), e.getMessage(), locale);
+    } catch (NoSuchMessageException ex) {
+      message = e.getMessage();
     }
-    
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e, Locale locale) {
-        String message;
-        try {
-            // 尝试从国际化资源文件获取业务异常消息
-            message = messageSource.getMessage(e.getCode(), e.getArgs(), e.getMessage(), locale);
-        } catch (NoSuchMessageException ex) {
-            message = e.getMessage();
-        }
-        log.warn("业务异常: {}", message);
-        return ResponseEntity.badRequest()
+    log.warn("业务异常: {}", message);
+    return ResponseEntity.badRequest()
             .body(ApiResponse.error(400, message));
-    }
-    
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException e, Locale locale) {
-        String message = messageSource.getMessage("error.access.denied", null, "访问被拒绝", locale);
-        log.warn("访问被拒绝: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException e, Locale locale) {
+    String message = messageSource.getMessage("error.access.denied", null, "访问被拒绝", locale);
+    log.warn("访问被拒绝: {}", e.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(ApiResponse.error(403, message));
-    }
-    
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAuthentication(AuthenticationException e, Locale locale) {
-        String message = messageSource.getMessage("error.authentication.failed", null, "认证失败", locale);
-        log.warn("认证失败: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(ApiResponse.error(401, message));
-    }
-    
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException e, Locale locale) {
-        String message = messageSource.getMessage("error.data.integrity", null, "数据完整性约束违反", locale);
-        log.error("数据完整性异常", e);
-        return ResponseEntity.badRequest()
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException e, Locale locale) {
+    String message = messageSource.getMessage("error.data.integrity", null, "数据完整性约束违反", locale);
+    log.error("数据完整性异常", e);
+    return ResponseEntity.badRequest()
             .body(ApiResponse.error(400, message));
-    }
-    
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception e, Locale locale) {
-        String message = messageSource.getMessage("error.system.internal", null, "系统内部错误", locale);
-        log.error("系统异常", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception e, Locale locale) {
+    String message = messageSource.getMessage("error.system.internal", null, "系统内部错误", locale);
+    log.error("系统异常", e);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.error(500, message));
+  }
+}
+```
+
+#### 国际化配置
+
+```java
+@AutoConfiguration
+@EnableWebMvc
+public class MessageConfig {
+
+    @Bean
+    public MessageSource messageSource() {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        messageSource.setBasename("messages");
+        messageSource.setDefaultEncoding("UTF-8");
+        return messageSource;
+    }
+
+    /**
+     * 创建自定义验证器
+     * <p>
+     * 配置 Hibernate Validator 支持国际化消息和快速失败模式。
+     * 快速失败模式下，遇到第一个验证错误即停止后续验证。
+     *
+     * @param messageSource 国际化消息源
+     * @return 配置完成的验证器
+     */
+    @Bean
+    public Validator validator(MessageSource messageSource) {
+        LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
+        factoryBean.setValidationMessageSource(messageSource);
+        factoryBean.setProviderClass(HibernateValidator.class);
+
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.validator.fail_fast", "true");
+        factoryBean.setValidationProperties(properties);
+        factoryBean.afterPropertiesSet();
+
+        return factoryBean.getValidator();
     }
 }
-
-
 ```
 
 ### 6. 数据校验规范
@@ -828,7 +858,7 @@ app:
 spring:
   # 开发环境数据源
   datasource:
-    url: jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/project?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
     password: password
     hikari:
@@ -941,98 +971,256 @@ spring:
 @Configuration
 @EnableCaching
 @RequiredArgsConstructor
-public class CacheConfig {
-    
-    private final CacheProperties cacheProperties;
-    
-    /**
-     * Redis 缓存管理器配置
-     * 使用 Spring Boot 的 CacheProperties 自动配置
-     */
-    @Bean
-    @Primary
-    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        // 使用 Spring Boot 的缓存配置属性
-        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+public class RedisConfig {
+  private final CacheProperties cacheProperties;
+
+  /**
+   * 创建自定义 RedisTemplate
+   * <p>
+   * 配置所有序列化器为字符串类型，确保 Redis 中存储的数据为可读的字符串格式。
+   * 适用于需要直接查看 Redis 数据或与其他系统兼容的场景。
+   *
+   * @param factory Redis 连接工厂
+   * @return 配置完成的 RedisTemplate
+   */
+  @Bean
+  public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory, ObjectMapper mapper) {
+    RedisTemplate<String, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(factory);
+
+    // 设置序列化器
+    Jackson2JsonRedisSerializer<Object> serializer =
+            new Jackson2JsonRedisSerializer<>(mapper, Object.class);
+
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setValueSerializer(serializer);
+    template.setHashKeySerializer(new StringRedisSerializer());
+    template.setHashValueSerializer(serializer);
+
+    template.afterPropertiesSet();
+    return template;
+  }
+
+  @Bean
+  public CacheManager cacheManager(RedisConnectionFactory factory, ObjectMapper mapper) {
+    RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
-        
-        // 应用 Spring Boot 配置属性
-        if (cacheProperties.getRedis().getTimeToLive() != null) {
-            defaultConfig = defaultConfig.entryTtl(cacheProperties.getRedis().getTimeToLive());
-        }
-        if (cacheProperties.getRedis().getKeyPrefix() != null) {
-            defaultConfig = defaultConfig.prefixCacheNameWith(cacheProperties.getRedis().getKeyPrefix());
-        }
-        if (!cacheProperties.getRedis().isCacheNullValues()) {
-            defaultConfig = defaultConfig.disableCachingNullValues();
-        }
-        
-        // 特定缓存配置（可选）
-        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        
-        // 用户缓存配置（30分钟）
-        cacheConfigurations.put("users", defaultConfig.entryTtl(Duration.ofMinutes(30)));
-        
-        // 系统配置缓存（1小时）
-        cacheConfigurations.put("system", defaultConfig.entryTtl(Duration.ofHours(1)));
-        
-        // 短期缓存（5分钟）
-        cacheConfigurations.put("temp", defaultConfig.entryTtl(Duration.ofMinutes(5)));
-        
-        return RedisCacheManager.builder(redisConnectionFactory)
+            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(mapper, Object.class)));
+
+    // 应用 Spring Boot 配置属性
+    if (cacheProperties.getRedis().getTimeToLive() != null) {
+      defaultConfig = defaultConfig.entryTtl(cacheProperties.getRedis().getTimeToLive());
+    }
+    if (cacheProperties.getRedis().getKeyPrefix() != null) {
+      defaultConfig = defaultConfig.prefixCacheNameWith(cacheProperties.getRedis().getKeyPrefix());
+    }
+    if (!cacheProperties.getRedis().isCacheNullValues()) {
+      defaultConfig = defaultConfig.disableCachingNullValues();
+    }
+
+    // 特定缓存配置（可选）
+    Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+
+    // 用户缓存配置（30分钟）
+    cacheConfigurations.put("users", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+
+    // 系统配置缓存（1小时）
+    cacheConfigurations.put("system", defaultConfig.entryTtl(Duration.ofHours(1)));
+
+    // 短期缓存（5分钟）
+    cacheConfigurations.put("temp", defaultConfig.entryTtl(Duration.ofMinutes(5)));
+
+    return RedisCacheManager.builder(factory)
             .cacheDefaults(defaultConfig)
             .withInitialCacheConfigurations(cacheConfigurations)
-            .transactionAware()
+            .transactionAware() // 支持事务
             .build();
+  }
+
+  /**
+   * 配置String Redis模板
+   */
+  @Bean
+  public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+    StringRedisTemplate template = new StringRedisTemplate();
+    template.setConnectionFactory(connectionFactory);
+    return template;
+  }
+
+  @Bean
+  public KeyGenerator keyGenerator() {
+    return (target, method, params) -> {
+      StringBuilder sb = new StringBuilder();
+      sb.append(target.getClass().getSimpleName());
+      sb.append(":");
+      sb.append(method.getName());
+      for (Object param : params) {
+        sb.append(":");
+        sb.append(param.toString());
+      }
+      return sb.toString();
+    };
+  }
+
+  /**
+   * 配置缓存解析器
+   */
+  @Bean
+  public CacheResolver cacheResolver(CacheManager cacheManager) {
+    return new SimpleCacheResolver(cacheManager);
+  }
+
+  /**
+   * 配置Redis监听器
+   */
+  @Bean
+  public RedisMessageListenerContainer redisMessageListenerContainer(
+          RedisConnectionFactory connectionFactory) {
+
+    RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+    container.setConnectionFactory(connectionFactory);
+
+    // 配置监听器
+    container.addMessageListener(new CacheEvictionListener(),
+            new ChannelTopic("cache:eviction"));
+    return container;
+  }
+
+  @Slf4j
+  public static class CacheEvictionListener implements MessageListener {
+    @Override
+    public void onMessage(Message message, byte[] pattern) {
+      try {
+        String channel = new String(message.getChannel());
+        String body = new String(message.getBody());
+
+        log.info("收到缓存失效消息: channel={}, body={}", channel, body);
+        handleCacheEviction(body);
+      } catch (Exception e) {
+        log.error("处理缓存失效消息失败", e);
+      }
     }
+
+    private void handleCacheEviction(String cacheKey) {
+      if (cacheKey.startsWith("user:")) {
+        log.info("用户缓存失效: {}", cacheKey);
+      } else if (cacheKey.startsWith("order:")) {
+        log.info("订单缓存失效: {}", cacheKey);
+      }
+    }
+  }
 }
 ```
 
 ### 异步处理配置（使用 Spring Boot 标准配置）
 ```java
 @Configuration
-@EnableAsync
+@EnableAsync(proxyTargetClass = true)
+@EnableScheduling
 @RequiredArgsConstructor
 public class AsyncConfig implements AsyncConfigurer {
-    
-    private final TaskExecutionProperties taskExecutionProperties;
-    
-    /**
-     * 异步任务执行器配置
-     * 使用 Spring Boot 的 TaskExecutionProperties 自动配置
-     */
-    @Override
-    @Bean(name = "taskExecutor")
-    public Executor getAsyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        
-        // 使用 Spring Boot 配置属性
-        TaskExecutionProperties.Pool pool = taskExecutionProperties.getPool();
-        executor.setCorePoolSize(pool.getCoreSize());
-        executor.setMaxPoolSize(pool.getMaxSize());
-        executor.setQueueCapacity(pool.getQueueCapacity());
-        executor.setKeepAliveSeconds((int) pool.getKeepAlive().getSeconds());
-        executor.setThreadNamePrefix(taskExecutionProperties.getThreadNamePrefix());
-        
-        // 关闭配置
-        TaskExecutionProperties.Shutdown shutdown = taskExecutionProperties.getShutdown();
-        executor.setWaitForTasksToCompleteOnShutdown(shutdown.isAwaitTermination());
-        if (shutdown.getAwaitTerminationPeriod() != null) {
-            executor.setAwaitTerminationSeconds((int) shutdown.getAwaitTerminationPeriod().getSeconds());
-        }
-        
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.initialize();
-        return executor;
+
+  /**
+   * 系统 CPU 核心数，用于计算默认线程池大小
+   */
+  private final int core = Runtime.getRuntime().availableProcessors();
+
+  private final TaskExecutionProperties taskExecutionProperties;
+
+  /**
+   * 获取异步方法执行器
+   * <p>
+   * 返回自定义配置的线程池，替代 Spring 默认的 SimpleAsyncTaskExecutor。
+   *
+   * @return 配置的线程池执行器
+   */
+  @Override
+  public Executor getAsyncExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+    // 使用 Spring Boot 配置属性
+    TaskExecutionProperties.Pool pool = taskExecutionProperties.getPool();
+    executor.setCorePoolSize(ObjectUtils.defaultIfNull(pool.getCoreSize(), core));
+    executor.setMaxPoolSize(ObjectUtils.defaultIfNull(pool.getMaxSize(), core * 2));
+    executor.setQueueCapacity(pool.getQueueCapacity());
+    executor.setKeepAliveSeconds((int) pool.getKeepAlive().getSeconds());
+    executor.setThreadNamePrefix(taskExecutionProperties.getThreadNamePrefix());
+
+    // 关闭配置
+    TaskExecutionProperties.Shutdown shutdown = taskExecutionProperties.getShutdown();
+    executor.setWaitForTasksToCompleteOnShutdown(shutdown.isAwaitTermination());
+    if (shutdown.getAwaitTerminationPeriod() != null) {
+      executor.setAwaitTerminationSeconds((int) shutdown.getAwaitTerminationPeriod().getSeconds());
     }
-    
-    /**
-     * 异步异常处理器
-     */
-    @Override
-    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return new SimpleAsyncUncaughtExceptionHandler();
+
+    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    executor.initialize();
+
+    return executor;
+  }
+
+  /**
+   * 获取异步方法异常处理器
+   * <p>
+   * 处理异步方法中的未捕获异常，记录异常信息并转换为 BusinessException。
+   * 包含异常消息、方法名称和参数值等上下文信息。
+   *
+   * @return 异常处理器
+   */
+  @Override
+  public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+    return (throwable, method, objects) -> {
+      throwable.printStackTrace();
+
+      StringBuilder sb = new StringBuilder();
+      sb.append("Exception message - ").append(throwable.getMessage())
+              .append(", Method name - ").append(method.getName());
+
+      if (ObjectUtils.isNotEmpty(objects)) {
+        sb.append(", Parameter value - ").append(Arrays.toString(objects));
+      }
+      throw new RuntimeException(sb.toString());
+    };
+  }
+
+  /**
+   * 创建定时任务线程池
+   * <p>
+   * 创建用于执行定时任务的 ScheduledExecutorService，线程数等于 CPU 核心数。
+   * 使用守护线程，不会阻止 JVM 关闭。
+   *
+   * @return 定时任务执行器
+   */
+  @Bean(name = "scheduledExecutorService")
+  protected ScheduledExecutorService scheduledExecutorService() {
+    return new ScheduledThreadPoolExecutor(core,
+            new BasicThreadFactory.Builder()
+                    .namingPattern("schedule-pool-%d")
+                    .daemon(true)
+                    .build(),
+            new ThreadPoolExecutor.CallerRunsPolicy()) {
+
+      @Override
+      protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+      }
+    };
+  }
+}
+```
+
+### 序列化配置
+
+```java
+@AutoConfiguration
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
+public class JacksonConfig {
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
+        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder.featuresToDisable(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                DeserializationFeature.ACCEPT_FLOAT_AS_INT,
+                SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 }
 ```
@@ -1211,27 +1399,26 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 ### Docker Compose 配置
 ```yaml
 services:
-  app:
+  project:
     build: .
     ports:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - MYSQL_HOST=mysql
-      - REDIS_HOST=redis
+      - MYSQL_HOST=project-mysql
+      - REDIS_HOST=project-redis
     depends_on:
       - mysql
       - redis
   
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
+  project-mysql:
+    image: mysql:8
+    container_name: project-mysql
     environment:
       MYSQL_ROOT_HOST: '%'
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: project
     command:
-      --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
       --explicit_defaults_for_timestamp=true
@@ -1242,9 +1429,10 @@ services:
       retries: 10  
     ports:
       - "3306:3306"
-  
-  redis:
+
+  project-redis:
     image: redis:7-alpine
+    container_name: project-redis
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 20s

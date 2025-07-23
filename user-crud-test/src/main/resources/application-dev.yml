@@ -1,0 +1,33 @@
+spring:
+  # 开发环境数据源
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_crud_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    hikari:
+      maximum-pool-size: 10
+  
+  # 开发环境 Redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  
+  # 开发环境 Jackson 配置
+  jackson:
+    serialization:
+      indent-output: true
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    io.github.rose.user: DEBUG
+    org.springframework.web: DEBUG
+    com.baomidou.mybatisplus.core.mapper: DEBUG
+
+# MyBatis Plus 开发配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

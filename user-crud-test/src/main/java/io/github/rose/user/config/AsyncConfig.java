@@ -1,4 +1,4 @@
-package io.github.rose.infrastructure.config;
+package io.github.rose.user.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -331,11 +331,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional(readOnly = true)
     public IPage<UserResponse> pageUsers(Page<User> page, UserPageRequest request) {
-        // 设置分页限制
-        if (page.getSize() > 1000) {
-            page.setSize(1000);
-        }
-        
         // 构建查询条件
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(StringUtils.hasText(request.getUsername()), User::getUsername, request.getUsername())
