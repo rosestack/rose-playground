@@ -66,7 +66,7 @@ import java.util.function.BiFunction;
  * or properly synchronized. The main ObjectMapper uses volatile semantics for
  * safe publication in multi-threaded environments.
  *
- * @author Rose Framework Team
+ * @author chensoul
  * @see ObjectMapper
  * @see JsonMapper
  * @since 1.0.0

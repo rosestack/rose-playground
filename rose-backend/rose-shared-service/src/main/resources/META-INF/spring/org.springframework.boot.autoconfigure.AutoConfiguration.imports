@@ -3,4 +3,4 @@ io.github.rose.infrastructure.config.AsyncConfig
 io.github.rose.infrastructure.config.MessageConfig
 io.github.rose.infrastructure.config.MetricConfig
 io.github.rose.infrastructure.config.RedisConfig
-io.github.rose.infrastructure.config.GlobalExceptionHandler
+io.github.rose.infrastructure.exception.GlobalExceptionHandler

@@ -52,7 +52,7 @@ import java.util.Map;
  * }
  * }</pre>
  *
- * @author Rose Framework Team
+ * @author chensoul
  * @see RedisTemplate
  * @see StringRedisSerializer
  * @since 1.0.0

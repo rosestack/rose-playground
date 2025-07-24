@@ -43,7 +43,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * }
  * }</pre>
  *
- * @author Rose Framework Team
+ * @author chensoul
  * @see AsyncConfigurer
  * @see ThreadPoolTaskExecutor
  * @since 1.0.0

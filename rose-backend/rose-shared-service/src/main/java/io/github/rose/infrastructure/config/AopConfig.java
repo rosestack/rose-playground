@@ -32,7 +32,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  * }
  * }</pre>
  *
- * @author Rose Framework Team
+ * @author chensoul
  * @since 1.0.0
  * @see EnableAspectJAutoProxy
  * @see org.springframework.aop.framework.AopContext

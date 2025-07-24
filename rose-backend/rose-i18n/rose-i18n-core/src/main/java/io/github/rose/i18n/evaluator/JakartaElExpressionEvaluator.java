@@ -15,7 +15,7 @@ import java.util.function.Function;
  * <p>基于Jakarta EL API的表达式评估器实现，支持完整的EL表达式语法。
  * 包含缓存机制和自定义函数支持。</p>
  *
- * @author Rose Framework Team
+ * @author chensoul
  * @since 1.0.0
  */
 public class JakartaElExpressionEvaluator implements ExpressionEvaluator {

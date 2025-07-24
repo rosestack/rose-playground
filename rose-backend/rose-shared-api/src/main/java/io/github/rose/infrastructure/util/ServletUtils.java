@@ -50,7 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * <strong>注意：</strong>所有方法都是线程安全的，支持高并发访问。
  *
- * @author Rose Framework Team
+ * @author chensoul
  * @see HttpServletRequest
  * @see HttpServletResponse
  * @see RequestContextHolder
