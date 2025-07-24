@@ -1,0 +1,140 @@
+### 租户计费系统 API 测试
+
+### 1. 创建订阅
+POST http://localhost:8080/api/billing/subscriptions
+Content-Type: application/json
+
+{
+  "tenantId": "tenant_001",
+  "planId": "plan_basic",
+  "startTrial": true
+}
+
+### 2. 获取租户订阅信息
+GET http://localhost:8080/api/billing/subscriptions/tenant/tenant_001
+
+### 3. 记录API使用量
+POST http://localhost:8080/api/billing/usage
+Content-Type: application/json
+
+{
+  "tenantId": "tenant_001",
+  "metricType": "API_CALLS",
+  "quantity": 100,
+  "resourceId": "/api/users",
+  "metadata": "{\"method\":\"GET\",\"timestamp\":\"1640995200000\"}"
+}
+
+### 4. 记录存储使用量
+POST http://localhost:8080/api/billing/usage
+Content-Type: application/json
+
+{
+  "tenantId": "tenant_001",
+  "metricType": "STORAGE",
+  "quantity": 1048576,
+  "resourceId": "document_123",
+  "metadata": "{\"fileType\":\"PDF\",\"size\":1048576}"
+}
+
+### 5. 检查使用量限制
+GET http://localhost:8080/api/billing/usage/tenant/tenant_001/limit-check?metricType=API_CALLS
+
+### 6. 获取使用量统计
+GET http://localhost:8080/api/billing/usage/tenant/tenant_001?metricType=API_CALLS&period=MONTH
+
+### 7. 生成账单
+POST http://localhost:8080/api/billing/invoices/generate
+Content-Type: application/json
+
+{
+  "subscriptionId": "subscription_id_here"
+}
+
+### 8. 获取租户账单列表
+GET http://localhost:8080/api/billing/invoices/tenant/tenant_001
+
+### 9. 处理支付
+POST http://localhost:8080/api/billing/invoices/invoice_id_here/payment
+Content-Type: application/json
+
+{
+  "paymentMethod": "STRIPE",
+  "transactionId": "stripe_transaction_123"
+}
+
+### 10. 获取订阅计划列表
+GET http://localhost:8080/api/billing/plans
+
+### 11. 更改订阅计划
+PUT http://localhost:8080/api/billing/subscriptions/subscription_id_here/plan
+Content-Type: application/json
+
+{
+  "newPlanId": "plan_pro"
+}
+
+### 12. 取消订阅
+PUT http://localhost:8080/api/billing/subscriptions/subscription_id_here/cancel
+Content-Type: application/json
+
+{
+  "reason": "用户主动取消"
+}
+
+### 财务报表 API 测试
+
+### 13. 获取实时仪表板
+GET http://localhost:8080/api/billing/reports/dashboard
+
+### 14. 获取收入报表
+GET http://localhost:8080/api/billing/reports/revenue?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59&reportType=MONTHLY
+
+### 15. 获取订阅报表
+GET http://localhost:8080/api/billing/reports/subscriptions?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59
+
+### 16. 获取使用量报表
+GET http://localhost:8080/api/billing/reports/usage?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59
+
+### 17. 获取综合财务报表
+GET http://localhost:8080/api/billing/reports/comprehensive?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59
+
+### 18. 导出财务报表
+GET http://localhost:8080/api/billing/reports/export?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59&reportType=COMPREHENSIVE
+
+### 使用量追踪示例 API 测试
+
+### 19. 测试API使用量自动追踪
+GET http://localhost:8080/api/example/users
+
+### 20. 测试文件上传监控
+POST http://localhost:8080/api/example/upload
+Content-Type: multipart/form-data
+
+### 21. 测试用户创建监控
+POST http://localhost:8080/api/example/users
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com"
+}
+
+### 22. 测试邮件发送监控
+POST http://localhost:8080/api/example/send-email
+Content-Type: application/json
+
+{
+  "to": "user@example.com",
+  "subject": "测试邮件",
+  "content": "这是一封测试邮件"
+}
+
+### 23. 测试短信发送监控
+POST http://localhost:8080/api/example/send-sms
+Content-Type: application/json
+
+{
+  "phone": "13800138000",
+  "message": "验证码：123456"
+}

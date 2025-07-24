@@ -1,8 +1,7 @@
 package io.github.rose.billing.domain.service;
 
 import io.github.rose.billing.domain.entity.*;
-import io.github.rose.billing.domain.enums.InvoiceStatus;
-import io.github.rose.billing.domain.enums.SubscriptionStatus;
+import io.github.rose.billing.domain.enums.*;
 import io.github.rose.billing.infrastructure.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -206,7 +205,18 @@ public class BillingService {
      * 获取使用量统计
      */
     public List<UsageRecord> getUsageStats(String tenantId, String metricType, String period) {
-        return usageRepository.findByTenantIdAndMetricTypeOrderByRecordTimeDesc(tenantId, metricType);
+        // 根据period参数实现不同时间范围的查询
+        LocalDateTime endTime = LocalDateTime.now();
+        LocalDateTime startTime = switch (period.toUpperCase()) {
+            case "DAY" -> endTime.minusDays(1);
+            case "WEEK" -> endTime.minusWeeks(1);
+            case "MONTH" -> endTime.minusMonths(1);
+            case "YEAR" -> endTime.minusYears(1);
+            default -> endTime.minusDays(30); // 默认30天
+        };
+
+        return usageRepository.findByTenantIdAndBilledFalseAndRecordTimeBetween(
+            tenantId, startTime, endTime);
     }
 
     /**
@@ -344,6 +354,16 @@ public class BillingService {
 
     private BigDecimal calculateDiscount(TenantSubscription subscription, BigDecimal amount) {
         // 实现折扣逻辑
+        // 1. 检查长期订阅折扣
+        if (subscription.getAutoRenew()) {
+            return amount.multiply(new BigDecimal("0.05")); // 5%自动续费折扣
+        }
+
+        // 2. 检查试用期转换折扣
+        if (subscription.getInTrial()) {
+            return amount.multiply(new BigDecimal("0.1")); // 10%试用转换折扣
+        }
+
         return BigDecimal.ZERO;
     }
 

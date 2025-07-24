@@ -1,6 +1,6 @@
 package io.github.rose.billing.example;
 
-import io.github.rose.billing.infrastructure.usage.*;
+import io.github.rose.billing.infrastructure.usage.annotation.*;
 import io.github.rose.interfaces.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
