@@ -1,6 +1,6 @@
 package io.github.rose.log;
 
-import io.github.rose.core.model.*;
+import io.github.rose.core.domain.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;

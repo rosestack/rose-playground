@@ -388,7 +388,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException e, Locale locale) {
     String message = messageSource.getMessage("error.access.denied", null, "访问被拒绝", locale);
-    log.warn("访问被拒绝: {}", e.getMessage());
+    log.warn("访问被拒绝: {} - {}", request.getRequestURI(), localizedMessage);
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(ApiResponse.error(403, message));
   }

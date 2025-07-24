@@ -1,6 +1,6 @@
 package io.github.rose.log;
 
-import io.github.rose.core.model.GeoAddress;
+import io.github.rose.core.domain.GeoAddress;
 import lombok.Data;
 
 import java.time.LocalDateTime;

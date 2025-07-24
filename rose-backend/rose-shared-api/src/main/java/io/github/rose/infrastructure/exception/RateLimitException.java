@@ -17,8 +17,10 @@ package io.github.rose.infrastructure.exception;
  */
 public class RateLimitException extends BaseException {
 
-    /** 重试间隔（秒） */
-    private final int retryAfter;
+    /**
+     * 重试间隔（秒）
+     */
+    private final int retryAfterSeconds;
 
     /**
      * 构造限流异常
@@ -32,49 +34,49 @@ public class RateLimitException extends BaseException {
     /**
      * 构造限流异常
      *
-     * @param messageKey 国际化消息键
-     * @param retryAfter 重试间隔（秒）
+     * @param messageKey        国际化消息键
+     * @param retryAfterSeconds 重试间隔（秒）
      */
-    public RateLimitException(String messageKey, int retryAfter) {
+    public RateLimitException(String messageKey, int retryAfterSeconds) {
         super(messageKey);
-        this.retryAfter = retryAfter;
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 
     /**
      * 构造限流异常
      *
-     * @param messageKey 国际化消息键
-     * @param retryAfter 重试间隔（秒）
-     * @param cause 原始异常
+     * @param messageKey        国际化消息键
+     * @param retryAfterSeconds 重试间隔（秒）
+     * @param cause             原始异常
      */
-    public RateLimitException(String messageKey, int retryAfter, Throwable cause) {
+    public RateLimitException(String messageKey, int retryAfterSeconds, Throwable cause) {
         super(messageKey, cause);
-        this.retryAfter = retryAfter;
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 
     /**
      * 构造限流异常
      *
-     * @param messageKey 国际化消息键
-     * @param retryAfter 重试间隔（秒）
-     * @param args 消息参数
+     * @param messageKey        国际化消息键
+     * @param retryAfterSeconds 重试间隔（秒）
+     * @param args              消息参数
      */
-    public RateLimitException(String messageKey, int retryAfter, Object... args) {
+    public RateLimitException(String messageKey, int retryAfterSeconds, Object... args) {
         super(messageKey, args);
-        this.retryAfter = retryAfter;
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 
     /**
      * 构造限流异常
      *
-     * @param messageKey 国际化消息键
-     * @param retryAfter 重试间隔（秒）
-     * @param cause 原始异常
-     * @param args 消息参数
+     * @param messageKey        国际化消息键
+     * @param retryAfterSeconds 重试间隔（秒）
+     * @param cause             原始异常
+     * @param args              消息参数
      */
-    public RateLimitException(String messageKey, int retryAfter, Throwable cause, Object... args) {
+    public RateLimitException(String messageKey, int retryAfterSeconds, Throwable cause, Object... args) {
         super(messageKey, cause, args);
-        this.retryAfter = retryAfter;
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 
     /**
@@ -82,7 +84,7 @@ public class RateLimitException extends BaseException {
      *
      * @return 重试间隔（秒）
      */
-    public int getRetryAfter() {
-        return retryAfter;
+    public int getRetryAfterSeconds() {
+        return retryAfterSeconds;
     }
 }

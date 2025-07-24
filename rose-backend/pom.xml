@@ -69,12 +69,6 @@
                 <type>pom</type>
                 <version>${mybatis-plus.version}</version>
             </dependency>
-            <!-- 网络工具库 -->
-            <dependency>
-                <groupId>commons-net</groupId>
-                <artifactId>commons-net</artifactId>
-                <version>3.9.0</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -132,6 +126,56 @@
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- JaCoCo 测试覆盖率插件 -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <!-- 准备JaCoCo代理 -->
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <!-- 生成测试覆盖率报告 -->
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <!-- 检查覆盖率阈值 -->
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <!--                                    <limits>-->
+                                    <!--                                        <limit>-->
+                                    <!--                                            <counter>LINE</counter>-->
+                                    <!--                                            <value>COVEREDRATIO</value>-->
+                                    <!--                                            <minimum>0.60</minimum>-->
+                                    <!--                                        </limit>-->
+                                    <!--                                        <limit>-->
+                                    <!--                                            <counter>BRANCH</counter>-->
+                                    <!--                                            <value>COVEREDRATIO</value>-->
+                                    <!--                                            <minimum>0.50</minimum>-->
+                                    <!--                                        </limit>-->
+                                    <!--                                    </limits>-->
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

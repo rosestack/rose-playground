@@ -49,7 +49,7 @@ public abstract class LocaleFormatUtils {
      * @return ObjectMapper实例
      */
     private static ObjectMapper getObjectMapper() {
-        return objectMapper != null ? objectMapper : JacksonUtils.getObjectMapper();
+        return objectMapper != null ? objectMapper : JsonUtils.getObjectMapper();
     }
 
     /**

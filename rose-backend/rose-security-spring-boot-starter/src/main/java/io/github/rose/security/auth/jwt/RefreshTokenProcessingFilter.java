@@ -1,7 +1,7 @@
 
 package io.github.rose.security.auth.jwt;
 
-import io.github.rose.core.util.JacksonUtils;
+import io.github.rose.core.util.JsonUtils;
 import io.github.rose.security.auth.RefreshAuthenticationToken;
 import io.github.rose.security.auth.exception.AuthMethodNotSupportedException;
 import io.github.rose.security.model.token.RawAccessJwtToken;
@@ -48,7 +48,7 @@ public class RefreshTokenProcessingFilter extends AbstractAuthenticationProcessi
 
         RefreshTokenRequest refreshTokenRequest;
         try {
-            refreshTokenRequest = JacksonUtils.readValue(request.getReader(), RefreshTokenRequest.class);
+            refreshTokenRequest = JsonUtils.readValue(request.getReader(), RefreshTokenRequest.class);
         } catch (Exception e) {
             throw new AuthenticationServiceException("Invalid refresh token request payload");
         }

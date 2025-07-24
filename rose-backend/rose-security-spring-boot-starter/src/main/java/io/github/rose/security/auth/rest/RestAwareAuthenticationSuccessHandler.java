@@ -15,7 +15,7 @@
  */
 package io.github.rose.security.auth.rest;
 
-import io.github.rose.core.util.JacksonUtils;
+import io.github.rose.core.util.JsonUtils;
 import io.github.rose.security.model.JwtPair;
 import io.github.rose.security.model.SecurityUser;
 import io.github.rose.security.model.token.JwtTokenFactory;
@@ -59,7 +59,7 @@ public class RestAwareAuthenticationSuccessHandler implements AuthenticationSucc
 
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        JacksonUtils.writeValue(response.getWriter(), tokenPair);
+        JsonUtils.writeValue(response.getWriter(), tokenPair);
 
         clearAuthenticationAttributes(request);
     }

@@ -1,6 +1,6 @@
 package io.github.rose.log;
 
-import io.github.rose.core.model.HasName;
+import io.github.rose.core.domain.HasName;
 
 import java.io.Serializable;
 

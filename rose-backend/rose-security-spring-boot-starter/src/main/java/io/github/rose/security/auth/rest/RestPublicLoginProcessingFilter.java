@@ -1,7 +1,7 @@
 
 package io.github.rose.security.auth.rest;
 
-import io.github.rose.core.util.JacksonUtils;
+import io.github.rose.core.util.JsonUtils;
 import io.github.rose.security.auth.exception.AuthMethodNotSupportedException;
 import io.github.rose.security.model.PublicLoginRequest;
 import io.github.rose.security.model.UserPrincipal;
@@ -49,7 +49,7 @@ public class RestPublicLoginProcessingFilter extends AbstractAuthenticationProce
 
         PublicLoginRequest loginRequest;
         try {
-            loginRequest = JacksonUtils.readValue(request.getReader(), PublicLoginRequest.class);
+            loginRequest = JsonUtils.readValue(request.getReader(), PublicLoginRequest.class);
         } catch (Exception e) {
             throw new AuthenticationServiceException("Invalid public login request payload");
         }

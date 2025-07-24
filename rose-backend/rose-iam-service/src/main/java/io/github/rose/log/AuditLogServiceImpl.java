@@ -1,6 +1,6 @@
 package io.github.rose.log;
 
-import io.github.rose.core.model.HasName;
+import io.github.rose.core.domain.HasName;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

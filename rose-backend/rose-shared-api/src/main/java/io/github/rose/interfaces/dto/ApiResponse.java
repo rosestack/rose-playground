@@ -1,6 +1,8 @@
 package io.github.rose.interfaces.dto;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -49,7 +51,9 @@ import java.util.function.Supplier;
  * @author chensoul
  * @since 1.0.0
  */
-@Getter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApiResponse<T> {
 
     /**
@@ -61,16 +65,6 @@ public class ApiResponse<T> {
      * 失败状态码，表示操作失败。
      */
     public static final int FAIL = 500;
-
-    /**
-     * 默认服务器错误消息键，用于国际化。
-     */
-    public static final String SERVER_ERROR = "server.error";
-
-    /**
-     * 默认服务器成功消息键，用于国际化。
-     */
-    public static final String SERVER_SUCCESS = "server.success";
 
     /**
      * 此结果的状态码（SUCCESS或FAIL）。
@@ -88,34 +82,13 @@ public class ApiResponse<T> {
     private T data;
 
     /**
-     * 默认构造函数，用于JSON反序列化支持。
-     * <p>
-     * 此构造函数是Jackson等框架正确将JSON响应反序列化回Result对象所必需的。
-     */
-    public ApiResponse() {
-    }
-
-    /**
-     * 完整构造函数，用于创建具有所有属性的Result实例。
-     *
-     * @param code    状态码（SUCCESS或FAIL）
-     * @param message 与此结果关联的消息
-     * @param data    数据负载（可以为null）
-     */
-    public ApiResponse(Integer code, String message, T data) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
-    }
-
-    /**
      * Creates a successful result without data.
      *
      * @param <T> The type parameter for the result
      * @return A successful ApiResponse instance with no data
      */
     public static <T> ApiResponse<T> success() {
-        return new ApiResponse(SUCCESS, SERVER_SUCCESS, null);
+        return new ApiResponse(SUCCESS, "success", null);
     }
 
     /**
@@ -126,17 +99,7 @@ public class ApiResponse<T> {
      * @return A successful ApiResponse instance containing the provided data
      */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse(SUCCESS, SERVER_SUCCESS, data);
-    }
-
-    /**
-     * Creates a failure result with default error message.
-     *
-     * @param <T> The type parameter for the result
-     * @return A failure ApiResponse instance with default error message
-     */
-    public static <T> ApiResponse<T> error() {
-        return new ApiResponse(FAIL, "error", null);
+        return new ApiResponse(SUCCESS, "success", data);
     }
 
     /**
@@ -169,8 +132,17 @@ public class ApiResponse<T> {
      * @param ret The result to check
      * @return true if the result is a failure, false otherwise
      */
-    public static <T> Boolean isFailure(ApiResponse<T> ret) {
+    public static <T> Boolean isError(ApiResponse<T> ret) {
         return !isSuccess(ret);
+    }
+
+    /**
+     * Checks if this result represents a failed operation.
+     *
+     * @return true if this result is a failure, false otherwise
+     */
+    public boolean isError() {
+        return !isSuccess();
     }
 
     /**
@@ -193,16 +165,6 @@ public class ApiResponse<T> {
         return SUCCESS == this.code;
     }
 
-    /**
-     * Checks if this result represents a failed operation.
-     *
-     * @return true if this result is a failure, false otherwise
-     */
-    public boolean isFail() {
-        return !isSuccess();
-    }
-
-    // ==================== Functional Programming Methods ====================
 
     /**
      * Transforms the data in this result using the provided mapper function.

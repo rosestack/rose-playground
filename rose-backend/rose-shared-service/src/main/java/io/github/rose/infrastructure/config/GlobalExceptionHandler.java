@@ -4,23 +4,21 @@ import io.github.rose.infrastructure.exception.BusinessException;
 import io.github.rose.infrastructure.exception.RateLimitException;
 import io.github.rose.interfaces.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
-import org.springframework.validation.FieldError;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Locale;
-
-import static io.github.rose.infrastructure.constants.HeaderConstants.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -52,93 +50,210 @@ import static io.github.rose.infrastructure.constants.HeaderConstants.*;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
+    /**
+     * 请求追踪ID
+     */
+    public static final String REQUEST_ID = "X-Request-ID";
+
+    /**
+     * 响应时间戳
+     */
+    public static final String RESPONSE_TIME = "X-Response-Time";
+
+    /**
+     * 是否可重试
+     */
+    public static final String RETRY_ALLOWED = "X-Retry-Allowed";
+
+    /**
+     * 重试间隔（标准头）
+     */
+    public static final String RETRY_AFTER = "Retry-After";
+
+    /**
+     * 错误详情
+     */
+    public static final String ERROR_DETAILS = "X-Error-Details";
+
+    /**
+     * 错误类型：
+     * CLIENT,     // 客户端错误
+     * BUSINESS,   // 业务错误
+     * SYSTEM,     // 系统错误
+     * RATE_LIMIT  // 限流错误
+     */
+    public static final String ERROR_TYPE = "X-Error-Type";
+
     private final MessageSource messageSource;
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e, HttpServletRequest request, HttpServletResponse response) {
-        String localizedMessage = getLocalizedMessage(e.getMessageKey(), e.getMessageArgs());
-        log.info("业务异常: {} - {}", e.getMessageKey(), localizedMessage);
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+            BusinessException e,
+            HttpServletRequest request,
+            Locale locale) {
+        String localizedMessage = getLocalizedMessage(e.getMessageKey(), e.getMessageArgs(), locale);
 
-        // 设置响应头
-        setResponseHeaders(response, e.getMessage(), false, request);
+        log.warn("业务异常: {} - {} - {}", request.getRequestURI(), e.getMessageKey(), localizedMessage);
 
-        ApiResponse<Void> apiResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), localizedMessage);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
+        ApiResponse<Void> response = ApiResponse.error(500, localizedMessage);
+
+        return ResponseEntity.status(500)
+                .header(ERROR_DETAILS, getExceptionCauseMessage(e))
+                .header(REQUEST_ID, getRequestId())
+                .header(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()))
+                .header(ERROR_TYPE, "BUSINESS")
+                .header(RETRY_ALLOWED, Boolean.FALSE.toString())
+                .body(response);
     }
 
     @ExceptionHandler(RateLimitException.class)
-    public ResponseEntity<ApiResponse<Void>> handleRateLimitException(RateLimitException e, HttpServletRequest request, HttpServletResponse response) {
-        String localizedMessage = getLocalizedMessage(e.getMessageKey(), e.getMessageArgs());
-        log.warn("限流异常: {} - {}, 重试间隔: {}秒", e.getMessageKey(), localizedMessage, e.getRetryAfter());
+    public ResponseEntity<ApiResponse<Void>> handleRateLimitException(
+            RateLimitException e,
+            HttpServletRequest request,
+            Locale locale) {
+        String localizedMessage = getLocalizedMessage(e.getMessageKey(), e.getMessageArgs(), locale);
 
-        // 设置响应头
-        setResponseHeaders(response, e.getMessage(), true, request);
-        response.setHeader(RETRY_AFTER, String.valueOf(e.getRetryAfter()));
+        log.warn("限流异常: {} - {} - {}", request.getRequestURI(), e.getMessageKey(), localizedMessage);
 
-        ApiResponse<Void> apiResponse = ApiResponse.error(HttpStatus.TOO_MANY_REQUESTS.value(), localizedMessage);
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(apiResponse);
+        ApiResponse<Void> response = ApiResponse.error(429, localizedMessage);
+
+        return ResponseEntity.status(429)
+                .header(ERROR_DETAILS, getExceptionCauseMessage(e))
+                .header(REQUEST_ID, getRequestId())
+                .header(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()))
+                .header(ERROR_TYPE, "RATE_LIMIT")
+                .header(RETRY_ALLOWED, Boolean.TRUE.toString())
+                .header(RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+                .body(response);
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(Exception e, HttpServletRequest request, HttpServletResponse response) {
-        StringBuilder errorMessage = new StringBuilder();
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(
+            MethodArgumentNotValidException e,
+            HttpServletRequest request,
+            Locale locale) {
 
-        if (e instanceof MethodArgumentNotValidException) {
-            MethodArgumentNotValidException validException = (MethodArgumentNotValidException) e;
-            for (FieldError fieldError : validException.getBindingResult().getFieldErrors()) {
-                errorMessage.append(fieldError.getField()).append(": ").append(fieldError.getDefaultMessage()).append("; ");
-            }
-        } else if (e instanceof BindException) {
-            BindException bindException = (BindException) e;
-            for (FieldError fieldError : bindException.getBindingResult().getFieldErrors()) {
-                errorMessage.append(fieldError.getField()).append(": ").append(fieldError.getDefaultMessage()).append("; ");
-            }
-        }
+        String localizedMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> {
+                    String fieldName = error.getField();
+                    String defaultMessage = error.getDefaultMessage();
+                    try {
+                        return messageSource.getMessage(
+                                "validation." + fieldName + "." + error.getCode(),
+                                error.getArguments(),
+                                defaultMessage,
+                                locale
+                        );
+                    } catch (NoSuchMessageException ex) {
+                        return defaultMessage;
+                    }
+                })
+                .collect(Collectors.joining(", "));
 
-        String message = errorMessage.length() > 0 ? errorMessage.toString() : "参数验证失败";
-        log.warn("参数验证异常: {}", message);
+        log.warn("参数验证失败: {} - {}", request.getRequestURI(), localizedMessage);
 
-        // 设置响应头
-        setResponseHeaders(response, e.getMessage(), false, request);
+        ApiResponse<Void> response = ApiResponse.error(400, localizedMessage);
 
-        ApiResponse<Void> apiResponse = ApiResponse.error(HttpStatus.BAD_REQUEST.value(), message);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
+        return ResponseEntity.status(400)
+                .header(ERROR_DETAILS, getExceptionCauseMessage(e))
+                .header(REQUEST_ID, getRequestId())
+                .header(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()))
+                .header(ERROR_TYPE, "CLIENT")
+                .header(RETRY_ALLOWED, Boolean.FALSE.toString())
+                .body(response);
     }
 
+    /**
+     * 处理认证异常
+     */
+    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(
+            Exception e,
+            HttpServletRequest request,
+            Locale locale) {
+        String localizedMessage = getLocalizedMessage("auth.error.authentication_failed", null, locale);
+        log.warn("认证失败: {} - {}", request.getRequestURI(), localizedMessage);
+
+        ApiResponse<Void> response = ApiResponse.error(401, localizedMessage);
+
+        return ResponseEntity.status(401)
+                .header(ERROR_DETAILS, getExceptionCauseMessage(e))
+                .header(REQUEST_ID, getRequestId())
+                .header(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()))
+                .header(ERROR_TYPE, "CLIENT")
+                .header(RETRY_ALLOWED, Boolean.FALSE.toString())
+                .body(response);
+    }
+
+    /**
+     * 处理授权异常
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(
+            AccessDeniedException e,
+            HttpServletRequest request,
+            Locale locale) {
+        String localizedMessage = getLocalizedMessage("auth.error.access_denied", null, locale);
+        log.warn("访问被拒绝: {} - {}", request.getRequestURI(), localizedMessage);
+
+        ApiResponse<Void> response = ApiResponse.error(403, localizedMessage);
+
+        return ResponseEntity.status(403)
+                .header(ERROR_DETAILS, getExceptionCauseMessage(e))
+                .header(REQUEST_ID, getRequestId())
+                .header(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()))
+                .header(ERROR_TYPE, "CLIENT")
+                .header(RETRY_ALLOWED, Boolean.FALSE.toString())
+                .body(response);
+    }
+
+    /**
+     * 处理系统异常
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleSystemException(Exception e, HttpServletRequest request, HttpServletResponse response) {
-        String localizedMessage = getLocalizedMessage("common.error.internal_server");
-        log.error("系统异常: {} - {}", e.getMessage(), localizedMessage, e);
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(
+            Exception e,
+            HttpServletRequest request,
+            Locale locale) {
+        String localizedMessage = getLocalizedMessage("common.error.internal_server", null, locale);
 
-        // 设置响应头
-        setResponseHeaders(response, e.getMessage(), true, request);
+        log.error("系统异常: {} - {}", request.getRequestURI(), e.getMessage(), e);
 
-        ApiResponse<Void> apiResponse = ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), localizedMessage);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
-    }
+        ApiResponse<Void> response = ApiResponse.error(500, localizedMessage);
 
-    private void setResponseHeaders(HttpServletResponse response, String errorDetails,
-                                    boolean retryable, HttpServletRequest request) {
-        response.setHeader(REQUEST_ID, MDC.get(REQUEST_ID));
-        response.setHeader(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()));
-        response.setHeader(ERROR_DETAILS, errorDetails);
-        response.setHeader(RETRY_ALLOWED, String.valueOf(retryable));
+        return ResponseEntity.status(500)
+                .header(ERROR_DETAILS, getExceptionCauseMessage(e))
+                .header(REQUEST_ID, getRequestId())
+                .header(RESPONSE_TIME, String.valueOf(System.currentTimeMillis()))
+                .header(ERROR_TYPE, "CLIENT")
+                .header(RETRY_ALLOWED, Boolean.TRUE.toString())
+                .body(response);
     }
 
     /**
      * 获取国际化消息
-     *
-     * @param messageKey 消息键
-     * @param args       消息参数
-     * @return 国际化消息
      */
-    private String getLocalizedMessage(String messageKey, Object... args) {
+    private String getLocalizedMessage(String messageKey, Object[] args, Locale locale) {
         try {
-            Locale locale = LocaleContextHolder.getLocale();
-            return messageSource.getMessage(messageKey, args, locale);
-        } catch (Exception e) {
-            log.warn("获取国际化消息失败: {}", messageKey, e);
+            return messageSource.getMessage(messageKey, args, messageKey, locale);
+        } catch (NoSuchMessageException e) {
+            log.warn("未找到国际化消息: {}", messageKey);
             return messageKey;
         }
+    }
+
+    /**
+     * 获取异常cause的message信息
+     */
+    private String getExceptionCauseMessage(Exception e) {
+        Throwable cause = e.getCause();
+        if (cause != null) {
+            return cause.getMessage();
+        }
+        return e.getMessage();
+    }
+
+    private String getRequestId() {
+        return MDC.get(REQUEST_ID);
     }
 }
