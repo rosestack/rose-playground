@@ -43,5 +43,5 @@ spring:
 # 定时任务配置
 logging:
   level:
-    io.github.rose.billing.infrastructure.scheduler: INFO
-    io.github.rose.billing.domain.service: DEBUG
+    io.github.rose.billing.scheduler: INFO
+    io.github.rose.billing.service: DEBUG

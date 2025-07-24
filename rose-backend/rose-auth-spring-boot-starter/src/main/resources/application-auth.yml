@@ -1,0 +1,111 @@
+# Rose Auth Spring Boot Starter 默认配置
+rose:
+  auth:
+    # 是否启用认证模块
+    enabled: true
+    
+    # JWT 配置
+    jwt:
+      # JWT 密钥（生产环境请修改）
+      secret: ${JWT_SECRET:rose-auth-default-secret-key-change-in-production}
+      # 访问令牌过期时间（1小时）
+      access-token-expiration: PT1H
+      # 刷新令牌过期时间（7天）
+      refresh-token-expiration: P7D
+      # JWT 发行者
+      issuer: rose-auth
+      # JWT 受众
+      audience: rose-app
+      # 令牌前缀
+      token-prefix: "Bearer "
+      # 请求头名称
+      header-name: Authorization
+    
+    # OAuth2 配置
+    oauth2:
+      # 是否启用 OAuth2 客户端
+      enabled: false
+      # 登录成功重定向URL
+      success-redirect-url: /
+      # 登录失败重定向URL
+      failure-redirect-url: /login?error
+      # OAuth2 客户端配置示例
+      clients:
+        github:
+          client-id: ${GITHUB_CLIENT_ID:}
+          client-secret: ${GITHUB_CLIENT_SECRET:}
+          scope: user:email
+          redirect-uri: "{baseUrl}/login/oauth2/code/github"
+          authorization-uri: https://github.com/login/oauth/authorize
+          token-uri: https://github.com/login/oauth/access_token
+          user-info-uri: https://api.github.com/user
+          user-name-attribute: login
+        google:
+          client-id: ${GOOGLE_CLIENT_ID:}
+          client-secret: ${GOOGLE_CLIENT_SECRET:}
+          scope: openid,profile,email
+          redirect-uri: "{baseUrl}/login/oauth2/code/google"
+    
+    # 安全配置
+    security:
+      # 最大登录尝试次数
+      max-login-attempts: 5
+      # 账户锁定时间（15分钟）
+      lockout-duration: PT15M
+      # 锁定策略：IP, USER, IP_AND_USER
+      lockout-strategy: IP_AND_USER
+      # 是否启用设备跟踪
+      enable-device-tracking: true
+      # 是否启用位置检查
+      enable-location-check: false
+      
+      # 密码策略
+      password:
+        # 最小长度
+        min-length: 8
+        # 最大长度
+        max-length: 128
+        # 是否需要大写字母
+        require-uppercase: true
+        # 是否需要小写字母
+        require-lowercase: true
+        # 是否需要数字
+        require-digits: true
+        # 是否需要特殊字符
+        require-special-chars: true
+        # 密码历史记录数量
+        history-count: 5
+        # 密码过期天数
+        expiry-days: 90
+    
+    # 缓存配置
+    cache:
+      # 用户信息缓存TTL（30分钟）
+      user-info-ttl: 1800
+      # 权限缓存TTL（1小时）
+      permission-ttl: 3600
+      # 令牌黑名单缓存TTL（24小时）
+      token-blacklist-ttl: 86400
+      # 登录失败记录缓存TTL（1小时）
+      login-failure-ttl: 3600
+    
+    # CORS 配置
+    cors:
+      # 允许的源
+      allowed-origins:
+        - http://localhost:3000
+        - http://localhost:8080
+      # 允许的方法
+      allowed-methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      # 允许的头
+      allowed-headers:
+        - "*"
+      # 是否允许凭证
+      allow-credentials: true
+      # 预检请求缓存时间（1小时）
+      max-age: 3600
