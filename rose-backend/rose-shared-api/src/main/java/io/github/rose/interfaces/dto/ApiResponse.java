@@ -1,9 +1,9 @@
 package io.github.rose.interfaces.dto;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  * ApiResponse<User> userResult = ApiResponse.success(user);
  *
  * // 失败响应带消息
- * ApiResponse<User> errorResult = ApiResponse.failure("用户未找到");
+ * ApiResponse<User> errorResult = ApiResponse.error("用户未找到");
  *
  * // 函数式处理
  * ApiResponse<String> nameResult = userResult
@@ -52,8 +52,6 @@ import java.util.function.Supplier;
  * @since 1.0.0
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class ApiResponse<T> {
 
     /**
@@ -64,7 +62,7 @@ public class ApiResponse<T> {
     /**
      * 失败状态码，表示操作失败。
      */
-    public static final int FAIL = 500;
+    public static final int ERROR = 500;
 
     /**
      * 此结果的状态码（SUCCESS或FAIL）。
@@ -82,13 +80,24 @@ public class ApiResponse<T> {
     private T data;
 
     /**
+     * 响应时间戳 - 使用 LocalDateTime 更易读
+     * 格式化为 ISO 8601 标准格式
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    private LocalDateTime timestamp;
+
+    public ApiResponse() {
+        this.timestamp = LocalDateTime.now();
+    }
+
+    /**
      * Creates a successful result without data.
      *
      * @param <T> The type parameter for the result
      * @return A successful ApiResponse instance with no data
      */
     public static <T> ApiResponse<T> success() {
-        return new ApiResponse(SUCCESS, "success", null);
+        return success(null);
     }
 
     /**
@@ -99,7 +108,11 @@ public class ApiResponse<T> {
      * @return A successful ApiResponse instance containing the provided data
      */
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse(SUCCESS, "success", data);
+        ApiResponse<T> result = new ApiResponse<>();
+        result.setCode(SUCCESS);
+        result.setMessage("Success");
+        result.setData(data);
+        return result;
     }
 
     /**
@@ -110,8 +123,11 @@ public class ApiResponse<T> {
      * @param message The error message
      * @return A failure ApiResponse instance with the specified code and message
      */
-    public static <T> ApiResponse<T> error(int code, String message) {
-        return new ApiResponse(code, message, null);
+    public static <T> ApiResponse<T> error(Integer code, String message) {
+        ApiResponse<T> result = new ApiResponse<>();
+        result.setCode(code);
+        result.setMessage(message);
+        return result;
     }
 
     /**
@@ -122,7 +138,7 @@ public class ApiResponse<T> {
      * @return A failure ApiResponse instance with the specified message
      */
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse(FAIL, message, null);
+        return error(ERROR, message);
     }
 
     /**

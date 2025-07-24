@@ -10,23 +10,31 @@ alwaysApply: true
 ### 1. 标准目录结构
 ```
 project/
-├── pom.xml                    # 项目对象模型文件
-├── src/
-├── target/                   # 构建输出目录
-└── README.md
+├── pom.xml                             # Maven 配置
+├── README.md                           # 项目文档
+├── sql/                                # 数据库脚本
+├── src/main/java/com/company/project/  # 源码
+│   ├── controller/                     # REST API 控制器
+│   ├── service/                        # 业务逻辑层
+│   ├── mapper/                         # 数据访问层
+│   ├── entity/                         # 实体类
+│   ├── dto/                            # 数据传输对象
+│   ├── config/                         # 配置类
+│   └── exception/                      # 异常处理
+└── src/main/resources/                 # 配置文件
 ```
 
 ### 2. 多模块项目结构
 ```
-parent/
+project/
 ├── pom.xml                   # 父 POM
-├── parent-a/
+├── project-a/
 │   ├── pom.xml
 │   └── src/
-├── parent-b/
+├── project-b/
 │   ├── pom.xml
 │   └── src/
-└── parent-shared/
+└── project-shared/
     ├── pom.xml
     └── src/
 ```
@@ -513,26 +521,27 @@ mvn clean install -Pprod
 
 ### 3. 项目结构规范
 ```
-src/
-├── main/
-│   ├── java/
-│   │   └── com/example/project/
-│   │       ├── Application.java
-│   │       ├── config/
-│   │       ├── controller/
-│   │       ├── service/
-│   │       ├── repository/
-│   │       ├── entity/
-│   │       └── dto/
-│   └── resources/
-│       ├── application.yml
-│       ├── application-dev.yml
-│       ├── application-test.yml
-│       └── application-prod.yml
-└── test/
-    ├── java/
-    └── resources/
-        └── application-test.yml
+project/
+├── pom.xml
+├── src/main/java/com/example/project/
+│   ├── ProjectApplication.java
+│   ├── entity/
+│   │   └── User.java
+│   ├── mapper/
+│   │   └── UserMapper.java
+│   ├── service/
+│   │   ├── UserService.java
+│   │   └── impl/UserServiceImpl.java
+│   ├── controller/
+│   │   └── UserController.java
+│   └── config/
+│       └── MyBatisPlusConfig.java
+├── src/main/resources/
+│   ├── application.yml
+│   ├── application-dev.yml
+│   ├── application-test.yml
+│   └── application-prod.yml
+└── README.md
 ```
 
 ### 4. 配置文件管理

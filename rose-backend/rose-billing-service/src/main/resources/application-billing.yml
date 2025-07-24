@@ -1,0 +1,47 @@
+# Rose 计费系统配置
+rose:
+  billing:
+    enabled: true
+    default-currency: USD
+    default-tax-rate: 0.1
+    invoice-due-days: 30
+    overdue-grace-days: 3
+    usage-data-retention-days: 180
+
+    # 支付配置
+    payment:
+      stripe:
+        enabled: false
+        public-key: ${STRIPE_PUBLIC_KEY:}
+        secret-key: ${STRIPE_SECRET_KEY:}
+        webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+      alipay:
+        enabled: false
+        app-id: ${ALIPAY_APP_ID:}
+        private-key: ${ALIPAY_PRIVATE_KEY:}
+        public-key: ${ALIPAY_PUBLIC_KEY:}
+
+    # 通知配置
+    notification:
+      email-enabled: true
+      sms-enabled: false
+      invoice-generated-template: INVOICE_GENERATED
+      payment-confirmation-template: PAYMENT_CONFIRMATION
+      overdue-notification-template: OVERDUE_NOTIFICATION
+
+# Spring 配置
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# 定时任务配置
+logging:
+  level:
+    io.github.rose.billing.infrastructure.scheduler: INFO
+    io.github.rose.billing.domain.service: DEBUG

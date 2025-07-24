@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.1</version>
+        <version>3.5.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -39,6 +39,7 @@
         <module>rose-iam-service</module>
         <module>rose-notification-service</module>
         <module>rose-security-spring-boot-starter</module>
+        <module>rose-billing-service</module>
         <module>rose-server</module>
     </modules>
 
