@@ -1,0 +1,2 @@
+io.github.rosestack.i18n.spring.boot.autoconfigure.I18nAutoConfiguration
+io.github.rosestack.i18n.spring.boot.actuate.autoconfigure.I18nEndpointAutoConfiguration

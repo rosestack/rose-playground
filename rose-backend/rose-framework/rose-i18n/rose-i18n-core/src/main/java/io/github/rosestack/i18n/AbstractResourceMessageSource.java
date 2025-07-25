@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Collections.singleton;
@@ -62,7 +59,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     }
 
     protected final void initialize() {
-        Set<Locale> supportedLocales = getSupportedLocales();
+        List<Locale> supportedLocales = getSupportedLocales();
         if (CollectionUtils.isEmpty(supportedLocales)) {
             throw new IllegalStateException(String.format("{}.getSupportedLocales() Methods cannot return an empty list of locales!", this.getClass()));
         }
@@ -111,7 +108,7 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         return location + "/" + source + "/" + resourceName;
     }
 
-    protected String getResource(Locale locale) {
+    public String getResource(Locale locale) {
         String resourceName = buildResourceName(locale);
         return getResource(resourceName).replaceAll("//", "/");
     }
@@ -138,6 +135,10 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
 
         // Override the localized message if present
         localizedResourceMessages.put(resource, messages);
+    }
+
+    public Map<String, Map<String, String>> getLocalizedResourceMessages() {
+        return Collections.unmodifiableMap(this.localizedResourceMessages);
     }
 
     protected abstract String getResourceSuffix();

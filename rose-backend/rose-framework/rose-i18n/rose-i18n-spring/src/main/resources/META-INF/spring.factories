@@ -1,3 +1,3 @@
 io.github.rosestack.i18n.AbstractMessageSource=\
-io.github.rosestack.i18n.spring.PropertySourceResourceMessageSource,\
+io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource,\
 io.github.rosestack.i18n.spi.ClassPathPropertiesResourceMessageSource

@@ -16,6 +16,9 @@
     <modules>
         <module>rose-i18n-core</module>
         <module>rose-i18n-spring</module>
+        <module>rose-i18n-spring-boot</module>
+        <module>rose-i18n-openfeign</module>
+        <module>rose-i18n-spring-cloud</module>
     </modules>
 
 </project>

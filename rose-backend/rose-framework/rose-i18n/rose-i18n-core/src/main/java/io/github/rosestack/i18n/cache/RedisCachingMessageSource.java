@@ -13,10 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -254,12 +251,12 @@ public class RedisCachingMessageSource implements I18nMessageSource {
     }
 
     @Override
-    public Set<Locale> getSupportedLocales() {
+    public List<Locale> getSupportedLocales() {
         try {
             return delegate.getSupportedLocales();
         } catch (Exception e) {
             log.warn("Failed to get supported locales from delegate", e);
-            return Set.of(getDefaultLocale(), Locale.ENGLISH);
+            return List.of(getDefaultLocale(), Locale.ENGLISH);
         }
     }
 
@@ -450,7 +447,7 @@ public class RedisCachingMessageSource implements I18nMessageSource {
         log.info("Starting cache preload...");
 
         try {
-            Set<Locale> supportedLocales = getSupportedLocales();
+            List<Locale> supportedLocales = getSupportedLocales();
             AtomicInteger totalMessages = new AtomicInteger();
 
             for (Locale locale : supportedLocales) {

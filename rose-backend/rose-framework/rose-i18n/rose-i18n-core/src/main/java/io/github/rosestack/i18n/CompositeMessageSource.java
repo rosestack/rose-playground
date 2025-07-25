@@ -82,8 +82,8 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
     }
 
     @Override
-    public Set<Locale> getSupportedLocales() {
-        Set<Locale> supportedLocales = new LinkedHashSet<>();
+    public List<Locale> getSupportedLocales() {
+        List<Locale> supportedLocales = new ArrayList<>();
         this.i18nMessageSources.forEach(serviceMessageSource -> {
             for (Locale locale : serviceMessageSource.getSupportedLocales()) {
                 if (!supportedLocales.contains(locale)) {
@@ -93,10 +93,10 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         });
 
         return supportedLocales.isEmpty() ? getDefaultSupportedLocales() :
-                Collections.unmodifiableSet(supportedLocales);
+                Collections.unmodifiableList(supportedLocales);
     }
 
-    public Set<Locale> getDefaultSupportedLocales() {
+    public List<Locale> getDefaultSupportedLocales() {
         return ReloadedResourceMessageSource.super.getSupportedLocales();
     }
 

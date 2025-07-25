@@ -82,8 +82,8 @@ public interface I18nMessageSource extends Lifecycle {
         return Locale.getDefault();
     }
 
-    default Set<Locale> getSupportedLocales() {
-        return Set.of(getDefaultLocale(), Locale.ENGLISH);
+    default List<Locale> getSupportedLocales() {
+        return List.of(getDefaultLocale(), Locale.ENGLISH);
     }
 
     /**

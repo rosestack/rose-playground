@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -25,8 +24,6 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
     private final ObjectProvider<I18nMessageSource> messageSources;
 
     private CompositeMessageSource delegate;
-
-    private ListableBeanFactory beanFactory;
 
     public DelegatingI18nMessageSource(ObjectProvider<I18nMessageSource> messageSourceObjectProvider) {
         this.messageSources = messageSourceObjectProvider;
@@ -72,7 +69,7 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
 
     @NonNull
     @Override
-    public Set<Locale> getSupportedLocales() {
+    public List<Locale> getSupportedLocales() {
         return this.delegate.getSupportedLocales();
     }
 

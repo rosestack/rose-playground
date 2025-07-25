@@ -3,6 +3,7 @@ package io.github.rosestack.i18n.cache;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,16 +16,16 @@ public class MessageSourceStats {
     private final AtomicLong cacheMisses = new AtomicLong(0);
     private final AtomicLong loadTime = new AtomicLong(0);
     private int messageCount;
-    private Set<Locale> supportedLocales;
+    private List<Locale> supportedLocales;
 
     // 默认构造函数
     public MessageSourceStats() {
         this.messageCount = 0;
-        this.supportedLocales = Set.of();
+        this.supportedLocales = List.of();
     }
 
     // 带参数的构造函数
-    public MessageSourceStats(int messageCount, Set<Locale> supportedLocales) {
+    public MessageSourceStats(int messageCount, List<Locale> supportedLocales) {
         this.messageCount = messageCount;
         this.supportedLocales = supportedLocales;
     }

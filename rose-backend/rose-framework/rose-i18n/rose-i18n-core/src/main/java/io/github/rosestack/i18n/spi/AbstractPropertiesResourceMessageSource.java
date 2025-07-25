@@ -7,10 +7,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
@@ -40,6 +37,11 @@ public abstract class AbstractPropertiesResourceMessageSource extends AbstractRe
             throw new RuntimeException(FormatUtils.replacePlaceholders("Source '{}' Messages Properties Resource[name : {}] loading is failed", source, resource), e);
         }
         return messages == null ? emptyMap() : unmodifiableMap(messages);
+    }
+
+    public Properties loadAllProperties(Locale locale) throws IOException {
+        String resource = getResource(locale);
+        return loadAllProperties(resource);
     }
 
     public Properties loadAllProperties(String resource) throws IOException {

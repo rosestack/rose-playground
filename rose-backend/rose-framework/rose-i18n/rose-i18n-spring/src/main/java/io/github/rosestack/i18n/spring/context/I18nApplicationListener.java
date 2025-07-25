@@ -1,6 +1,6 @@
 package io.github.rosestack.i18n.spring.context;
 
-import io.github.rosestack.core.spring.SpringBeans;
+import io.github.rosestack.core.spring.SpringBeanUtils;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.util.I18nUtils;
@@ -78,18 +78,18 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
         Class<AcceptHeaderLocaleResolver> beanClass = (Class<AcceptHeaderLocaleResolver>) ACCEPT_HEADER_LOCALE_RESOLVER_CLASS;
 
-        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = SpringBeans.getSortedBeans(beanClass);
+        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = SpringBeanUtils.getSortedBeans(context, beanClass);
 
         if (acceptHeaderLocaleResolvers.isEmpty()) {
             logger.debug("The '{}' Spring Bean was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
             return;
         }
 
-        I18nMessageSource i18nMessageSource = SpringBeans.getBean(I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource = SpringBeanUtils.getOptionalBean(context, I18nMessageSource.class);
 
         for (AcceptHeaderLocaleResolver acceptHeaderLocaleResolver : acceptHeaderLocaleResolvers) {
             Locale defaultLocale = Locale.getDefault();
-            Set<Locale> supportedLocales = i18nMessageSource.getSupportedLocales();
+            List<Locale> supportedLocales = i18nMessageSource.getSupportedLocales();
             acceptHeaderLocaleResolver.setDefaultLocale(defaultLocale);
             acceptHeaderLocaleResolver.setSupportedLocales(new ArrayList<>(supportedLocales));
             logger.debug("AcceptHeaderLocaleResolver Bean associated with default Locale : '{}' , list of supported Locales : {}", defaultLocale, supportedLocales);

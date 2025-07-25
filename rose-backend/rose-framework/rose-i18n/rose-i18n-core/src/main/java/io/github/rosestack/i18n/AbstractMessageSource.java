@@ -18,7 +18,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
 
     private I18nMessageSource parentMessageSource;
     private Locale defaultLocale;
-    private Set<Locale> supportedLocales;
+    private List<Locale> supportedLocales;
 
     protected AbstractMessageSource(String source) {
         requireNonNull(source, "'source' argument must not be null");
@@ -129,7 +129,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
     }
 
     @Override
-    public Set<Locale> getSupportedLocales() {
+    public List<Locale> getSupportedLocales() {
         if (supportedLocales != null) {
             return supportedLocales;
         }
@@ -141,23 +141,23 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         log.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
     }
 
-    public void setSupportedLocales(Set<Locale> supportedLocales) {
+    public void setSupportedLocales(List<Locale> supportedLocales) {
         this.supportedLocales = resolveLocales(supportedLocales);
         log.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
     }
 
-    protected static Set<Locale> resolveLocales(Set<Locale> supportedLocales) {
-        Set<Locale> resolvedLocales = new LinkedHashSet<>();
+    protected static List<Locale> resolveLocales(List<Locale> supportedLocales) {
+        List<Locale> resolvedLocales = new ArrayList<>();
         for (Locale supportedLocale : supportedLocales) {
             addLocale(resolvedLocales, supportedLocale);
             for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
                 addLocale(resolvedLocales, derivedLocale);
             }
         }
-        return Collections.unmodifiableSet(resolvedLocales);
+        return Collections.unmodifiableList(resolvedLocales);
     }
 
-    protected static void addLocale(Set<Locale> locales, Locale locale) {
+    protected static void addLocale(List<Locale> locales, Locale locale) {
         if (!locales.contains(locale)) {
             locales.add(locale);
         }

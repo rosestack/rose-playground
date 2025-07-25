@@ -18,7 +18,7 @@ package io.github.rosestack.i18n.spring.annotation;
 
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
-import io.github.rosestack.i18n.spring.beans.I18nMessageSourceFactoryBean;
+import io.github.rosestack.i18n.spring.I18nMessageSourceFactoryBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.AbstractApplicationContext;
