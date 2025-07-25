@@ -1,6 +1,5 @@
 package io.github.rosestack.i18n;
 
-import io.github.rosestack.i18n.cache.MessageSourceStats;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -93,12 +92,5 @@ public interface I18nMessageSource extends Lifecycle {
      */
     default String getSource() {
         return COMMON_SOURCE;
-    }
-
-    /**
-     * 获取消息源统计信息
-     */
-    default MessageSourceStats getStats() {
-        return MessageSourceStats.builder().build();
     }
 }
