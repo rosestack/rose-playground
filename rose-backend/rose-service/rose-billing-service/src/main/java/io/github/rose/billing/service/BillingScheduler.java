@@ -1,4 +1,4 @@
-package io.github.rose.billing.scheduler;
+package io.github.rose.billing.service;
 
 import io.github.rose.billing.entity.BaseTenantSubscription;
 import io.github.rose.billing.entity.Invoice;
