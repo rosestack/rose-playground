@@ -324,21 +324,16 @@ public class BusinessException extends BaseException {
 
 ```java
 public User getUserById(Long userId) {
-    try {
-        if (userId == null) {
-            throw new ValidationException("用户ID不能为空");
-        }
-        
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            throw new UserNotFoundException(userId);
-        }
-        
-        return userOpt.get();
-    } catch (DataAccessException e) {
-        logger.error("查询用户异常，用户ID：{}", userId, e);
-        throw new BusinessException("DATA_ACCESS_ERROR");
+    if (userId == null) {
+        throw new ValidationException("用户ID不能为空");
     }
+    
+    Optional<User> userOpt = userRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+        throw new UserNotFoundException(userId);
+    }
+    
+    return userOpt.get();
 }
 ```
 

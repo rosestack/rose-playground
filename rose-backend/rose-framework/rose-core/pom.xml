@@ -11,7 +11,7 @@
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-core</artifactId>
     <name>rose-core</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Rose 核心工具模块</description>
 
     <dependencies>
         <dependency>
@@ -46,9 +46,11 @@
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-annotation</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

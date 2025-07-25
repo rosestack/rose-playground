@@ -1,4 +1,4 @@
-io.github.rose.auth.config.AuthAutoConfiguration
-io.github.rose.auth.config.JwtConfiguration
-io.github.rose.auth.config.OAuth2ClientConfiguration
-io.github.rose.auth.config.SecurityConfiguration
+io.github.rosestack.auth.config.AuthAutoConfiguration
+io.github.rosestack.auth.config.JwtConfiguration
+io.github.rosestack.auth.config.OAuth2ClientConfiguration
+io.github.rosestack.auth.config.SecurityConfiguration

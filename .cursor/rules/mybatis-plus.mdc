@@ -127,76 +127,7 @@ mybatis-plus:
 
 ## 实体类规范
 
-### 实体继承体系
-```java
-// 基础实体类 - 所有实体的父类
-public abstract class BaseEntity {
-    // 通用字段：createdTime, updatedTime, createdBy, updatedBy, deleted, version
-}
-
-// 多租户实体类 - 需要租户隔离的实体
-public abstract class BaseTenantEntity extends BaseEntity {
-    // 增加租户字段：tenantId
-}
-
-// 业务实体类 - 具体的业务实体
-public class User extends BaseTenantEntity {
-    // 业务字段
-}
-```
-
-### 实体分类
-- **系统级实体**：继承BaseEntity，不包含租户ID，用于系统配置等
-- **租户级实体**：继承BaseTenantEntity，包含租户ID，用于业务数据
-
-### BaseTenantEntity 多租户实体类
-
-```java
-/**
- * 多租户基础实体类
- *
- * @author 开发者姓名
- * @since 版本号
- */
-@Data
-@EqualsAndHashCode(callSuper = true)
-public abstract class BaseTenantEntity extends BaseEntity {
-
-    /**
-     * 租户ID
-     */
-    @TableField(value = "tenant_id")
-    private String tenantId;
-}
-```
-
-### 业务实体类定义示例
-
-```java
-@Data
-@EqualsAndHashCode(callSuper = true)
-@TableName("user")
-public class User extends BaseTenantEntity {
-    
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private Long id;
-    
-    @TableField("username")
-    private String username;
-    
-    @TableField("email")
-    private String email;
-    
-    @TableField("phone")
-    private String phone;
-    
-    @TableField("status")
-    @EnumValue
-    private UserStatus status;
-}
-```
-
-### BaseEntity 基础实体类
+### 基础实体类
 
 ```java
 /**
@@ -251,6 +182,75 @@ public abstract class BaseEntity implements Serializable {
 }
 ```
 
+### 多租户实体类
+
+```java
+/**
+ * 多租户基础实体类
+ *
+ * @author 开发者姓名
+ * @since 版本号
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+public abstract class BaseTenantEntity extends BaseEntity {
+
+    /**
+     * 租户ID
+     */
+    @TableField(value = "tenant_id", fill = FieldFill.INSERT)
+    private String tenantId;
+}
+```
+
+### 实体继承体系
+```java
+// 基础实体类 - 所有实体的父类
+public abstract class BaseEntity {
+    // 通用字段：createdTime, updatedTime, createdBy, updatedBy, deleted, version
+}
+
+// 多租户实体类 - 需要租户隔离的实体
+public abstract class BaseTenantEntity extends BaseEntity {
+    // 增加租户字段：tenantId
+}
+
+// 业务实体类 - 具体的业务实体
+public class User extends BaseTenantEntity {
+    // 业务字段
+}
+```
+
+实体分类:
+- **系统级实体**：继承BaseEntity，不包含租户ID，用于系统配置等
+- **租户级实体**：继承BaseTenantEntity，包含租户ID，用于业务数据
+
+业务实体类定义示例：
+
+```java
+@Data
+@EqualsAndHashCode(callSuper = true)
+@TableName("user")
+public class User extends BaseTenantEntity {
+    
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
+    
+    @TableField("username")
+    private String username;
+    
+    @TableField("email")
+    private String email;
+    
+    @TableField("phone")
+    private String phone;
+    
+    @TableField("status")
+    @EnumValue
+    private UserStatus status;
+}
+```
+
 ## Mapper接口规范
 
 ### 接口定义
@@ -284,14 +284,9 @@ public interface UserMapper extends BaseMapper<User> {
 ### Mapper接口可以定义default方法
 
 ```java
+
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
-    /**
-     * 根据邮箱查询用户
-     */
-    @Select("SELECT * FROM user WHERE email = #{email} AND deleted = 0")
-    User selectByEmail(@Param("email") String email);
-
     /**
      * 根据状态查询用户列表
      */
@@ -327,37 +322,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     
     private final UserConverter userConverter;
-    
+
     @Override
     @Transactional(readOnly = true)
-    public IPage<UserResponse> pageUsers(Page<User> page, UserPageRequest request) {
+    public PageResponse<UserResponse> pageUsers(PageRequest pageRequest, UserQuery userQuery) {
+        log.info("分页查询用户，pageRequest: {}, userQuery: {}", pageRequest, userQuery);
+
+        // 构建 MyBatis Plus 分页对象
+        Page<UserEntity> page = new Page<>(pageRequest.getPageNo(), pageRequest.getPageSize());
+
         // 构建查询条件
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.hasText(request.getUsername()), User::getUsername, request.getUsername())
-                .eq(StringUtils.hasText(request.getEmail()), User::getEmail, request.getEmail())
-                .eq(request.getStatus() != null, User::getStatus, request.getStatus())
-                .eq(User::getDeleted, false)
-                .orderByDesc(User::getCreatedTime);
-        
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(StringUtils.hasText(userQuery.getUsername()), UserEntity::getUsername, userQuery.getUsername())
+                .like(StringUtils.hasText(userQuery.getEmail()), UserEntity::getEmail, userQuery.getEmail())
+                .eq(StringUtils.hasText(userQuery.getStatus()), UserEntity::getStatus, userQuery.getStatus())
+                .orderByDesc(UserEntity::getCreatedTime);
+
         // 执行分页查询
-        IPage<User> userPage = page(page, wrapper);
-        
-        // 转换响应对象
+        IPage<UserEntity> userPage = userMapper.selectPage(page, wrapper);
+
+        // 转换为通用分页响应
         return userConverter.toPageResponse(userPage);
     }
-}
-```
-
-## Controller 层规范
-
-### 分页查询调用
-
-```java
-// 控制器中的分页调用（使用 MyBatis-Plus 的 Page 对象）
-@GetMapping
-public ApiResponse<IPage<UserResponse>> pageUsers(Page<User> page, @Valid UserPageRequest request) {
-    IPage<UserResponse> response = userService.pageUsers(page, request);
-    return ApiResponse.success(response);
 }
 ```
 
