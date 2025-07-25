@@ -1,7 +1,7 @@
 package io.github.rose.billing.scheduler;
 
+import io.github.rose.billing.entity.BaseTenantSubscription;
 import io.github.rose.billing.entity.Invoice;
-import io.github.rose.billing.entity.TenantSubscription;
 import io.github.rose.billing.enums.InvoiceStatus;
 import io.github.rose.billing.enums.SubscriptionStatus;
 import io.github.rose.billing.service.BillingService;
@@ -40,11 +40,11 @@ public class BillingScheduler {
 
         try {
             LocalDateTime now = LocalDateTime.now();
-            List<TenantSubscription> dueSubscriptions = subscriptionRepository
+            List<BaseTenantSubscription> dueSubscriptions = subscriptionRepository
                 .findByNextBillingDateBeforeAndStatusIn(now,
                     List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL));
 
-            for (TenantSubscription subscription : dueSubscriptions) {
+            for (BaseTenantSubscription subscription : dueSubscriptions) {
                 try {
                     // 试用期结束处理
                     if (subscription.getInTrial() &&
@@ -88,7 +88,7 @@ public class BillingScheduler {
                     invoiceRepository.save(invoice);
 
                     // 暂停相关订阅
-                    TenantSubscription subscription = subscriptionRepository
+                    BaseTenantSubscription subscription = subscriptionRepository
                         .findById(invoice.getSubscriptionId()).orElse(null);
                     if (subscription != null && subscription.getStatus() == SubscriptionStatus.ACTIVE) {
                         subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
@@ -187,7 +187,7 @@ public class BillingScheduler {
     /**
      * 处理试用期到期
      */
-    private void handleTrialExpiry(TenantSubscription subscription) {
+    private void handleTrialExpiry(BaseTenantSubscription subscription) {
         try {
             subscription.setInTrial(false);
             subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);

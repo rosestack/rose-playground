@@ -1,6 +1,6 @@
 package io.github.rose.billing.repository;
 
-import io.github.rose.billing.entity.TenantSubscription;
+import io.github.rose.billing.entity.BaseTenantSubscription;
 import io.github.rose.billing.enums.SubscriptionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,37 +16,37 @@ import java.util.Optional;
  * @author rose
  */
 @Repository
-public interface TenantSubscriptionRepository extends JpaRepository<TenantSubscription, String> {
+public interface TenantSubscriptionRepository extends JpaRepository<BaseTenantSubscription, String> {
 
     /**
      * 根据租户ID查找当前订阅
      */
-    Optional<TenantSubscription> findByTenantId(String tenantId);
+    Optional<BaseTenantSubscription> findByTenantId(String tenantId);
 
     /**
      * 查找活跃订阅
      */
-    Optional<TenantSubscription> findByTenantIdAndStatus(String tenantId, SubscriptionStatus status);
+    Optional<BaseTenantSubscription> findByTenantIdAndStatus(String tenantId, SubscriptionStatus status);
 
     /**
      * 根据租户ID查找活跃订阅
      */
-    @Query("SELECT s FROM TenantSubscription s WHERE s.tenantId = :tenantId " +
+    @Query("SELECT s FROM BaseTenantSubscription s WHERE s.tenantId = :tenantId " +
            "AND s.status IN ('ACTIVE', 'TRIAL')")
-    Optional<TenantSubscription> findActiveByTenantId(String tenantId);
+    Optional<BaseTenantSubscription> findActiveByTenantId(String tenantId);
 
     /**
      * 查找需要计费的订阅
      */
-    List<TenantSubscription> findByNextBillingDateBeforeAndStatusIn(
+    List<BaseTenantSubscription> findByNextBillingDateBeforeAndStatusIn(
         LocalDateTime date, List<SubscriptionStatus> statuses);
 
     /**
      * 查找试用期即将到期的订阅
      */
-    @Query("SELECT s FROM TenantSubscription s WHERE s.inTrial = true " +
+    @Query("SELECT s FROM BaseTenantSubscription s WHERE s.inTrial = true " +
            "AND s.trialEndDate BETWEEN :startDate AND :endDate")
-    List<TenantSubscription> findTrialExpiringSoon(LocalDateTime startDate, LocalDateTime endDate);
+    List<BaseTenantSubscription> findTrialExpiringSoon(LocalDateTime startDate, LocalDateTime endDate);
 
     /**
      * 统计租户订阅数

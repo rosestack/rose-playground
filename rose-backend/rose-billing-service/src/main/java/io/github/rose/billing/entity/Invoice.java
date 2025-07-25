@@ -1,9 +1,8 @@
 package io.github.rose.billing.entity;
 
 import io.github.rose.billing.enums.InvoiceStatus;
-import io.github.rose.core.domain.TenantModel;
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,8 +15,8 @@ import java.util.List;
  * @author rose
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class Invoice extends TenantModel<String> {
+public class Invoice extends BaseTenantEntity {
+    private String id;
 
     /**
      * 账单号
@@ -98,6 +97,7 @@ public class Invoice extends TenantModel<String> {
      * 备注
      */
     private String notes;
+
 }
 
 

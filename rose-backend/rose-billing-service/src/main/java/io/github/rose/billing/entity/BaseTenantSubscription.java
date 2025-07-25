@@ -1,7 +1,7 @@
 package io.github.rose.billing.entity;
 
 import io.github.rose.billing.enums.SubscriptionStatus;
-import io.github.rose.core.domain.TenantModel;
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class TenantSubscription extends TenantModel<String> {
+public class BaseTenantSubscription extends BaseTenantEntity {
+    private String id;
 
     /**
      * 订阅计划ID

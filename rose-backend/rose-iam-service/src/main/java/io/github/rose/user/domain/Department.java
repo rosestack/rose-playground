@@ -1,7 +1,9 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.domain.ExtraTenantModel;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.github.rose.core.domain.HasCodeNameDescription;
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
 
 /**
@@ -9,7 +11,11 @@ import lombok.Data;
  * B2B场景，新增用户池时，自动创建一个用户池名称的组织
  */
 @Data
-public class Department extends ExtraTenantModel<Long> implements HasCodeNameDescription {
+public class Department extends BaseTenantEntity implements HasCodeNameDescription {
+    private static final long serialVersionUID = 1L;
+
+    @TableId(type = IdType.AUTO)
+    private Long id;
     /**
      * 名称
      */

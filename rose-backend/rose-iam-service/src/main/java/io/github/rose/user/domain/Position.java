@@ -1,11 +1,16 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.domain.ExtraTenantModel;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.github.rose.core.domain.HasCodeNameDescription;
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
 
 @Data
-public class Position extends ExtraTenantModel<Long> implements HasCodeNameDescription {
+public class Position extends BaseTenantEntity implements HasCodeNameDescription {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
     /**
      * 分组名称
      */

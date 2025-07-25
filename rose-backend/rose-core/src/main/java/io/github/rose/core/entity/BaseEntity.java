@@ -1,4 +1,4 @@
-package io.github.rose.infrastructure.mybatis;
+package io.github.rose.core.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;

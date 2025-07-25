@@ -1,5 +1,6 @@
 package io.github.rose.billing.entity;
 
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -8,7 +9,9 @@ import java.math.BigDecimal;
  * 账单明细项
  */
 @Data
-public class InvoiceLineItem {
+public class InvoiceLineItem extends BaseTenantEntity{
+    private String id;
+
     /**
      * 项目描述
      */

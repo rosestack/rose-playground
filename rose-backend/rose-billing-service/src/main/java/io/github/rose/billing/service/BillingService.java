@@ -1,8 +1,8 @@
 package io.github.rose.billing.service;
 
+import io.github.rose.billing.entity.BaseTenantSubscription;
 import io.github.rose.billing.entity.Invoice;
 import io.github.rose.billing.entity.SubscriptionPlan;
-import io.github.rose.billing.entity.TenantSubscription;
 import io.github.rose.billing.entity.UsageRecord;
 import io.github.rose.billing.enums.InvoiceStatus;
 import io.github.rose.billing.enums.SubscriptionStatus;
@@ -42,11 +42,11 @@ public class BillingService {
      * 创建租户订阅
      */
     @Transactional
-    public TenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
+    public BaseTenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
         SubscriptionPlan plan = planRepository.findById(planId)
             .orElseThrow(() -> new IllegalArgumentException("订阅计划不存在"));
 
-        TenantSubscription subscription = new TenantSubscription();
+        BaseTenantSubscription subscription = new BaseTenantSubscription();
         subscription.setId(UUID.randomUUID().toString());
         subscription.setTenantId(tenantId);
         subscription.setPlanId(planId);
@@ -81,7 +81,7 @@ public class BillingService {
     /**
      * 获取租户订阅信息
      */
-    public TenantSubscription getTenantSubscription(String tenantId) {
+    public BaseTenantSubscription getTenantSubscription(String tenantId) {
         return subscriptionRepository.findByTenantId(tenantId)
             .orElseThrow(() -> new IllegalArgumentException("租户订阅不存在"));
     }
@@ -90,8 +90,8 @@ public class BillingService {
      * 更改订阅计划
      */
     @Transactional
-    public TenantSubscription changePlan(String subscriptionId, String newPlanId) {
-        TenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
+    public BaseTenantSubscription changePlan(String subscriptionId, String newPlanId) {
+        BaseTenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
 
         SubscriptionPlan newPlan = planRepository.findById(newPlanId)
@@ -108,7 +108,7 @@ public class BillingService {
      */
     @Transactional
     public void cancelSubscription(String subscriptionId, String reason) {
-        TenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
+        BaseTenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
@@ -125,7 +125,7 @@ public class BillingService {
      */
     @Transactional
     public Invoice generateInvoice(String subscriptionId) {
-        TenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
+        BaseTenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
             .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
 
         SubscriptionPlan plan = planRepository.findById(subscription.getPlanId())
@@ -246,7 +246,7 @@ public class BillingService {
         invoiceRepository.save(invoice);
 
         // 激活或续期订阅
-        TenantSubscription subscription = subscriptionRepository.findById(invoice.getSubscriptionId())
+        BaseTenantSubscription subscription = subscriptionRepository.findById(invoice.getSubscriptionId())
             .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
 
         if (subscription.getStatus() == SubscriptionStatus.PENDING_PAYMENT) {
@@ -268,7 +268,7 @@ public class BillingService {
      * 检查使用量限制
      */
     public boolean checkUsageLimit(String tenantId, String metricType) {
-        TenantSubscription subscription = subscriptionRepository.findActiveByTenantId(tenantId)
+        BaseTenantSubscription subscription = subscriptionRepository.findActiveByTenantId(tenantId)
             .orElse(null);
 
         if (subscription == null) {
@@ -347,7 +347,7 @@ public class BillingService {
         return "INV-" + System.currentTimeMillis();
     }
 
-    private BigDecimal calculateBaseAmount(TenantSubscription subscription, SubscriptionPlan plan) {
+    private BigDecimal calculateBaseAmount(BaseTenantSubscription subscription, SubscriptionPlan plan) {
         if (subscription.getInTrial()) {
             return BigDecimal.ZERO;
         }
@@ -359,7 +359,7 @@ public class BillingService {
         return pricingCalculator.calculateUsageAmount(tenantId, periodStart, periodEnd, plan);
     }
 
-    private BigDecimal calculateDiscount(TenantSubscription subscription, BigDecimal amount) {
+    private BigDecimal calculateDiscount(BaseTenantSubscription subscription, BigDecimal amount) {
         // 实现折扣逻辑
         // 1. 检查长期订阅折扣
         if (subscription.getAutoRenew()) {

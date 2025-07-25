@@ -1,8 +1,8 @@
 package io.github.rose.billing.controller;
 
+import io.github.rose.billing.entity.BaseTenantSubscription;
 import io.github.rose.billing.entity.Invoice;
 import io.github.rose.billing.entity.SubscriptionPlan;
-import io.github.rose.billing.entity.TenantSubscription;
 import io.github.rose.billing.entity.UsageRecord;
 import io.github.rose.billing.service.BillingService;
 import io.github.rose.interfaces.dto.ApiResponse;
@@ -32,8 +32,8 @@ public class BillingController {
      * 创建订阅
      */
     @PostMapping("/subscriptions")
-    public ApiResponse<TenantSubscription> createSubscription(@Valid @RequestBody CreateSubscriptionRequest request) {
-        TenantSubscription subscription = billingService.createSubscription(
+    public ApiResponse<BaseTenantSubscription> createSubscription(@Valid @RequestBody CreateSubscriptionRequest request) {
+        BaseTenantSubscription subscription = billingService.createSubscription(
                 request.getTenantId(),
                 request.getPlanId(),
                 request.getStartTrial()
@@ -45,8 +45,8 @@ public class BillingController {
      * 获取租户订阅信息
      */
     @GetMapping("/subscriptions/tenant/{tenantId}")
-    public ApiResponse<TenantSubscription> getTenantSubscription(@PathVariable String tenantId) {
-        TenantSubscription subscription = billingService.getTenantSubscription(tenantId);
+    public ApiResponse<BaseTenantSubscription> getTenantSubscription(@PathVariable String tenantId) {
+        BaseTenantSubscription subscription = billingService.getTenantSubscription(tenantId);
         return ApiResponse.success(subscription);
     }
 
@@ -54,10 +54,10 @@ public class BillingController {
      * 升级/降级订阅计划
      */
     @PutMapping("/subscriptions/{subscriptionId}/plan")
-    public ApiResponse<TenantSubscription> changePlan(
+    public ApiResponse<BaseTenantSubscription> changePlan(
             @PathVariable String subscriptionId,
             @Valid @RequestBody ChangePlanRequest request) {
-        TenantSubscription subscription = billingService.changePlan(subscriptionId, request.getNewPlanId());
+        BaseTenantSubscription subscription = billingService.changePlan(subscriptionId, request.getNewPlanId());
         return ApiResponse.success(subscription);
     }
 

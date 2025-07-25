@@ -1,6 +1,8 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.domain.ExtraTenantModel;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,7 +15,10 @@ import java.io.Serializable;
  * withUserSource
  */
 @Data
-public class User extends ExtraTenantModel<Long> implements Serializable {
+public class User extends BaseTenantEntity implements Serializable {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
     /**
      * 用户名，唯一
      */

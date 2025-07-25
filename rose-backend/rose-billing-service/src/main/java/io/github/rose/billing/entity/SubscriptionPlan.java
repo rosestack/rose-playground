@@ -1,7 +1,7 @@
 package io.github.rose.billing.entity;
 
 import io.github.rose.billing.enums.BillingType;
-import io.github.rose.core.domain.TenantModel;
+import io.github.rose.core.entity.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,7 +16,8 @@ import java.util.Map;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SubscriptionPlan extends TenantModel<String> {
+public class SubscriptionPlan extends BaseTenantEntity{
+    private String id;
 
     /**
      * 计划名称

@@ -1,10 +1,10 @@
 package io.github.rose.user.domain;
 
-import io.github.rose.core.domain.AuditModel;
+import io.github.rose.core.entity.BaseEntity;
 import lombok.Data;
 
 @Data
-public class UserGroup extends AuditModel<Long> {
+public class UserGroup extends BaseEntity {
 
     private String groupId;
 
