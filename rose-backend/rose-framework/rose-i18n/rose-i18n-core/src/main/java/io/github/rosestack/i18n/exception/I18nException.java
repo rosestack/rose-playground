@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.rosestack.i18n;
+package io.github.rosestack.i18n.exception;
 
 import io.github.rosestack.i18n.util.I18nUtils;
 
@@ -27,12 +27,12 @@ import java.util.StringJoiner;
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
  */
-public class MessageSourceException extends RuntimeException {
+public class I18nException extends RuntimeException {
 
     private final String message;
     private final Object[] args;
 
-    public MessageSourceException(String message, Object... args) {
+    public I18nException(String message, Object... args) {
         this.message = message;
         this.args = args;
     }
@@ -49,7 +49,7 @@ public class MessageSourceException extends RuntimeException {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", MessageSourceException.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", I18nException.class.getSimpleName() + "[", "]")
                 .add("message='" + message + "'")
                 .add("args=" + Arrays.toString(args))
                 .add("localized message='" + getLocalizedMessage() + "'")

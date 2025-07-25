@@ -1,10 +1,7 @@
 package io.github.rosestack.i18n.spring;
 
 import io.github.rosestack.core.spring.SpringBeanUtils;
-import io.github.rosestack.i18n.AbstractMessageSource;
-import io.github.rosestack.i18n.CompositeMessageSource;
-import io.github.rosestack.i18n.I18nMessageSource;
-import io.github.rosestack.i18n.ReloadedResourceMessageSource;
+import io.github.rosestack.i18n.*;
 import io.github.rosestack.i18n.spring.context.ResourceMessageSourceChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +22,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static io.github.rosestack.i18n.spring.I18nConstants.DEFAULT_LOCALE_PROPERTY_NAME;
@@ -58,9 +58,15 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
     private int order;
     private Locale defaultLocale;
     private List<Locale> supportedLocales;
+    private MessageCacheLoader messageCacheLoader;
 
     public I18nMessageSourceFactoryBean(String source) {
         this(source, Ordered.LOWEST_PRECEDENCE);
+    }
+
+    public I18nMessageSourceFactoryBean(String source, MessageCacheLoader messageCacheLoader) {
+        this(source, Ordered.LOWEST_PRECEDENCE);
+        this.messageCacheLoader = messageCacheLoader;
     }
 
     public I18nMessageSourceFactoryBean(String source, int order) {
@@ -114,18 +120,6 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
         return order;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public void setDefaultLocale(Locale defaultLocale) {
-        this.defaultLocale = defaultLocale;
-    }
-
-    public void setSupportedLocales(List<Locale> supportedLocales) {
-        this.supportedLocales = supportedLocales;
-    }
-
     private List<AbstractMessageSource> initMessageSources() {
         List<String> factoryNames = loadFactoryNames(AbstractMessageSource.class, classLoader);
 
@@ -138,14 +132,16 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
         for (String factoryName : factoryNames) {
             Class<?> factoryClass = resolveClassName(factoryName, classLoader);
             Constructor constructor = getConstructorIfAvailable(factoryClass, String.class);
-            AbstractMessageSource serviceMessageSource = (AbstractMessageSource) instantiateClass(constructor, source);
-            messageSources.add(serviceMessageSource);
+            AbstractMessageSource messageSource = (AbstractMessageSource) instantiateClass(constructor, source);
+            messageSources.add(messageSource);
 
-            SpringBeanUtils.invokeAwareInterfaces(serviceMessageSource, context);
+            SpringBeanUtils.invokeAwareInterfaces(messageSource, context);
 
-            serviceMessageSource.setDefaultLocale(resolvedDefaultLocale);
-            serviceMessageSource.setSupportedLocales(resolvedSupportedLocales);
-            serviceMessageSource.init();
+            messageSource.setDefaultLocale(resolvedDefaultLocale);
+            messageSource.setSupportedLocales(resolvedSupportedLocales);
+            messageSource.setMessageCacheLoader(messageCacheLoader);
+
+            messageSource.init();
         }
 
         OrderComparator.sort(messageSources);
@@ -193,11 +189,18 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
     public void onApplicationEvent(ResourceMessageSourceChangedEvent event) {
         Iterable<String> changedResources = event.getChangedResources();
         logger.debug("Receive event change resource: {}", changedResources);
+
         for (I18nMessageSource i18nMessageSource : getAllI18nMessageSources()) {
             if (i18nMessageSource instanceof ReloadedResourceMessageSource) {
                 ReloadedResourceMessageSource reloadableResourceServiceMessageSource = (ReloadedResourceMessageSource) i18nMessageSource;
+
                 if (reloadableResourceServiceMessageSource.canReload(changedResources)) {
                     reloadableResourceServiceMessageSource.reload(changedResources);
+
+                    if (messageCacheLoader != null) {
+                        changedResources.forEach(resource -> messageCacheLoader.evictCache(resource));
+                    }
+
                     logger.debug("change resource [{}] activate {} reloaded", changedResources, reloadableResourceServiceMessageSource);
                 }
             }
@@ -207,4 +210,17 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
     public List<I18nMessageSource> getAllI18nMessageSources() {
         return findAllMessageSources(this);
     }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public void setDefaultLocale(Locale defaultLocale) {
+        this.defaultLocale = defaultLocale;
+    }
+
+    public void setSupportedLocales(List<Locale> supportedLocales) {
+        this.supportedLocales = supportedLocales;
+    }
+
 }

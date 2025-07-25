@@ -19,7 +19,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 @Configuration
-public class I18nConfig implements WebMvcConfigurer {
+public class MessageConfig implements WebMvcConfigurer {
     /**
      * 消息源配置
      */

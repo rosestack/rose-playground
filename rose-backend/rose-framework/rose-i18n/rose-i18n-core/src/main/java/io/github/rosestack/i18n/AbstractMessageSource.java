@@ -1,7 +1,7 @@
 package io.github.rosestack.i18n;
 
+import io.github.rosestack.i18n.util.I18nUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -9,16 +9,17 @@ import org.springframework.lang.Nullable;
 
 import java.util.*;
 
-import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractMessageSource implements HierarchicalMessageSource, I18nMessageSource {
-    private static final Logger log = LoggerFactory.getLogger(AbstractMessageSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMessageSource.class);
+
     protected String source;
 
     private I18nMessageSource parentMessageSource;
     private Locale defaultLocale;
     private List<Locale> supportedLocales;
+    private MessageCacheLoader messageCacheLoader;
 
     protected AbstractMessageSource(String source) {
         requireNonNull(source, "'source' argument must not be null");
@@ -42,34 +43,56 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
             return null;
         }
 
+        // 首先尝试从缓存获取
+        if (messageCacheLoader != null) {
+            String cachedMessage = messageCacheLoader.getFromCache(code, locale);
+            if (cachedMessage != null) {
+                return cachedMessage;
+            }
+        }
+
         String msg = this.getMessageInternal(code, locale, args);
-        if (msg != null) {
-            return msg;
+        if (msg == null) {
+            msg = getMessageFromParent(code, locale, args);
         }
-        msg = getMessageFromParent(code, locale, args);
+
         if (msg != null) {
-            return msg;
+            // 将消息放入缓存
+            if (messageCacheLoader != null) {
+                messageCacheLoader.putToCache(code, locale, msg);
+            }
         }
-        return null;
+
+        return msg;
     }
 
     @Nullable
     @Override
-    public Map<String, String>  getMessages(Locale locale) {
-        Map<String, String>  messages = this.getMessagesInternal(locale);
-        if (ObjectUtils.isEmpty(messages)) {
-            return this.getMessagesFromParent(locale);
+    public Map<String, String> getMessages(Locale locale) {
+        // 首先尝试从缓存获取所有消息
+        if (messageCacheLoader != null) {
         }
+
+        Map<String, String> messages = this.getMessagesInternal(locale);
+        if (ObjectUtils.isEmpty(messages)) {
+            messages = this.getMessagesFromParent(locale);
+        }
+
+        // 将获取到的消息批量放入缓存
+        if (messages != null && !messages.isEmpty() && messageCacheLoader != null) {
+            messageCacheLoader.putToCache(messages, locale);
+        }
+
         return messages;
     }
 
-    protected abstract Map<String, String>  getMessagesInternal(Locale locale);
+    protected abstract Map<String, String> getMessagesInternal(Locale locale);
 
     @Nullable
-    protected abstract String  getMessageInternal(@Nullable String code, @Nullable Locale locale, @Nullable Object... args);
+    protected abstract String getMessageInternal(@Nullable String code, @Nullable Locale locale, @Nullable Object... args);
 
     @Nullable
-    protected Map<String, String>  getMessagesFromParent(Locale locale) {
+    protected Map<String, String> getMessagesFromParent(Locale locale) {
         I18nMessageSource parent = this.getParentMessageSource();
         if (parent != null) {
             if (parent instanceof AbstractMessageSource) {
@@ -138,19 +161,19 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
 
     public void setDefaultLocale(Locale defaultLocale) {
         this.defaultLocale = defaultLocale;
-        log.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
+        logger.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
     }
 
     public void setSupportedLocales(List<Locale> supportedLocales) {
         this.supportedLocales = resolveLocales(supportedLocales);
-        log.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
+        logger.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
     }
 
     protected static List<Locale> resolveLocales(List<Locale> supportedLocales) {
         List<Locale> resolvedLocales = new ArrayList<>();
         for (Locale supportedLocale : supportedLocales) {
             addLocale(resolvedLocales, supportedLocale);
-            for (Locale derivedLocale : resolveDerivedLocales(supportedLocale)) {
+            for (Locale derivedLocale : I18nUtils.getFallbackLocales(supportedLocale)) {
                 addLocale(resolvedLocales, derivedLocale);
             }
         }
@@ -163,33 +186,13 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         }
     }
 
-    protected static List<Locale> resolveDerivedLocales(Locale locale) {
-        String language = locale.getLanguage();
-        String region = locale.getCountry();
-        String variant = locale.getVariant();
-
-        boolean hasRegion = StringUtils.isNotBlank(region);
-        boolean hasVariant = StringUtils.isNotBlank(variant);
-
-        if (!hasRegion && !hasVariant) {
-            return emptyList();
-        }
-
-        List<Locale> derivedLocales = new LinkedList<>();
-
-        if (hasVariant) {
-            derivedLocales.add(new Locale(language, region));
-        }
-
-        if (hasRegion) {
-            derivedLocales.add(new Locale(language));
-        }
-
-        return derivedLocales;
-    }
 
     @Override
     public String getSource() {
         return source;
+    }
+
+    public void setMessageCacheLoader(MessageCacheLoader messageCacheLoader) {
+        this.messageCacheLoader = messageCacheLoader;
     }
 }

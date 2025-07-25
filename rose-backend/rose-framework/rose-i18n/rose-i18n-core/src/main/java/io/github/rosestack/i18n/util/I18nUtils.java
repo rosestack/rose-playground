@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static java.util.Collections.emptyList;
+
 public abstract class I18nUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(I18nUtils.class);
@@ -56,6 +58,48 @@ public abstract class I18nUtils {
         } else {
             allMessageSources.add(i18nMessageSource);
         }
+    }
+
+    public static List<Locale> resolveDerivedLocales(Locale locale) {
+        String language = locale.getLanguage();
+        String region = locale.getCountry();
+        String variant = locale.getVariant();
+
+        boolean hasRegion = StringUtils.isNotBlank(region);
+        boolean hasVariant = StringUtils.isNotBlank(variant);
+
+        if (!hasRegion && !hasVariant) {
+            return emptyList();
+        }
+
+        List<Locale> derivedLocales = new LinkedList<>();
+
+        if (hasVariant) {
+            derivedLocales.add(new Locale(language, region));
+        }
+
+        if (hasRegion) {
+            derivedLocales.add(new Locale(language));
+        }
+
+        return derivedLocales;
+    }
+
+    public static Locale resolveLocale(String resource) {
+        if (StringUtils.isBlank(resource)) {
+            return null;
+        }
+
+        String[] localeParts = StringUtils.split(resource, "_");
+        if (localeParts.length == 0) {
+            return null;
+        }
+
+        String language = localeParts[0];
+        String region = localeParts.length > 1 ? localeParts[1] : null;
+        String variant = localeParts.length > 2 ? localeParts[2] : null;
+
+        return new Locale(language, region, variant);
     }
 
     /**
