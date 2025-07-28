@@ -25,7 +25,7 @@ public class CorsConfig {
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
     public CorsConfigurationSource corsConfigurationSource() {
-        WebProperties.Cors cors = webProperties.getCors();
+        CorsConfiguration cors = webProperties.getCors();
 
         CorsConfiguration configuration = new CorsConfiguration();
 
@@ -45,7 +45,7 @@ public class CorsConfig {
         }
 
         // 设置是否允许携带凭证
-        configuration.setAllowCredentials(cors.isAllowCredentials());
+        configuration.setAllowCredentials(cors.getAllowCredentials());
 
         // 设置预检请求的有效期
         configuration.setMaxAge(cors.getMaxAge());

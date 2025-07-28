@@ -13,6 +13,7 @@ import java.sql.Statement;
  * 敏感字段脱敏拦截器
  * <p>
  * 在查询结果返回时自动对标记了 @SensitiveField 的字段进行脱敏处理。
+ * 使用简单直接的脱敏方式，无复杂的策略和规则。
  * </p>
  *
  * @author Rose Team
@@ -37,8 +38,13 @@ public class SensitiveFieldInterceptor implements Interceptor {
             return result;
         }
 
-        // 对结果进行脱敏处理
-        return SensitiveDataProcessor.desensitizeObject(result);
+        // 直接使用 SensitiveDataProcessor 进行脱敏处理
+        try {
+            return SensitiveDataProcessor.desensitizeObject(result);
+        } catch (Exception e) {
+            log.error("脱敏处理失败: {}", e.getMessage(), e);
+            return result; // 失败时返回原始结果
+        }
     }
 
     public Object plugin(Object target) {

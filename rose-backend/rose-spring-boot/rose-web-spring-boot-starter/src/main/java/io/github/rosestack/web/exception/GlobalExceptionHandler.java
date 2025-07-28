@@ -1,94 +1,140 @@
 package io.github.rosestack.web.exception;
 
 import io.github.rosestack.core.model.ApiResponse;
-import jakarta.validation.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Locale;
+import java.util.stream.Collectors;
+
 
 /**
  * 全局异常处理器
  * <p>
- * 统一处理业务异常、参数校验异常、系统异常，支持国际化
- * </p>
+ * 注意：响应头由 ResponseHeaderFilter 统一处理
  *
- * @author rosestack
+ * @author chensoul
+ * @see RestControllerAdvice
+ * @see ExceptionHandler
  * @since 1.0.0
  */
+@Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
     private final MessageSource messageSource;
 
-    public GlobalExceptionHandler(MessageSource messageSource) {
-        this.messageSource = messageSource;
-    }
-
-    /**
-     * 处理业务异常
-     */
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex, Locale locale) {
-        String message = getMessage(ex.getMessageKey(), ex.getMessageArgs(), locale);
-        log.warn("业务异常: {}", message);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.businessError(message));
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+            BusinessException e, HttpServletRequest request, Locale locale) {
+        String localizedMessage = getLocalizedMessage(e.getMessageKey(), e.getMessageArgs(), locale);
+        log.warn("业务异常: {} - {} - {}", request.getRequestURI(), e.getMessageKey(), localizedMessage);
+
+        // 将异常存储到请求属性中，供过滤器使用
+        request.setAttribute("exception", e);
+
+        ApiResponse<Void> response = ApiResponse.error(500, localizedMessage);
+        return ResponseEntity.status(500).body(response);
     }
 
-    /**
-     * 处理限流异常
-     */
+
     @ExceptionHandler(RateLimitException.class)
-    public ResponseEntity<ApiResponse<Void>> handleRateLimitException(RateLimitException ex, Locale locale) {
-        String message = getMessage(ex.getMessageKey(), ex.getMessageArgs(), locale);
-        log.warn("限流异常: {}", message);
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(ApiResponse.error(429, message));
+    public ResponseEntity<ApiResponse<Void>> handleRateLimitException(
+            RateLimitException e, HttpServletRequest request, Locale locale) {
+        String localizedMessage = getLocalizedMessage(e.getMessageKey(), e.getMessageArgs(), locale);
+        log.warn("限流异常: {} - {} - {}", request.getRequestURI(), e.getMessageKey(), localizedMessage);
+
+        // 将异常存储到请求属性中，供过滤器使用
+        request.setAttribute("exception", e);
+
+        ApiResponse<Void> response = ApiResponse.error(429, localizedMessage);
+        return ResponseEntity.status(429).body(response);
     }
 
-    /**
-     * 处理参数校验异常
-     */
-    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class, ConstraintViolationException.class})
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(Exception ex, Locale locale) {
-        String message = "参数校验失败";
-        if (ex instanceof MethodArgumentNotValidException manve) {
-            message = manve.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        } else if (ex instanceof BindException be) {
-            message = be.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        } else if (ex instanceof ConstraintViolationException cve) {
-            message = cve.getConstraintViolations().iterator().next().getMessage();
-        }
-        log.warn("参数校验异常: {}", message);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(ApiResponse.validationError(message));
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(
+            MethodArgumentNotValidException e, HttpServletRequest request, Locale locale) {
+        String localizedMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> {
+                    String fieldName = error.getField();
+                    String defaultMessage = error.getDefaultMessage();
+                    try {
+                        return messageSource.getMessage(
+                                "validation." + fieldName + "." + error.getCode(),
+                                error.getArguments(),
+                                defaultMessage,
+                                locale
+                        );
+                    } catch (NoSuchMessageException ex) {
+                        return defaultMessage;
+                    }
+                })
+                .collect(Collectors.joining(", "));
+
+        log.warn("参数验证失败: {} - {}", request.getRequestURI(), localizedMessage);
+
+        // 将异常存储到请求属性中，供过滤器使用
+        request.setAttribute("exception", e);
+
+        ApiResponse<Void> response = ApiResponse.error(400, localizedMessage);
+        return ResponseEntity.badRequest().body(response);
     }
 
-    /**
-     * 处理系统异常
-     */
+//    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
+//    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(
+//            Exception e, HttpServletRequest request, Locale locale) {
+//        String localizedMessage = getLocalizedMessage("auth.error.authentication_failed", null, locale);
+//        log.warn("认证失败: {} - {}", request.getRequestURI(), localizedMessage);
+//
+//        // 将异常存储到请求属性中，供过滤器使用
+//        request.setAttribute("exception", e);
+//
+//        ApiResponse<Void> response = ApiResponse.error(401, localizedMessage);
+//        return ResponseEntity.status(401).body(response);
+//    }
+//
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(
+//            AccessDeniedException e, HttpServletRequest request, Locale locale) {
+//        String localizedMessage = getLocalizedMessage("auth.error.access_denied", null, locale);
+//        log.warn("访问被拒绝: {} - {}", request.getRequestURI(), localizedMessage);
+//
+//        // 将异常存储到请求属性中，供过滤器使用
+//        request.setAttribute("exception", e);
+//
+//        ApiResponse<Void> response = ApiResponse.error(403, localizedMessage);
+//        return ResponseEntity.status(403).body(response);
+//    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception ex, Locale locale) {
-        log.error("系统异常", ex);
-        String message = getMessage("system.error", null, locale);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(message));
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(
+            Exception e, HttpServletRequest request, Locale locale) {
+        String localizedMessage = getLocalizedMessage("common.error.internal_server", null, locale);
+        log.error("系统异常: {} - {}", request.getRequestURI(), e.getMessage(), e);
+
+        // 将异常存储到请求属性中，供过滤器使用
+        request.setAttribute("exception", e);
+
+        ApiResponse<Void> response = ApiResponse.error(500, localizedMessage);
+        return ResponseEntity.status(500).body(response);
     }
 
-    private String getMessage(String key, Object[] args, Locale locale) {
+    /**
+     * 获取国际化消息
+     */
+    private String getLocalizedMessage(String messageKey, Object[] args, Locale locale) {
         try {
-            return messageSource.getMessage(key, args, locale);
-        } catch (Exception e) {
-            return key;
+            return messageSource.getMessage(messageKey, args, messageKey, locale);
+        } catch (NoSuchMessageException e) {
+            log.warn("未找到国际化消息: {}", messageKey);
+            return messageKey;
         }
     }
-} 
+}

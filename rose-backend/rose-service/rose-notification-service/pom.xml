@@ -15,13 +15,19 @@
     <dependencies>
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-shared-service</artifactId>
-            <version>${project.version}</version>
+            <artifactId>rose-notice</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-notice</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>rose-web-spring-boot-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.rosestack</groupId>
+            <artifactId>rose-mybatis-spring-boot-starter</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

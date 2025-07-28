@@ -23,7 +23,9 @@ import org.springframework.context.annotation.Import;
         CorsConfig.class,
         JacksonConfig.class,
         AsyncConfig.class,
-        MessageConfig.class
+        MessageConfig.class,
+        MetricConfig.class,
+        WebMvcConfig.class
 })
 public class WebAutoConfig {
 

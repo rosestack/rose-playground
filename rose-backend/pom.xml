@@ -38,8 +38,6 @@
         <module>rose-spring-boot/rose-mybatis-spring-boot-starter</module>
         <module>rose-spring-boot/rose-redis-spring-boot-starter</module>
         <module>rose-spring-boot/rose-web-spring-boot-starter</module>
-        <module>rose-service/rose-shared-api</module>
-        <module>rose-service/rose-shared-service</module>
         <module>rose-service/rose-iam-api</module>
         <module>rose-service/rose-iam-service</module>
         <module>rose-service/rose-notification-service</module>

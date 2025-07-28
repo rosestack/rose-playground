@@ -1,0 +1,16 @@
+# Rose Web Spring Boot Starter 默认配置
+rose:
+  web:
+    # 是否启用 Web 功能
+    enabled: true
+    # 过滤器配置
+    filter:
+      # 请求ID过滤器
+      request-id:
+        enabled: true
+        header-name: "X-Request-ID"
+        mdc-key: "requestId"
+      
+      # XSS过滤器
+      xss:
+        enabled: true

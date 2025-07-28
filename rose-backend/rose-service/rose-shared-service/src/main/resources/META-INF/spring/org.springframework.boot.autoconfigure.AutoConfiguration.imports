@@ -1,6 +1,0 @@
-io.github.rosestack.infrastructure.config.AopConfig
-io.github.rosestack.infrastructure.config.AsyncConfig
-io.github.rosestack.infrastructure.config.MessageConfig
-io.github.rosestack.infrastructure.config.MetricConfig
-io.github.rosestack.infrastructure.config.RedisConfig
-io.github.rosestack.infrastructure.exception.GlobalExceptionHandler
