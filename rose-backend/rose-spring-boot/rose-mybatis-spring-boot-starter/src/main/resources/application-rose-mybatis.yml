@@ -7,7 +7,7 @@ rose:
     # 多租户配置
     tenant:
       # 是否启用多租户
-      enabled: true
+      enabled: false
       # 租户字段名
       column: tenant_id
       # 忽略多租户的表名列表（根据实际需要配置）

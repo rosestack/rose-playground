@@ -1,6 +1,5 @@
 package io.github.rosestack.mybatis.desensitization;
 
-import io.github.rosestack.mybatis.annotation.SensitiveField;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +18,7 @@ class SensitiveDataProcessorTest {
         String phone = "13800138000";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(phone, SensitiveField.SensitiveType.PHONE, null);
+        String result = SensitiveDataProcessor.desensitize(phone, SensitiveType.PHONE, null);
 
         // Then
         assertThat(result).isEqualTo("138****8000");
@@ -31,7 +30,7 @@ class SensitiveDataProcessorTest {
         String idCard = "110101199001011234";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(idCard, SensitiveField.SensitiveType.ID_CARD, null);
+        String result = SensitiveDataProcessor.desensitize(idCard, SensitiveType.ID_CARD, null);
 
         // Then
         assertThat(result).isEqualTo("110101****1234");
@@ -43,7 +42,7 @@ class SensitiveDataProcessorTest {
         String email = "test@example.com";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(email, SensitiveField.SensitiveType.EMAIL, null);
+        String result = SensitiveDataProcessor.desensitize(email, SensitiveType.EMAIL, null);
 
         // Then
         assertThat(result).isEqualTo("tes***@example.com");
@@ -55,7 +54,7 @@ class SensitiveDataProcessorTest {
         String bankCard = "6222021234567890";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(bankCard, SensitiveField.SensitiveType.BANK_CARD, null);
+        String result = SensitiveDataProcessor.desensitize(bankCard, SensitiveType.BANK_CARD, null);
 
         // Then
         assertThat(result).isEqualTo("6222****7890");
@@ -67,7 +66,7 @@ class SensitiveDataProcessorTest {
         String name = "张三丰";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(name, SensitiveField.SensitiveType.NAME, null);
+        String result = SensitiveDataProcessor.desensitize(name, SensitiveType.NAME, null);
 
         // Then
         assertThat(result).isEqualTo("张*丰");
@@ -79,7 +78,7 @@ class SensitiveDataProcessorTest {
         String address = "北京市朝阳区建国门外大街1号";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(address, SensitiveField.SensitiveType.ADDRESS, null);
+        String result = SensitiveDataProcessor.desensitize(address, SensitiveType.ADDRESS, null);
 
         // Then
         assertThat(result).isEqualTo("北京市***号");
@@ -92,7 +91,7 @@ class SensitiveDataProcessorTest {
         String rule = "2,3";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(value, SensitiveField.SensitiveType.CUSTOM, rule);
+        String result = SensitiveDataProcessor.desensitize(value, SensitiveType.CUSTOM, rule);
 
         // Then
         assertThat(result).isEqualTo("12*****890");
@@ -101,9 +100,9 @@ class SensitiveDataProcessorTest {
     @Test
     void shouldHandleNullAndEmptyValues() {
         // When & Then
-        assertThat(SensitiveDataProcessor.desensitize(null, SensitiveField.SensitiveType.PHONE, null)).isNull();
-        assertThat(SensitiveDataProcessor.desensitize("", SensitiveField.SensitiveType.PHONE, null)).isEmpty();
-        assertThat(SensitiveDataProcessor.desensitize("   ", SensitiveField.SensitiveType.PHONE, null)).isEqualTo("   ");
+        assertThat(SensitiveDataProcessor.desensitize(null, SensitiveType.PHONE, null)).isNull();
+        assertThat(SensitiveDataProcessor.desensitize("", SensitiveType.PHONE, null)).isEmpty();
+        assertThat(SensitiveDataProcessor.desensitize("   ", SensitiveType.PHONE, null)).isEqualTo("   ");
     }
 
     @Test
@@ -112,7 +111,7 @@ class SensitiveDataProcessorTest {
         String shortPhone = "123";
 
         // When
-        String result = SensitiveDataProcessor.desensitize(shortPhone, SensitiveField.SensitiveType.PHONE, null);
+        String result = SensitiveDataProcessor.desensitize(shortPhone, SensitiveType.PHONE, null);
 
         // Then
         assertThat(result).isEqualTo("123"); // 太短的值不脱敏

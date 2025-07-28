@@ -7,12 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
@@ -37,7 +33,7 @@ public class DefaultFieldEncryptor implements FieldEncryptor {
     private static final String DEFAULT_AES_KEY = "MySecretKey12345"; // 16字节
 
     @Override
-    public String encrypt(String plainText, EncryptField.EncryptType encryptType) {
+    public String encrypt(String plainText, EncryptType encryptType) {
         if (!StringUtils.hasText(plainText)) {
             return plainText;
         }
@@ -74,7 +70,7 @@ public class DefaultFieldEncryptor implements FieldEncryptor {
     }
 
     @Override
-    public String decrypt(String cipherText, EncryptField.EncryptType encryptType) {
+    public String decrypt(String cipherText, EncryptType encryptType) {
         if (!StringUtils.hasText(cipherText)) {
             return cipherText;
         }
@@ -111,10 +107,10 @@ public class DefaultFieldEncryptor implements FieldEncryptor {
     }
 
     @Override
-    public boolean supports(EncryptField.EncryptType encryptType) {
-        return encryptType == EncryptField.EncryptType.AES ||
-               encryptType == EncryptField.EncryptType.DES ||
-               encryptType == EncryptField.EncryptType.DES3;
+    public boolean supports(EncryptType encryptType) {
+        return encryptType == EncryptType.AES ||
+                encryptType == EncryptType.DES ||
+                encryptType == EncryptType.DES3;
     }
 
     /**
@@ -237,15 +233,5 @@ public class DefaultFieldEncryptor implements FieldEncryptor {
             }
             return sb.toString();
         }
-    }
-
-    /**
-     * 生成随机密钥（工具方法）
-     */
-    public static String generateKey(String algorithm, int keyLength) throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance(algorithm);
-        keyGenerator.init(keyLength, new SecureRandom());
-        SecretKey secretKey = keyGenerator.generateKey();
-        return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 }

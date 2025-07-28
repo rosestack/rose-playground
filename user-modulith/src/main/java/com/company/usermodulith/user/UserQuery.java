@@ -24,6 +24,8 @@ public class UserQuery {
      */
     private String email;
 
+    private String phone;
+
     /**
      * 状态（可选）
      */

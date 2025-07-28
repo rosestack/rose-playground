@@ -133,7 +133,7 @@ public class ContextUtils {
         }
 
         // 3. 返回默认值
-        return "prod";
+        return "dev";
     }
 
     /**
@@ -172,7 +172,7 @@ public class ContextUtils {
             // 使用反射避免强依赖 Spring Security
             Class<?> securityContextHolderClass = Class.forName("org.springframework.security.core.context.SecurityContextHolder");
             Object context = securityContextHolderClass.getMethod("getContext").invoke(null);
-            
+
             if (context != null) {
                 Object authentication = context.getClass().getMethod("getAuthentication").invoke(context);
                 if (authentication != null) {

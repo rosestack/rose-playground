@@ -1,5 +1,8 @@
 package io.github.rosestack.mybatis.annotation;
 
+import io.github.rosestack.mybatis.datapermission.DataPermissionType;
+import io.github.rosestack.mybatis.datapermission.DataScope;
+
 import java.lang.annotation.*;
 
 /**
@@ -52,74 +55,4 @@ public @interface DataPermission {
      * @return 数据权限范围
      */
     DataScope scope() default DataScope.SELF;
-
-    /**
-     * 数据权限类型枚举
-     */
-    enum DataPermissionType {
-        /**
-         * 用户级权限
-         */
-        USER,
-        
-        /**
-         * 部门级权限
-         */
-        DEPT,
-        
-        /**
-         * 组织级权限
-         */
-        ORG,
-        
-        /**
-         * 角色级权限
-         */
-        ROLE,
-        
-        /**
-         * 自定义权限
-         */
-        CUSTOM
-    }
-
-    /**
-     * 数据权限范围枚举
-     */
-    enum DataScope {
-        /**
-         * 仅本人数据
-         */
-        SELF,
-        
-        /**
-         * 本部门数据
-         */
-        DEPT,
-        
-        /**
-         * 本部门及下级部门数据
-         */
-        DEPT_AND_CHILD,
-        
-        /**
-         * 本组织数据
-         */
-        ORG,
-        
-        /**
-         * 本组织及下级组织数据
-         */
-        ORG_AND_CHILD,
-        
-        /**
-         * 全部数据
-         */
-        ALL,
-        
-        /**
-         * 自定义数据范围
-         */
-        CUSTOM
-    }
 }

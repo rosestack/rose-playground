@@ -1,9 +1,9 @@
 package com.company.usermodulith.user.controller;
 
-import com.company.usermodulith.shared.model.ApiResponse;
-import com.company.usermodulith.shared.model.PageRequest;
-import com.company.usermodulith.shared.model.PageResponse;
 import com.company.usermodulith.user.*;
+import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.core.model.PageRequest;
+import io.github.rosestack.core.model.PageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;

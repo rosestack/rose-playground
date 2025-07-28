@@ -68,7 +68,7 @@ public class SensitiveDataProcessor {
      * @param customRule    自定义规则
      * @return 脱敏后的值
      */
-    public static String desensitize(String originalValue, SensitiveField.SensitiveType sensitiveType, String customRule) {
+    public static String desensitize(String originalValue, SensitiveType sensitiveType, String customRule) {
         if (!StringUtils.hasText(originalValue)) {
             return originalValue;
         }
@@ -87,6 +87,8 @@ public class SensitiveDataProcessor {
                     return desensitizeName(originalValue);
                 case ADDRESS:
                     return desensitizeAddress(originalValue);
+                case SECRET:
+                    return "******";
                 case CUSTOM:
                     return desensitizeCustom(originalValue, customRule);
                 default:

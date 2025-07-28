@@ -2,6 +2,7 @@ package io.github.rosestack.mybatis.interceptor;
 
 import io.github.rosestack.mybatis.annotation.SensitiveField;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.mybatis.desensitization.SensitiveType;
 import lombok.Data;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.plugin.Invocation;
@@ -44,7 +45,7 @@ class SensitiveFieldInterceptorTest {
         properties = new RoseMybatisProperties();
         properties.getDesensitization().setEnabled(true);
         properties.getDesensitization().setEnvironments("prod");
-        
+
         interceptor = new SensitiveFieldInterceptor(properties);
     }
 
@@ -66,7 +67,7 @@ class SensitiveFieldInterceptorTest {
         // Then
         assertThat(result).isInstanceOf(TestUser.class);
         TestUser desensitizedUser = (TestUser) result;
-        
+
         assertThat(desensitizedUser.getName()).isEqualTo("张三"); // 非敏感字段不变
         assertThat(desensitizedUser.getPhone()).isEqualTo("138****8000"); // 手机号脱敏
         assertThat(desensitizedUser.getEmail()).isEqualTo("zha***@example.com"); // 邮箱脱敏
@@ -98,13 +99,13 @@ class SensitiveFieldInterceptorTest {
         assertThat(result).isInstanceOf(List.class);
         @SuppressWarnings("unchecked")
         List<TestUser> desensitizedUsers = (List<TestUser>) result;
-        
+
         assertThat(desensitizedUsers).hasSize(2);
-        
+
         TestUser firstUser = desensitizedUsers.get(0);
         assertThat(firstUser.getPhone()).isEqualTo("138****8000");
         assertThat(firstUser.getEmail()).isEqualTo("zha***@example.com");
-        
+
         TestUser secondUser = desensitizedUsers.get(1);
         assertThat(secondUser.getPhone()).isEqualTo("139****9000");
         assertThat(secondUser.getEmail()).isEqualTo("l***@example.com");
@@ -114,7 +115,7 @@ class SensitiveFieldInterceptorTest {
     void shouldNotDesensitizeWhenDisabled() throws Throwable {
         // Given
         properties.getDesensitization().setEnabled(false);
-        
+
         TestUser user = new TestUser();
         user.setPhone("13800138000");
         user.setEmail("zhang@example.com");
@@ -186,14 +187,14 @@ class SensitiveFieldInterceptorTest {
     public static class TestUser {
         private Long id;
         private String name;
-        
-        @SensitiveField(SensitiveField.SensitiveType.PHONE)
+
+        @SensitiveField(SensitiveType.PHONE)
         private String phone;
-        
-        @SensitiveField(SensitiveField.SensitiveType.EMAIL)
+
+        @SensitiveField(SensitiveType.EMAIL)
         private String email;
-        
-        @SensitiveField(SensitiveField.SensitiveType.ID_CARD)
+
+        @SensitiveField(SensitiveType.ID_CARD)
         private String idCard;
     }
 

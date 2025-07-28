@@ -44,6 +44,19 @@ user-modulith/
 │       │   └── BaseEntity.java          # 基础实体类
 │       └── config/
 │           └── MyBatisPlusConfig.java   # MyBatis Plus 配置
+├── docker/                              # Docker 配置文件
+│   ├── mysql/                          # MySQL 配置
+│   │   ├── conf.d/my.cnf               # MySQL 配置文件
+│   │   └── init/                       # 数据库初始化脚本
+│   │       ├── 01-schema.sql           # 数据库表结构
+│   │       └── 02-data.sql             # 测试数据
+│   ├── redis/                          # Redis 配置
+│   │   └── redis.conf                  # Redis 配置文件
+│   └── README.md                       # Docker 使用说明
+├── docker-compose.yml                  # 完整环境（MySQL + Redis + 管理工具）
+├── docker-compose-mysql.yml            # 仅 MySQL 环境
+├── start-services.sh                   # 服务启动脚本
+├── .env                                # 环境变量配置
 └── src/main/resources/
     ├── application.yml                   # 应用配置
     └── schema.sql                       # 数据库脚本
@@ -55,9 +68,46 @@ user-modulith/
 
 - Java 17+
 - Maven 3.9+
-- MySQL 8.0+
+- Docker & Docker Compose（推荐）
+- MySQL 8.0+（可选，可使用 Docker）
 
-### 运行步骤
+### 方式一：使用 Docker（推荐）
+
+1. **克隆项目**
+   ```bash
+   git clone <repository-url>
+   cd user-modulith
+   ```
+
+2. **启动数据库服务**
+   ```bash
+   # 启动所有服务（MySQL + Redis + 管理工具）
+   ./start-services.sh
+
+   # 或者只启动 MySQL
+   ./start-services.sh mysql
+
+   # 手动启动
+   docker-compose up -d
+   ```
+
+3. **验证服务状态**
+   ```bash
+   docker-compose ps
+   ```
+
+4. **启动应用**
+   ```bash
+   mvn spring-boot:run
+   ```
+
+5. **访问服务**
+   - 应用地址：http://localhost:8080
+   - 健康检查：http://localhost:8080/actuator/health
+   - phpMyAdmin：http://localhost:8081
+   - Redis Commander：http://localhost:8082
+
+### 方式二：本地环境
 
 1. **克隆项目**
    ```bash
@@ -130,9 +180,61 @@ curl http://localhost:8080/api/users/list
 - **Spring Modulith 1.4.1**：模块化架构
 - **MyBatis Plus 3.5.12**：ORM 框架
 - **MySQL 8.0**：数据库
+- **Redis 7.x**：缓存服务
+- **Docker & Docker Compose**：容器化部署
 - **Lombok**：代码生成
 - **MapStruct 1.5.5.Final**：对象映射
 - **TestContainers 1.19.1**：集成测试
+
+## 🐳 Docker 环境
+
+### 服务组件
+
+| 服务 | 端口 | 说明 | 管理工具 |
+|------|------|------|----------|
+| MySQL | 3306 | 主数据库 | phpMyAdmin (8081) |
+| Redis | 6379 | 缓存服务 | Redis Commander (8082) |
+
+### 数据库连接信息
+
+**MySQL：**
+- 主机：localhost
+- 端口：3306
+- 数据库：user_modulith
+- 用户名：root
+- 密码：password
+
+**Redis：**
+- 主机：localhost
+- 端口：6379
+- 无密码
+
+### Docker 常用命令
+
+```bash
+# 启动服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f mysql
+docker-compose logs -f redis
+
+# 停止服务
+docker-compose down
+
+# 重启服务
+docker-compose restart
+
+# 清理数据（谨慎使用）
+docker-compose down -v
+
+# 进入容器
+docker-compose exec mysql bash
+docker-compose exec redis sh
+```
 
 ## 📚 设计模式
 

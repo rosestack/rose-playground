@@ -6,7 +6,6 @@ import io.github.rosestack.notice.sender.SenderFactory;
 import io.github.rosestack.notice.spi.*;
 import io.github.rosestack.notice.support.NoopBlacklistChecker;
 import io.github.rosestack.notice.support.NoopIdempotencyStore;
-import io.github.rosestack.notice.support.NoopRateLimiter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,14 +18,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 通用通知发送服务，支持同步、异步、批量、重试、限流、黑名单、拦截器、幂等。
+ * 通用通知发送服务，支持同步、异步、批量、重试、黑名单、拦截器、幂等。
  */
 @Slf4j
 @Setter
 public class NoticeService {
     private final List<NoticeSendInterceptor> interceptors = new ArrayList<>();
 
-    private RateLimiter rateLimiter;
     private BlacklistChecker blacklistChecker;
     private IdempotencyStore idempotencyStore;
     private ExecutorService executor;
@@ -35,7 +33,6 @@ public class NoticeService {
     public NoticeService() {
         ServiceLoader.load(NoticeSendInterceptor.class).forEach(interceptors::add);
 
-        this.rateLimiter = new NoopRateLimiter();
         this.blacklistChecker = new NoopBlacklistChecker();
         this.idempotencyStore = new NoopIdempotencyStore();
         this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -85,10 +82,6 @@ public class NoticeService {
             log.info("命中幂等: requestId={}", request.getRequestId());
             throw new NoticeException("重复请求，已处理: " + request.getRequestId());
         }
-        if (!rateLimiter.allow(request)) {
-            log.warn("超出限流: target={}", request.getTarget());
-            throw new NoticeException("超出限流: " + request.getTarget());
-        }
         if (blacklistChecker.isBlacklisted(request)) {
             log.warn("命中黑名单: target={}", request.getTarget());
             throw new NoticeException("命中黑名单: " + request.getTarget());
@@ -106,7 +99,6 @@ public class NoticeService {
 
     private void postProcess(SendRequest request, SendResult result) {
         idempotencyStore.put(request.getRequestId());
-        rateLimiter.record(request);
         for (NoticeSendInterceptor interceptor : interceptors) {
             interceptor.afterSend(request, result);
         }

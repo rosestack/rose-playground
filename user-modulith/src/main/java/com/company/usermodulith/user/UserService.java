@@ -1,7 +1,7 @@
 package com.company.usermodulith.user;
 
-import com.company.usermodulith.shared.model.PageRequest;
-import com.company.usermodulith.shared.model.PageResponse;
+import io.github.rosestack.core.model.PageRequest;
+import io.github.rosestack.core.model.PageResponse;
 
 import java.util.List;
 

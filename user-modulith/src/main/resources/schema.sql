@@ -1,29 +1,33 @@
+-- 设置字符集
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 创建数据库（如果不存在）
+CREATE DATABASE IF NOT EXISTS `user_modulith` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `user_modulith`;
+
 -- 用户表
-CREATE TABLE IF NOT EXISTS "user" (
-    id BIGINT NOT NULL,
-    username VARCHAR(20) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone VARCHAR(11),
-    password VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'ACTIVE',
-    created_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by VARCHAR(50) DEFAULT 'system',
-    updated_by VARCHAR(50) DEFAULT 'system',
-    deleted BOOLEAN DEFAULT FALSE,
-    version INT DEFAULT 1,
-    PRIMARY KEY (id)
-);
+CREATE TABLE IF NOT EXISTS `user` (
+    `id` BIGINT NOT NULL COMMENT '用户ID',
+    `username` VARCHAR(20) NOT NULL COMMENT '用户名',
+    `email` VARCHAR(100) NOT NULL COMMENT '邮箱',
+    `phone` VARCHAR(11) DEFAULT NULL COMMENT '手机号',
+    `password` VARCHAR(100) NOT NULL COMMENT '密码',
+    `status` VARCHAR(20) DEFAULT 'ACTIVE' COMMENT '状态',
+    `created_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `created_by` VARCHAR(50) DEFAULT 'system' COMMENT '创建人',
+    `updated_by` VARCHAR(50) DEFAULT 'system' COMMENT '更新人',
+    `deleted` TINYINT(1) DEFAULT 0 COMMENT '是否删除',
+    `version` INT DEFAULT 1 COMMENT '版本号',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
 -- 创建索引
-CREATE UNIQUE INDEX IF NOT EXISTS uk_username ON "user" (username);
-CREATE UNIQUE INDEX IF NOT EXISTS uk_email ON "user" (email);
-CREATE INDEX IF NOT EXISTS idx_phone ON "user" (phone);
-CREATE INDEX IF NOT EXISTS idx_status ON "user" (status);
-CREATE INDEX IF NOT EXISTS idx_created_time ON "user" (created_time);
+CREATE UNIQUE INDEX `uk_username` ON `user` (`username`);
+CREATE UNIQUE INDEX `uk_email` ON `user` (`email`);
+CREATE INDEX `idx_phone` ON `user` (`phone`);
+CREATE INDEX `idx_status` ON `user` (`status`);
+CREATE INDEX `idx_created_time` ON `user` (`created_time`);
 
--- 插入测试数据
-INSERT INTO "user" (id, username, email, phone, password, status, created_by, updated_by) VALUES
-(1, 'admin', 'admin@example.com', '13800138000', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'ACTIVE', 'system', 'system'),
-(2, 'testuser', 'test@example.com', '13800138001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'ACTIVE', 'system', 'system'),
-(3, 'demo', 'demo@example.com', '13800138002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'ACTIVE', 'system', 'system');
+SET FOREIGN_KEY_CHECKS = 1;

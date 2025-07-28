@@ -20,7 +20,7 @@ public interface FieldEncryptor {
      * @param encryptType  加密类型
      * @return 密文
      */
-    String encrypt(String plainText, EncryptField.EncryptType encryptType);
+    String encrypt(String plainText, EncryptType encryptType);
 
     /**
      * 解密字段值
@@ -29,7 +29,7 @@ public interface FieldEncryptor {
      * @param encryptType  加密类型
      * @return 明文
      */
-    String decrypt(String cipherText, EncryptField.EncryptType encryptType);
+    String decrypt(String cipherText, EncryptType encryptType);
 
     /**
      * 检查是否支持指定的加密类型
@@ -37,5 +37,5 @@ public interface FieldEncryptor {
      * @param encryptType 加密类型
      * @return 是否支持
      */
-    boolean supports(EncryptField.EncryptType encryptType);
+    boolean supports(EncryptType encryptType);
 }

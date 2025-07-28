@@ -1,11 +1,14 @@
 package com.company.usermodulith.user.internal;
 
-import com.baomidou.mybatisplus.annotation.*;
-import com.company.usermodulith.shared.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.github.rosestack.core.entity.BaseEntity;
+import io.github.rosestack.mybatis.annotation.SensitiveField;
+import io.github.rosestack.mybatis.desensitization.SensitiveType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.time.LocalDateTime;
 
 /**
  * 用户实体类
@@ -29,35 +32,17 @@ public class UserEntity extends BaseEntity {
     private String username;
 
     @TableField("email")
+    @SensitiveField(value = SensitiveType.EMAIL)
     private String email;
 
     @TableField("phone")
+    @SensitiveField(value = SensitiveType.PHONE)
     private String phone;
 
     @TableField("password")
+    @SensitiveField(value = SensitiveType.SECRET)
     private String password;
 
     @TableField("status")
     private String status;
-
-    // 重新声明继承的字段，确保 MyBatis Plus 正确映射
-    @TableField(value = "created_time", fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
-
-    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
-
-    @TableField(value = "created_by", fill = FieldFill.INSERT)
-    private String createdBy;
-
-    @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
-    private String updatedBy;
-
-    @TableLogic
-    @TableField(value = "deleted")
-    private Boolean deleted;
-
-    @Version
-    @TableField(value = "version")
-    private Integer version;
 }

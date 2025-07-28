@@ -1,10 +1,10 @@
 package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.company.usermodulith.shared.model.PageResponse;
 import com.company.usermodulith.user.UserCreateRequest;
 import com.company.usermodulith.user.UserResponse;
 import com.company.usermodulith.user.UserUpdateRequest;
+import io.github.rosestack.core.model.PageResponse;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -85,7 +85,7 @@ public interface UserConverter {
      * <p>
      * <strong>注意：</strong>此方法会直接修改传入的实体对象。
      *
-     * @param entity 要更新的用户实体对象
+     * @param entity  要更新的用户实体对象
      * @param request 用户更新请求，包含要更新的字段
      */
     @Mappings({

@@ -75,7 +75,7 @@ public class RoseMybatisProperties {
         /**
          * 是否启用多租户
          */
-        private boolean enabled = true;
+        private boolean enabled = false;
 
         /**
          * 租户字段名
@@ -165,7 +165,7 @@ public class RoseMybatisProperties {
         /**
          * 是否启用 SQL 性能监控
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * 慢查询阈值（毫秒）
@@ -186,7 +186,7 @@ public class RoseMybatisProperties {
         /**
          * 是否启用字段加密
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * 加密密钥（生产环境应该从外部配置或密钥管理系统获取）
@@ -212,7 +212,7 @@ public class RoseMybatisProperties {
         /**
          * 是否启用数据权限
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * 默认数据权限字段
@@ -233,13 +233,13 @@ public class RoseMybatisProperties {
         /**
          * 是否启用数据脱敏
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * 脱敏环境
          * 只在指定环境中启用脱敏，如：dev,test
          */
-        private String environments = "prod";
+        private String environments = "dev,test,prod";
     }
 
     /**
@@ -250,7 +250,7 @@ public class RoseMybatisProperties {
         /**
          * 是否启用 SQL 审计
          */
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         /**
          * 是否包含 SQL 语句
@@ -267,6 +267,4 @@ public class RoseMybatisProperties {
          */
         private String logLevel = "INFO";
     }
-
-
 }

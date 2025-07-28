@@ -29,7 +29,7 @@ public interface DataPermissionHandler {
      * @param type 数据权限类型
      * @return 是否支持
      */
-    boolean supports(DataPermission.DataPermissionType type);
+    boolean supports(DataPermissionType type);
 
     /**
      * 检查是否需要进行数据权限控制
@@ -39,6 +39,6 @@ public interface DataPermissionHandler {
      */
     default boolean needPermissionControl(DataPermission dataPermission) {
         return dataPermission!=null &&
-               dataPermission.scope() != DataPermission.DataScope.ALL;
+               dataPermission.scope() != DataScope.ALL;
     }
 }

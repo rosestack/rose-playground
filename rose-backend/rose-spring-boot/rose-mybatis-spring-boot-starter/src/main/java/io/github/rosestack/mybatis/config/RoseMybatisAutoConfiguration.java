@@ -2,21 +2,16 @@ package io.github.rosestack.mybatis.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator;
-import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
 import com.baomidou.mybatisplus.core.injector.DefaultSqlInjector;
 import com.baomidou.mybatisplus.core.injector.ISqlInjector;
-import com.baomidou.mybatisplus.core.toolkit.NetUtils;
 import com.baomidou.mybatisplus.extension.parser.JsqlParserGlobal;
 import com.baomidou.mybatisplus.extension.parser.cache.JdkSerialCaffeineJsqlParseCache;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import io.github.rosestack.mybatis.datapermission.DataPermissionHandler;
 import io.github.rosestack.mybatis.datapermission.DefaultDataPermissionHandler;
 import io.github.rosestack.mybatis.encryption.DefaultFieldEncryptor;
-import io.github.rosestack.mybatis.encryption.FieldEncryptor;
 import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.interceptor.DataPermissionInterceptor;
@@ -24,6 +19,7 @@ import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.interceptor.SensitiveFieldInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,8 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
@@ -78,15 +72,15 @@ public class RoseMybatisAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler) {
         log.info("初始化 Rose MyBatis Plus 拦截器");
-        
+
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
         // 1. 多租户插件（必须放在第一位）
-        if (properties.getTenant().isEnabled()) {
+        if (properties.getTenant().isEnabled() && tenantLineHandler != null) {
             TenantLineInnerInterceptor tenantInterceptor = new TenantLineInnerInterceptor();
-            tenantInterceptor.setTenantLineHandler(roseTenantLineHandler());
+            tenantInterceptor.setTenantLineHandler(tenantLineHandler);
             interceptor.addInnerInterceptor(tenantInterceptor);
             log.info("启用多租户插件，租户字段: {}", properties.getTenant().getColumn());
         }
@@ -105,8 +99,6 @@ public class RoseMybatisAutoConfiguration {
             log.info("启用乐观锁插件，版本字段: {}", properties.getOptimisticLock().getColumn());
         }
 
-
-
         log.info("Rose MyBatis Plus 拦截器初始化完成");
         return interceptor;
     }
@@ -118,7 +110,7 @@ public class RoseMybatisAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
     public RoseTenantLineHandler roseTenantLineHandler() {
         log.info("初始化租户处理器");
         return new RoseTenantLineHandler(properties);
@@ -141,59 +133,36 @@ public class RoseMybatisAutoConfiguration {
     }
 
     /**
-     * 字段加密器
-     *
-     * @return 字段加密器实例
-     */
-    @Bean
-    @ConditionalOnMissingBean(FieldEncryptor.class)
-    @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true")
-    public FieldEncryptor fieldEncryptor() {
-        log.info("初始化字段加密器");
-        return new DefaultFieldEncryptor(properties);
-    }
-
-    /**
-     * 数据权限处理器
-     *
-     * @return 数据权限处理器实例
-     */
-    @Bean
-    @ConditionalOnMissingBean(DataPermissionHandler.class)
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true")
-    public DataPermissionHandler dataPermissionHandler() {
-        log.info("初始化数据权限处理器");
-        return new DefaultDataPermissionHandler(properties);
-    }
-
-    /**
      * 字段加密拦截器
-     * <p>
-     * 注册 MyBatis 拦截器到 SqlSessionFactory
-     * </p>
      */
-    @Autowired(required = false)
-    public void addInterceptors(SqlSessionFactory sqlSessionFactory) {
-        // 字段加密拦截器
-        if (properties.getEncryption().isEnabled()) {
-            FieldEncryptionInterceptor encryptionInterceptor = new FieldEncryptionInterceptor(fieldEncryptor());
-            sqlSessionFactory.getConfiguration().addInterceptor(encryptionInterceptor);
-            log.info("已注册字段加密拦截器，默认算法: {}", properties.getEncryption().getDefaultAlgorithm());
-        }
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public FieldEncryptionInterceptor fieldEncryptionInterceptor() {
+        log.info("初始化字段加密拦截器，默认算法: {}", properties.getEncryption().getDefaultAlgorithm());
+        return new FieldEncryptionInterceptor(new DefaultFieldEncryptor(properties));
+    }
 
-        // 数据权限拦截器
-        if (properties.getDataPermission().isEnabled()) {
-            DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor(dataPermissionHandler());
-            sqlSessionFactory.getConfiguration().addInterceptor(dataPermissionInterceptor);
-            log.info("已注册数据权限拦截器，默认字段: {}", properties.getDataPermission().getDefaultField());
-        }
+    /**
+     * 数据权限拦截器
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public DataPermissionInterceptor dataPermissionInterceptor() {
+        log.info("初始化数据权限拦截器，默认字段: {}", properties.getDataPermission().getDefaultField());
+        return new DataPermissionInterceptor(new DefaultDataPermissionHandler(properties));
+    }
 
-        // 敏感字段脱敏拦截器
-        if (properties.getDesensitization().isEnabled()) {
-            SensitiveFieldInterceptor sensitiveFieldInterceptor = new SensitiveFieldInterceptor(properties);
-            sqlSessionFactory.getConfiguration().addInterceptor(sensitiveFieldInterceptor);
-            log.info("已注册敏感字段脱敏拦截器，环境: {}", properties.getDesensitization().getEnvironments());
-        }
+    /**
+     * 敏感字段脱敏拦截器
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.mybatis.desensitization", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public SensitiveFieldInterceptor sensitiveFieldInterceptor() {
+        log.info("初始化敏感字段脱敏拦截器，环境: {}", properties.getDesensitization().getEnvironments());
+        return new SensitiveFieldInterceptor(properties);
     }
 
     /**
@@ -204,10 +173,10 @@ public class RoseMybatisAutoConfiguration {
     private PaginationInnerInterceptor createPaginationInterceptor() {
         // 自动检测数据库类型
         DbType dbType = detectDbType();
-        
+
         PaginationInnerInterceptor paginationInterceptor = new PaginationInnerInterceptor(dbType);
         paginationInterceptor.setMaxLimit(properties.getPagination().getMaxLimit());
-        
+
         // 设置合理化分页
         if (properties.getPagination().isReasonable()) {
             // 当页码小于1时，自动跳转到第1页
@@ -230,13 +199,9 @@ public class RoseMybatisAutoConfiguration {
      */
     private DbType detectDbType() {
         String configDbType = properties.getPagination().getDbType();
-        
+
         if (configDbType != null && !configDbType.isEmpty()) {
-            try {
-                return DbType.valueOf(configDbType.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("无效的数据库类型配置: {}，使用默认的 MySQL", configDbType);
-            }
+            return DbType.getDbType(configDbType);
         }
 
         // 默认使用 MySQL
@@ -258,7 +223,7 @@ public class RoseMybatisAutoConfiguration {
      */
     @Configuration
     @ConditionalOnClass(name = "com.p6spy.engine.spy.P6DataSource")
-    @ConditionalOnProperty(prefix = "rose.mybatis.performance", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "rose.mybatis.performance", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class PerformanceConfiguration {
 
         @Bean
@@ -273,7 +238,7 @@ public class RoseMybatisAutoConfiguration {
      * 性能监控配置类
      */
     static class PerformanceMonitoringConfiguration {
-        
+
         private final RoseMybatisProperties properties;
 
         public PerformanceMonitoringConfiguration(RoseMybatisProperties properties) {
@@ -287,14 +252,14 @@ public class RoseMybatisAutoConfiguration {
         private void configureP6Spy() {
             // 这里可以添加 P6Spy 的配置逻辑
             // 例如设置慢查询阈值、SQL 格式化等
-            System.setProperty("p6spy.config.executionThreshold", 
+            System.setProperty("p6spy.config.executionThreshold",
                     String.valueOf(properties.getPerformance().getSlowSqlThreshold()));
-            
+
             if (properties.getPerformance().isFormatSql()) {
-                System.setProperty("p6spy.config.logMessageFormat", 
+                System.setProperty("p6spy.config.logMessageFormat",
                         "com.p6spy.engine.spy.appender.CustomLineFormat");
             }
-            
+
             log.info("P6Spy 配置完成");
         }
     }

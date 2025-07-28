@@ -1,7 +1,6 @@
-package io.github.rosestack.notice.support;
+package io.github.rosestack.redis.ratelimit;
 
 import io.github.rosestack.notice.SendRequest;
-import io.github.rosestack.notice.spi.RateLimiter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

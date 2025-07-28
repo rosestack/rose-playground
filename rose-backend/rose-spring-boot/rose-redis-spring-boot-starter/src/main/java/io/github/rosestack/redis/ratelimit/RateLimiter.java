@@ -1,4 +1,4 @@
-package io.github.rosestack.notice.spi;
+package io.github.rosestack.redis.ratelimit;
 
 import io.github.rosestack.notice.SendRequest;
 

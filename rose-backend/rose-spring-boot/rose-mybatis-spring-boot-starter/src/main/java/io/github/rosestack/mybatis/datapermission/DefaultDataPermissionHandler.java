@@ -28,7 +28,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
     public List<String> getPermissionValues(DataPermission dataPermission) {
         // 这里应该从当前用户上下文中获取权限值
         // 实际项目中需要集成具体的权限系统
-        
+
         switch (dataPermission.type()) {
             case USER:
                 return getUserPermissionValues(dataPermission);
@@ -47,7 +47,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
     }
 
     @Override
-    public boolean supports(DataPermission.DataPermissionType type) {
+    public boolean supports(DataPermissionType type) {
         return true; // 默认支持所有类型
     }
 
@@ -68,7 +68,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
                     return Arrays.asList(currentUserId);
             }
         }
-        
+
         log.warn("未找到当前用户信息，使用默认权限控制");
         return Arrays.asList("UNKNOWN_USER");
     }
@@ -90,7 +90,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
                     return Arrays.asList(currentDeptId);
             }
         }
-        
+
         log.warn("未找到当前部门信息，使用默认权限控制");
         return Arrays.asList("UNKNOWN_DEPT");
     }
@@ -112,7 +112,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
                     return Arrays.asList(currentOrgId);
             }
         }
-        
+
         log.warn("未找到当前组织信息，使用默认权限控制");
         return Arrays.asList("UNKNOWN_ORG");
     }
@@ -125,7 +125,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
         if (!currentRoleIds.isEmpty()) {
             return currentRoleIds;
         }
-        
+
         log.warn("未找到当前角色信息，使用默认权限控制");
         return Arrays.asList("UNKNOWN_ROLE");
     }
