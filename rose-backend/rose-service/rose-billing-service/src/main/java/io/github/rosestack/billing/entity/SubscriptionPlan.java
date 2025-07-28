@@ -1,5 +1,8 @@
 package io.github.rosestack.billing.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.enums.BillingType;
 import io.github.rosestack.core.entity.BaseTenantEntity;
 import lombok.Data;
@@ -16,7 +19,10 @@ import java.util.Map;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@TableName("subscription_plan")
 public class SubscriptionPlan extends BaseTenantEntity{
+
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
     /**

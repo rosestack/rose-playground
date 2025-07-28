@@ -3,6 +3,7 @@ package io.github.rosestack.notice.render;
 import groovy.text.SimpleTemplateEngine;
 import groovy.text.Template;
 import io.github.rosestack.notice.spi.TemplateContentRender;
+
 import java.util.Map;
 
 /**

@@ -154,7 +154,7 @@ public class PaymentGatewayService {
                 record.setPaidAt(LocalDateTime.now());
             }
 
-            paymentRecordRepository.save(record);
+            paymentRecordRepository.updateById(record);
         } catch (Exception e) {
             log.error("记录支付结果失败", e);
         }
@@ -172,7 +172,7 @@ public class PaymentGatewayService {
                 record.setRefundReason(reason);
                 record.setRefundId(result.getRefundId());
 
-                paymentRecordRepository.save(record);
+                paymentRecordRepository.updateById(record);
             }
 
             log.info("记录退款结果：租户 {}, 交易 {}, 金额 {}, 结果 {}",

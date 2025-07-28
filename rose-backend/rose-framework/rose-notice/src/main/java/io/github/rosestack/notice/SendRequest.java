@@ -1,9 +1,10 @@
 package io.github.rosestack.notice;
 
-import java.util.List;
-import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 通用发送参数对象，所有发送相关参数、元信息均在此封装。

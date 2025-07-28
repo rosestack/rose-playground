@@ -1,7 +1,6 @@
 package io.github.rosestack.i18n.feign;
 
 import feign.RequestTemplate;
-import io.github.rosestack.i18n.feign.AcceptLanguageHeaderRequestInterceptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

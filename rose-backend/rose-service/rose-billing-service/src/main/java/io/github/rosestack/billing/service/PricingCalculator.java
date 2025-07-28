@@ -1,6 +1,8 @@
 package io.github.rosestack.billing.service;
 
+import io.github.rosestack.billing.config.BillingProperties;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
+import io.github.rosestack.billing.enums.BillingType;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -22,29 +26,43 @@ import java.util.Map;
 public class PricingCalculator {
 
     private final UsageRecordRepository usageRepository;
+    private final BillingProperties billingProperties;
 
     /**
      * 计算使用量费用
+     *
+     * @param tenantId 租户ID
+     * @param periodStart 计费周期开始时间
+     * @param periodEnd 计费周期结束时间
+     * @param plan 订阅计划
+     * @return 使用量费用总额
      */
     public BigDecimal calculateUsageAmount(String tenantId, LocalDateTime periodStart,
                                          LocalDateTime periodEnd, SubscriptionPlan plan) {
 
         Map<String, BigDecimal> usagePricing = plan.getUsagePricing();
         if (usagePricing == null || usagePricing.isEmpty()) {
+            log.debug("订阅计划 {} 没有配置使用量定价", plan.getId());
             return BigDecimal.ZERO;
         }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
+        // 性能优化：批量查询所有计量类型的使用量
+        Map<String, BigDecimal> usageMap = new HashMap<>();
+        for (String metricType : usagePricing.keySet()) {
+            BigDecimal usage = usageRepository.sumUsageByTenantAndMetricAndPeriod(
+                tenantId, metricType, periodStart, periodEnd);
+            usageMap.put(metricType, usage);
+        }
+
+        // 计算费用
         for (Map.Entry<String, BigDecimal> entry : usagePricing.entrySet()) {
             String metricType = entry.getKey();
             BigDecimal unitPrice = entry.getValue();
+            BigDecimal usage = usageMap.get(metricType);
 
-            // 获取该时间段内的使用量
-            BigDecimal usage = usageRepository.sumUsageByTenantAndMetricAndPeriod(
-                tenantId, metricType, periodStart, periodEnd);
-
-            if (usage.compareTo(BigDecimal.ZERO) > 0) {
+            if (usage != null && usage.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal amount = usage.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
                 totalAmount = totalAmount.add(amount);
 
@@ -119,4 +137,82 @@ public class PricingCalculator {
         }
         return BigDecimal.ZERO;
     }
+
+    /**
+     * 计算基础订阅费用
+     */
+    public BigDecimal calculateBasePrice(SubscriptionPlan plan, LocalDateTime periodStart, LocalDateTime periodEnd) {
+        if (plan.getBillingType() == BillingType.USAGE_BASED) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal basePrice = plan.getBasePrice();
+
+        // 如果是按月计费，计算实际使用天数的比例
+        if (plan.getBillingType() == BillingType.MONTHLY) {
+            long totalDays = ChronoUnit.DAYS.between(periodStart, periodEnd);
+            if (totalDays != 30) { // 非完整月份，按比例计算
+                BigDecimal ratio = BigDecimal.valueOf(totalDays).divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_UP);
+                basePrice = basePrice.multiply(ratio);
+            }
+        }
+
+        return basePrice.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 计算税费
+     */
+    public BigDecimal calculateTax(BigDecimal amount) {
+        BigDecimal taxRate = billingProperties.getDefaultTaxRate();
+        return amount.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 计算总费用
+     */
+    public BigDecimal calculateTotalAmount(String tenantId, SubscriptionPlan plan,
+                                         LocalDateTime periodStart, LocalDateTime periodEnd,
+                                         String discountCode) {
+        log.info("开始计算总费用: tenantId={}, planId={}, period={} to {}",
+                tenantId, plan.getId(), periodStart, periodEnd);
+
+        // 基础费用
+        BigDecimal baseAmount = calculateBasePrice(plan, periodStart, periodEnd);
+
+        // 使用量费用
+        BigDecimal usageAmount = calculateUsageAmount(tenantId, periodStart, periodEnd, plan);
+
+        // 小计
+        BigDecimal subtotal = baseAmount.add(usageAmount);
+
+        // 折扣
+        BigDecimal discountAmount = calculateDiscount(tenantId, subtotal, discountCode);
+        BigDecimal afterDiscount = subtotal.subtract(discountAmount);
+
+        // 税费
+        BigDecimal taxAmount = calculateTax(afterDiscount);
+        BigDecimal totalAmount = afterDiscount.add(taxAmount);
+
+        log.info("费用计算完成: base={}, usage={}, discount={}, tax={}, total={}",
+                baseAmount, usageAmount, discountAmount, taxAmount, totalAmount);
+
+        return totalAmount;
+    }
+
+    /**
+     * 验证使用量是否超限
+     */
+    public boolean isUsageExceeded(String tenantId, SubscriptionPlan plan, String metricType) {
+        // 获取当前计费周期的使用量
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime periodStart = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+
+        BigDecimal currentUsage = usageRepository.sumUsageByTenantAndMetricAndPeriod(
+                tenantId, metricType, periodStart, now);
+
+        return !checkLimit(plan, metricType, currentUsage);
+    }
+
+
 }

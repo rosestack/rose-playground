@@ -53,48 +53,50 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     protected final AtomicLong cacheSize = new AtomicLong(0);
 
     protected AbstractMetricsMessageCacheLoader(CacheProperties cacheProperties, MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
         this.cacheProperties = cacheProperties;
+        this.meterRegistry = meterRegistry;
+
+        String cacheType = cacheProperties.getType().name();
 
         // 初始化计数器指标
         this.hitCounter = Counter.builder("i18n.cache.hits")
                 .description("缓存命中次数")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
         this.missCounter = Counter.builder("i18n.cache.misses")
                 .description("缓存未命中次数")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
         this.putCounter = Counter.builder("i18n.cache.puts")
                 .description("缓存写入次数")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
         this.evictionCounter = Counter.builder("i18n.cache.evictions")
                 .description("缓存淘汰次数")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
         // 初始化计时器指标
         this.getTimer = Timer.builder("i18n.cache.get.time")
                 .description("缓存获取耗时")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
         this.putTimer = Timer.builder("i18n.cache.put.time")
                 .description("缓存写入耗时")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
         // 注册缓存大小指标
         Gauge.builder("i18n.cache.size", this, loader -> loader.cacheSize.get())
                 .description("当前缓存大小")
-                .tag("type", cacheProperties.getType().name())
+                .tag("type", cacheType)
                 .register(meterRegistry);
 
-        logger.debug("初始化 {} 类型缓存监控指标", cacheProperties.getType().name());
+        logger.debug("初始化 {} 类型缓存监控指标", cacheType);
     }
 
     @Override
@@ -283,6 +285,17 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     }
 
     /**
+     * 构建缓存键
+     *
+     * @param code   消息代码
+     * @param locale 语言环境
+     * @return 缓存键
+     */
+    protected final String buildCacheKey(String code, Locale locale) {
+        return buildCacheKey(code, locale, null);
+    }
+
+    /**
      * 构建缓存键（支持前缀）
      *
      * @param code   消息代码
@@ -293,6 +306,17 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     protected final String buildCacheKey(String code, Locale locale, String prefix) {
         String baseKey = String.format("%s:%s", locale.toString(), code);
         return prefix != null ? prefix + baseKey : baseKey;
+    }
+
+    /**
+     * 批量构建缓存键
+     *
+     * @param codes  消息代码列表
+     * @param locale 语言环境
+     * @return 缓存键列表
+     */
+    protected final String[] buildCacheKeys(String[] codes, Locale locale) {
+        return buildCacheKeys(codes, locale, null);
     }
 
     /**
@@ -334,7 +358,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     public final String getStatisticsSummary() {
         return String.format(
                 "Cache[%s] - Hits: %.0f, Misses: %.0f, Puts: %.0f, Evictions: %.0f, Size: %d, HitRate: %.2f%%",
-                cacheProperties.getType().name(),
+                cacheProperties.getType(),
                 hitCounter.count(),
                 missCounter.count(),
                 putCounter.count(),

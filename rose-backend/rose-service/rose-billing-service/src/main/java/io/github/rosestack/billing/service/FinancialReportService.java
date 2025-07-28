@@ -74,7 +74,7 @@ public class FinancialReportService {
         report.setGeneratedAt(LocalDateTime.now());
 
         // 总订阅数
-        long totalSubscriptions = subscriptionRepository.count();
+        long totalSubscriptions = subscriptionRepository.selectCount(null);
         report.setTotalSubscriptions(totalSubscriptions);
 
         // 活跃订阅数
@@ -330,8 +330,21 @@ public class FinancialReportService {
     }
 
     private Map<String, BigDecimal> calculateUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现按类型统计使用量
-        return new HashMap<>();
+        log.debug("计算使用量统计: {} - {}", startDate, endDate);
+
+        try {
+            // 聚合所有租户的使用量统计
+            Map<String, BigDecimal> result = new HashMap<>();
+
+            // 这里简化实现，实际应该查询所有租户的数据
+            // 由于没有全局统计方法，返回空结果
+            log.warn("使用量统计功能需要进一步实现全局查询方法");
+
+            return result;
+        } catch (Exception e) {
+            log.error("计算使用量统计失败", e);
+            return new HashMap<>();
+        }
     }
 
     private List<TenantUsageData> calculateTopTenantsByUsage(LocalDateTime startDate, LocalDateTime endDate, int limit) {

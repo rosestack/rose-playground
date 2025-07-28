@@ -1,0 +1,399 @@
+# Rose MyBatis Plus Spring Boot Starter
+
+🚀 企业级 MyBatis Plus 增强工具，提供多租户、数据权限、字段加密等开箱即用的功能。
+
+## ✨ 核心特性
+
+### 🏢 多租户支持
+- **自动租户隔离**：基于 InheritableThreadLocal，支持父子线程传递
+- **灵活配置**：支持自定义忽略表和前缀
+- **零侵入**：无需修改现有代码，自动添加租户条件
+
+### 🔐 敏感字段加密
+- **自动加密解密**：插入时加密，查询时解密
+- **多种算法**：支持 AES、DES、3DES 等
+- **查询支持**：可选生成哈希字段支持精准查询
+- **配置灵活**：支持动态开启/关闭
+
+### 🛡️ 动态数据权限
+- **多维度权限**：支持用户、部门、组织、角色等
+- **自动SQL改写**：透明添加权限条件，支持多表 JOIN
+- **灵活范围**：支持本人、本部门、全部等多种范围
+- **表别名支持**：智能识别多表查询中的表别名
+
+### 🎭 数据脱敏
+- **查询自动脱敏**：查询结果返回时自动脱敏敏感字段
+- **多种脱敏类型**：手机号、身份证、邮箱、银行卡等
+- **自定义规则**：支持自定义脱敏规则
+- **环境控制**：可配置在特定环境启用
+- **集合支持**：支持单个对象和集合对象的脱敏
+
+### 📋 SQL 审计
+- **操作审计**：记录增删改查操作
+- **性能监控**：记录执行时间
+- **安全追踪**：记录用户和租户信息
+
+### 🔍 字段哈希（独立于加密）
+- **单向哈希**：不可逆，只能用于查询匹配
+- **多种算法**：MD5、SHA-256、加盐SHA-256、HMAC-SHA256
+- **精准查询**：支持加密字段的精准查询
+
+### 📝 数据变更日志
+- **字段级追踪**：记录每个字段的变更前后值
+- **业务关联**：与业务操作关联，区别于SQL审计
+- **历史查询**：支持数据变更历史查询
+
+### ⚡ 其他增强
+- **分页优化**：智能分页，支持多数据库
+- **乐观锁**：自动版本控制，防止并发冲突
+- **字段填充**：自动填充创建时间、更新时间等
+- **性能监控**：慢查询监控和SQL格式化
+
+## 🚀 快速开始
+
+### 1. 添加依赖
+
+```xml
+<dependency>
+    <groupId>io.github.rosestack</groupId>
+    <artifactId>rose-mybatis-spring-boot-starter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+### 2. 基础配置
+
+```yaml
+rose:
+  mybatis:
+    enabled: true
+    
+    # 多租户配置
+    tenant:
+      enabled: true
+      column: tenant_id
+      ignore-tables: []
+      ignore-table-prefixes: []
+    
+    # 字段加密配置
+    encryption:
+      enabled: true
+      secret-key: "MySecretKey12345"
+      fail-on-error: true
+      default-algorithm: "AES"
+    
+    # 数据权限配置
+    data-permission:
+      enabled: true
+      default-field: "user_id"
+      sql-log: false
+
+    # 数据脱敏配置
+    desensitization:
+      enabled: true
+      environments: "prod,test"  # 在生产和测试环境启用脱敏
+
+    # SQL 审计配置
+    audit:
+      enabled: true
+      include-sql: true
+      include-parameters: false
+      log-level: "INFO"
+
+
+```
+
+## 📖 功能详解
+
+### 🏢 多租户使用
+
+```java
+// 设置租户上下文
+TenantContextHolder.setCurrentTenantId("tenant-123");
+
+// 查询自动添加 WHERE tenant_id = 'tenant-123'
+List<User> users = userMapper.selectList(null);
+
+// 指定租户执行
+TenantContextHolder.runWithTenant("tenant-456", () -> {
+    userService.createUser(user);
+});
+
+// 支持返回值
+String result = TenantContextHolder.runWithTenant("tenant-789", () -> {
+    return userService.getUserCount();
+});
+
+// 多线程自动继承
+CompletableFuture.runAsync(() -> {
+    // 子线程自动继承父线程的租户上下文
+    String tenantId = TenantContextHolder.getCurrentTenantId();
+});
+```
+
+### 🔐 敏感字段加密
+
+```java
+@Data
+@TableName("user")
+public class User {
+    @TableId
+    private Long id;
+    
+    // 基础加密
+    @EncryptField(EncryptField.EncryptType.AES)
+    private String phone;
+    
+    // 支持查询的加密字段
+    @EncryptField(value = EncryptField.EncryptType.AES, searchable = true)
+    private String idCard;
+    private String idCardHash; // 自动生成哈希用于查询
+    
+    private String email; // 普通字段
+}
+
+// 使用示例
+User user = new User();
+user.setPhone("13800138000");     // 存储时自动加密
+user.setIdCard("110101199001011234"); // 存储时自动加密并生成哈希
+
+userMapper.insert(user); // 插入时自动加密
+
+User saved = userMapper.selectById(1L); // 查询时自动解密
+System.out.println(saved.getPhone()); // "13800138000" (已解密)
+
+// 通过哈希字段精准查询（使用加密字段的 searchable 功能）
+// 当 @EncryptField(searchable = true) 时，会自动生成哈希字段用于查询
+LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+wrapper.eq(User::getIdCardHash, "生成的哈希值"); // 系统自动生成
+List<User> users = userMapper.selectList(wrapper);
+```
+
+### 🛡️ 动态数据权限
+
+```java
+// 方法级权限控制
+@DataPermission(field = "user_id", type = DataPermissionType.USER, scope = DataScope.SELF)
+public List<Order> getUserOrders() {
+    // 自动添加 WHERE user_id = '当前用户ID'
+    return orderMapper.selectList(null);
+}
+
+// 部门级权限控制
+@DataPermission(field = "dept_id", type = DataPermissionType.DEPT, scope = DataScope.DEPT_AND_CHILD)
+public List<Employee> getDeptEmployees() {
+    // 自动添加 WHERE dept_id IN ('当前部门ID', '子部门ID1', '子部门ID2')
+    return employeeMapper.selectList(null);
+}
+
+// 类级权限控制
+@DataPermission(field = "org_id", type = DataPermissionType.ORG)
+@RestController
+public class ReportController {
+    // 所有方法都会自动添加组织权限条件
+}
+
+// 多表 JOIN 权限控制
+@DataPermission(field = "user_id", tableAlias = "u", type = DataPermissionType.USER)
+public List<OrderVO> getUserOrdersWithDetails() {
+    // SQL: SELECT * FROM orders o JOIN users u ON o.user_id = u.id
+    // 自动添加: WHERE u.user_id = '当前用户ID'
+    return orderMapper.selectOrdersWithUserDetails();
+}
+```
+
+### ⚡ 实体类配置
+
+```java
+@Data
+@TableName("user")
+public class User {
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
+    
+    private String username;
+    
+    // 敏感字段加密
+    @EncryptField(value = EncryptField.EncryptType.AES, searchable = true)
+    private String phone;
+    private String phoneHash; // 查询用哈希字段
+    
+    @EncryptField(EncryptField.EncryptType.AES)
+    private String idCard;
+    
+    // 自动填充字段
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createdAt;
+    
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedAt;
+    
+    // 乐观锁版本字段
+    @Version
+    private Integer version;
+    
+    // 租户字段（自动填充）
+    private String tenantId;
+    
+    // 数据权限字段
+    private String userId;
+    private String deptId;
+
+    // 数据脱敏字段（查询时自动脱敏）
+    @SensitiveField(SensitiveField.SensitiveType.PHONE)
+    private String phone; // 查询结果自动脱敏为：138****8000
+
+    @SensitiveField(SensitiveField.SensitiveType.EMAIL)
+    private String email; // 查询结果自动脱敏为：abc***@example.com
+
+    // 注意：哈希字段通过 @EncryptField(searchable = true) 自动生成
+    // 无需单独的 @HashField 注解
+}
+
+// 变更日志示例
+@ChangeLog(module = "用户管理", operation = "更新用户信息")
+@Data
+@TableName("user")
+public class User {
+    // 实体字段...
+}
+```
+
+## 📋 完整配置参数
+
+```yaml
+rose:
+  mybatis:
+    enabled: true
+    
+    # 多租户配置
+    tenant:
+      enabled: false
+      column: tenant_id
+      ignore-tables: []
+      ignore-table-prefixes: []
+    
+    # 分页配置
+    pagination:
+      enabled: true
+      max-limit: 1000
+      db-type: mysql
+    
+    # 乐观锁配置
+    optimistic-lock:
+      enabled: true
+      column: version
+    
+    # 字段自动填充配置
+    field-fill:
+      enabled: true
+      create-time-column: created_time
+      update-time-column: updated_time
+    
+    # 字段加密配置
+    encryption:
+      enabled: false
+      secret-key: ""
+      fail-on-error: true
+      default-algorithm: "AES"
+    
+    # 数据权限配置
+    data-permission:
+      enabled: false
+      default-field: "user_id"
+      sql-log: false
+    
+    # 性能监控配置
+    performance:
+      enabled: false
+      slow-sql-threshold: 1000
+      format-sql: true
+```
+
+## 🔧 高级用法
+
+### 自定义加密器
+
+```java
+@Component
+public class CustomFieldEncryptor implements FieldEncryptor {
+    @Override
+    public String encrypt(String plainText, EncryptField.EncryptType encryptType) {
+        // 自定义加密逻辑
+        return customEncrypt(plainText);
+    }
+    
+    @Override
+    public String decrypt(String cipherText, EncryptField.EncryptType encryptType) {
+        // 自定义解密逻辑
+        return customDecrypt(cipherText);
+    }
+}
+```
+
+### 自定义数据权限处理器
+
+```java
+@Component
+public class CustomDataPermissionHandler implements DataPermissionHandler {
+    @Override
+    public List<String> getPermissionValues(DataPermission dataPermission) {
+        // 从 Spring Security 或其他权限框架获取当前用户权限
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails user = (UserDetails) auth.getPrincipal();
+        
+        switch (dataPermission.type()) {
+            case USER:
+                return Arrays.asList(user.getUserId());
+            case DEPT:
+                return getDeptIds(user.getDeptId(), dataPermission.scope());
+            // ... 其他权限类型
+        }
+    }
+}
+```
+
+## 🛠️ 数据库设计建议
+
+### 加密字段表结构
+
+```sql
+CREATE TABLE `user` (
+    `id` BIGINT PRIMARY KEY,
+    `username` VARCHAR(50) NOT NULL,
+    `phone` VARCHAR(255),          -- 加密字段，长度要足够
+    `phone_hash` VARCHAR(64),      -- 查询用哈希字段
+    `id_card` VARCHAR(255),        -- 加密字段
+    `email` VARCHAR(100),
+    `tenant_id` VARCHAR(50),       -- 租户字段
+    `user_id` VARCHAR(50),         -- 数据权限字段
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `version` INT DEFAULT 1,       -- 乐观锁版本字段
+    
+    INDEX idx_tenant_id (tenant_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_phone_hash (phone_hash)  -- 哈希字段索引用于查询
+);
+```
+
+## ⚠️ 重要提醒
+
+### 安全建议
+1. **密钥管理**：生产环境从外部配置或密钥管理系统获取
+2. **哈希查询**：加密字段无法直接查询，使用哈希字段
+3. **索引优化**：对租户字段、权限字段、哈希字段建立索引
+
+### 性能考虑
+1. **加密开销**：只对真正敏感的字段加密
+2. **权限范围**：避免过于复杂的权限范围查询
+3. **批量操作**：大批量操作时注意加密性能影响
+
+### 开发注意
+1. **上下文清理**：确保请求结束时清理上下文
+2. **测试环境**：可以关闭加密便于调试
+3. **日志安全**：避免在日志中输出敏感信息
+
+## 📄 许可证
+
+MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。

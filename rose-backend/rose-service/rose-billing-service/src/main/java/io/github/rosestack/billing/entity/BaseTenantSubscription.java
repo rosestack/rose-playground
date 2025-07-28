@@ -1,5 +1,8 @@
 package io.github.rosestack.billing.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.core.entity.BaseTenantEntity;
 import lombok.Data;
@@ -15,7 +18,10 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@TableName("tenant_subscription")
 public class BaseTenantSubscription extends BaseTenantEntity {
+
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
     /**
@@ -82,5 +88,10 @@ public class BaseTenantSubscription extends BaseTenantEntity {
      * 暂停原因
      */
     private String pauseReason;
+
+    /**
+     * 升级时间
+     */
+    private LocalDateTime upgradedAt;
 }
 

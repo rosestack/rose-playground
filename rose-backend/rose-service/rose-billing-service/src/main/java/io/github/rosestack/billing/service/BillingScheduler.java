@@ -83,16 +83,16 @@ public class BillingScheduler {
                 try {
                     // 标记为逾期
                     invoice.setStatus(InvoiceStatus.OVERDUE);
-                    invoiceRepository.save(invoice);
+                    invoiceRepository.updateById(invoice);
 
                     // 暂停相关订阅
                     BaseTenantSubscription subscription = subscriptionRepository
-                        .findById(invoice.getSubscriptionId()).orElse(null);
+                        .selectById(invoice.getSubscriptionId());
                     if (subscription != null && subscription.getStatus() == SubscriptionStatus.ACTIVE) {
                         subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
                         subscription.setPausedAt(LocalDateTime.now());
                         subscription.setPauseReason("逾期付款");
-                        subscriptionRepository.save(subscription);
+                        subscriptionRepository.updateById(subscription);
 
                         // 发送逾期通知
                         notificationService.sendOverdueNotification(subscription.getTenantId(), invoice);
@@ -189,7 +189,7 @@ public class BillingScheduler {
         try {
             subscription.setInTrial(false);
             subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
-            subscriptionRepository.save(subscription);
+            subscriptionRepository.updateById(subscription);
 
             // 生成第一张正式账单
             billingService.generateInvoice(subscription.getId());

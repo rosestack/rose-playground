@@ -3,9 +3,11 @@ package io.github.rosestack.billing.service;
 import io.github.rosestack.billing.entity.BaseTenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
-import io.github.rosestack.billing.entity.UsageRecord;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
+import io.github.rosestack.billing.exception.PlanNotFoundException;
+import io.github.rosestack.billing.exception.SubscriptionNotFoundException;
+import io.github.rosestack.billing.exception.UsageLimitExceededException;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -38,13 +41,35 @@ public class BillingService {
     private final PricingCalculator pricingCalculator;
     private final BillingNotificationService notificationService;
 
+    // 新增的服务依赖
+    private final SubscriptionService subscriptionService;
+    private final UsageService usageService;
+    private final InvoiceService invoiceService;
+
     /**
      * 创建租户订阅
+     *
+     * @param tenantId 租户ID，不能为空
+     * @param planId 订阅计划ID，不能为空
+     * @param startTrial 是否开启试用期，可以为null（默认false）
+     * @return 创建的订阅信息
+     * @throws PlanNotFoundException 当订阅计划不存在时抛出
+     * @throws IllegalArgumentException 当参数无效时抛出
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public BaseTenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
-        SubscriptionPlan plan = planRepository.findById(planId)
-            .orElseThrow(() -> new IllegalArgumentException("订阅计划不存在"));
+        // 参数验证
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            throw new IllegalArgumentException("租户ID不能为空");
+        }
+        if (planId == null || planId.trim().isEmpty()) {
+            throw new IllegalArgumentException("订阅计划ID不能为空");
+        }
+
+        SubscriptionPlan plan = planRepository.selectById(planId);
+        if (plan == null) {
+            throw new PlanNotFoundException(planId);
+        }
 
         BaseTenantSubscription subscription = new BaseTenantSubscription();
         subscription.setId(UUID.randomUUID().toString());
@@ -69,7 +94,7 @@ public class BillingService {
         subscription.setEndDate(subscription.getNextBillingDate());
         subscription.setCurrentPeriodAmount(plan.getBasePrice());
 
-        subscription = subscriptionRepository.save(subscription);
+        subscriptionRepository.insert(subscription);
 
         // 发送订阅确认通知
         notificationService.sendSubscriptionConfirmation(tenantId, subscription);
@@ -83,7 +108,7 @@ public class BillingService {
      */
     public BaseTenantSubscription getTenantSubscription(String tenantId) {
         return subscriptionRepository.findByTenantId(tenantId)
-            .orElseThrow(() -> new IllegalArgumentException("租户订阅不存在"));
+            .orElseThrow(() -> new SubscriptionNotFoundException("tenant:" + tenantId));
     }
 
     /**
@@ -91,16 +116,21 @@ public class BillingService {
      */
     @Transactional
     public BaseTenantSubscription changePlan(String subscriptionId, String newPlanId) {
-        BaseTenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
-            .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
+        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        if (subscription == null) {
+            throw new SubscriptionNotFoundException(subscriptionId);
+        }
 
-        SubscriptionPlan newPlan = planRepository.findById(newPlanId)
-            .orElseThrow(() -> new IllegalArgumentException("新订阅计划不存在"));
+        SubscriptionPlan newPlan = planRepository.selectById(newPlanId);
+        if (newPlan == null) {
+            throw new PlanNotFoundException(newPlanId);
+        }
 
         subscription.setPlanId(newPlanId);
         subscription.setCurrentPeriodAmount(newPlan.getBasePrice());
 
-        return subscriptionRepository.save(subscription);
+        subscriptionRepository.updateById(subscription);
+        return subscription;
     }
 
     /**
@@ -108,14 +138,16 @@ public class BillingService {
      */
     @Transactional
     public void cancelSubscription(String subscriptionId, String reason) {
-        BaseTenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
-            .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
+        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        if (subscription == null) {
+            throw new SubscriptionNotFoundException(subscriptionId);
+        }
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
         subscription.setCancelledAt(LocalDateTime.now());
         subscription.setCancellationReason(reason);
 
-        subscriptionRepository.save(subscription);
+        subscriptionRepository.updateById(subscription);
 
         log.info("取消订阅成功，订阅ID: {}, 原因: {}", subscriptionId, reason);
     }
@@ -125,11 +157,15 @@ public class BillingService {
      */
     @Transactional
     public Invoice generateInvoice(String subscriptionId) {
-        BaseTenantSubscription subscription = subscriptionRepository.findById(subscriptionId)
-            .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
+        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        if (subscription == null) {
+            throw new SubscriptionNotFoundException(subscriptionId);
+        }
 
-        SubscriptionPlan plan = planRepository.findById(subscription.getPlanId())
-            .orElseThrow(() -> new IllegalArgumentException("订阅计划不存在"));
+        SubscriptionPlan plan = planRepository.selectById(subscription.getPlanId());
+        if (plan == null) {
+            throw new PlanNotFoundException(subscription.getPlanId());
+        }
 
         LocalDate periodStart = subscription.getNextBillingDate().minusDays(plan.getBillingCycle()).toLocalDate();
         LocalDate periodEnd = subscription.getNextBillingDate().toLocalDate().minusDays(1);
@@ -165,11 +201,11 @@ public class BillingService {
         BigDecimal totalAmount = baseAmount.add(usageAmount).subtract(discountAmount).add(taxAmount);
         invoice.setTotalAmount(totalAmount);
 
-        invoice = invoiceRepository.save(invoice);
+        invoiceRepository.insert(invoice);
 
         // 更新订阅下次计费时间
         subscription.setNextBillingDate(calculateNextBillingDate(plan));
-        subscriptionRepository.save(subscription);
+        subscriptionRepository.updateById(subscription);
 
         // 发送账单通知
         notificationService.sendInvoiceGenerated(subscription.getTenantId(), invoice);
@@ -190,17 +226,13 @@ public class BillingService {
      */
     public void recordUsage(String tenantId, String metricType, BigDecimal quantity,
                            String resourceId, String metadata) {
-        UsageRecord record = new UsageRecord();
-        record.setId(UUID.randomUUID().toString());
-        record.setTenantId(tenantId);
-        record.setMetricType(metricType);
-        record.setQuantity(quantity);
-        record.setRecordTime(LocalDateTime.now());
-        record.setResourceId(resourceId);
-        record.setMetadata(metadata);
-        record.setBilled(false);
+        // 先检查使用量限制
+        if (!subscriptionService.validateUsageLimit(tenantId, metricType)) {
+            throw new UsageLimitExceededException(metricType, quantity, BigDecimal.ZERO);
+        }
 
-        usageRepository.save(record);
+        // 使用 UsageService 记录使用量
+        usageService.recordUsage(tenantId, metricType, quantity, metadata);
 
         // 异步检查使用量限制
         checkUsageLimitsAsync(tenantId, metricType);
@@ -211,7 +243,7 @@ public class BillingService {
     /**
      * 获取使用量统计
      */
-    public List<UsageRecord> getUsageStats(String tenantId, String metricType, String period) {
+    public List<Map<String, Object>> getUsageStats(String tenantId, String period) {
         // 根据period参数实现不同时间范围的查询
         LocalDateTime endTime = LocalDateTime.now();
         LocalDateTime startTime = switch (period.toUpperCase()) {
@@ -222,8 +254,7 @@ public class BillingService {
             default -> endTime.minusDays(30); // 默认30天
         };
 
-        return usageRepository.findByTenantIdAndBilledFalseAndRecordTimeBetween(
-            tenantId, startTime, endTime);
+        return usageService.getUsageTrend(tenantId, startTime, endTime);
     }
 
     /**
@@ -231,31 +262,25 @@ public class BillingService {
      */
     @Transactional
     public void processPayment(String invoiceId, String paymentMethod, String transactionId) {
-        Invoice invoice = invoiceRepository.findById(invoiceId)
-            .orElseThrow(() -> new IllegalArgumentException("账单不存在"));
+        // 使用 InvoiceService 处理支付
+        invoiceService.markInvoiceAsPaid(invoiceId, paymentMethod, transactionId);
 
-        if (invoice.getStatus() != InvoiceStatus.PENDING) {
-            throw new IllegalStateException("账单状态不允许支付");
-        }
-
-        invoice.setStatus(InvoiceStatus.PAID);
-        invoice.setPaidAt(LocalDateTime.now());
-        invoice.setPaymentMethod(paymentMethod);
-        invoice.setPaymentTransactionId(transactionId);
-
-        invoiceRepository.save(invoice);
+        // 获取账单信息
+        Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
 
         // 激活或续期订阅
-        BaseTenantSubscription subscription = subscriptionRepository.findById(invoice.getSubscriptionId())
-            .orElseThrow(() -> new IllegalArgumentException("订阅不存在"));
+        BaseTenantSubscription subscription = subscriptionRepository.selectById(invoice.getSubscriptionId());
+        if (subscription == null) {
+            throw new SubscriptionNotFoundException(invoice.getSubscriptionId());
+        }
 
         if (subscription.getStatus() == SubscriptionStatus.PENDING_PAYMENT) {
             subscription.setStatus(SubscriptionStatus.ACTIVE);
-            subscriptionRepository.save(subscription);
+            subscriptionRepository.updateById(subscription);
         }
 
         // 标记使用量为已计费
-        markUsageAsBilled(invoice.getTenantId(), invoice.getPeriodStart().atStartOfDay(),
+        usageService.markUsageAsBilled(invoice.getTenantId(), invoice.getPeriodStart().atStartOfDay(),
             invoice.getPeriodEnd().plusDays(1).atStartOfDay(), invoiceId);
 
         // 发送支付确认通知
@@ -275,8 +300,7 @@ public class BillingService {
             return false; // 无有效订阅
         }
 
-        SubscriptionPlan plan = planRepository.findById(subscription.getPlanId())
-            .orElse(null);
+        SubscriptionPlan plan = planRepository.selectById(subscription.getPlanId());
 
         if (plan == null) {
             return false;
@@ -384,8 +408,4 @@ public class BillingService {
         log.debug("异步检查使用量限制：租户 {}, 类型 {}", tenantId, metricType);
     }
 
-    private void markUsageAsBilled(String tenantId, LocalDateTime periodStart,
-                                 LocalDateTime periodEnd, String invoiceId) {
-        usageRepository.markAsBilled(tenantId, periodStart, periodEnd, invoiceId, LocalDateTime.now());
-    }
 }

@@ -1,7 +1,7 @@
 package io.github.rosestack.tenant;
 
-import io.github.rosestack.core.model.HasCodeNameDescription;
 import io.github.rosestack.core.entity.BaseEntity;
+import io.github.rosestack.core.model.HasCodeNameDescription;
 import lombok.Data;
 
 @Data

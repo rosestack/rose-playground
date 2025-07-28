@@ -1,14 +1,14 @@
 package io.github.rosestack.notification.interfaces.controller;
 
-import io.github.rosestack.notification.application.service.NotificationApplicationService;
 import io.github.rosestack.notification.application.command.SendNotificationCommand;
-import io.github.rosestack.notification.interfaces.dto.SendNotificationRequest;
-import io.github.rosestack.notification.interfaces.dto.NotificationDTO;
+import io.github.rosestack.notification.application.service.NotificationApplicationService;
 import io.github.rosestack.notification.interfaces.assembler.NotificationAssembler;
+import io.github.rosestack.notification.interfaces.dto.NotificationDTO;
+import io.github.rosestack.notification.interfaces.dto.SendNotificationRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 /**
  * 通知控制器

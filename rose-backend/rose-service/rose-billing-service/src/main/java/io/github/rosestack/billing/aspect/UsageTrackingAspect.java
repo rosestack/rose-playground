@@ -1,8 +1,11 @@
 package io.github.rosestack.billing.aspect;
 
+import io.github.rosestack.billing.aspect.annotation.TrackEmailUsage;
+import io.github.rosestack.billing.aspect.annotation.TrackSmsUsage;
+import io.github.rosestack.billing.aspect.annotation.TrackStorageUsage;
+import io.github.rosestack.billing.aspect.annotation.TrackUserChange;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.TenantContextHolder;
-import io.github.rosestack.billing.aspect.annotation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -25,7 +28,6 @@ import java.math.BigDecimal;
 public class UsageTrackingAspect {
 
     private final BillingService billingService;
-    private final TenantContextHolder tenantContextHolder;
 
     /**
      * 监控API调用
@@ -33,7 +35,7 @@ public class UsageTrackingAspect {
     @AfterReturning("@annotation(trackApiUsage)")
     public void trackApiCall(JoinPoint joinPoint, io.github.rosestack.billing.aspect.annotation.TrackApiUsage trackApiUsage) {
         try {
-            String tenantId = tenantContextHolder.getCurrentTenantId();
+            String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
                 String apiPath = trackApiUsage.value();
                 if (apiPath.isEmpty()) {
@@ -61,7 +63,7 @@ public class UsageTrackingAspect {
     @AfterReturning(value = "@annotation(trackStorageUsage)", returning = "result")
     public void trackStorageUsage(JoinPoint joinPoint, TrackStorageUsage trackStorageUsage, Object result) {
         try {
-            String tenantId = tenantContextHolder.getCurrentTenantId();
+            String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null && result instanceof Number) {
                 BigDecimal storageSize = new BigDecimal(result.toString());
 
@@ -86,7 +88,7 @@ public class UsageTrackingAspect {
     @AfterReturning("@annotation(trackUserChange)")
     public void trackUserChange(JoinPoint joinPoint, TrackUserChange trackUserChange) {
         try {
-            String tenantId = tenantContextHolder.getCurrentTenantId();
+            String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
                 // 获取当前用户总数
                 int currentUserCount = getUserCount(tenantId);
@@ -112,7 +114,7 @@ public class UsageTrackingAspect {
     @AfterReturning("@annotation(trackEmailUsage)")
     public void trackEmailSent(JoinPoint joinPoint, TrackEmailUsage trackEmailUsage) {
         try {
-            String tenantId = tenantContextHolder.getCurrentTenantId();
+            String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
                 billingService.recordUsage(
                         tenantId,
@@ -135,7 +137,7 @@ public class UsageTrackingAspect {
     @AfterReturning("@annotation(trackSmsUsage)")
     public void trackSmsSent(JoinPoint joinPoint, TrackSmsUsage trackSmsUsage) {
         try {
-            String tenantId = tenantContextHolder.getCurrentTenantId();
+            String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
                 billingService.recordUsage(
                         tenantId,

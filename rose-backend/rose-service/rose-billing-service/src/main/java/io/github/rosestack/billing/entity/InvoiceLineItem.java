@@ -2,6 +2,7 @@ package io.github.rosestack.billing.entity;
 
 import io.github.rosestack.core.entity.BaseTenantEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
@@ -9,6 +10,7 @@ import java.math.BigDecimal;
  * 账单明细项
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class InvoiceLineItem extends BaseTenantEntity{
     private String id;
 

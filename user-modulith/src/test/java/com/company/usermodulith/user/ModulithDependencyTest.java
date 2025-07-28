@@ -1,8 +1,8 @@
 package com.company.usermodulith.user;
 
+import com.company.usermodulith.UserModulithApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
-import com.company.usermodulith.UserModulithApplication;
 
 /**
  * Spring Modulith 模块依赖测试

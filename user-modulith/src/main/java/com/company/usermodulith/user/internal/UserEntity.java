@@ -1,9 +1,9 @@
 package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.company.usermodulith.shared.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import com.company.usermodulith.shared.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 

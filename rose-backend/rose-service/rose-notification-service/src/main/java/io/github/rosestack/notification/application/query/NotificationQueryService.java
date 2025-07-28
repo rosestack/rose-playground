@@ -2,8 +2,8 @@ package io.github.rosestack.notification.application.query;
 
 import io.github.rosestack.notification.domain.entity.Notification;
 import io.github.rosestack.notification.domain.repository.NotificationRepository;
-import io.github.rosestack.notification.shared.exception.NotificationException;
 import io.github.rosestack.notification.shared.constant.NotificationConstants;
+import io.github.rosestack.notification.shared.exception.NotificationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

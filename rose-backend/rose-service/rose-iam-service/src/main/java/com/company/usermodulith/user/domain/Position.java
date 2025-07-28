@@ -2,8 +2,8 @@ package com.company.usermodulith.user.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import io.github.rosestack.core.model.HasCodeNameDescription;
 import io.github.rosestack.core.entity.BaseTenantEntity;
+import io.github.rosestack.core.model.HasCodeNameDescription;
 import lombok.Data;
 
 @Data

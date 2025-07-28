@@ -1,5 +1,8 @@
 package io.github.rosestack.billing.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.core.entity.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,7 +17,10 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@TableName("usage_record")
 public class UsageRecord extends BaseTenantEntity {
+
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
     /**
@@ -51,6 +57,11 @@ public class UsageRecord extends BaseTenantEntity {
      * 元数据（如API路径、文件类型等）
      */
     private String metadata;
+
+    /**
+     * 使用量描述
+     */
+    private String description;
 
     /**
      * 是否已计费

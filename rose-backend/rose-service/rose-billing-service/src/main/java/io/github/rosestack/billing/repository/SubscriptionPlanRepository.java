@@ -1,9 +1,11 @@
 package io.github.rosestack.billing.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,29 +16,49 @@ import java.util.Optional;
  *
  * @author rose
  */
-@Repository
-public interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPlan, String> {
+@Mapper
+public interface SubscriptionPlanRepository extends BaseMapper<SubscriptionPlan> {
 
     /**
      * 根据代码查找计划
      */
-    Optional<SubscriptionPlan> findByCode(String code);
+    default Optional<SubscriptionPlan> findByCode(String code) {
+        LambdaQueryWrapper<SubscriptionPlan> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SubscriptionPlan::getCode, code)
+                .eq(SubscriptionPlan::getDeleted, false);
+        SubscriptionPlan plan = selectOne(wrapper);
+        return Optional.ofNullable(plan);
+    }
 
     /**
      * 查找启用的计划
      */
-    List<SubscriptionPlan> findByEnabledTrueOrderByBasePrice();
+    default List<SubscriptionPlan> findByEnabledTrueOrderByBasePrice() {
+        LambdaQueryWrapper<SubscriptionPlan> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SubscriptionPlan::getEnabled, true)
+                .eq(SubscriptionPlan::getDeleted, false)
+                .orderByAsc(SubscriptionPlan::getBasePrice);
+        return selectList(wrapper);
+    }
 
     /**
      * 根据租户查找计划
      */
-    List<SubscriptionPlan> findByTenantIdOrTenantIdIsNull(String tenantId);
+    default List<SubscriptionPlan> findByTenantIdOrTenantIdIsNull(String tenantId) {
+        LambdaQueryWrapper<SubscriptionPlan> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(w -> w.eq(SubscriptionPlan::getTenantId, tenantId)
+                        .or()
+                        .isNull(SubscriptionPlan::getTenantId))
+                .eq(SubscriptionPlan::getDeleted, false);
+        return selectList(wrapper);
+    }
 
     /**
      * 查找有效期内的计划
      */
-    @Query("SELECT p FROM SubscriptionPlan p WHERE p.enabled = true " +
-           "AND (p.effectiveDate IS NULL OR p.effectiveDate <= :now) " +
-           "AND (p.expiryDate IS NULL OR p.expiryDate > :now)")
-    List<SubscriptionPlan> findValidPlans(LocalDateTime now);
+    @Select("SELECT * FROM subscription_plan WHERE enabled = 1 " +
+            "AND (effective_date IS NULL OR effective_date <= #{now}) " +
+            "AND (expiry_date IS NULL OR expiry_date > #{now}) " +
+            "AND deleted = 0")
+    List<SubscriptionPlan> findValidPlans(@Param("now") LocalDateTime now);
 }

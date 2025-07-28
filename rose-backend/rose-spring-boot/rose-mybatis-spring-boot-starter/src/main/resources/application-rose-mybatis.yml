@@ -1,0 +1,97 @@
+# Rose MyBatis Plus 配置示例
+rose:
+  mybatis:
+    # 是否启用 Rose MyBatis Plus 增强功能
+    enabled: true
+    
+    # 多租户配置
+    tenant:
+      # 是否启用多租户
+      enabled: true
+      # 租户字段名
+      column: tenant_id
+      # 忽略多租户的表名列表（根据实际需要配置）
+      ignore-tables: [ ]
+      # 忽略多租户的表名前缀列表（根据实际需要配置）
+      ignore-table-prefixes: [ ]
+    
+    # 分页配置
+    pagination:
+      # 是否启用分页插件
+      enabled: true
+      # 单页最大限制数量
+      max-limit: 1000
+      # 是否启用合理化分页
+      reasonable: true
+      # 数据库类型（mysql, postgresql, oracle, sqlserver, h2, sqlite）
+      db-type: mysql
+
+    # 乐观锁配置
+    optimistic-lock:
+      # 是否启用乐观锁
+      enabled: true
+      # 版本字段名
+      column: version
+    
+    # 字段填充配置
+    field-fill:
+      # 是否启用字段自动填充
+      enabled: true
+      # 创建时间字段名
+      create-time-column: created_time
+      # 更新时间字段名
+      update-time-column: updated_time
+      # 租户ID字段名
+      tenant-id-column: tenant_id
+    
+    # SQL 性能监控配置
+    performance:
+      # 是否启用 SQL 性能监控（需要引入 p6spy 依赖）
+      enabled: false
+      # 慢查询阈值（毫秒）
+      slow-sql-threshold: 1000
+      # 是否格式化 SQL
+      format-sql: true
+
+    # 字段加密配置
+    encryption:
+      # 是否启用字段加密
+      enabled: false
+      # 加密密钥（生产环境应该从外部配置获取）
+      secret-key: "MySecretKey12345"
+      # 加密失败时是否抛出异常
+      fail-on-error: true
+      # 默认加密算法
+      default-algorithm: "AES"
+
+# MyBatis Plus 原生配置
+mybatis-plus:
+  # 配置扫描路径
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 实体扫描，多个package用逗号或者分号分隔
+  type-aliases-package: io.github.rosestack.**.entity
+  # 原生配置
+  configuration:
+    # 是否开启自动驼峰命名规则映射
+    map-underscore-to-camel-case: true
+    # 开启缓存
+    cache-enabled: false
+    # 调用存储过程时，设置为 CALLABLE
+    default-statement-timeout: 30
+    # 设置超时时间
+    default-fetch-size: 100
+  # 全局配置
+  global-config:
+    # 是否控制台打印 MyBatis Plus 启动 banner
+    banner: true
+    # 数据库相关配置
+    db-config:
+      # 主键类型（AUTO: 数据库自增, NONE: 无状态, INPUT: 用户输入, ASSIGN_ID: 雪花算法, ASSIGN_UUID: UUID）
+      id-type: ASSIGN_ID
+      # 字段策略（IGNORED: 忽略判断, NOT_NULL: 非NULL判断, NOT_EMPTY: 非空判断, DEFAULT: 默认, NEVER: 不加入SQL）
+      insert-strategy: NOT_EMPTY
+      update-strategy: NOT_EMPTY
+      # 逻辑删除配置
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0

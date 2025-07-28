@@ -3,7 +3,6 @@ package io.github.rosestack.billing.controller;
 import io.github.rosestack.billing.entity.BaseTenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
-import io.github.rosestack.billing.entity.UsageRecord;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.interfaces.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 计费管理控制器
@@ -91,11 +91,11 @@ public class BillingController {
      * 获取使用量统计
      */
     @GetMapping("/usage/tenant/{tenantId}")
-    public ApiResponse<List<UsageRecord>> getUsageStats(
+    public ApiResponse<List<Map<String, Object>>> getUsageStats(
             @PathVariable String tenantId,
             @RequestParam String metricType,
             @RequestParam String period) {
-        List<UsageRecord> usage = billingService.getUsageStats(tenantId, metricType, period);
+        List<Map<String, Object>> usage = billingService.getUsageStats(tenantId, period);
         return ApiResponse.success(usage);
     }
 

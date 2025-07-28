@@ -35,6 +35,7 @@
         <module>rose-framework/rose-i18n</module>
         <module>rose-framework/rose-notice</module>
         <module>rose-spring-boot/rose-auth-spring-boot-starter</module>
+        <module>rose-spring-boot/rose-mybatis-spring-boot-starter</module>
         <module>rose-service/rose-shared-api</module>
         <module>rose-service/rose-shared-service</module>
         <module>rose-service/rose-iam-api</module>

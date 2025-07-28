@@ -1,6 +1,7 @@
 package com.company.usermodulith.user;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 /**
