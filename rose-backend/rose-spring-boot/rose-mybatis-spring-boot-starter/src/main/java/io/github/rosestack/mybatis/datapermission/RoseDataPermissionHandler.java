@@ -72,7 +72,7 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     }
 
     boolean needPermissionControl(DataPermission dataPermission) {
-        return dataPermission.scope() != DataScope.ALL;
+        return dataPermission != null && dataPermission.scope() != DataScope.ALL;
     }
 
     /**
@@ -121,7 +121,7 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
             String methodName = mappedStatementId.substring(lastDotIndex + 1);
 
             // 获取类
-            Class<?> mapperClass = Class.forName(className);
+            Class<?> mapperClass  = Class.forName(className);
 
             // 先检查类级别的注解
             DataPermission classAnnotation = mapperClass.getAnnotation(DataPermission.class);

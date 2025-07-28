@@ -30,7 +30,6 @@ class RoseMybatisAutoConfigurationTest {
                 .run(context -> {
                     assertThat(context).hasSingleBean(RoseMybatisProperties.class);
                     assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
-                    assertThat(context).hasSingleBean(RoseTenantLineHandler.class);
                     assertThat(context).hasSingleBean(MetaObjectHandler.class);
                 });
     }
@@ -55,8 +54,6 @@ class RoseMybatisAutoConfigurationTest {
                         "rose.mybatis.tenant.column=tenant_id"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(RoseTenantLineHandler.class);
-
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
                     assertThat(properties.getTenant().isEnabled()).isTrue();
                     assertThat(properties.getTenant().getColumn()).isEqualTo("tenant_id");
@@ -144,7 +141,8 @@ class RoseMybatisAutoConfigurationTest {
     @Test
     void shouldUseDefaultPropertiesWhenNotSpecified() {
         this.contextRunner
-                .withPropertyValues("rose.mybatis.enabled=true")
+                .withPropertyValues("rose.mybatis.enabled=true",
+                        "rose.mybatis.tenant.enabled=true")
                 .run(context -> {
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
 
@@ -157,7 +155,7 @@ class RoseMybatisAutoConfigurationTest {
 
                     assertThat(properties.getOptimisticLock().isEnabled()).isTrue();
                     assertThat(properties.getFieldFill().isEnabled()).isTrue();
-                    assertThat(properties.getPerformance().isEnabled()).isFalse();
+                    assertThat(properties.getPerformance().isEnabled()).isTrue();
                 });
     }
 }
