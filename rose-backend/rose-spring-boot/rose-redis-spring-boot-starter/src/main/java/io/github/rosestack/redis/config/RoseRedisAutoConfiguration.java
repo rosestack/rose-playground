@@ -1,7 +1,7 @@
 package io.github.rosestack.redis.config;
 
 import io.github.rosestack.redis.lock.DistributedLockManager;
-import io.github.rosestack.redis.lock.aspect.DistributedLockAspect;
+import io.github.rosestack.redis.lock.aspect.LockAspect;
 import io.github.rosestack.redis.ratelimit.RateLimitAspect;
 import io.github.rosestack.redis.ratelimit.RateLimitManager;
 import io.github.rosestack.redis.ratelimit.RedisRateLimiter;
@@ -16,7 +16,6 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -59,8 +58,8 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
         @ConditionalOnBean(DistributedLockManager.class)
-        public DistributedLockAspect distributedLockAspect(DistributedLockManager lockManager) {
-            return new DistributedLockAspect(lockManager);
+        public LockAspect distributedLockAspect(DistributedLockManager lockManager) {
+            return new LockAspect(lockManager);
         }
     }
 

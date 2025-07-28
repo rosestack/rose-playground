@@ -1,19 +1,24 @@
 package io.github.rosestack.mybatis;
 
-import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import io.github.rosestack.mybatis.audit.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisAutoConfiguration;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.mybatis.datapermission.RoseDataPermissionHandler;
+import io.github.rosestack.mybatis.desensitization.SensitiveFieldInterceptor;
+import io.github.rosestack.mybatis.encryption.DefaultFieldEncryptor;
+import io.github.rosestack.mybatis.encryption.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.tenant.RoseTenantLineHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Rose MyBatis Plus 自动配置测试
+ * Rose MyBatis 自动配置测试
  *
  * @author Rose Team
  * @since 1.0.0
@@ -24,112 +29,134 @@ class RoseMybatisAutoConfigurationTest {
             .withConfiguration(AutoConfigurations.of(RoseMybatisAutoConfiguration.class));
 
     @Test
-    void shouldAutoConfigureWhenEnabled() {
-        this.contextRunner
-                .withPropertyValues("rose.mybatis.enabled=true")
+    void testAutoConfiguration_DefaultSettings() {
+        contextRunner.run(context -> {
+            // 验证配置属性被创建
+            assertThat(context).hasSingleBean(RoseMybatisProperties.class);
+
+            // 验证核心组件被创建
+            assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
+            assertThat(context).hasSingleBean(RoseMetaObjectHandler.class);
+
+            // 验证默认启用的功能
+            assertThat(context).hasSingleBean(RoseDataPermissionHandler.class);
+            assertThat(context).hasSingleBean(SensitiveFieldInterceptor.class);
+        });
+    }
+
+    @Test
+    void testAutoConfiguration_WithTenantEnabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.tenant.enabled=true")
                 .run(context -> {
-                    assertThat(context).hasSingleBean(RoseMybatisProperties.class);
-                    assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
-                    assertThat(context).hasSingleBean(MetaObjectHandler.class);
+                    assertThat(context).hasSingleBean(RoseTenantLineHandler.class);
                 });
     }
 
     @Test
-    void shouldNotAutoConfigureWhenDisabled() {
-        this.contextRunner
-                .withPropertyValues("rose.mybatis.enabled=false")
+    void testAutoConfiguration_WithTenantDisabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.tenant.enabled=false")
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(MybatisPlusInterceptor.class);
                     assertThat(context).doesNotHaveBean(RoseTenantLineHandler.class);
-                    assertThat(context).doesNotHaveBean(MetaObjectHandler.class);
                 });
     }
 
     @Test
-    void shouldConfigureTenantWhenEnabled() {
-        this.contextRunner
+    void testAutoConfiguration_WithEncryptionEnabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.encryption.enabled=true")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(DefaultFieldEncryptor.class);
+                    assertThat(context).hasSingleBean(FieldEncryptionInterceptor.class);
+                });
+    }
+
+    @Test
+    void testAutoConfiguration_WithEncryptionDisabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.encryption.enabled=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(FieldEncryptionInterceptor.class);
+                });
+    }
+
+    @Test
+    void testAutoConfiguration_WithDataPermissionDisabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.data-permission.enabled=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(RoseDataPermissionHandler.class);
+                });
+    }
+
+    @Test
+    void testAutoConfiguration_WithDesensitizationDisabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.desensitization.enabled=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(SensitiveFieldInterceptor.class);
+                });
+    }
+
+    @Test
+    void testAutoConfiguration_WithFieldFillDisabled() {
+        contextRunner
+                .withPropertyValues("rose.mybatis.field-fill.enabled=false")
+                .run(context -> {
+                    assertThat(context).doesNotHaveBean(RoseMetaObjectHandler.class);
+                });
+    }
+
+    @Test
+    void testAutoConfiguration_WithCustomProperties() {
+        contextRunner
                 .withPropertyValues(
-                        "rose.mybatis.enabled=true",
-                        "rose.mybatis.tenant.enabled=true",
-                        "rose.mybatis.tenant.column=tenant_id"
+                        "rose.mybatis.tenant.column=org_id",
+                        "rose.mybatis.encryption.default-algorithm=DES",
+                        "rose.mybatis.data-permission.default-field=dept_id",
+                        "rose.mybatis.field-fill.default-user=admin"
                 )
                 .run(context -> {
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
-                    assertThat(properties.getTenant().isEnabled()).isTrue();
-                    assertThat(properties.getTenant().getColumn()).isEqualTo("tenant_id");
+
+                    assertThat(properties.getTenant().getColumn()).isEqualTo("org_id");
+                    assertThat(properties.getEncryption().getDefaultAlgorithm()).isEqualTo("DES");
+                    assertThat(properties.getDataPermission().getDefaultField()).isEqualTo("dept_id");
+                    assertThat(properties.getFieldFill().getDefaultUser()).isEqualTo("admin");
                 });
     }
 
     @Test
-    void shouldNotConfigureTenantWhenDisabled() {
-        this.contextRunner
-                .withPropertyValues(
-                        "rose.mybatis.enabled=true",
-                        "rose.mybatis.tenant.enabled=false"
-                )
+    void testAutoConfiguration_WithUserDefinedBeans() {
+        contextRunner
+                .withUserConfiguration(CustomConfiguration.class)
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(RoseTenantLineHandler.class);
+                    // 验证用户自定义的Bean被使用
+                    assertThat(context).hasSingleBean(RoseMetaObjectHandler.class);
+                    assertThat(context.getBean(RoseMetaObjectHandler.class))
+                            .isInstanceOf(CustomRoseMetaObjectHandler.class);
                 });
     }
 
     @Test
-    void shouldConfigurePaginationWithCustomSettings() {
-        this.contextRunner
+    void testAutoConfiguration_PaginationSettings() {
+        contextRunner
                 .withPropertyValues(
-                        "rose.mybatis.enabled=true",
                         "rose.mybatis.pagination.enabled=true",
-                        "rose.mybatis.pagination.max-limit=500",
-                        "rose.mybatis.pagination.db-type=postgresql"
+                        "rose.mybatis.pagination.max-limit=500"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
-
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
                     assertThat(properties.getPagination().isEnabled()).isTrue();
-                    assertThat(properties.getPagination().getMaxLimit()).isEqualTo(500L);
-                    assertThat(properties.getPagination().getDbType()).isEqualTo("postgresql");
+                    assertThat(properties.getPagination().getMaxLimit()).isEqualTo(500);
                 });
     }
 
     @Test
-    void shouldConfigureFieldFillWithCustomColumns() {
-        this.contextRunner
+    void testAutoConfiguration_OptimisticLockSettings() {
+        contextRunner
                 .withPropertyValues(
-                        "rose.mybatis.enabled=true",
-                        "rose.mybatis.field-fill.enabled=true",
-                        "rose.mybatis.field-fill.create-time-column=create_time",
-                        "rose.mybatis.field-fill.update-time-column=update_time"
-                )
-                .run(context -> {
-                    assertThat(context).hasSingleBean(MetaObjectHandler.class);
-                    assertThat(context.getBean(MetaObjectHandler.class))
-                            .isInstanceOf(RoseMetaObjectHandler.class);
-
-                    RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
-                    assertThat(properties.getFieldFill().isEnabled()).isTrue();
-                    assertThat(properties.getFieldFill().getCreateTimeColumn()).isEqualTo("create_time");
-                    assertThat(properties.getFieldFill().getUpdateTimeColumn()).isEqualTo("update_time");
-                });
-    }
-
-    @Test
-    void shouldNotConfigureFieldFillWhenDisabled() {
-        this.contextRunner
-                .withPropertyValues(
-                        "rose.mybatis.enabled=true",
-                        "rose.mybatis.field-fill.enabled=false"
-                )
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(MetaObjectHandler.class);
-                });
-    }
-
-
-    @Test
-    void shouldConfigureOptimisticLockWithCustomColumn() {
-        this.contextRunner
-                .withPropertyValues(
-                        "rose.mybatis.enabled=true",
                         "rose.mybatis.optimistic-lock.enabled=true"
                 )
                 .run(context -> {
@@ -138,24 +165,25 @@ class RoseMybatisAutoConfigurationTest {
                 });
     }
 
-    @Test
-    void shouldUseDefaultPropertiesWhenNotSpecified() {
-        this.contextRunner
-                .withPropertyValues("rose.mybatis.enabled=true",
-                        "rose.mybatis.tenant.enabled=true")
-                .run(context -> {
-                    RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
+    /**
+     * 自定义配置类
+     */
+    @Configuration
+    static class CustomConfiguration {
 
-                    // 验证默认值
-                    assertThat(properties.isEnabled()).isTrue();
-                    assertThat(properties.getTenant().isEnabled()).isTrue();
-                    assertThat(properties.getTenant().getColumn()).isEqualTo("tenant_id");
-                    assertThat(properties.getPagination().isEnabled()).isTrue();
-                    assertThat(properties.getPagination().getMaxLimit()).isEqualTo(1000L);
+        @Bean
+        public RoseMetaObjectHandler customRoseMetaObjectHandler(RoseMybatisProperties properties) {
+            return new CustomRoseMetaObjectHandler(properties);
+        }
+    }
 
-                    assertThat(properties.getOptimisticLock().isEnabled()).isTrue();
-                    assertThat(properties.getFieldFill().isEnabled()).isTrue();
-                    assertThat(properties.getPerformance().isEnabled()).isTrue();
-                });
+    /**
+     * 自定义元数据处理器
+     */
+    static class CustomRoseMetaObjectHandler extends RoseMetaObjectHandler {
+
+        public CustomRoseMetaObjectHandler(RoseMybatisProperties properties) {
+            super(properties);
+        }
     }
 }

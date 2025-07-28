@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
  * @since 1.0.0
  */
 @ExtendWith(MockitoExtension.class)
-class RedisDistributedLockTest {
+class RedisLockTest {
 
     @Mock
     private RedisTemplate<String, Object> redisTemplate;

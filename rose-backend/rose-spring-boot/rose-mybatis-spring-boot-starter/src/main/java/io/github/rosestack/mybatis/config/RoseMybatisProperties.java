@@ -151,6 +151,8 @@ public class RoseMybatisProperties {
          * 更新时间字段名
          */
         private String updateTimeColumn = "updated_time";
+
+        private String defaultUser;
     }
 
     /**
@@ -223,6 +225,8 @@ public class RoseMybatisProperties {
          * 是否启用数据权限
          */
         private boolean enabled = true;
+
+        private String defaultField;
     }
 
     /**

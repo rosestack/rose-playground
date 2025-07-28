@@ -1,7 +1,6 @@
 package io.github.rosestack.redis.annotation;
 
 import java.lang.annotation.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 分布式锁注解
@@ -16,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface DistributedLock {
+public @interface Lock {
 
     /**
      * 锁名称
@@ -40,7 +39,7 @@ public @interface DistributedLock {
     String name() default "";
 
     /**
-     * 等待获取锁的时间
+     * 等待获取锁的时间，单位毫秒
      * <p>
      * 如果在指定时间内无法获取锁，则抛出异常。
      * 设置为 -1 表示不等待，立即返回。
@@ -52,7 +51,7 @@ public @interface DistributedLock {
     long waitTime() default 5000L;
 
     /**
-     * 锁的持有时间
+     * 锁的持有时间，单位毫秒
      * <p>
      * 锁的最大持有时间，超过此时间锁会自动释放。
      * 设置为 -1 表示使用默认配置。
@@ -61,13 +60,6 @@ public @interface DistributedLock {
      * @return 持有时间
      */
     long leaseTime() default -1L;
-
-    /**
-     * 时间单位
-     *
-     * @return 时间单位
-     */
-    TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
 
     /**
      * 是否自动续期
@@ -132,17 +124,17 @@ public @interface DistributedLock {
          * 抛出异常（默认）
          */
         EXCEPTION,
-        
+
         /**
          * 返回 null
          */
         RETURN_NULL,
-        
+
         /**
          * 跳过方法执行，返回默认值
          */
         SKIP,
-        
+
         /**
          * 抛出自定义异常
          */

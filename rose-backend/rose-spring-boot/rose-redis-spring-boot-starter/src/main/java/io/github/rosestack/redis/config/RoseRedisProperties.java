@@ -3,8 +3,6 @@ package io.github.rosestack.redis.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.time.Duration;
-
 /**
  * Rose Redis 配置属性
  * <p>

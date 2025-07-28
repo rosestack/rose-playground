@@ -198,13 +198,13 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         if (currentDeptId != null) {
             switch (dataPermission.scope()) {
                 case DEPT:
-                    return Arrays.asList(currentDeptId);
+                    return List.of(currentDeptId);
                 case DEPT_AND_CHILD:
                     return getDeptAndChildIds(currentDeptId);
                 case ALL:
                     return Collections.emptyList();
                 default:
-                    return Arrays.asList(currentDeptId);
+                    return List.of(currentDeptId);
             }
         }
 
@@ -220,18 +220,18 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         if (currentOrgId != null) {
             switch (dataPermission.scope()) {
                 case ORG:
-                    return Arrays.asList(currentOrgId);
+                    return List.of(currentOrgId);
                 case ORG_AND_CHILD:
                     return getOrgAndChildIds(currentOrgId);
                 case ALL:
                     return Collections.emptyList();
                 default:
-                    return Arrays.asList(currentOrgId);
+                    return List.of(currentOrgId);
             }
         }
 
         log.warn("未找到当前组织信息，使用默认权限控制");
-        return Arrays.asList("UNKNOWN_ORG");
+        return List.of("UNKNOWN_ORG");
     }
 
     /**
@@ -244,7 +244,7 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         }
 
         log.warn("未找到当前角色信息，使用默认权限控制");
-        return Arrays.asList("UNKNOWN_ROLE");
+        return List.of("UNKNOWN_ROLE");
     }
 
     /**
