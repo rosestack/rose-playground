@@ -1,12 +1,14 @@
 package io.github.rosestack.mybatis.desensitization;
 
 import io.github.rosestack.mybatis.annotation.SensitiveField;
+import io.github.rosestack.mybatis.enums.SensitiveType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * 敏感数据脱敏工具类
@@ -19,6 +21,9 @@ import java.util.List;
  */
 @Slf4j
 public class SensitiveDataProcessor {
+    private static DynamicDesensitizationRuleManager ruleManager;
+
+    private static DesensitizationAuditManager auditManager;
 
     /**
      * 对对象进行脱敏处理
@@ -39,20 +44,65 @@ public class SensitiveDataProcessor {
                 return obj;
             }
 
-            // 处理单个对象
-            Field[] fields = obj.getClass().getDeclaredFields();
-            for (Field field : fields) {
-                SensitiveField sensitiveField = field.getAnnotation(SensitiveField.class);
+            // 处理单个对象 - 使用 Spring 的 ReflectionUtils 和动态脱敏规则
+            ReflectionUtils.doWithFields(obj.getClass(), field -> {
+                SensitiveField sensitiveField = AnnotationUtils.findAnnotation(field, SensitiveField.class);
                 if (sensitiveField != null) {
-                    field.setAccessible(true);
-                    Object fieldValue = field.get(obj);
-                    if (fieldValue instanceof String) {
-                        String desensitizedValue = desensitize((String) fieldValue,
-                            sensitiveField.value(), sensitiveField.customRule());
-                        field.set(obj, desensitizedValue);
+                    try {
+                        ReflectionUtils.makeAccessible(field);
+                        Object fieldValue = ReflectionUtils.getField(field, obj);
+                        if (fieldValue instanceof String) {
+                            String originalValue = (String) fieldValue;
+                            String desensitizedValue;
+
+                            // 获取当前请求上下文
+                            DynamicDesensitizationRuleManager.DesensitizationContext context = getCurrentContext();
+
+                            // 优先使用动态脱敏规则
+                            if (ruleManager != null) {
+                                desensitizedValue = ruleManager.applyDesensitization(field.getName(), originalValue, context);
+                            } else {
+                                // 回退到静态脱敏规则
+                                desensitizedValue = desensitize(originalValue, sensitiveField.value(), sensitiveField.customRule());
+                            }
+
+                            ReflectionUtils.setField(field, obj, desensitizedValue);
+
+                            // 记录脱敏审计
+                            if (auditManager != null && context != null) {
+                                auditManager.recordDesensitization(
+                                        context.getUserId(),
+                                        context.getUserRole(),
+                                        obj.getClass().getSimpleName(),
+                                        field.getName(),
+                                        originalValue,
+                                        desensitizedValue,
+                                        sensitiveField.value().name(),
+                                        context.getIpAddress()
+                                );
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.warn("字段 {} 脱敏处理失败: {}", field.getName(), e.getMessage());
+
+                        // 记录脱敏失败
+                        if (auditManager != null) {
+                            DynamicDesensitizationRuleManager.DesensitizationContext context = getCurrentContext();
+                            if (context != null) {
+                                auditManager.recordDesensitizationFailure(
+                                        context.getUserId(),
+                                        context.getUserRole(),
+                                        obj.getClass().getSimpleName(),
+                                        field.getName(),
+                                        "UNKNOWN",
+                                        e.getMessage(),
+                                        context.getIpAddress()
+                                );
+                            }
+                        }
                     }
                 }
-            }
+            });
         } catch (Exception e) {
             log.warn("对象脱敏处理失败: {}", e.getMessage());
         }
@@ -128,10 +178,10 @@ public class SensitiveDataProcessor {
         if (atIndex <= 0) {
             return email;
         }
-        
+
         String username = email.substring(0, atIndex);
         String domain = email.substring(atIndex);
-        
+
         if (username.length() <= 3) {
             return username.charAt(0) + "***" + domain;
         } else {
@@ -179,33 +229,74 @@ public class SensitiveDataProcessor {
         if (!StringUtils.hasText(rule)) {
             rule = "3,4";
         }
-        
+
         String[] parts = rule.split(",");
         if (parts.length != 2) {
             return value;
         }
-        
+
         try {
             int prefixLength = Integer.parseInt(parts[0].trim());
             int suffixLength = Integer.parseInt(parts[1].trim());
-            
+
             if (value.length() <= prefixLength + suffixLength) {
                 return value;
             }
-            
+
             String prefix = value.substring(0, prefixLength);
             String suffix = value.substring(value.length() - suffixLength);
             int maskLength = value.length() - prefixLength - suffixLength;
-            
+
             StringBuilder mask = new StringBuilder();
             for (int i = 0; i < maskLength; i++) {
                 mask.append("*");
             }
-            
+
             return prefix + mask + suffix;
         } catch (NumberFormatException e) {
             log.warn("自定义脱敏规则格式错误: {}", rule);
             return value;
         }
+    }
+
+    /**
+     * 获取当前请求上下文
+     * <p>
+     * 注意：这是一个简化实现，实际项目中应该：
+     * 1. 集成 Spring Security 获取当前用户信息
+     * 2. 使用 ThreadLocal 存储用户上下文
+     * 3. 通过 AOP 或拦截器设置上下文信息
+     */
+    private static DynamicDesensitizationRuleManager.DesensitizationContext getCurrentContext() {
+        try {
+            // 简化实现：从 ThreadLocal 或其他方式获取用户上下文
+            // 实际项目中可以通过以下方式获取：
+            // 1. SecurityContextHolder.getContext().getAuthentication()
+            // 2. 自定义的 UserContextHolder
+            // 3. 从 HTTP 请求头中获取
+
+            DynamicDesensitizationRuleManager.DesensitizationContext context =
+                    new DynamicDesensitizationRuleManager.DesensitizationContext();
+
+            // 这里使用默认值，实际项目中应该从认证系统获取
+            context.setUserId("default-user");
+            context.setUserRole("USER");
+            context.setRegion("CN");
+            context.setIpAddress("127.0.0.1");
+            context.setAccessTime(LocalDateTime.now());
+
+            return context;
+        } catch (Exception e) {
+            log.debug("获取请求上下文失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public static void setRuleManager(DynamicDesensitizationRuleManager ruleManager) {
+        SensitiveDataProcessor.ruleManager = ruleManager;
+    }
+
+    public static void setAuditManager(DesensitizationAuditManager auditManager) {
+        SensitiveDataProcessor.auditManager = auditManager;
     }
 }

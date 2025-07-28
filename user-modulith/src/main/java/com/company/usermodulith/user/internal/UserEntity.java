@@ -3,7 +3,7 @@ package com.company.usermodulith.user.internal;
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.core.entity.BaseEntity;
 import io.github.rosestack.mybatis.annotation.SensitiveField;
-import io.github.rosestack.mybatis.desensitization.SensitiveType;
+import io.github.rosestack.mybatis.enums.SensitiveType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

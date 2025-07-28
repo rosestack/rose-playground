@@ -147,10 +147,14 @@ public class RoseMybatisProperties {
          */
         private String createTimeColumn = "created_time";
 
+        private String createdByColumn = "created_by";
+
         /**
          * 更新时间字段名
          */
         private String updateTimeColumn = "updated_time";
+
+        private String updatedByColumn = "updated_by";
 
         private String defaultUser;
     }

@@ -1,7 +1,7 @@
 package io.github.rosestack.mybatis.annotation;
 
-import io.github.rosestack.mybatis.datapermission.DataPermissionType;
-import io.github.rosestack.mybatis.datapermission.DataScope;
+import io.github.rosestack.mybatis.enums.DataPermissionType;
+import io.github.rosestack.mybatis.enums.DataScope;
 
 import java.lang.annotation.*;
 

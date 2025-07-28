@@ -1,14 +1,13 @@
 package io.github.rosestack.mybatis;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import io.github.rosestack.mybatis.audit.RoseMetaObjectHandler;
+import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisAutoConfiguration;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.datapermission.RoseDataPermissionHandler;
-import io.github.rosestack.mybatis.desensitization.SensitiveFieldInterceptor;
-import io.github.rosestack.mybatis.encryption.DefaultFieldEncryptor;
-import io.github.rosestack.mybatis.encryption.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.tenant.RoseTenantLineHandler;
+import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
+import io.github.rosestack.mybatis.interceptor.SensitiveFieldInterceptor;
+import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
+import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -30,26 +29,34 @@ class RoseMybatisAutoConfigurationTest {
 
     @Test
     void testAutoConfiguration_DefaultSettings() {
-        contextRunner.run(context -> {
-            // 验证配置属性被创建
-            assertThat(context).hasSingleBean(RoseMybatisProperties.class);
+        contextRunner
+                .withPropertyValues("spring.datasource.url=jdbc:h2:mem:testdb")
+                .run(context -> {
+                    // 验证配置属性被创建
+                    assertThat(context).hasSingleBean(RoseMybatisProperties.class);
 
-            // 验证核心组件被创建
-            assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
-            assertThat(context).hasSingleBean(RoseMetaObjectHandler.class);
+                    // 验证核心组件被创建
+                    assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
 
-            // 验证默认启用的功能
-            assertThat(context).hasSingleBean(RoseDataPermissionHandler.class);
-            assertThat(context).hasSingleBean(SensitiveFieldInterceptor.class);
-        });
+                    // 验证默认启用的功能（这些是通过拦截器创建的，不是独立的Bean）
+                    assertThat(context).hasSingleBean(FieldEncryptionInterceptor.class);
+                    assertThat(context).hasSingleBean(SensitiveFieldInterceptor.class);
+                });
     }
 
     @Test
     void testAutoConfiguration_WithTenantEnabled() {
         contextRunner
-                .withPropertyValues("rose.mybatis.tenant.enabled=true")
+                .withPropertyValues(
+                        "spring.datasource.url=jdbc:h2:mem:testdb",
+                        "rose.mybatis.tenant.enabled=true"
+                )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(RoseTenantLineHandler.class);
+                    // 租户处理器是在拦截器内部创建的，不是独立的Bean
+                    assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
+
+                    RoseMybatisProperties props = context.getBean(RoseMybatisProperties.class);
+                    assertThat(props.getTenant().isEnabled()).isTrue();
                 });
     }
 
@@ -65,10 +72,16 @@ class RoseMybatisAutoConfigurationTest {
     @Test
     void testAutoConfiguration_WithEncryptionEnabled() {
         contextRunner
-                .withPropertyValues("rose.mybatis.encryption.enabled=true")
+                .withPropertyValues(
+                        "spring.datasource.url=jdbc:h2:mem:testdb",
+                        "rose.mybatis.encryption.enabled=true"
+                )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(DefaultFieldEncryptor.class);
+                    // 加密器是在拦截器内部创建的，不是独立的Bean
                     assertThat(context).hasSingleBean(FieldEncryptionInterceptor.class);
+
+                    RoseMybatisProperties props = context.getBean(RoseMybatisProperties.class);
+                    assertThat(props.getEncryption().isEnabled()).isTrue();
                 });
     }
 

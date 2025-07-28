@@ -11,12 +11,12 @@ import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionIntercepto
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import io.github.rosestack.mybatis.audit.RoseMetaObjectHandler;
-import io.github.rosestack.mybatis.datapermission.RoseDataPermissionHandler;
-import io.github.rosestack.mybatis.desensitization.SensitiveFieldInterceptor;
-import io.github.rosestack.mybatis.encryption.DefaultFieldEncryptor;
-import io.github.rosestack.mybatis.encryption.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.tenant.RoseTenantLineHandler;
+import io.github.rosestack.mybatis.encryption.OptimizedFieldEncryptor;
+import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
+import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
+import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
+import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
+import io.github.rosestack.mybatis.interceptor.SensitiveFieldInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,7 +132,7 @@ public class RoseMybatisAutoConfiguration {
     @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FieldEncryptionInterceptor fieldEncryptionInterceptor() {
         log.info("初始化字段加密拦截器，默认算法: {}", properties.getEncryption().getDefaultAlgorithm());
-        return new FieldEncryptionInterceptor(new DefaultFieldEncryptor(properties));
+        return new FieldEncryptionInterceptor(new OptimizedFieldEncryptor(properties));
     }
 
     /**

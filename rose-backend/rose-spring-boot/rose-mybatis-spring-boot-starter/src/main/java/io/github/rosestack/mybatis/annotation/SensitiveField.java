@@ -1,6 +1,6 @@
 package io.github.rosestack.mybatis.annotation;
 
-import io.github.rosestack.mybatis.desensitization.SensitiveType;
+import io.github.rosestack.mybatis.enums.SensitiveType;
 
 import java.lang.annotation.*;
 
