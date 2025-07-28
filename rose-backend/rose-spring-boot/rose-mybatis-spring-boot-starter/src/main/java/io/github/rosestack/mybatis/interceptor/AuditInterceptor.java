@@ -1,6 +1,7 @@
 package io.github.rosestack.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import io.github.rosestack.mybatis.annotation.AuditLog;
 import io.github.rosestack.mybatis.annotation.SensitiveField;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.mybatis.desensitization.SensitiveDataProcessor;
@@ -107,7 +108,7 @@ public class AuditInterceptor implements Interceptor {
             SqlCommandType sqlCommandType = mappedStatement.getSqlCommandType();
 
             // 构建统一审计日志
-            AuditLog auditLog = AuditLog.builder()
+            AuditLogEntry auditLogEntry = AuditLogEntry.builder()
                     .timestamp(LocalDateTime.now())
                     .operation(sqlCommandType.name())
                     .mapperId(mappedStatement.getId())
@@ -126,21 +127,21 @@ public class AuditInterceptor implements Interceptor {
                 io.github.rosestack.mybatis.annotation.AuditLog auditLogAnnotation = getChangeLogAnnotation(mappedStatement, parameter);
                 if (auditLogAnnotation != null) {
                     List<FieldChange> fieldChanges = compareObjects(oldValue, parameter, auditLogAnnotation.ignoreFields());
-                    auditLog.setFieldChanges(fieldChanges);
-                    auditLog.setModule(auditLogAnnotation.module());
-                    auditLog.setBusinessOperation(auditLogAnnotation.operation());
+                    auditLogEntry.setFieldChanges(fieldChanges);
+                    auditLogEntry.setModule(auditLogAnnotation.module());
+                    auditLogEntry.setBusinessOperation(auditLogAnnotation.operation());
 
                     // 获取实体信息
-                    auditLog.setEntityClass(parameter.getClass().getSimpleName());
-                    auditLog.setEntityId(getIdValue(parameter));
+                    auditLogEntry.setEntityClass(parameter.getClass().getSimpleName());
+                    auditLogEntry.setEntityId(getIdValue(parameter));
                 }
             }
 
             // 存储审计日志
-            auditStorage.save(auditLog);
+            auditStorage.save(auditLogEntry);
 
             // 输出日志
-            outputAuditLog(auditLog);
+            outputAuditLog(auditLogEntry);
 
         } catch (Exception e) {
             log.warn("记录统一审计日志失败: {}", e.getMessage());
@@ -194,12 +195,10 @@ public class AuditInterceptor implements Interceptor {
                     // 对敏感字段进行脱敏处理
                     if (sensitiveAnnotation != null) {
                         if (oldValueStr != null) {
-                            oldValueStr = SensitiveDataProcessor.desensitize(
-                                    oldValueStr, sensitiveAnnotation.value(), sensitiveAnnotation.customRule());
+                            oldValueStr = SensitiveDataProcessor.desensitizeObject(oldFieldValue).toString();
                         }
                         if (newValueStr != null) {
-                            newValueStr = SensitiveDataProcessor.desensitize(
-                                    newValueStr, sensitiveAnnotation.value(), sensitiveAnnotation.customRule());
+                            newValueStr = SensitiveDataProcessor.desensitizeObject(newValueStr).toString();
                         }
                     }
 
@@ -222,11 +221,11 @@ public class AuditInterceptor implements Interceptor {
     /**
      * 获取变更日志注解
      */
-    private io.github.rosestack.mybatis.annotation.AuditLog getChangeLogAnnotation(MappedStatement mappedStatement, Object parameter) {
+    private AuditLog getChangeLogAnnotation(MappedStatement mappedStatement, Object parameter) {
         try {
             // 检查参数对象的类注解
             if (parameter != null) {
-                io.github.rosestack.mybatis.annotation.AuditLog annotation = parameter.getClass().getAnnotation(io.github.rosestack.mybatis.annotation.AuditLog.class);
+                AuditLog annotation = parameter.getClass().getAnnotation(AuditLog.class);
                 if (annotation != null) {
                     return annotation;
                 }
@@ -239,7 +238,7 @@ public class AuditInterceptor implements Interceptor {
             Class<?> mapperClass = Class.forName(className);
             for (java.lang.reflect.Method method : mapperClass.getMethods()) {
                 if (method.getName().equals(methodName)) {
-                    return method.getAnnotation(io.github.rosestack.mybatis.annotation.AuditLog.class);
+                    return method.getAnnotation(AuditLog.class);
                 }
             }
         } catch (Exception e) {
@@ -345,9 +344,9 @@ public class AuditInterceptor implements Interceptor {
     /**
      * 输出审计日志
      */
-    private void outputAuditLog(AuditLog auditLog) {
+    private void outputAuditLog(AuditLogEntry auditLogEntry) {
         String logLevel = properties.getAudit().getLogLevel();
-        String logMessage = formatAuditLogMessage(auditLog);
+        String logMessage = formatAuditLogMessage(auditLogEntry);
 
         switch (logLevel.toUpperCase()) {
             case "DEBUG":
@@ -370,34 +369,34 @@ public class AuditInterceptor implements Interceptor {
     /**
      * 格式化审计日志消息
      */
-    private String formatAuditLogMessage(AuditLog auditLog) {
+    private String formatAuditLogMessage(AuditLogEntry auditLogEntry) {
         StringBuilder sb = new StringBuilder();
 
         // 基础信息
         sb.append(String.format("[UNIFIED_AUDIT] %s | %s | %s | %dms | %s | User:%s | Tenant:%s | Request:%s",
-                auditLog.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                auditLog.getOperation(),
-                auditLog.isSuccess() ? "SUCCESS" : "FAILED",
-                auditLog.getExecutionTime(),
-                auditLog.getMapperId(),
-                auditLog.getUserId(),
-                auditLog.getTenantId(),
-                auditLog.getRequestId()));
+                auditLogEntry.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                auditLogEntry.getOperation(),
+                auditLogEntry.isSuccess() ? "SUCCESS" : "FAILED",
+                auditLogEntry.getExecutionTime(),
+                auditLogEntry.getMapperId(),
+                auditLogEntry.getUserId(),
+                auditLogEntry.getTenantId(),
+                auditLogEntry.getRequestId()));
 
         // 业务信息
-        if (auditLog.getModule() != null && auditLog.getBusinessOperation() != null) {
-            sb.append(String.format(" | Business:%s.%s", auditLog.getModule(), auditLog.getBusinessOperation()));
+        if (auditLogEntry.getModule() != null && auditLogEntry.getBusinessOperation() != null) {
+            sb.append(String.format(" | Business:%s.%s", auditLogEntry.getModule(), auditLogEntry.getBusinessOperation()));
         }
 
         // 实体信息
-        if (auditLog.getEntityClass() != null && auditLog.getEntityId() != null) {
-            sb.append(String.format(" | Entity:%s[%s]", auditLog.getEntityClass(), auditLog.getEntityId()));
+        if (auditLogEntry.getEntityClass() != null && auditLogEntry.getEntityId() != null) {
+            sb.append(String.format(" | Entity:%s[%s]", auditLogEntry.getEntityClass(), auditLogEntry.getEntityId()));
         }
 
         // 字段变更信息
-        if (auditLog.getFieldChanges() != null && !auditLog.getFieldChanges().isEmpty()) {
+        if (auditLogEntry.getFieldChanges() != null && !auditLogEntry.getFieldChanges().isEmpty()) {
             sb.append(" | Changes:");
-            for (FieldChange change : auditLog.getFieldChanges()) {
+            for (FieldChange change : auditLogEntry.getFieldChanges()) {
                 sb.append(String.format(" %s:%s->%s",
                         change.getFieldName(),
                         change.getOldValue(),
@@ -409,13 +408,13 @@ public class AuditInterceptor implements Interceptor {
         }
 
         // SQL信息
-        if (auditLog.isSuccess() && auditLog.getSql() != null) {
-            sb.append(" | SQL:").append(auditLog.getSql());
+        if (auditLogEntry.isSuccess() && auditLogEntry.getSql() != null) {
+            sb.append(" | SQL:").append(auditLogEntry.getSql());
         }
 
         // 错误信息
-        if (!auditLog.isSuccess() && auditLog.getErrorMessage() != null) {
-            sb.append(" | Error:").append(auditLog.getErrorMessage());
+        if (!auditLogEntry.isSuccess() && auditLogEntry.getErrorMessage() != null) {
+            sb.append(" | Error:").append(auditLogEntry.getErrorMessage());
         }
 
         return sb.toString();
@@ -436,7 +435,7 @@ public class AuditInterceptor implements Interceptor {
      */
     @lombok.Data
     @lombok.Builder
-    public static class AuditLog {
+    public static class AuditLogEntry {
         // SQL审计信息
         private LocalDateTime timestamp;
         private String operation;
@@ -477,6 +476,6 @@ public class AuditInterceptor implements Interceptor {
      * 审计存储接口
      */
     public interface AuditStorage {
-        void save(AuditLog auditLog);
+        void save(AuditLogEntry auditLogEntry);
     }
 }

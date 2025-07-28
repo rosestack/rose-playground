@@ -1,4 +1,4 @@
-package io.github.rosestack.web.exception;
+package io.github.rosestack.core.exception;
 
 import java.io.Serial;
 

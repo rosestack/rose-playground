@@ -1,5 +1,7 @@
 package io.github.rosestack.web.exception;
 
+import io.github.rosestack.core.exception.BusinessException;
+import io.github.rosestack.core.exception.RateLimitException;
 import io.github.rosestack.core.model.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

@@ -27,11 +27,6 @@
             <artifactId>rose-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-shared-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- Spring Security 核心依赖 -->
         <dependency>
@@ -132,11 +127,6 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.testcontainers</groupId>-->
-<!--            <artifactId>testcontainers-bom</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
     </dependencies>
 
     <build>

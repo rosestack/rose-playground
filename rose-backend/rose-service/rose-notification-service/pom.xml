@@ -16,7 +16,7 @@
         <dependency>
             <groupId>io.github.rosestack</groupId>
             <artifactId>rose-notice</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.rosestack</groupId>

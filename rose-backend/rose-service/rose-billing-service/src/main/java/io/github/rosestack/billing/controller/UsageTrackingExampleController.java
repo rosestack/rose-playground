@@ -1,7 +1,7 @@
 package io.github.rosestack.billing.controller;
 
 import io.github.rosestack.billing.aspect.annotation.*;
-import io.github.rosestack.interfaces.dto.ApiResponse;
+import io.github.rosestack.core.model.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

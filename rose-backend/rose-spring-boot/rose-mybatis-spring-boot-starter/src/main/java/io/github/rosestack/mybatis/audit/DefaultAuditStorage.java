@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class DefaultAuditStorage implements AuditInterceptor.AuditStorage {
 
     @Override
-    public void save(AuditInterceptor.AuditLog auditLog) {
+    public void save(AuditInterceptor.AuditLogEntry auditLogEntry) {
         // 简单的日志输出实现
         // 实际项目中可以：
         // 1. 存储到数据库表 audit_log
@@ -26,31 +26,31 @@ public class DefaultAuditStorage implements AuditInterceptor.AuditStorage {
         // 3. 写入文件或日志收集系统 (ELK)
         // 4. 发送到监控系统 (Prometheus, Grafana)
         
-        log.info("审计日志已记录: {}", formatAuditSummary(auditLog));
+        log.info("审计日志已记录: {}", formatAuditSummary(auditLogEntry));
         
         // 如果有字段变更，额外记录详细信息
-        if (auditLog.getFieldChanges() != null && !auditLog.getFieldChanges().isEmpty()) {
-            log.info("字段变更详情: {}", formatFieldChanges(auditLog.getFieldChanges()));
+        if (auditLogEntry.getFieldChanges() != null && !auditLogEntry.getFieldChanges().isEmpty()) {
+            log.info("字段变更详情: {}", formatFieldChanges(auditLogEntry.getFieldChanges()));
         }
     }
 
-    private String formatAuditSummary(AuditInterceptor.AuditLog auditLog) {
+    private String formatAuditSummary(AuditInterceptor.AuditLogEntry auditLogEntry) {
         StringBuilder sb = new StringBuilder();
-        sb.append("操作: ").append(auditLog.getOperation())
-          .append(", 映射器: ").append(auditLog.getMapperId())
-          .append(", 执行时间: ").append(auditLog.getExecutionTime()).append("ms")
-          .append(", 成功: ").append(auditLog.isSuccess())
-          .append(", 用户: ").append(auditLog.getUserId())
-          .append(", 租户: ").append(auditLog.getTenantId());
+        sb.append("操作: ").append(auditLogEntry.getOperation())
+          .append(", 映射器: ").append(auditLogEntry.getMapperId())
+          .append(", 执行时间: ").append(auditLogEntry.getExecutionTime()).append("ms")
+          .append(", 成功: ").append(auditLogEntry.isSuccess())
+          .append(", 用户: ").append(auditLogEntry.getUserId())
+          .append(", 租户: ").append(auditLogEntry.getTenantId());
         
-        if (auditLog.getEntityClass() != null) {
-            sb.append(", 实体: ").append(auditLog.getEntityClass())
-              .append("[").append(auditLog.getEntityId()).append("]");
+        if (auditLogEntry.getEntityClass() != null) {
+            sb.append(", 实体: ").append(auditLogEntry.getEntityClass())
+              .append("[").append(auditLogEntry.getEntityId()).append("]");
         }
         
-        if (auditLog.getModule() != null) {
-            sb.append(", 业务: ").append(auditLog.getModule())
-              .append(".").append(auditLog.getBusinessOperation());
+        if (auditLogEntry.getModule() != null) {
+            sb.append(", 业务: ").append(auditLogEntry.getModule())
+              .append(".").append(auditLogEntry.getBusinessOperation());
         }
         
         return sb.toString();

@@ -1,6 +1,6 @@
 package io.github.rosestack.notification.shared.exception;
 
-import io.github.rosestack.infrastructure.exception.BaseException;
+import io.github.rosestack.core.exception.BaseException;
 
 /**
  * 通知业务异常基类

@@ -4,7 +4,7 @@ import io.github.rosestack.billing.entity.BaseTenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.service.BillingService;
-import io.github.rosestack.interfaces.dto.ApiResponse;
+import io.github.rosestack.core.model.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

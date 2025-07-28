@@ -25,16 +25,16 @@
 
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-shared-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>rose-web-spring-boot-starter</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-shared-service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>rose-mybatis-spring-boot-starter</artifactId>
+            <version>${project.version}</version>
         </dependency>
-
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

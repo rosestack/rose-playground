@@ -2,7 +2,7 @@ package io.github.rosestack.billing.controller;
 
 import io.github.rosestack.billing.dto.*;
 import io.github.rosestack.billing.service.FinancialReportService;
-import io.github.rosestack.interfaces.dto.ApiResponse;
+import io.github.rosestack.core.model.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

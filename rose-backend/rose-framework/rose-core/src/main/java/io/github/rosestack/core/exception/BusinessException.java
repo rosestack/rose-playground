@@ -1,53 +1,53 @@
-package io.github.rosestack.web.exception;
+package io.github.rosestack.core.exception;
 
 /**
- * 限流异常类
+ * 业务异常类
  * <p>
- * 用于表示请求频率超限，触发限流保护
+ * 用于表示业务逻辑错误，如参数验证失败、业务规则违反等
  * </p>
  *
  * @author rosestack
  * @since 1.0.0
  */
-public class RateLimitException extends BaseException {
+public class BusinessException extends BaseException {
 
     /**
-     * 构造限流异常
+     * 构造业务异常
      *
      * @param messageKey 国际化消息键
      */
-    public RateLimitException(String messageKey) {
+    public BusinessException(String messageKey) {
         super(messageKey);
     }
 
     /**
-     * 构造限流异常
+     * 构造业务异常
      *
      * @param messageKey 国际化消息键
      * @param cause 原始异常
      */
-    public RateLimitException(String messageKey, Throwable cause) {
+    public BusinessException(String messageKey, Throwable cause) {
         super(messageKey, cause);
     }
 
     /**
-     * 构造限流异常
+     * 构造业务异常
      *
      * @param messageKey 国际化消息键
      * @param args 消息参数
      */
-    public RateLimitException(String messageKey, Object... args) {
+    public BusinessException(String messageKey, Object... args) {
         super(messageKey, args);
     }
 
     /**
-     * 构造限流异常
+     * 构造业务异常
      *
      * @param messageKey 国际化消息键
      * @param cause 原始异常
      * @param args 消息参数
      */
-    public RateLimitException(String messageKey, Throwable cause, Object... args) {
+    public BusinessException(String messageKey, Throwable cause, Object... args) {
         super(messageKey, cause, args);
     }
 } 
