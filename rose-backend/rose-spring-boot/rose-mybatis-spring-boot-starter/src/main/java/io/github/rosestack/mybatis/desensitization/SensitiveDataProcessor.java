@@ -1,12 +1,12 @@
 package io.github.rosestack.mybatis.desensitization;
 
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import io.github.rosestack.mybatis.annotation.SensitiveField;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * 敏感数据脱敏工具类
@@ -48,7 +48,7 @@ public class SensitiveDataProcessor {
                     Object fieldValue = field.get(obj);
                     if (fieldValue instanceof String) {
                         String desensitizedValue = desensitize((String) fieldValue,
-                            sensitiveField.value(), sensitiveField.customRule());
+                                sensitiveField.value(), sensitiveField.customRule());
                         field.set(obj, desensitizedValue);
                     }
                 }
@@ -75,18 +75,20 @@ public class SensitiveDataProcessor {
 
         try {
             switch (sensitiveType) {
-                case PHONE:
-                    return desensitizePhone(originalValue);
-                case ID_CARD:
-                    return desensitizeIdCard(originalValue);
-                case EMAIL:
-                    return desensitizeEmail(originalValue);
-                case BANK_CARD:
-                    return desensitizeBankCard(originalValue);
                 case NAME:
                     return desensitizeName(originalValue);
                 case ADDRESS:
                     return desensitizeAddress(originalValue);
+                case PHONE:
+                    return desensitizePhone(originalValue);
+                case EMAIL:
+                    return desensitizeEmail(originalValue);
+                case ID_CARD:
+                    return desensitizeIdCard(originalValue);
+                case BANK_CARD:
+                    return desensitizeBankCard(originalValue);
+                case PLATE_CARD:
+                    return desensitizePlateCard(originalValue);
                 case SECRET:
                     return "******";
                 case CUSTOM:
@@ -100,14 +102,31 @@ public class SensitiveDataProcessor {
         }
     }
 
+    public static String deSensitive(String origin, int prefixKeep, int suffixKeep, String mask) {
+        if (StringUtils.isEmpty(origin)) {
+            return StringPool.EMPTY;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, n = origin.length(); i < n; i++) {
+            if (i < prefixKeep) {
+                sb.append(origin.charAt(i));
+                continue;
+            }
+            if (i > (n - suffixKeep - 1)) {
+                sb.append(origin.charAt(i));
+                continue;
+            }
+            sb.append(mask);
+        }
+        return sb.toString();
+    }
+
     /**
      * 手机号脱敏：138****8000
      */
     public static String desensitizePhone(String phone) {
-        if (phone.length() < 7) {
-            return phone;
-        }
-        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
+        return deSensitive(phone, 3, 4, StringPool.ASTERISK);
     }
 
     /**
@@ -117,7 +136,7 @@ public class SensitiveDataProcessor {
         if (idCard.length() < 8) {
             return idCard;
         }
-        return idCard.substring(0, 6) + "****" + idCard.substring(idCard.length() - 4);
+        return deSensitive(idCard, 6, 4, StringPool.ASTERISK);
     }
 
     /**
@@ -128,10 +147,10 @@ public class SensitiveDataProcessor {
         if (atIndex <= 0) {
             return email;
         }
-        
+
         String username = email.substring(0, atIndex);
         String domain = email.substring(atIndex);
-        
+
         if (username.length() <= 3) {
             return username.charAt(0) + "***" + domain;
         } else {
@@ -143,10 +162,11 @@ public class SensitiveDataProcessor {
      * 银行卡号脱敏：6222****1234
      */
     public static String desensitizeBankCard(String bankCard) {
-        if (bankCard.length() < 8) {
-            return bankCard;
-        }
-        return bankCard.substring(0, 4) + "****" + bankCard.substring(bankCard.length() - 4);
+        return deSensitive(bankCard, 4, 4, StringPool.ASTERISK);
+    }
+
+    public static String desensitizePlateCard(String carLicense) {
+        return deSensitive(carLicense, 2, 1, StringPool.ASTERISK);
     }
 
     /**
@@ -158,7 +178,7 @@ public class SensitiveDataProcessor {
         } else if (name.length() == 2) {
             return name.charAt(0) + "*";
         } else {
-            return name.charAt(0) + "*" + name.charAt(name.length() - 1);
+            return deSensitive(name, 1, 1, StringPool.ASTERISK);
         }
     }
 
@@ -169,7 +189,7 @@ public class SensitiveDataProcessor {
         if (address.length() <= 6) {
             return address.substring(0, 1) + "***";
         }
-        return address.substring(0, 3) + "***" + address.substring(address.length() - 1);
+        return deSensitive(address, 3, 1, StringPool.ASTERISK);
     }
 
     /**
@@ -179,30 +199,17 @@ public class SensitiveDataProcessor {
         if (!StringUtils.hasText(rule)) {
             rule = "3,4";
         }
-        
+
         String[] parts = rule.split(",");
         if (parts.length != 2) {
             return value;
         }
-        
+
         try {
             int prefixLength = Integer.parseInt(parts[0].trim());
             int suffixLength = Integer.parseInt(parts[1].trim());
-            
-            if (value.length() <= prefixLength + suffixLength) {
-                return value;
-            }
-            
-            String prefix = value.substring(0, prefixLength);
-            String suffix = value.substring(value.length() - suffixLength);
-            int maskLength = value.length() - prefixLength - suffixLength;
-            
-            StringBuilder mask = new StringBuilder();
-            for (int i = 0; i < maskLength; i++) {
-                mask.append("*");
-            }
-            
-            return prefix + mask + suffix;
+
+            return deSensitive(value, prefixLength, suffixLength, StringPool.ASTERISK);
         } catch (NumberFormatException e) {
             log.warn("自定义脱敏规则格式错误: {}", rule);
             return value;

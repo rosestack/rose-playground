@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -39,8 +41,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserResponse createUser(UserCreateRequest request) {
-        log.info("创建用户: {}", request.getUsername());
-
         // 业务校验
         if (userMapper.existsByUsername(request.getUsername())) {
             throw UserException.usernameAlreadyExists(request.getUsername());
@@ -51,7 +51,17 @@ public class UserServiceImpl implements UserService {
 
         // 创建用户实体
         UserEntity user = userConverter.toEntity(request);
-        user.setStatus(UserStatus.ACTIVE.getCode());
+        user.setStatus(UserStatus.ACTIVE);
+
+        // 手动设置审计字段（临时解决方案）
+        LocalDateTime now = LocalDateTime.now();
+        user.setCreatedTime(now);
+        user.setUpdatedTime(now);
+        user.setCreatedBy("system");
+        user.setUpdatedBy("system");
+        user.setDeleted(false);
+        user.setVersion(1);
+
         userMapper.insert(user);
 
         // 发布用户创建事件
@@ -69,7 +79,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
-        log.debug("查询用户，ID: {}", id);
         UserEntity user = userMapper.selectById(id);
         if (user == null) {
             throw UserException.userNotFound(id);
@@ -80,8 +89,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
-        log.info("更新用户，ID: {}", id);
-
         UserEntity user = userMapper.selectById(id);
         if (user == null) {
             throw UserException.userNotFound(id);
@@ -106,7 +113,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteUser(Long id) {
-        log.info("删除用户，ID: {}", id);
         UserEntity user = userMapper.selectById(id);
         if (user == null) {
             throw UserException.userNotFound(id);
@@ -116,9 +122,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<UserResponse> pageUsers(PageRequest pageRequest, UserQuery userQuery) {
-        log.info("分页查询用户，pageRequest: {}, userQuery: {}", pageRequest, userQuery);
-
-        // 构建 MyBatis Plus 分页对象
         Page<UserEntity> page = new Page<>(pageRequest.getPageNo(), pageRequest.getPageSize());
 
         // 构建查询条件
@@ -128,17 +131,13 @@ public class UserServiceImpl implements UserService {
                 .eq(StringUtils.hasText(userQuery.getStatus()), UserEntity::getStatus, userQuery.getStatus())
                 .orderByDesc(UserEntity::getCreatedTime);
 
-        // 执行分页查询
         IPage<UserEntity> userPage = userMapper.selectPage(page, wrapper);
 
-        // 转换为通用分页响应
         return userConverter.toPageResponse(userPage);
     }
 
     @Override
     public List<UserResponse> getAllUsers() {
-        log.debug("获取所有用户列表");
-
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(UserEntity::getCreatedTime);
 

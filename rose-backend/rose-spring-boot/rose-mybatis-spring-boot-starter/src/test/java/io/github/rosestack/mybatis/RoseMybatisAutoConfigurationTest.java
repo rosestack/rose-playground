@@ -2,10 +2,10 @@ package io.github.rosestack.mybatis;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import io.github.rosestack.mybatis.audit.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisAutoConfiguration;
-import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
-import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.mybatis.tenant.RoseTenantLineHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -56,7 +56,7 @@ class RoseMybatisAutoConfigurationTest {
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(RoseTenantLineHandler.class);
-                    
+
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
                     assertThat(properties.getTenant().isEnabled()).isTrue();
                     assertThat(properties.getTenant().getColumn()).isEqualTo("tenant_id");
@@ -86,7 +86,7 @@ class RoseMybatisAutoConfigurationTest {
                 )
                 .run(context -> {
                     assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
-                    
+
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
                     assertThat(properties.getPagination().isEnabled()).isTrue();
                     assertThat(properties.getPagination().getMaxLimit()).isEqualTo(500L);
@@ -107,7 +107,7 @@ class RoseMybatisAutoConfigurationTest {
                     assertThat(context).hasSingleBean(MetaObjectHandler.class);
                     assertThat(context.getBean(MetaObjectHandler.class))
                             .isInstanceOf(RoseMetaObjectHandler.class);
-                    
+
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
                     assertThat(properties.getFieldFill().isEnabled()).isTrue();
                     assertThat(properties.getFieldFill().getCreateTimeColumn()).isEqualTo("create_time");
@@ -128,19 +128,16 @@ class RoseMybatisAutoConfigurationTest {
     }
 
 
-
     @Test
     void shouldConfigureOptimisticLockWithCustomColumn() {
         this.contextRunner
                 .withPropertyValues(
                         "rose.mybatis.enabled=true",
-                        "rose.mybatis.optimistic-lock.enabled=true",
-                        "rose.mybatis.optimistic-lock.column=revision"
+                        "rose.mybatis.optimistic-lock.enabled=true"
                 )
                 .run(context -> {
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
                     assertThat(properties.getOptimisticLock().isEnabled()).isTrue();
-                    assertThat(properties.getOptimisticLock().getColumn()).isEqualTo("revision");
                 });
     }
 
@@ -150,7 +147,7 @@ class RoseMybatisAutoConfigurationTest {
                 .withPropertyValues("rose.mybatis.enabled=true")
                 .run(context -> {
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
-                    
+
                     // 验证默认值
                     assertThat(properties.isEnabled()).isTrue();
                     assertThat(properties.getTenant().isEnabled()).isTrue();
@@ -159,7 +156,6 @@ class RoseMybatisAutoConfigurationTest {
                     assertThat(properties.getPagination().getMaxLimit()).isEqualTo(1000L);
 
                     assertThat(properties.getOptimisticLock().isEnabled()).isTrue();
-                    assertThat(properties.getOptimisticLock().getColumn()).isEqualTo("version");
                     assertThat(properties.getFieldFill().isEnabled()).isTrue();
                     assertThat(properties.getPerformance().isEnabled()).isFalse();
                 });

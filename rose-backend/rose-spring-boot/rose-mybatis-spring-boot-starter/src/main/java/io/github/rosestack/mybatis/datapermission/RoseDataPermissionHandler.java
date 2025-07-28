@@ -1,18 +1,29 @@
 package io.github.rosestack.mybatis.datapermission;
 
+import com.baomidou.mybatisplus.extension.plugins.handler.MultiDataPermissionHandler;
 import io.github.rosestack.mybatis.annotation.DataPermission;
-import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import org.springframework.util.CollectionUtils;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * 默认数据权限处理器实现
+ * MyBatis Plus 数据权限处理器适配器
  * <p>
- * 提供基本的数据权限处理逻辑，实际项目中应该根据具体的权限系统进行扩展。
+ * 将现有的 Rose 数据权限处理逻辑适配到 MyBatis Plus 的 MultiDataPermissionHandler 接口。
+ * 这样可以使用 MyBatis Plus 自带的 DataPermissionInterceptor，获得更好的性能和兼容性。
  * </p>
  *
  * @author Rose Team
@@ -20,11 +31,122 @@ import java.util.List;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class DefaultDataPermissionHandler implements DataPermissionHandler {
-
-    private final RoseMybatisProperties properties;
-
+public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     @Override
+    public Expression getSqlSegment(Table table, Expression where, String mappedStatementId) {
+        try {
+            // 获取数据权限注解
+            DataPermission dataPermission = getDataPermissionAnnotation(mappedStatementId);
+            if (dataPermission == null) {
+                log.debug("方法 {} 没有数据权限注解，跳过权限控制", mappedStatementId);
+                return null;
+            }
+
+            // 检查是否需要权限控制
+            if (!needPermissionControl(dataPermission)) {
+                log.debug("方法 {} 不需要权限控制，跳过", mappedStatementId);
+                return null;
+            }
+
+            // 获取权限值
+            List<String> permissionValues = getPermissionValues(dataPermission);
+            if (CollectionUtils.isEmpty(permissionValues)) {
+                log.debug("方法 {} 权限值为空，不限制数据访问", mappedStatementId);
+                return null;
+            }
+
+            // 构建权限过滤条件
+            Expression permissionExpression = buildPermissionExpression(table, dataPermission, permissionValues);
+
+            if (permissionExpression != null) {
+                log.debug("为表 {} 添加数据权限条件: {}", table.getName(), permissionExpression);
+                return permissionExpression;
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("处理数据权限时发生错误，mappedStatementId: {}, table: {}",
+                    mappedStatementId, table.getName(), e);
+            return null;
+        }
+    }
+
+    boolean needPermissionControl(DataPermission dataPermission) {
+        return dataPermission.scope() != DataScope.ALL;
+    }
+
+    /**
+     * 构建权限过滤表达式
+     */
+    private Expression buildPermissionExpression(Table table, DataPermission dataPermission, List<String> permissionValues) {
+        String fieldName = dataPermission.field();
+
+        // 处理表别名
+        Column column = new Column(table, fieldName);
+
+        if (permissionValues.size() == 1) {
+            // 单个值使用等号
+            EqualsTo equalsTo = new EqualsTo();
+            equalsTo.setLeftExpression(column);
+            equalsTo.setRightExpression(new StringValue(permissionValues.get(0)));
+            return equalsTo;
+        } else {
+            // 多个值使用 IN 条件
+            InExpression inExpression = new InExpression();
+            inExpression.setLeftExpression(column);
+
+            ExpressionList expressionList = new ExpressionList();
+            List<Expression> expressions = permissionValues.stream()
+                    .map(StringValue::new)
+                    .collect(Collectors.toList());
+            expressionList.setExpressions(expressions);
+
+            inExpression.setRightExpression(expressionList);
+            return inExpression;
+        }
+    }
+
+    /**
+     * 获取数据权限注解
+     */
+    private DataPermission getDataPermissionAnnotation(String mappedStatementId) {
+        try {
+            // 解析 mappedStatementId 获取类名和方法名
+            int lastDotIndex = mappedStatementId.lastIndexOf('.');
+            if (lastDotIndex == -1) {
+                return null;
+            }
+
+            String className = mappedStatementId.substring(0, lastDotIndex);
+            String methodName = mappedStatementId.substring(lastDotIndex + 1);
+
+            // 获取类
+            Class<?> mapperClass = Class.forName(className);
+
+            // 先检查类级别的注解
+            DataPermission classAnnotation = mapperClass.getAnnotation(DataPermission.class);
+
+            // 再检查方法级别的注解
+            Method[] methods = mapperClass.getDeclaredMethods();
+            for (Method method : methods) {
+                if (method.getName().equals(methodName)) {
+                    DataPermission methodAnnotation = method.getAnnotation(DataPermission.class);
+                    if (methodAnnotation != null) {
+                        return methodAnnotation; // 方法级别注解优先
+                    }
+                }
+            }
+
+            return classAnnotation; // 返回类级别注解
+        } catch (ClassNotFoundException e) {
+            log.warn("无法找到 Mapper 类: {}", mappedStatementId, e);
+            return null;
+        } catch (Exception e) {
+            log.error("获取数据权限注解时发生错误: {}", mappedStatementId, e);
+            return null;
+        }
+    }
+
     public List<String> getPermissionValues(DataPermission dataPermission) {
         // 这里应该从当前用户上下文中获取权限值
         // 实际项目中需要集成具体的权限系统
@@ -44,11 +166,6 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
                 log.warn("不支持的数据权限类型: {}", dataPermission.type());
                 return Collections.emptyList();
         }
-    }
-
-    @Override
-    public boolean supports(DataPermissionType type) {
-        return true; // 默认支持所有类型
     }
 
     /**

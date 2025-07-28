@@ -24,6 +24,8 @@ public enum SensitiveType {
      */
     BANK_CARD,
 
+    PLATE_CARD,
+
     /**
      * 姓名脱敏：张*三
      */

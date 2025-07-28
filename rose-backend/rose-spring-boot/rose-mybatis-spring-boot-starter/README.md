@@ -85,6 +85,7 @@ rose:
     # 数据权限配置
     data-permission:
       enabled: true
+      use-mybatis-plus-interceptor: true  # 是否使用 MyBatis Plus 拦截器（推荐）
       default-field: "user_id"
       sql-log: false
 
@@ -170,6 +171,36 @@ List<User> users = userMapper.selectList(wrapper);
 ```
 
 ### 🛡️ 动态数据权限
+
+Rose MyBatis 支持两种数据权限拦截器模式：
+
+#### 1. MyBatis Plus InnerInterceptor 模式（推荐）
+
+默认使用 MyBatis Plus 自带的 `DataPermissionInterceptor`，提供更好的性能和集成性。
+
+```yaml
+rose:
+  mybatis:
+    data-permission:
+      enabled: true
+      use-mybatis-plus-interceptor: true  # 默认值，使用 MyBatis Plus 拦截器
+      default-field: user_id
+```
+
+#### 2. 传统 Interceptor 模式
+
+使用 Rose 自定义的传统 MyBatis 拦截器。
+
+```yaml
+rose:
+  mybatis:
+    data-permission:
+      enabled: true
+      use-mybatis-plus-interceptor: false  # 使用传统拦截器
+      default-field: user_id
+```
+
+#### 基本使用
 
 ```java
 // 方法级权限控制
@@ -300,6 +331,7 @@ rose:
     # 数据权限配置
     data-permission:
       enabled: false
+      use-mybatis-plus-interceptor: true
       default-field: "user_id"
       sql-log: false
     

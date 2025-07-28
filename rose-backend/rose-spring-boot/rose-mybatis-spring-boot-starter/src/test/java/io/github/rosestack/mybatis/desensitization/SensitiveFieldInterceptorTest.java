@@ -1,8 +1,7 @@
-package io.github.rosestack.mybatis.interceptor;
+package io.github.rosestack.mybatis.desensitization;
 
 import io.github.rosestack.mybatis.annotation.SensitiveField;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.desensitization.SensitiveType;
 import lombok.Data;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.plugin.Invocation;
@@ -44,7 +43,6 @@ class SensitiveFieldInterceptorTest {
     void setUp() {
         properties = new RoseMybatisProperties();
         properties.getDesensitization().setEnabled(true);
-        properties.getDesensitization().setEnvironments("prod");
 
         interceptor = new SensitiveFieldInterceptor(properties);
     }

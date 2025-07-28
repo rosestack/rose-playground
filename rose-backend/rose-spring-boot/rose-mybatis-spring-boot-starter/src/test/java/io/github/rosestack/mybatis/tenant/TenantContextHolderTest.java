@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.context;
+package io.github.rosestack.mybatis.tenant;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

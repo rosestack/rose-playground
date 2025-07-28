@@ -7,16 +7,16 @@ import com.baomidou.mybatisplus.core.injector.ISqlInjector;
 import com.baomidou.mybatisplus.extension.parser.JsqlParserGlobal;
 import com.baomidou.mybatisplus.extension.parser.cache.JdkSerialCaffeineJsqlParseCache;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import io.github.rosestack.mybatis.datapermission.DefaultDataPermissionHandler;
+import io.github.rosestack.mybatis.audit.RoseMetaObjectHandler;
+import io.github.rosestack.mybatis.datapermission.RoseDataPermissionHandler;
+import io.github.rosestack.mybatis.desensitization.SensitiveFieldInterceptor;
 import io.github.rosestack.mybatis.encryption.DefaultFieldEncryptor;
-import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
-import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
-import io.github.rosestack.mybatis.interceptor.DataPermissionInterceptor;
-import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.interceptor.SensitiveFieldInterceptor;
+import io.github.rosestack.mybatis.encryption.FieldEncryptionInterceptor;
+import io.github.rosestack.mybatis.tenant.RoseTenantLineHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,14 +73,12 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler) {
-        log.info("初始化 Rose MyBatis Plus 拦截器");
-
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
         // 1. 多租户插件（必须放在第一位）
         if (properties.getTenant().isEnabled() && tenantLineHandler != null) {
             TenantLineInnerInterceptor tenantInterceptor = new TenantLineInnerInterceptor();
-            tenantInterceptor.setTenantLineHandler(tenantLineHandler);
+            tenantInterceptor.setTenantLineHandler(new RoseTenantLineHandler(properties));
             interceptor.addInnerInterceptor(tenantInterceptor);
             log.info("启用多租户插件，租户字段: {}", properties.getTenant().getColumn());
         }
@@ -96,24 +94,18 @@ public class RoseMybatisAutoConfiguration {
         if (properties.getOptimisticLock().isEnabled()) {
             OptimisticLockerInnerInterceptor optimisticLockerInterceptor = new OptimisticLockerInnerInterceptor();
             interceptor.addInnerInterceptor(optimisticLockerInterceptor);
-            log.info("启用乐观锁插件，版本字段: {}", properties.getOptimisticLock().getColumn());
+            log.info("启用乐观锁插件");
         }
 
-        log.info("Rose MyBatis Plus 拦截器初始化完成");
-        return interceptor;
-    }
+        // 4. 数据权限插件
+        if (properties.getDataPermission().isEnabled()) {
+            DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
+            dataPermissionInterceptor.setDataPermissionHandler(new RoseDataPermissionHandler());
+            interceptor.addInnerInterceptor(dataPermissionInterceptor);
+            log.info("启用数据权限插件");
+        }
 
-    /**
-     * 租户处理器
-     *
-     * @return 租户处理器实例
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
-    public RoseTenantLineHandler roseTenantLineHandler() {
-        log.info("初始化租户处理器");
-        return new RoseTenantLineHandler(properties);
+        return interceptor;
     }
 
     /**
@@ -144,24 +136,13 @@ public class RoseMybatisAutoConfiguration {
     }
 
     /**
-     * 数据权限拦截器
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public DataPermissionInterceptor dataPermissionInterceptor() {
-        log.info("初始化数据权限拦截器，默认字段: {}", properties.getDataPermission().getDefaultField());
-        return new DataPermissionInterceptor(new DefaultDataPermissionHandler(properties));
-    }
-
-    /**
      * 敏感字段脱敏拦截器
      */
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.mybatis.desensitization", name = "enabled", havingValue = "true", matchIfMissing = true)
     public SensitiveFieldInterceptor sensitiveFieldInterceptor() {
-        log.info("初始化敏感字段脱敏拦截器，环境: {}", properties.getDesensitization().getEnvironments());
+        log.info("初始化敏感字段脱敏拦截器");
         return new SensitiveFieldInterceptor(properties);
     }
 

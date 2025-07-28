@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static io.github.rosestack.mybatis.context.TenantContextHolder.getCurrentTenantId;
+import static io.github.rosestack.mybatis.tenant.TenantContextHolder.getCurrentTenantId;
 
 /**
  * 统一审计拦截器

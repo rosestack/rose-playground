@@ -1,6 +1,5 @@
-package io.github.rosestack.mybatis.handler;
+package io.github.rosestack.mybatis.tenant;
 
-import io.github.rosestack.mybatis.context.TenantContextHolder;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import net.sf.jsqlparser.expression.StringValue;
 import org.junit.jupiter.api.AfterEach;

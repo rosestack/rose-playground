@@ -30,9 +30,7 @@ rose:
     optimistic-lock:
       # 是否启用乐观锁
       enabled: true
-      # 版本字段名
-      column: version
-    
+
     # 字段填充配置
     field-fill:
       # 是否启用字段自动填充
@@ -41,22 +39,23 @@ rose:
       create-time-column: created_time
       # 更新时间字段名
       update-time-column: updated_time
-      # 租户ID字段名
-      tenant-id-column: tenant_id
-    
+
     # SQL 性能监控配置
     performance:
       # 是否启用 SQL 性能监控（需要引入 p6spy 依赖）
-      enabled: false
+      enabled: true
       # 慢查询阈值（毫秒）
       slow-sql-threshold: 1000
       # 是否格式化 SQL
       format-sql: true
 
+    data-permission:
+      enabled: true
+
     # 字段加密配置
     encryption:
       # 是否启用字段加密
-      enabled: false
+      enabled: true
       # 加密密钥（生产环境应该从外部配置获取）
       secret-key: "MySecretKey12345"
       # 加密失败时是否抛出异常

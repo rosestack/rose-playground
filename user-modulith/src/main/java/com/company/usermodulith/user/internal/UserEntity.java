@@ -1,9 +1,6 @@
 package com.company.usermodulith.user.internal;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.core.entity.BaseEntity;
 import io.github.rosestack.mybatis.annotation.SensitiveField;
 import io.github.rosestack.mybatis.desensitization.SensitiveType;
@@ -44,5 +41,6 @@ public class UserEntity extends BaseEntity {
     private String password;
 
     @TableField("status")
-    private String status;
+    @EnumValue
+    private UserStatus status;
 }

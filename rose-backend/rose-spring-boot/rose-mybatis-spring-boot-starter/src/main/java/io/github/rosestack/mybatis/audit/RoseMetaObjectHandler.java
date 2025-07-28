@@ -1,8 +1,8 @@
-package io.github.rosestack.mybatis.handler;
+package io.github.rosestack.mybatis.audit;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.utils.ContextUtils;
+import io.github.rosestack.mybatis.util.ContextUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;

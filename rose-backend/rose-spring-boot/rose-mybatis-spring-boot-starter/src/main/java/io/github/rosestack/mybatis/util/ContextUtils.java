@@ -1,6 +1,6 @@
-package io.github.rosestack.mybatis.utils;
+package io.github.rosestack.mybatis.util;
 
-import io.github.rosestack.mybatis.context.TenantContextHolder;
+import io.github.rosestack.mybatis.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
@@ -107,36 +107,6 @@ public class ContextUtils {
     }
 
     /**
-     * 获取当前环境
-     * <p>
-     * 优先级：系统属性 > 环境变量 > 默认值
-     * </p>
-     *
-     * @return 当前环境
-     */
-    public static String getCurrentEnvironment() {
-        try {
-            // 1. 尝试从系统属性获取
-            String env = System.getProperty("spring.profiles.active");
-            if (env != null && !env.trim().isEmpty()) {
-                return env.trim();
-            }
-
-            // 2. 尝试从环境变量获取
-            env = System.getenv("SPRING_PROFILES_ACTIVE");
-            if (env != null && !env.trim().isEmpty()) {
-                return env.trim();
-            }
-
-        } catch (Exception e) {
-            log.debug("获取当前环境失败: {}", e.getMessage());
-        }
-
-        // 3. 返回默认值
-        return "dev";
-    }
-
-    /**
      * 设置用户上下文
      *
      * @param userId    用户ID
@@ -200,7 +170,7 @@ public class ContextUtils {
     private static String getFromCustomUserContext() {
         try {
             // 尝试从自定义用户上下文获取
-            Class<?> userContextClass = Class.forName("io.github.rosestack.mybatis.context.UserContextHolder");
+            Class<?> userContextClass = Class.forName("io.github.rosestack.mybatis.tenant.UserContextHolder");
             return (String) userContextClass.getMethod("getCurrentUserId").invoke(null);
         } catch (Exception e) {
             log.debug("从自定义用户上下文获取用户ID失败: {}", e.getMessage());

@@ -130,10 +130,6 @@ public class RoseMybatisProperties {
          */
         private boolean enabled = true;
 
-        /**
-         * 版本字段名
-         */
-        private String column = "version";
     }
 
     /**
@@ -202,6 +198,20 @@ public class RoseMybatisProperties {
          * 默认加密算法
          */
         private String defaultAlgorithm = "AES";
+
+        /**
+         * 是否使用 InnerInterceptor 模式
+         * <p>
+         * true: 使用 MyBatis Plus 的 InnerInterceptor，提供更好的性能和集成性
+         * false: 使用传统的 MyBatis Interceptor
+         * </p>
+         */
+        private boolean useInnerInterceptor = true;
+
+        /**
+         * 加密盐值（用于哈希字段）
+         */
+        private String salt = "DEFAULT_APP_SALT_2024";
     }
 
     /**
@@ -213,16 +223,6 @@ public class RoseMybatisProperties {
          * 是否启用数据权限
          */
         private boolean enabled = true;
-
-        /**
-         * 默认数据权限字段
-         */
-        private String defaultField = "user_id";
-
-        /**
-         * 是否启用SQL日志
-         */
-        private boolean sqlLog = false;
     }
 
     /**
@@ -234,12 +234,6 @@ public class RoseMybatisProperties {
          * 是否启用数据脱敏
          */
         private boolean enabled = true;
-
-        /**
-         * 脱敏环境
-         * 只在指定环境中启用脱敏，如：dev,test
-         */
-        private String environments = "dev,test,prod";
     }
 
     /**
