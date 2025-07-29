@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInt
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import io.github.rosestack.core.spring.SpringContextUtils;
+import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.mybatis.filter.TenantIdFilter;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
@@ -24,12 +25,16 @@ import io.github.rosestack.mybatis.support.encryption.OptimizedFieldEncryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +57,12 @@ import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_OR
  */
 @Slf4j
 @RequiredArgsConstructor
+@AutoConfiguration
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
+@PropertySource(value = "classpath:application-rose-mybatis.yml", factory = YmlPropertySourceFactory.class)
+@ConditionalOnProperty(prefix = "rose.mybatis", name = "enabled", havingValue = "true", matchIfMissing = true)
+@EnableConfigurationProperties(RoseMybatisProperties.class)
+@ComponentScan(basePackages = "io.github.rosestack.mybatis")
 public class RoseMybatisAutoConfiguration {
 
     private final RoseMybatisProperties properties;

@@ -2,6 +2,7 @@ package io.github.rosestack.mybatis.support.datapermission;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,8 @@ import java.util.Map;
 @RequestMapping("/api/internal/data-permission-cache")
 @RequiredArgsConstructor
 @ConditionalOnBean(DataPermissionCacheService.class)
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission.cache", name = "management-enabled", havingValue = "true", matchIfMissing = true)
+@AutoConfigureAfter(DataPermissionCacheService.class)
+@ConditionalOnProperty(prefix = "rose.mybatis.data-permission.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DataPermissionCacheController {
 
     private final DataPermissionCacheService cacheService;

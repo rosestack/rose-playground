@@ -2,7 +2,7 @@
 rose:
   mybatis:
     # 是否启用 Rose MyBatis Plus 增强功能
-    enabled: false
+    enabled: true
     
     # 多租户配置
     tenant:
@@ -55,8 +55,6 @@ rose:
         max-permission-cache-size: 50000
         # 过期率阈值
         expired-rate: 0.5
-        # 是否启用缓存管理接口
-        management-enabled: true
 
     # 字段加密配置
     encryption:

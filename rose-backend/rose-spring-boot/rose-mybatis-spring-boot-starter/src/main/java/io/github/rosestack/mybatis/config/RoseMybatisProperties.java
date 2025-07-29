@@ -211,11 +211,6 @@ public class RoseMybatisProperties {
             private long cleanupIntervalMinutes = 60;
 
             /**
-             * 是否启用缓存管理接口
-             */
-            private boolean managementEnabled = true;
-
-            /**
              * 过期率阈值
              */
             private Double expiredRate = 0.5;

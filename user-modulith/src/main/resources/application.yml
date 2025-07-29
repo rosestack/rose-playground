@@ -21,11 +21,6 @@ spring:
 # 日志配置
 logging:
   level:
-#    com.company.usermodulith: DEBUG
-#    io.github.rosestack: DEBUG
+    #    com.company.usermodulith: DEBUG
+    io.github.rosestack: DEBUG
     com.baomidou.mybatisplus.core.mapper: DEBUG
-
-rose:
-  mybatis:
-    # 是否启用 Rose MyBatis Plus 增强功能
-    enabled: true
