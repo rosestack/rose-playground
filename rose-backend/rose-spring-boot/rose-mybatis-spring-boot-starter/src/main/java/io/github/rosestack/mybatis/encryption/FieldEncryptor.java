@@ -1,7 +1,5 @@
 package io.github.rosestack.mybatis.encryption;
 
-import io.github.rosestack.mybatis.enums.EncryptType;
-
 /**
  * 字段加密器接口
  * <p>

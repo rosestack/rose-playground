@@ -3,7 +3,6 @@ package io.github.rosestack.mybatis.encryption;
 import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm4.Sm4;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.enums.EncryptType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;

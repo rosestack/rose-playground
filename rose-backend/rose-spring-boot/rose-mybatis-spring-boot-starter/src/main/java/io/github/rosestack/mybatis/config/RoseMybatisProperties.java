@@ -241,7 +241,7 @@ public class RoseMybatisProperties {
             /**
              * 是否启用缓存管理接口
              */
-            private boolean managementEnabled = false;
+            private boolean managementEnabled = true;
 
             private Double expiredRate = 0.5;
 

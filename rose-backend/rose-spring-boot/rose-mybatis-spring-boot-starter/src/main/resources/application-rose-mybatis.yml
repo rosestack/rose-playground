@@ -52,6 +52,7 @@ rose:
     data-permission:
       enabled: true
 
+
     # 字段加密配置
     encryption:
       # 是否启用字段加密
@@ -62,6 +63,7 @@ rose:
       fail-on-error: true
       # 默认加密算法
       default-algorithm: "AES"
+
 
 # MyBatis Plus 原生配置
 mybatis-plus:
@@ -82,7 +84,7 @@ mybatis-plus:
   # 全局配置
   global-config:
     # 是否控制台打印 MyBatis Plus 启动 banner
-    banner: true
+    banner: false
     # 数据库相关配置
     db-config:
       # 主键类型（AUTO: 数据库自增, NONE: 无状态, INPUT: 用户输入, ASSIGN_ID: 雪花算法, ASSIGN_UUID: UUID）

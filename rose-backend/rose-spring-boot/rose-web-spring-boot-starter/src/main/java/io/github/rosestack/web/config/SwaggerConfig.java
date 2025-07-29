@@ -26,7 +26,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.web.swagger", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rose.web.swagger", name = "enabled", havingValue = "true")
 public class SwaggerConfig {
 
     private final RoseWebProperties roseWebProperties;

@@ -19,7 +19,6 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
 import java.util.*;
@@ -52,83 +51,12 @@ public class SpringBeanUtils implements ApplicationContextAware, DisposableBean 
         return ObjectUtils.isEmpty(activeProfiles) ? null : activeProfiles[0];
     }
 
-    public static boolean isBeanPresent(Class<?> beanClass) {
-        return isBeanPresent(beanClass, false);
-    }
-
-    public static boolean isBeanPresent(Class<?> beanClass, boolean includingAncestors) {
-        String[] beanNames = getBeanNames(beanClass, includingAncestors);
-        return !ObjectUtils.isEmpty(beanNames);
-    }
-
-    public static boolean isBeanPresent(String beanClassName, boolean includingAncestors) {
-        boolean present = false;
-        ClassLoader classLoader = applicationContext.getClass().getClassLoader();
-        if (ClassUtils.isPresent(beanClassName, classLoader)) {
-            Class beanClass = ClassUtils.resolveClassName(beanClassName, classLoader);
-            present = isBeanPresent(beanClass, includingAncestors);
-        }
-
-        return present;
-    }
-
-    public static boolean isBeanPresent(String beanClassName) {
-        return isBeanPresent(beanClassName, false);
-    }
-
-    public static String[] getBeanNames(Class<?> beanClass) {
-        return getBeanNames(beanClass, false);
-    }
-
-    public static String[] getBeanNames(Class<?> beanClass, boolean includingAncestors) {
-        return includingAncestors ? BeanFactoryUtils.beanNamesForTypeIncludingAncestors(applicationContext, beanClass, true, false) :
-                applicationContext.getBeanNamesForType(beanClass, true, false);
-    }
-
-    public static Class<?> resolveBeanType(String beanClassName, ClassLoader classLoader) {
-        if (!StringUtils.hasText(beanClassName)) {
-            return null;
-        } else {
-            Class<?> beanType = null;
-
-            try {
-                beanType = ClassUtils.resolveClassName(beanClassName, classLoader);
-                beanType = ClassUtils.getUserClass(beanType);
-            } catch (Exception e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-
-            return beanType;
-        }
-    }
-
-    public static <T> T getBean(Class<T> beanClass, boolean includingAncestors) throws BeansException {
-        String[] beanNames = getBeanNames(beanClass, includingAncestors);
-        if (ObjectUtils.isEmpty(beanNames)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("The bean [ class : " + beanClass.getName() + " ] can't be found ");
-            }
-
-            return null;
-        } else {
-            T bean = null;
-
-            try {
-                bean = (T) (includingAncestors ? BeanFactoryUtils.beanOfTypeIncludingAncestors(applicationContext, beanClass) : applicationContext.getBean(beanClass));
-            } catch (Exception e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-
-            return bean;
-        }
-    }
-
     public static <T> T getBean(Class<T> beanClass) throws BeansException {
-        return (T) getBean(beanClass, false);
+        return applicationContext.getBean(beanClass);
+    }
+
+    public static <T> T getBean(String name, Class<T> beanClass) throws BeansException {
+        return applicationContext.getBean(beanClass);
     }
 
     public static <T> List<T> getSortedBeans(Class<T> type) {
@@ -157,7 +85,6 @@ public class SpringBeanUtils implements ApplicationContextAware, DisposableBean 
         if (bean instanceof InitializingBean) {
             ((InitializingBean) bean).afterPropertiesSet();
         }
-
     }
 
     public static void invokeAwareInterfaces(Object bean, BeanFactory beanFactory) {

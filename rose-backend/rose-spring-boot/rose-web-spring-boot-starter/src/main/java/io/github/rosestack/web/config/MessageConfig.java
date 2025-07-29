@@ -1,13 +1,9 @@
 package io.github.rosestack.web.config;
 
-import org.springframework.context.MessageSource;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-
-import java.util.Locale;
 
 /**
  * 国际化配置
@@ -18,41 +14,8 @@ import java.util.Locale;
  * @author rosestack
  * @since 1.0.0
  */
+@AutoConfigureBefore(MessageSourceAutoConfiguration.class)
 public class MessageConfig {
-
-    private final RoseWebProperties roseWebProperties;
-
-    public MessageConfig(RoseWebProperties roseWebProperties) {
-        this.roseWebProperties = roseWebProperties;
-    }
-
-    /**
-     * 配置 MessageSource
-     */
-    @Bean
-    public MessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames("messages", "messages/messages");
-        messageSource.setDefaultEncoding("UTF-8");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        messageSource.setCacheSeconds(3600);
-        return messageSource;
-    }
-
-    /**
-     * 配置 LocaleResolver
-     */
-    @Bean
-    public LocaleResolver localeResolver() {
-        AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
-        localeResolver.setDefaultLocale(Locale.SIMPLIFIED_CHINESE);
-        localeResolver.setSupportedLocales(java.util.Arrays.asList(
-                Locale.SIMPLIFIED_CHINESE,
-                Locale.ENGLISH
-        ));
-        return localeResolver;
-    }
-
     /**
      * 配置 LocaleChangeInterceptor
      */

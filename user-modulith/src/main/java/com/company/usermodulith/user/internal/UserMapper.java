@@ -2,11 +2,11 @@ package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.mybatis.annotation.DataPermission;
-import io.github.rosestack.mybatis.enums.DataPermissionType;
-import io.github.rosestack.mybatis.enums.DataScope;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import static com.company.usermodulith.user.internal.UserDataPermissionProvider.USER_PROVIDER;
 
 /**
  * 用户数据访问接口
@@ -19,7 +19,7 @@ import org.apache.ibatis.annotations.Select;
  * @since 1.0.0
  */
 @Mapper
-@DataPermission(field = "id", type = DataPermissionType.USER, scope = DataScope.SELF)
+@DataPermission(name = USER_PROVIDER, field = "id", fieldType = DataPermission.FieldType.NUMBER)
 public interface UserMapper extends BaseMapper<UserEntity> {
 
     /**

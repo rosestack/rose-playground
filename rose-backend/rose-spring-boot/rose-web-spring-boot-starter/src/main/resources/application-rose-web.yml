@@ -1,3 +1,47 @@
+spring:
+  web:
+    locale: zh_CN
+    locale-resolver: accept_header
+  messages:
+    basename: classpath:messages
+    encoding: UTF-8
+    cache-duration: PT1H
+    fallback-to-system-locale: false
+    use-code-as-default-message: true
+  # Jackson 序列化配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+      indent-output: false
+    deserialization:
+      fail-on-unknown-properties: false
+      accept-empty-string-as-null-object: true
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+logging:
+  level:
+    root: INFO
+#    com.baomidou.mybatisplus.core.mapper: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/${spring.application.name}.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+
 # Rose Web Spring Boot Starter 默认配置
 rose:
   web:
@@ -14,3 +58,4 @@ rose:
       # XSS过滤器
       xss:
         enabled: true
+

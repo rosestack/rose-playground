@@ -23,7 +23,7 @@ import java.util.Map;
 @RequestMapping("/api/internal/data-permission-cache")
 @RequiredArgsConstructor
 @ConditionalOnBean(DataPermissionCacheService.class)
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission.cache", name = "management-enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "rose.mybatis.data-permission.cache", name = "management-enabled", havingValue = "true", matchIfMissing = true)
 public class DataPermissionCacheController {
 
     private final DataPermissionCacheService cacheService;

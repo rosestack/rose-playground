@@ -2,7 +2,7 @@ package io.github.rosestack.mybatis.interceptor;
 
 import io.github.rosestack.mybatis.annotation.EncryptField;
 import io.github.rosestack.mybatis.encryption.FieldEncryptor;
-import io.github.rosestack.mybatis.enums.EncryptType;
+import io.github.rosestack.mybatis.encryption.EncryptType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

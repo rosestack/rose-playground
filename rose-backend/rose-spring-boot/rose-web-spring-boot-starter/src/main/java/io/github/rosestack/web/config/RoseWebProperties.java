@@ -109,7 +109,7 @@ public class RoseWebProperties {
         /**
          * 是否启用 Swagger
          */
-        private boolean enabled = true;
+        private boolean enabled = false;
 
         /**
          * API 标题

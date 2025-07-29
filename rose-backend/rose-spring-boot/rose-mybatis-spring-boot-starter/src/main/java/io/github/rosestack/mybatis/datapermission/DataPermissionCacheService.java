@@ -2,14 +2,17 @@ package io.github.rosestack.mybatis.datapermission;
 
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 数据权限缓存管理服务
@@ -27,17 +30,21 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnBean(RoseDataPermissionHandler.class)
 public class DataPermissionCacheService {
     private final RoseMybatisProperties properties;
-
     private final RoseDataPermissionHandler dataPermissionHandler;
+    private final ScheduledExecutorService scheduledExecutorService;
+
+    @PostConstruct
+    public void init() {
+        scheduledExecutorService.scheduleAtFixedRate(this::scheduledCacheCleanup,
+                0, properties.getDataPermission().getCache().getCleanupIntervalMinutes(), TimeUnit.MINUTES);
+    }
 
     /**
      * 定时清理过期缓存
      * 每小时执行一次
      */
-    @Scheduled(fixedRate = 3600000) // 1小时 = 3600000毫秒
     public void scheduledCacheCleanup() {
         try {
             Map<String, Object> statsBefore = dataPermissionHandler.getCacheStats();
