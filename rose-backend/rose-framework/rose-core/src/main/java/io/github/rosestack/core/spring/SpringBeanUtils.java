@@ -1,5 +1,7 @@
 package io.github.rosestack.core.spring;
 
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -9,10 +11,11 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.core.env.Environment;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -21,58 +24,65 @@ import org.springframework.util.StringValueResolver;
 
 import java.util.*;
 
-public abstract class SpringBeanUtils {
+@Lazy(value = false)
+public abstract class SpringBeanUtils implements ApplicationContextAware, DisposableBean {
     private static final Log logger = LogFactory.getLog(SpringBeanUtils.class);
-    private static final String[] EMPTY_BEAN_NAMES = new String[0];
     private static final boolean APPLICATION_STARTUP_CLASS_PRESENT = ClassUtils.isPresent("org.springframework.core.metrics.ApplicationStartup", (ClassLoader) null);
+    private static ApplicationContext applicationContext;
 
-    public static String getActiveProfile(Environment environment) {
-        String[] activeProfiles = environment.getActiveProfiles();
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        SpringBeanUtils.applicationContext = applicationContext;
+    }
+
+    public static String getApplicationName() {
+        return applicationContext.getApplicationName();
+    }
+
+    public static String[] getActiveProfiles() {
+        return applicationContext.getEnvironment().getActiveProfiles();
+    }
+
+    public static String getActiveProfile() {
+        String[] activeProfiles = applicationContext.getEnvironment().getActiveProfiles();
         return ObjectUtils.isEmpty(activeProfiles) ? null : activeProfiles[0];
     }
 
-    public static boolean isBeanPresent(ListableBeanFactory beanFactory, Class<?> beanClass) {
-        return isBeanPresent(beanFactory, beanClass, false);
+    public static boolean isBeanPresent(Class<?> beanClass) {
+        return isBeanPresent(beanClass, false);
     }
 
-    public static boolean isBeanPresent(ListableBeanFactory beanFactory, Class<?> beanClass, boolean includingAncestors) {
-        String[] beanNames = getBeanNames(beanFactory, beanClass, includingAncestors);
+    public static boolean isBeanPresent(Class<?> beanClass, boolean includingAncestors) {
+        String[] beanNames = getBeanNames(beanClass, includingAncestors);
         return !ObjectUtils.isEmpty(beanNames);
     }
 
-    public static boolean isBeanPresent(ListableBeanFactory beanFactory, String beanClassName, boolean includingAncestors) {
+    public static boolean isBeanPresent(String beanClassName, boolean includingAncestors) {
         boolean present = false;
-        ClassLoader classLoader = beanFactory.getClass().getClassLoader();
+        ClassLoader classLoader = applicationContext.getClass().getClassLoader();
         if (ClassUtils.isPresent(beanClassName, classLoader)) {
             Class beanClass = ClassUtils.resolveClassName(beanClassName, classLoader);
-            present = isBeanPresent(beanFactory, beanClass, includingAncestors);
+            present = isBeanPresent(beanClass, includingAncestors);
         }
 
         return present;
     }
 
-    public static boolean isBeanPresent(ListableBeanFactory beanFactory, String beanClassName) {
-        return isBeanPresent(beanFactory, beanClassName, false);
+    public static boolean isBeanPresent(String beanClassName) {
+        return isBeanPresent(beanClassName, false);
     }
 
-    public static boolean isBeanPresent(BeanFactory beanFactory, String beanName, Class<?> beanClass) throws NullPointerException {
-        return beanFactory.containsBean(beanName) && beanFactory.isTypeMatch(beanName, beanClass);
+    public static String[] getBeanNames(Class<?> beanClass) {
+        return getBeanNames(beanClass, false);
     }
 
-    public static String[] getBeanNames(ListableBeanFactory beanFactory, Class<?> beanClass) {
-        return getBeanNames(beanFactory, beanClass, false);
-    }
-
-    public static String[] getBeanNames(ListableBeanFactory beanFactory, Class<?> beanClass, boolean includingAncestors) {
-        return includingAncestors ? BeanFactoryUtils.beanNamesForTypeIncludingAncestors(beanFactory, beanClass, true, false) : beanFactory.getBeanNamesForType(beanClass, true, false);
-    }
-
-    public static String[] getBeanNames(ConfigurableListableBeanFactory beanFactory, Class<?> beanClass) {
-        return getBeanNames(beanFactory, beanClass, false);
-    }
-
-    public static String[] getBeanNames(ConfigurableListableBeanFactory beanFactory, Class<?> beanClass, boolean includingAncestors) {
-        return getBeanNames((ListableBeanFactory) beanFactory, beanClass, includingAncestors);
+    public static String[] getBeanNames(Class<?> beanClass, boolean includingAncestors) {
+        return includingAncestors ? BeanFactoryUtils.beanNamesForTypeIncludingAncestors(applicationContext, beanClass, true, false) :
+                applicationContext.getBeanNamesForType(beanClass, true, false);
     }
 
     public static Class<?> resolveBeanType(String beanClassName, ClassLoader classLoader) {
@@ -94,8 +104,8 @@ public abstract class SpringBeanUtils {
         }
     }
 
-    public static <T> T getOptionalBean(ListableBeanFactory beanFactory, Class<T> beanClass, boolean includingAncestors) throws BeansException {
-        String[] beanNames = getBeanNames(beanFactory, beanClass, includingAncestors);
+    public static <T> T getBean(Class<T> beanClass, boolean includingAncestors) throws BeansException {
+        String[] beanNames = getBeanNames(beanClass, includingAncestors);
         if (ObjectUtils.isEmpty(beanNames)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("The bean [ class : " + beanClass.getName() + " ] can't be found ");
@@ -106,7 +116,7 @@ public abstract class SpringBeanUtils {
             T bean = null;
 
             try {
-                bean = (T) (includingAncestors ? BeanFactoryUtils.beanOfTypeIncludingAncestors(beanFactory, beanClass) : beanFactory.getBean(beanClass));
+                bean = (T) (includingAncestors ? BeanFactoryUtils.beanOfTypeIncludingAncestors(applicationContext, beanClass) : applicationContext.getBean(beanClass));
             } catch (Exception e) {
                 if (logger.isErrorEnabled()) {
                     logger.error(e.getMessage(), e);
@@ -117,24 +127,12 @@ public abstract class SpringBeanUtils {
         }
     }
 
-    public static <T> T getOptionalBean(ListableBeanFactory beanFactory, Class<T> beanClass) throws BeansException {
-        return (T) getOptionalBean(beanFactory, beanClass, false);
+    public static <T> T getBean(Class<T> beanClass) throws BeansException {
+        return (T) getBean(beanClass, false);
     }
 
-    public static <T> T getBeanIfAvailable(BeanFactory beanFactory, String beanName, Class<T> beanType) throws BeansException {
-        if (isBeanPresent(beanFactory, beanName, beanType)) {
-            return (T) beanFactory.getBean(beanName, beanType);
-        } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("The bean[name : %s , type : %s] can't be found in Spring BeanFactory", beanName, beanType.getName()));
-            }
-
-            return null;
-        }
-    }
-
-    public static <T> List<T> getSortedBeans(ListableBeanFactory beanFactory, Class<T> type) {
-        Map<String, T> beansOfType = BeanFactoryUtils.beansOfTypeIncludingAncestors(beanFactory, type);
+    public static <T> List<T> getSortedBeans(Class<T> type) {
+        Map<String, T> beansOfType = BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, type);
         List<T> beansList = new ArrayList(beansOfType.values());
         AnnotationAwareOrderComparator.sort(beansList);
         return Collections.unmodifiableList(beansList);
@@ -354,5 +352,12 @@ public abstract class SpringBeanUtils {
         }
     }
 
-
+    public static <T extends Filter> FilterRegistrationBean<T> createFilterBean(T filter, Integer order) {
+        FilterRegistrationBean<T> registrationBean = new FilterRegistrationBean<>(filter);
+        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setName(filter.getClass().getSimpleName());
+        registrationBean.setOrder(order);
+        return registrationBean;
+    }
 }

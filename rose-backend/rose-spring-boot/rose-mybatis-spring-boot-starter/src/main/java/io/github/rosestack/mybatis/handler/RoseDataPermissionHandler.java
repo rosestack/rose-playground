@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.github.rosestack.core.util.ServletUtils.getCurrentUserId;
+
 /**
  * MyBatis Plus 数据权限处理器适配器
  *
@@ -251,15 +253,6 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         // 自定义权限逻辑，可以通过扩展点实现
         log.info("使用自定义数据权限逻辑，字段: {}", dataPermission.field());
         return Collections.emptyList();
-    }
-
-    /**
-     * 获取当前用户ID
-     * 实际项目中应该从 SecurityContext 或其他用户上下文中获取
-     */
-    private String getCurrentUserId() {
-        // TODO: 集成实际的用户上下文
-        return "DEFAULT_USER";
     }
 
     /**

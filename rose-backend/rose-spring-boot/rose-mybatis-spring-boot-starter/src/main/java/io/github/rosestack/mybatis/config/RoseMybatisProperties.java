@@ -58,11 +58,6 @@ public class RoseMybatisProperties {
     private DataPermission dataPermission = new DataPermission();
 
     /**
-     * 数据脱敏配置
-     */
-    private Desensitization desensitization = new Desensitization();
-
-    /**
      * SQL 审计配置
      */
     private Audit audit = new Audit();
@@ -231,17 +226,6 @@ public class RoseMybatisProperties {
         private boolean enabled = true;
 
         private String defaultField;
-    }
-
-    /**
-     * 数据脱敏配置
-     */
-    @Data
-    public static class Desensitization {
-        /**
-         * 是否启用数据脱敏
-         */
-        private boolean enabled = true;
     }
 
     /**

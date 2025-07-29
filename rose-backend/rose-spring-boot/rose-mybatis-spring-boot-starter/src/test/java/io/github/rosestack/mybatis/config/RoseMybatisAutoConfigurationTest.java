@@ -3,7 +3,6 @@ package io.github.rosestack.mybatis.config;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
-import io.github.rosestack.mybatis.interceptor.SensitiveFieldInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import org.junit.jupiter.api.Test;

@@ -1,10 +1,14 @@
 package io.github.rosestack.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import io.github.rosestack.core.annotation.FieldSensitive;
+import io.github.rosestack.core.jackson.desensitization.Desensitization;
+import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.mybatis.annotation.AuditLog;
-import io.github.rosestack.mybatis.annotation.SensitiveField;
+import io.github.rosestack.mybatis.audit.AuditLogEntry;
+import io.github.rosestack.mybatis.audit.AuditStorage;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.desensitization.SensitiveDataProcessor;
+import io.github.rosestack.mybatis.util.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
@@ -17,10 +21,9 @@ import org.apache.ibatis.session.RowBounds;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static io.github.rosestack.mybatis.util.TenantContextHolder.getCurrentTenantId;
+import static io.github.rosestack.core.util.date.DatePattern.NORM_DATETIME_FORMATTER;
 
 /**
  * 审计拦截器
@@ -96,7 +99,7 @@ public class AuditInterceptor implements Interceptor {
     }
 
     /**
-     * 记录统一审计日志
+     * 记录审计日志
      */
     private void recordAuditLog(MappedStatement mappedStatement, Object parameter, Object oldValue,
                                 long startTime, boolean success, String errorMessage) {
@@ -107,26 +110,26 @@ public class AuditInterceptor implements Interceptor {
 
             SqlCommandType sqlCommandType = mappedStatement.getSqlCommandType();
 
-            // 构建统一审计日志
+            // 构建审计日志
             AuditLogEntry auditLogEntry = AuditLogEntry.builder()
-                    .timestamp(LocalDateTime.now())
-                    .operation(sqlCommandType.name())
+                    .createdTime(LocalDateTime.now())
+                    .sqlType(sqlCommandType.name())
                     .mapperId(mappedStatement.getId())
                     .sql(formatSql(sql))
                     .parameters(formatParameters(parameter))
                     .executionTime(executionTime)
                     .success(success)
                     .errorMessage(errorMessage)
-                    .userId(getCurrentUserId())
-                    .tenantId(getCurrentTenantId())
-                    .requestId(getCurrentRequestId())
+                    .userId(ServletUtils.getCurrentUserId())
+                    .tenantId(TenantContextHolder.getCurrentTenantId())
+                    .requestId(ServletUtils.getCurrentRequestId())
                     .build();
 
             // 如果是UPDATE操作且有变更前数据，记录字段变更
             if (sqlCommandType == SqlCommandType.UPDATE && oldValue != null && parameter != null) {
-                io.github.rosestack.mybatis.annotation.AuditLog auditLogAnnotation = getChangeLogAnnotation(mappedStatement, parameter);
+                AuditLog auditLogAnnotation = getChangeLogAnnotation(mappedStatement, parameter);
                 if (auditLogAnnotation != null) {
-                    List<FieldChange> fieldChanges = compareObjects(oldValue, parameter, auditLogAnnotation.ignoreFields());
+                    List<AuditLogEntry.FieldChange> fieldChanges = compareObjects(oldValue, parameter, auditLogAnnotation.ignoreFields());
                     auditLogEntry.setFieldChanges(fieldChanges);
                     auditLogEntry.setModule(auditLogAnnotation.module());
                     auditLogEntry.setBusinessOperation(auditLogAnnotation.operation());
@@ -142,9 +145,8 @@ public class AuditInterceptor implements Interceptor {
 
             // 输出日志
             outputAuditLog(auditLogEntry);
-
         } catch (Exception e) {
-            log.warn("记录统一审计日志失败: {}", e.getMessage());
+            log.warn("记录审计日志失败: {}", e.getMessage());
         }
     }
 
@@ -153,7 +155,7 @@ public class AuditInterceptor implements Interceptor {
      */
     private Object getOldValue(MappedStatement mappedStatement, Object parameter) {
         try {
-            if (parameter != null && hasIdField(parameter)) {
+            if (parameter != null) {
                 Object id = getIdValue(parameter);
                 if (id != null) {
                     // 简化实现：克隆当前对象作为"变更前"数据
@@ -170,8 +172,8 @@ public class AuditInterceptor implements Interceptor {
     /**
      * 比较对象变更（支持敏感字段脱敏）
      */
-    private List<FieldChange> compareObjects(Object oldValue, Object newValue, String[] ignoreFields) {
-        List<FieldChange> changes = new ArrayList<>();
+    private List<AuditLogEntry.FieldChange> compareObjects(Object oldValue, Object newValue, String[] ignoreFields) {
+        List<AuditLogEntry.FieldChange> changes = new ArrayList<>();
         Set<String> ignoreSet = new HashSet<>(Arrays.asList(ignoreFields));
 
         try {
@@ -187,27 +189,27 @@ public class AuditInterceptor implements Interceptor {
 
                 if (!Objects.equals(oldFieldValue, newFieldValue)) {
                     // 检查是否为敏感字段，需要脱敏
-                    SensitiveField sensitiveAnnotation = field.getAnnotation(SensitiveField.class);
+                    FieldSensitive fieldSensitive = field.getAnnotation(FieldSensitive.class);
 
                     String oldValueStr = oldFieldValue != null ? oldFieldValue.toString() : null;
                     String newValueStr = newFieldValue != null ? newFieldValue.toString() : null;
 
                     // 对敏感字段进行脱敏处理
-                    if (sensitiveAnnotation != null) {
+                    if (fieldSensitive != null) {
                         if (oldValueStr != null) {
-                            oldValueStr = SensitiveDataProcessor.desensitizeObject(oldFieldValue).toString();
+                            oldValueStr = Desensitization.desensitize(oldValueStr, fieldSensitive);
                         }
                         if (newValueStr != null) {
-                            newValueStr = SensitiveDataProcessor.desensitizeObject(newValueStr).toString();
+                            newValueStr = Desensitization.desensitize(newValueStr, fieldSensitive);
                         }
                     }
 
-                    changes.add(FieldChange.builder()
+                    changes.add(AuditLogEntry.FieldChange.builder()
                             .fieldName(field.getName())
                             .fieldType(field.getType().getSimpleName())
                             .oldValue(oldValueStr)
                             .newValue(newValueStr)
-                            .sensitive(sensitiveAnnotation != null)
+                            .sensitive(fieldSensitive != null)
                             .build());
                 }
             }
@@ -278,24 +280,6 @@ public class AuditInterceptor implements Interceptor {
     }
 
     /**
-     * 检查对象是否有ID字段
-     */
-    private boolean hasIdField(Object obj) {
-        try {
-            Field[] fields = obj.getClass().getDeclaredFields();
-            for (Field field : fields) {
-                if ("id".equals(field.getName()) ||
-                        field.isAnnotationPresent(com.baomidou.mybatisplus.annotation.TableId.class)) {
-                    return true;
-                }
-            }
-        } catch (Exception e) {
-            log.debug("检查ID字段失败: {}", e.getMessage());
-        }
-        return false;
-    }
-
-    /**
      * 获取ID值
      */
     private Object getIdValue(Object obj) {
@@ -320,25 +304,6 @@ public class AuditInterceptor implements Interceptor {
     private Object cloneObject(Object obj) {
         // 简化实现，实际项目中可以使用深拷贝工具
         return obj;
-    }
-
-    /**
-     * 获取当前用户ID
-     */
-    private String getCurrentUserId() {
-        // TODO: 集成实际的用户上下文
-        return "SYSTEM";
-    }
-
-    /**
-     * 获取当前请求ID
-     */
-    private String getCurrentRequestId() {
-        try {
-            return org.slf4j.MDC.get("requestId");
-        } catch (Exception e) {
-            return UUID.randomUUID().toString();
-        }
     }
 
     /**
@@ -374,8 +339,8 @@ public class AuditInterceptor implements Interceptor {
 
         // 基础信息
         sb.append(String.format("[UNIFIED_AUDIT] %s | %s | %s | %dms | %s | User:%s | Tenant:%s | Request:%s",
-                auditLogEntry.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                auditLogEntry.getOperation(),
+                auditLogEntry.getCreatedTime().format(NORM_DATETIME_FORMATTER),
+                auditLogEntry.getSqlType(),
                 auditLogEntry.isSuccess() ? "SUCCESS" : "FAILED",
                 auditLogEntry.getExecutionTime(),
                 auditLogEntry.getMapperId(),
@@ -396,7 +361,7 @@ public class AuditInterceptor implements Interceptor {
         // 字段变更信息
         if (auditLogEntry.getFieldChanges() != null && !auditLogEntry.getFieldChanges().isEmpty()) {
             sb.append(" | Changes:");
-            for (FieldChange change : auditLogEntry.getFieldChanges()) {
+            for (AuditLogEntry.FieldChange change : auditLogEntry.getFieldChanges()) {
                 sb.append(String.format(" %s:%s->%s",
                         change.getFieldName(),
                         change.getOldValue(),
@@ -428,54 +393,5 @@ public class AuditInterceptor implements Interceptor {
     @Override
     public void setProperties(Properties properties) {
         // 可以从配置中读取属性
-    }
-
-    /**
-     * 统一审计日志实体
-     */
-    @lombok.Data
-    @lombok.Builder
-    public static class AuditLogEntry {
-        // SQL审计信息
-        private LocalDateTime timestamp;
-        private String operation;
-        private String mapperId;
-        private String sql;
-        private String parameters;
-        private long executionTime;
-        private boolean success;
-        private String errorMessage;
-
-        // 上下文信息
-        private String userId;
-        private String tenantId;
-        private String requestId;
-
-        // 业务变更信息
-        private String module;
-        private String businessOperation;
-        private String entityClass;
-        private Object entityId;
-        private List<FieldChange> fieldChanges;
-    }
-
-    /**
-     * 字段变更记录
-     */
-    @lombok.Data
-    @lombok.Builder
-    public static class FieldChange {
-        private String fieldName;
-        private String fieldType;
-        private String oldValue;
-        private String newValue;
-        private boolean sensitive; // 是否为敏感字段
-    }
-
-    /**
-     * 审计存储接口
-     */
-    public interface AuditStorage {
-        void save(AuditLogEntry auditLogEntry);
     }
 }

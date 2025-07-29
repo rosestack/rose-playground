@@ -45,7 +45,7 @@ public class I18nBeanPostProcessor implements BeanPostProcessor {
 
         Class<?> beanType = getTargetClass(bean);
         if (LOCAL_VALIDATOR_FACTORY_BEAN_CLASS.equals(beanType)) {
-            MessageSourceAdapter messageSourceAdapter = SpringBeanUtils.getOptionalBean(context, MessageSourceAdapter.class);
+            MessageSourceAdapter messageSourceAdapter = SpringBeanUtils.getBean(MessageSourceAdapter.class);
             if (messageSourceAdapter == null) {
                 logger.warn("No MessageSourceAdapter BeanDefinition was found!");
             } else {

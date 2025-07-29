@@ -1,7 +1,7 @@
 package io.github.rosestack.web.advice;
 
 import io.github.rosestack.core.model.ApiResponse;
-import io.github.rosestack.web.annotation.IgnoreResponseBody;
+import io.github.rosestack.web.annotation.ResponseIgnore;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -26,9 +26,9 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        // 检查方法或类是否标记了 @IgnoreResponseBody
-        if (returnType.hasMethodAnnotation(IgnoreResponseBody.class) ||
-                returnType.getContainingClass().isAnnotationPresent(IgnoreResponseBody.class)) {
+        // 检查方法或类是否标记了 @ResponseIgnore
+        if (returnType.hasMethodAnnotation(ResponseIgnore.class) ||
+                returnType.getContainingClass().isAnnotationPresent(ResponseIgnore.class)) {
             return false;
         }
 

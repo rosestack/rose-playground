@@ -3,6 +3,7 @@ package io.github.rosestack.core.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.github.rosestack.core.jackson.JsonUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;

@@ -1,5 +1,6 @@
 package io.github.rosestack.redis.config;
 
+import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.redis.lock.DistributedLockManager;
 import io.github.rosestack.redis.lock.aspect.LockAspect;
 import io.github.rosestack.redis.ratelimit.RateLimitAspect;
@@ -16,6 +17,7 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -31,6 +33,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 @Slf4j
 @AutoConfiguration(after = RedisAutoConfiguration.class)
 @ConditionalOnClass(RedisTemplate.class)
+@PropertySource(value = "classpath:application-rose-redis.yml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseRedisProperties.class)
 public class RoseRedisAutoConfiguration {
@@ -50,7 +53,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
         public DistributedLockManager distributedLockManager(RedisTemplate<String, Object> redisTemplate,
-                                                           RoseRedisProperties properties) {
+                                                             RoseRedisProperties properties) {
             return new DistributedLockManager(redisTemplate, properties);
         }
 
@@ -83,7 +86,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
         public RateLimitManager rateLimitManager(RedisTemplate<String, Object> redisTemplate,
-                                                RoseRedisProperties properties) {
+                                                 RoseRedisProperties properties) {
             return new RateLimitManager(redisTemplate, properties);
         }
 
@@ -91,7 +94,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RateLimitManager.class)
         public RedisRateLimiter redisRateLimiter(RedisTemplate<String, Object> redisTemplate,
-                                                RoseRedisProperties properties) {
+                                                 RoseRedisProperties properties) {
             return new RedisRateLimiter(redisTemplate, properties);
         }
 
@@ -99,7 +102,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RateLimitManager.class)
         public SlidingWindowRateLimiter slidingWindowRateLimiter(RedisTemplate<String, Object> redisTemplate,
-                                                               RoseRedisProperties properties) {
+                                                                 RoseRedisProperties properties) {
             return new SlidingWindowRateLimiter(redisTemplate, properties);
         }
 
@@ -108,7 +111,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
         @ConditionalOnBean(RateLimitManager.class)
         public RateLimitAspect rateLimitAspect(RateLimitManager rateLimitManager,
-                                             RoseRedisProperties properties) {
+                                               RoseRedisProperties properties) {
             return new RateLimitAspect(rateLimitManager, properties);
         }
     }

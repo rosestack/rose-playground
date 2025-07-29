@@ -1,1 +1,1 @@
-io.github.rosestack.web.config.WebAutoConfig
+io.github.rosestack.web.config.RoseWebAutoConfiguration

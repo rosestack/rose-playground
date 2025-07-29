@@ -1,10 +1,12 @@
 package io.github.rosestack.core.util;
 
+import io.github.rosestack.core.Constants;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -534,5 +536,67 @@ public abstract class ServletUtils {
         return details.toString();
     }
 
+    /**
+     * 获取当前用户ID
+     */
+    public static String getCurrentUserId() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return "SYSTEM";
+        }
+        String userId = request.getHeader(Constants.HeaderName.HEADER_USER_ID);
+        if (StringUtils.hasLength(userId)) {
+            return userId;
+        }
 
+        userId = MDC.get(Constants.MdcName.MDC_USER_ID);
+        if (StringUtils.hasLength(userId)) {
+            return userId;
+        }
+        return "SYSTEM";
+    }
+
+    public static String getCurrentRequestId() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+
+        String requestId = request.getHeader(Constants.HeaderName.HEADER_REQUEST_ID);
+        if (StringUtils.hasLength(requestId)) {
+            return requestId;
+        }
+
+        requestId = MDC.get(Constants.MdcName.MDC_REQUEST_ID);
+        if (StringUtils.hasLength(requestId)) {
+            return requestId;
+        }
+        return requestId;
+    }
+
+    public static String getCurrentTenantId() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+
+        String requestId = request.getHeader(Constants.HeaderName.HEADER_TENANT_ID);
+        if (StringUtils.hasLength(requestId)) {
+            return requestId;
+        }
+
+        requestId = MDC.get(Constants.MdcName.MDC_TENANT_ID);
+        if (StringUtils.hasLength(requestId)) {
+            return requestId;
+        }
+        return "DEFAULT";
+    }
+
+    public static String getCurrentUsername() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+        return request.getUserPrincipal().getName();
+    }
 }

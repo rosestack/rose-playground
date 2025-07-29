@@ -40,8 +40,6 @@ public class TenantContextHolder {
         return TENANT_ID.get();
     }
 
-
-
     /**
      * 检查是否存在租户上下文
      *

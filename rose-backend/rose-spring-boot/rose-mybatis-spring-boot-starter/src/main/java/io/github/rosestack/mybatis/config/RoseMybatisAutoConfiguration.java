@@ -11,12 +11,16 @@ import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionIntercepto
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+import io.github.rosestack.core.spring.SpringBeanUtils;
+import io.github.rosestack.core.spring.YmlPropertySourceFactory;
+import io.github.rosestack.mybatis.audit.DefaultAuditStorage;
 import io.github.rosestack.mybatis.encryption.OptimizedFieldEncryptor;
+import io.github.rosestack.mybatis.filter.TenantIdFilter;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
+import io.github.rosestack.mybatis.interceptor.AuditInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
-import io.github.rosestack.mybatis.interceptor.SensitiveFieldInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +29,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
+
+import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_ORDER;
 
 /**
  * Rose MyBatis Plus 自动配置类
@@ -49,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 @AutoConfiguration
 @RequiredArgsConstructor
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
+@PropertySource(value = "classpath:application-rose-mybatis.yml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.mybatis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseMybatisProperties.class)
 public class RoseMybatisAutoConfiguration {
@@ -135,15 +144,18 @@ public class RoseMybatisAutoConfiguration {
         return new FieldEncryptionInterceptor(new OptimizedFieldEncryptor(properties));
     }
 
-    /**
-     * 敏感字段脱敏拦截器
-     */
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.desensitization", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public SensitiveFieldInterceptor sensitiveFieldInterceptor() {
-        log.info("初始化敏感字段脱敏拦截器");
-        return new SensitiveFieldInterceptor(properties);
+    @ConditionalOnProperty(prefix = "rose.mybatis.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public AuditInterceptor auditInterceptor() {
+        log.info("初始化审计拦截器，日志等级: {}", properties.getAudit().getLogLevel());
+        return new AuditInterceptor(properties, new DefaultAuditStorage());
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
+    public FilterRegistrationBean<TenantIdFilter> tenantIdFilter() {
+        return SpringBeanUtils.createFilterBean(new TenantIdFilter(), TENANT_ID_FILTER_ORDER);
     }
 
     /**

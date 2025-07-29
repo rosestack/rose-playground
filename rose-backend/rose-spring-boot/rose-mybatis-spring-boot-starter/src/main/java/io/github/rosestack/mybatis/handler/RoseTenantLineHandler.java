@@ -1,8 +1,8 @@
 package io.github.rosestack.mybatis.handler;
 
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
+import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.util.ContextUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
@@ -35,7 +35,7 @@ public class RoseTenantLineHandler implements TenantLineHandler {
      */
     @Override
     public Expression getTenantId() {
-        String tenantId = ContextUtils.getCurrentTenantId();
+        String tenantId = ServletUtils.getCurrentTenantId();
         log.debug("获取当前租户ID: {}", tenantId);
         return new StringValue(tenantId);
     }

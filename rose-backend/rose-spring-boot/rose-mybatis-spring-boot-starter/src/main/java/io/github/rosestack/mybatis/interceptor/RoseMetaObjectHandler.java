@@ -2,7 +2,7 @@ package io.github.rosestack.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.util.ContextUtils;
+import io.github.rosestack.mybatis.util.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
@@ -29,7 +29,7 @@ public class RoseMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
         LocalDateTime now = LocalDateTime.now();
-        String currentTenantId = ContextUtils.getCurrentTenantId();
+        String currentTenantId = TenantContextHolder.getCurrentTenantId();
         String currentUsername = getCurrentUsername();
 
         this.strictInsertFill(metaObject, properties.getFieldFill().getCreateTimeColumn(), LocalDateTime.class, now);

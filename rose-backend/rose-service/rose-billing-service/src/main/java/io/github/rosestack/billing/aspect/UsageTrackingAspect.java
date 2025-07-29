@@ -5,7 +5,7 @@ import io.github.rosestack.billing.aspect.annotation.TrackSmsUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackStorageUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackUserChange;
 import io.github.rosestack.billing.service.BillingService;
-import io.github.rosestack.billing.service.TenantContextHolder;
+import io.github.rosestack.mybatis.util.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;

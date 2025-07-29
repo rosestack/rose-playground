@@ -16,16 +16,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * @since 1.0.0
  */
 public class CorsConfig {
-    private final WebProperties webProperties;
+    private final RoseWebProperties roseWebProperties;
 
-    public CorsConfig(WebProperties webProperties) {
-        this.webProperties = webProperties;
+    public CorsConfig(RoseWebProperties roseWebProperties) {
+        this.roseWebProperties = roseWebProperties;
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cors = webProperties.getCors();
+        CorsConfiguration cors = roseWebProperties.getCors();
 
         CorsConfiguration configuration = new CorsConfiguration();
 

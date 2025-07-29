@@ -1,12 +1,10 @@
 package io.github.rosestack.web.filter;
 
-import io.github.rosestack.web.config.WebProperties;
+import io.github.rosestack.web.config.RoseWebProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.HtmlUtils;
 
@@ -22,11 +20,9 @@ import java.util.regex.Pattern;
  * @author rosestack
  * @since 1.0.0
  */
-@Component
-@ConditionalOnProperty(prefix = "rose.web.filter.xss", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class XssFilter extends OncePerRequestFilter {
 
-    private final WebProperties webProperties;
+    private final RoseWebProperties roseWebProperties;
     
     // 简化的 XSS 攻击模式，只保留最常见的
     private static final Pattern[] XSS_PATTERNS = {
@@ -36,8 +32,8 @@ public class XssFilter extends OncePerRequestFilter {
         Pattern.compile("on\\w+\\s*=", Pattern.CASE_INSENSITIVE) // 匹配所有 on 事件
     };
 
-    public XssFilter(WebProperties webProperties) {
-        this.webProperties = webProperties;
+    public XssFilter(RoseWebProperties roseWebProperties) {
+        this.roseWebProperties = roseWebProperties;
     }
 
     @Override

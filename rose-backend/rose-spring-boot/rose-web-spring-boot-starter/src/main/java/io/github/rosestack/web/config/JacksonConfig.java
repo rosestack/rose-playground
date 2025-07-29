@@ -15,10 +15,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 @ConditionalOnClass(ObjectMapper.class)
 public class JacksonConfig {
 
-    private final WebProperties webProperties;
+    private final RoseWebProperties roseWebProperties;
 
-    public JacksonConfig(WebProperties webProperties) {
-        this.webProperties = webProperties;
+    public JacksonConfig(RoseWebProperties roseWebProperties) {
+        this.roseWebProperties = roseWebProperties;
     }
 
 } 

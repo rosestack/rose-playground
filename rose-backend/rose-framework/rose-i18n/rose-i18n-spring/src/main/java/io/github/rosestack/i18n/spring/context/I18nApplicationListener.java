@@ -59,7 +59,7 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
         initializeServiceMessageSource(context);
 
-        initializeAcceptHeaderLocaleResolver(context);
+        initializeAcceptHeaderLocaleResolver();
     }
 
     private void initializeServiceMessageSource(ApplicationContext context) {
@@ -69,7 +69,7 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
 
     @SuppressWarnings("unchecked")
-    private void initializeAcceptHeaderLocaleResolver(ApplicationContext context) {
+    private void initializeAcceptHeaderLocaleResolver() {
         if (ACCEPT_HEADER_LOCALE_RESOLVER_CLASS == null) {
             logger.debug("The class '{}' was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
             return;
@@ -77,14 +77,14 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
         Class<AcceptHeaderLocaleResolver> beanClass = (Class<AcceptHeaderLocaleResolver>) ACCEPT_HEADER_LOCALE_RESOLVER_CLASS;
 
-        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = SpringBeanUtils.getSortedBeans(context, beanClass);
+        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = SpringBeanUtils.getSortedBeans(beanClass);
 
         if (acceptHeaderLocaleResolvers.isEmpty()) {
             logger.debug("The '{}' Spring Bean was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
             return;
         }
 
-        I18nMessageSource i18nMessageSource = SpringBeanUtils.getOptionalBean(context, I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource = SpringBeanUtils.getBean(I18nMessageSource.class);
 
         for (AcceptHeaderLocaleResolver acceptHeaderLocaleResolver : acceptHeaderLocaleResolvers) {
             Locale defaultLocale = Locale.getDefault();

@@ -2,8 +2,6 @@ package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.core.entity.BaseEntity;
-import io.github.rosestack.mybatis.annotation.SensitiveField;
-import io.github.rosestack.mybatis.enums.SensitiveType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -29,15 +27,12 @@ public class UserEntity extends BaseEntity {
     private String username;
 
     @TableField("email")
-    @SensitiveField(value = SensitiveType.EMAIL)
     private String email;
 
     @TableField("phone")
-    @SensitiveField(value = SensitiveType.PHONE)
     private String phone;
 
     @TableField("password")
-    @SensitiveField(value = SensitiveType.SECRET)
     private String password;
 
     @TableField("status")

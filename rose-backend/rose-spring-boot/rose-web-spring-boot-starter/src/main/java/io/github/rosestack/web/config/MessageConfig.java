@@ -20,10 +20,10 @@ import java.util.Locale;
  */
 public class MessageConfig {
 
-    private final WebProperties webProperties;
+    private final RoseWebProperties roseWebProperties;
 
-    public MessageConfig(WebProperties webProperties) {
-        this.webProperties = webProperties;
+    public MessageConfig(RoseWebProperties roseWebProperties) {
+        this.roseWebProperties = roseWebProperties;
     }
 
     /**
