@@ -89,6 +89,15 @@ rose:
       default-field: "user_id"
       sql-log: false
 
+      # 缓存配置
+      cache:
+        enabled: true                    # 是否启用缓存
+        expire-minutes: 30               # 缓存过期时间（分钟）
+        cleanup-interval-minutes: 60     # 缓存清理间隔（分钟）
+        management-enabled: false        # 是否启用缓存管理接口（仅开发/测试环境）
+        max-annotation-cache-size: 10000 # 最大注解缓存数量
+        max-permission-cache-size: 50000 # 最大权限缓存数量
+
     # 数据脱敏配置
     desensitization:
       enabled: true
@@ -363,6 +372,53 @@ public class CustomFieldEncryptor implements FieldEncryptor {
 }
 ```
 
+### 数据权限缓存管理
+
+Rose MyBatis 提供了强大的数据权限缓存功能，可以显著提升性能：
+
+#### 缓存特性
+- **注解缓存**: 缓存 `@DataPermission` 注解信息，避免重复反射
+- **权限值缓存**: 缓存用户权限值，减少数据库查询
+- **自动过期**: 支持缓存自动过期和清理
+- **并发安全**: 使用 `ConcurrentHashMap` 保证线程安全
+
+#### 缓存管理接口
+
+```java
+@Autowired
+private DataPermissionCacheService cacheService;
+
+// 获取缓存统计信息
+Map<String, Object> stats = cacheService.getCacheStatistics();
+
+// 清空所有缓存
+cacheService.clearAllCache();
+
+// 清空指定用户缓存
+cacheService.clearUserCache("user123");
+
+// 检查缓存健康状态
+CacheHealthStatus health = cacheService.checkCacheHealth();
+```
+
+#### 缓存管理 REST API
+
+启用缓存管理接口（仅开发/测试环境）：
+
+```yaml
+rose:
+  mybatis:
+    data-permission:
+      cache:
+        management-enabled: true
+```
+
+可用接口：
+- `GET /api/internal/data-permission-cache/stats` - 获取缓存统计
+- `GET /api/internal/data-permission-cache/health` - 检查缓存健康
+- `DELETE /api/internal/data-permission-cache/all` - 清空所有缓存
+- `DELETE /api/internal/data-permission-cache/user/{userId}` - 清空用户缓存
+
 ### 自定义数据权限处理器
 
 ```java
@@ -373,7 +429,7 @@ public class CustomDataPermissionHandler implements DataPermissionHandler {
         // 从 Spring Security 或其他权限框架获取当前用户权限
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails user = (UserDetails) auth.getPrincipal();
-        
+
         switch (dataPermission.type()) {
             case USER:
                 return Arrays.asList(user.getUserId());

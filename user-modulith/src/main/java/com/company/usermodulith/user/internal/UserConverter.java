@@ -122,11 +122,10 @@ public interface UserConverter {
                 .map(this::toResponse)
                 .toList();
 
-        return PageResponse.of(
-                userPage.getCurrent(),
-                userPage.getSize(),
+        return PageResponse.of(records,
                 userPage.getTotal(),
-                records
+                userPage.getCurrent(),
+                userPage.getSize()
         );
     }
 }

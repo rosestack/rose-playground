@@ -188,7 +188,7 @@ public class RoseMybatisProperties {
         /**
          * 加密密钥（生产环境应该从外部配置或密钥管理系统获取）
          */
-        private String secretKey;
+        private String secretKey = "0123456789abcdeffedcba9876543210";
 
         /**
          * 加密失败时是否抛出异常
@@ -199,20 +199,6 @@ public class RoseMybatisProperties {
          * 默认加密算法
          */
         private String defaultAlgorithm = "AES";
-
-        /**
-         * 是否使用 InnerInterceptor 模式
-         * <p>
-         * true: 使用 MyBatis Plus 的 InnerInterceptor，提供更好的性能和集成性
-         * false: 使用传统的 MyBatis Interceptor
-         * </p>
-         */
-        private boolean useInnerInterceptor = true;
-
-        /**
-         * 加密盐值（用于哈希字段）
-         */
-        private String salt = "DEFAULT_APP_SALT_2024";
     }
 
     /**
@@ -226,6 +212,49 @@ public class RoseMybatisProperties {
         private boolean enabled = true;
 
         private String defaultField;
+
+        /**
+         * 缓存配置
+         */
+        private Cache cache = new Cache();
+
+        /**
+         * 缓存配置
+         */
+        @Data
+        public static class Cache {
+            /**
+             * 是否启用缓存
+             */
+            private boolean enabled = true;
+
+            /**
+             * 缓存过期时间（分钟）
+             */
+            private long expireMinutes = 30;
+
+            /**
+             * 缓存清理间隔（分钟）
+             */
+            private long cleanupIntervalMinutes = 60;
+
+            /**
+             * 是否启用缓存管理接口
+             */
+            private boolean managementEnabled = false;
+
+            private Double expiredRate = 0.5;
+
+            /**
+             * 最大注解缓存数量
+             */
+            private int maxAnnotationCacheSize = 10000;
+
+            /**
+             * 最大权限缓存数量
+             */
+            private int maxPermissionCacheSize = 50000;
+        }
     }
 
     /**

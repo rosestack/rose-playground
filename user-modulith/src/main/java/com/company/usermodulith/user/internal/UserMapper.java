@@ -1,6 +1,9 @@
 package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.github.rosestack.mybatis.annotation.DataPermission;
+import io.github.rosestack.mybatis.enums.DataPermissionType;
+import io.github.rosestack.mybatis.enums.DataScope;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -16,6 +19,7 @@ import org.apache.ibatis.annotations.Select;
  * @since 1.0.0
  */
 @Mapper
+@DataPermission(field = "id", type = DataPermissionType.USER, scope = DataScope.SELF)
 public interface UserMapper extends BaseMapper<UserEntity> {
 
     /**

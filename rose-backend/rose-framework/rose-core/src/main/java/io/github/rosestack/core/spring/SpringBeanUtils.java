@@ -25,7 +25,7 @@ import org.springframework.util.StringValueResolver;
 import java.util.*;
 
 @Lazy(value = false)
-public abstract class SpringBeanUtils implements ApplicationContextAware, DisposableBean {
+public class SpringBeanUtils implements ApplicationContextAware, DisposableBean {
     private static final Log logger = LogFactory.getLog(SpringBeanUtils.class);
     private static final boolean APPLICATION_STARTUP_CLASS_PRESENT = ClassUtils.isPresent("org.springframework.core.metrics.ApplicationStartup", (ClassLoader) null);
     private static ApplicationContext applicationContext;
@@ -278,6 +278,13 @@ public abstract class SpringBeanUtils implements ApplicationContextAware, Dispos
         }
 
         return sortedBeansMap;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (applicationContext != null) {
+            applicationContext = null;
+        }
     }
 
     static class NamingBean<T> extends AnnotationAwareOrderComparator implements Comparable<NamingBean>, Ordered {

@@ -58,14 +58,13 @@ public class UserController {
 
     @GetMapping
     public ApiResponse<PageResponse<UserResponse>> pageUsers(
-            @RequestParam(name = "page", defaultValue = "1") int pageNo,
-            @RequestParam(name = "size", defaultValue = "10") int pageSize,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
             UserQuery userQuery) {
-        log.info("分页查询用户，pageNo: {}, pageSize: {}, userQuery: {}",
-                pageNo, pageSize, userQuery);
+        log.info("分页查询用户，page: {}, size: {}, userQuery: {}", page, size, userQuery);
 
         // 创建分页请求对象
-        PageRequest pageRequest = PageRequest.of(pageNo, pageSize);
+        PageRequest pageRequest = PageRequest.of(page, size);
 
         PageResponse<UserResponse> response = userService.pageUsers(pageRequest, userQuery);
         return ApiResponse.success(response);

@@ -109,12 +109,18 @@ public class RoseMybatisAutoConfiguration {
         // 4. 数据权限插件
         if (properties.getDataPermission().isEnabled()) {
             DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
-            dataPermissionInterceptor.setDataPermissionHandler(new RoseDataPermissionHandler());
+            dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler());
             interceptor.addInnerInterceptor(dataPermissionInterceptor);
             log.info("启用数据权限插件");
         }
 
         return interceptor;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RoseDataPermissionHandler roseDataPermissionHandler() {
+        return new RoseDataPermissionHandler(properties);
     }
 
     /**

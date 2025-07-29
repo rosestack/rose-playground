@@ -1,12 +1,13 @@
 package io.github.rosestack.mybatis.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
-import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
+import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
+import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +38,6 @@ class RoseMybatisAutoConfigurationTest {
 
                     // 验证默认启用的功能（这些是通过拦截器创建的，不是独立的Bean）
                     assertThat(context).hasSingleBean(FieldEncryptionInterceptor.class);
-                    assertThat(context).hasSingleBean(SensitiveFieldInterceptor.class);
                 });
     }
 
@@ -97,15 +97,6 @@ class RoseMybatisAutoConfigurationTest {
                 .withPropertyValues("rose.mybatis.data-permission.enabled=false")
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(RoseDataPermissionHandler.class);
-                });
-    }
-
-    @Test
-    void testAutoConfiguration_WithDesensitizationDisabled() {
-        contextRunner
-                .withPropertyValues("rose.mybatis.desensitization.enabled=false")
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(SensitiveFieldInterceptor.class);
                 });
     }
 
@@ -179,6 +170,7 @@ class RoseMybatisAutoConfigurationTest {
      * 自定义配置类
      */
     @Configuration
+    @EnableConfigurationProperties(RoseMybatisProperties.class)
     static class CustomConfiguration {
 
         @Bean

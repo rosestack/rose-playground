@@ -542,18 +542,18 @@ public abstract class ServletUtils {
     public static String getCurrentUserId() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
-            return "SYSTEM";
+            return null;
         }
-        String userId = request.getHeader(Constants.HeaderName.HEADER_USER_ID);
-        if (StringUtils.hasLength(userId)) {
-            return userId;
+        Integer userId = request.getIntHeader(Constants.HeaderName.HEADER_USER_ID);
+        if (userId != null) {
+            return null;
         }
 
-        userId = MDC.get(Constants.MdcName.MDC_USER_ID);
-        if (StringUtils.hasLength(userId)) {
-            return userId;
+        userId = Integer.valueOf(MDC.get(Constants.MdcName.MDC_USER_ID));
+        if (userId != null) {
+            return String.valueOf(userId);
         }
-        return "SYSTEM";
+        return null;
     }
 
     public static String getCurrentRequestId() {

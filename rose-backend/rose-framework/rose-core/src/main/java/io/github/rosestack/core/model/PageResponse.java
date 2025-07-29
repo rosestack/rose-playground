@@ -26,13 +26,13 @@ public class PageResponse<T> implements Serializable {
     private long total;
 
     /** 当前页码 */
-    private int page;
+    private long page;
 
     /** 页大小 */
-    private int size;
+    private long size;
 
     /** 总页数 */
-    private int pages;
+    private long pages;
 
     /** 是否有下一页 */
     private boolean hasNext;
@@ -43,12 +43,12 @@ public class PageResponse<T> implements Serializable {
     public PageResponse() {
     }
 
-    public PageResponse(List<T> records, long total, int page, int size) {
+    public PageResponse(List<T> records, long total, long page, long size) {
         this.records = records;
         this.total = total;
         this.page = page;
         this.size = size;
-        this.pages = (int) Math.ceil((double) total / size);
+        this.pages = (long) Math.ceil((double) total / size);
         this.hasNext = page < pages;
         this.hasPrevious = page > 1;
     }
@@ -63,7 +63,7 @@ public class PageResponse<T> implements Serializable {
      * @param <T> 数据类型
      * @return 分页响应对象
      */
-    public static <T> PageResponse<T> of(List<T> records, long total, int page, int size) {
+    public static <T> PageResponse<T> of(List<T> records, long total, long page, long size) {
         return new PageResponse<>(records, total, page, size);
     }
 
@@ -75,7 +75,7 @@ public class PageResponse<T> implements Serializable {
      * @param <T> 数据类型
      * @return 空的分页响应对象
      */
-    public static <T> PageResponse<T> empty(int page, int size) {
+    public static <T> PageResponse<T> empty(long page, long size) {
         return new PageResponse<>(List.of(), 0, page, size);
     }
 
@@ -134,7 +134,7 @@ public class PageResponse<T> implements Serializable {
         this.total = total;
     }
 
-    public int getPage() {
+    public long getPage() {
         return page;
     }
 
@@ -142,7 +142,7 @@ public class PageResponse<T> implements Serializable {
         this.page = page;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
@@ -150,7 +150,7 @@ public class PageResponse<T> implements Serializable {
         this.size = size;
     }
 
-    public int getPages() {
+    public long getPages() {
         return pages;
     }
 

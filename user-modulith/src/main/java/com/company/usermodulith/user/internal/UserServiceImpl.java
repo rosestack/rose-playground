@@ -13,10 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -122,7 +121,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<UserResponse> pageUsers(PageRequest pageRequest, UserQuery userQuery) {
-        Page<UserEntity> page = new Page<>(pageRequest.getPageNo(), pageRequest.getPageSize());
+        Page<UserEntity> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
 
         // 构建查询条件
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();

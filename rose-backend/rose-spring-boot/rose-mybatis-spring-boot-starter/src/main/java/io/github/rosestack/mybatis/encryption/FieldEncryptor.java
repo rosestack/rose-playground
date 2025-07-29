@@ -30,12 +30,4 @@ public interface FieldEncryptor {
      * @return 明文
      */
     String decrypt(String cipherText, EncryptType encryptType);
-
-    /**
-     * 检查是否支持指定的加密类型
-     *
-     * @param encryptType 加密类型
-     * @return 是否支持
-     */
-    boolean supports(EncryptType encryptType);
 }

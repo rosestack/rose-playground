@@ -32,10 +32,5 @@ public enum EncryptType {
     /**
      * RSA 非对称加密算法
      */
-    RSA,
-
-    /**
-     * ECC 椭圆曲线加密算法
-     */
-    ECC
+    RSA
 }
