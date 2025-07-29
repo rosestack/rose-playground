@@ -45,7 +45,7 @@ rose:
       # 是否启用 SQL 性能监控（需要引入 p6spy 依赖）
       enabled: true
       # 慢查询阈值（毫秒）
-      slow-sql-threshold: 1000
+      slow-sql-threshold: 1
       # 是否格式化 SQL
       format-sql: true
 

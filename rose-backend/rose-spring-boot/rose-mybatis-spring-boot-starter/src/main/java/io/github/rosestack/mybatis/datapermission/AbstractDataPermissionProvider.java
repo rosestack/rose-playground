@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 public abstract class AbstractDataPermissionProvider implements DataPermissionProvider {
     @Override
-    public List<String> getPermissionValues() {
+    public List<String> getPermissionValues(String field) {
         DataScope dataScope = getDataScope();
         List<String> permissionValues = getPermissionValues(dataScope);
         log.info("获取用户数据权限范围 {} 对应的数据权限值: {}", dataScope, permissionValues);

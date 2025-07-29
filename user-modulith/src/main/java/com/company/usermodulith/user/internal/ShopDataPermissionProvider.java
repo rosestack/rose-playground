@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class UserDataPermissionProvider extends AbstractDataPermissionProvider {
+public class ShopDataPermissionProvider extends AbstractDataPermissionProvider {
     @Override
     public String getSupportedField() {
         return "id";
@@ -15,7 +15,7 @@ public class UserDataPermissionProvider extends AbstractDataPermissionProvider {
 
     @Override
     public String getDescription() {
-        return "用户数据权限提供者";
+        return "门店数据权限提供者";
     }
 
     @Override

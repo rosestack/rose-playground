@@ -212,100 +212,111 @@ rose:
 #### 基本使用
 
 ```java
-// 用户级权限控制 - 根据字段名自动推断
-@DataPermission(field = "user_id", scope = DataScope.SELF)
+// 用户级权限控制 - 根据字段名自动匹配权限提供者
+@DataPermission(field = "user_id")
 public List<Order> getUserOrders() {
-    // 自动添加 WHERE user_id = '当前用户ID'
+    // 自动匹配 UserDataPermissionProvider
+    // 添加 WHERE user_id = '当前用户ID'
     return orderMapper.selectList(null);
 }
 
-// 部门级权限控制 - 根据字段名和范围自动推断
-@DataPermission(field = "dept_id", scope = DataScope.PARENT_AND_CHILD)
-public List<Employee> getDeptEmployees() {
-    // 自动添加 WHERE dept_id IN ('当前部门ID', '子部门ID1', '子部门ID2')
-    return employeeMapper.selectList(null);
+// 门店级权限控制 - 根据字段名自动匹配权限提供者
+@DataPermission(field = "store_id")
+public List<Product> getStoreProducts() {
+    // 自动匹配 StoreDataPermissionProvider
+    // 添加 WHERE store_id IN ('当前用户可访问的门店ID列表')
+    return productMapper.selectList(null);
 }
 
-// 组织级权限控制
-@DataPermission(field = "org_id", scope = DataScope.PARENT_PARENT)
-public List<Report> getOrgReports() {
-    // 自动添加 WHERE org_id = '当前组织ID'
-    return reportMapper.selectList(null);
-}
-
-// 类级权限控制
-@DataPermission(field = "org_id", scope = DataScope.PARENT_PARENT_AND_CHILD)
-@RestController
-public class ReportController {
-    // 所有方法都会自动添加组织权限条件
-}
-
-// 智能字段推断 - SELF 范围根据字段名自动选择权限来源
-@DataPermission(field = "creator_id", scope = DataScope.SELF)
+// 创建者权限控制
+@DataPermission(field = "creator_id")
 public List<Article> getMyArticles() {
-    // creator_id 字段自动使用当前用户ID
+    // 自动匹配 UserDataPermissionProvider
+    // 添加 WHERE creator_id = '当前用户ID'
     return articleMapper.selectList(null);
 }
 
-@DataPermission(field = "dept_id", scope = DataScope.SELF)
-public List<User> getDeptUsers() {
-    // dept_id 字段自动使用当前用户的部门ID
-    return userMapper.selectList(null);
+// 类级权限控制
+@DataPermission(field = "store_id")
+@RestController
+public class ProductController {
+    // 所有方法都会自动添加门店权限条件
 }
 
 // 支持不同数据类型
-@DataPermission(field = "user_id", fieldType = DataPermission.FieldType.LONG, scope = DataScope.SELF)
-public List<Order> getUserOrdersWithLongId() {
-    // 长整型字段，不使用引号包围
+@DataPermission(field = "user_id", fieldType = DataPermission.FieldType.NUMBER)
+public List<Order> getUserOrdersWithNumberId() {
+    // 数值类型字段，不使用引号包围
     return orderMapper.selectList(null);
+}
+
+// 多种权限类型示例
+@DataPermission(field = "owner_id")    // 用户权限
+@DataPermission(field = "shop_id")     // 门店权限
+@DataPermission(field = "branch_id")   // 分店权限
+public List<SalesRecord> getSalesRecords() {
+    // 根据字段名自动选择对应的权限提供者
+    return salesMapper.selectList(null);
 }
 ```
 
-### ⚡ 智能权限推断
+### ⚡ 权限提供者模式
 
-Rose MyBatis 支持根据字段名和权限范围自动推断权限类型，无需手动指定 `DataPermissionType`：
+Rose MyBatis 采用权限提供者模式，根据字段名自动匹配对应的权限提供者，权限范围由提供者内部决定：
 
-#### 字段名智能推断规则
+#### 字段名自动匹配规则
 
-| 字段名模式 | SELF 范围权限来源 | 说明 |
-|-----------|------------------|------|
-| `user_id`, `creator_id`, `owner_id`, `author_id` | 当前用户ID | 用户相关字段 |
-| `dept_id`, `department_id` | 当前用户部门ID | 部门相关字段 |
-| `org_id`, `organization_id`, `company_id` | 当前用户组织ID | 组织相关字段 |
-| 其他字段 | 当前用户ID | 默认使用用户ID |
+| 字段名模式 | 权限提供者 | 权限范围 | 说明 |
+|-----------|------------|----------|------|
+| `user_id`, `creator_id`, `owner_id`, `author_id` | UserDataPermissionProvider | 当前用户ID | 用户相关字段 |
+| `store_id`, `shop_id`, `branch_id`, `outlet_id` | StoreDataPermissionProvider | 当前用户可访问的门店ID列表 | 门店相关字段 |
+| `dept_id`, `department_id` | DeptDataPermissionProvider | 当前用户部门及下级部门ID | 部门相关字段 |
+| `org_id`, `organization_id`, `company_id` | OrgDataPermissionProvider | 当前用户组织及下级组织ID | 组织相关字段 |
 
-#### 权限范围说明
+#### 权限提供者优先级
 
-| 范围 | 说明 | 适用场景 |
-|------|------|----------|
-| `SELF` | 仅本人数据，根据字段名智能推断权限来源 | 个人数据查询 |
-| `PARENT` | 本部门数据 | 部门内数据查询 |
-| `PARENT_AND_CHILD` | 本部门及下级部门数据 | 部门树形数据查询 |
-| `PARENT_PARENT` | 本组织数据 | 组织内数据查询 |
-| `PARENT_PARENT_AND_CHILD` | 本组织及下级组织数据 | 组织树形数据查询 |
-| `ALL` | 全部数据，不添加权限条件 | 管理员查询 |
-| `CUSTOM` | 自定义权限逻辑 | 复杂权限场景 |
+当多个提供者支持同一字段时，按优先级选择：
+
+| 提供者 | 优先级 | 说明 |
+|--------|--------|------|
+| UserDataPermissionProvider | 10 | 用户权限，最高优先级 |
+| StoreDataPermissionProvider | 20 | 门店权限，中等优先级 |
+| DeptDataPermissionProvider | 30 | 部门权限，中等优先级 |
+| OrgDataPermissionProvider | 40 | 组织权限，较低优先级 |
+| 自定义提供者 | 100 | 默认优先级 |
 
 #### 字段类型支持
 
 ```java
-// 字符串类型（默认）
+// 字符串类型（默认）- 使用单引号包围
 @DataPermission(field = "user_id", fieldType = DataPermission.FieldType.STRING)
 
-// 长整型
-@DataPermission(field = "user_id", fieldType = DataPermission.FieldType.LONG)
+// 数值类型 - 不使用引号
+@DataPermission(field = "user_id", fieldType = DataPermission.FieldType.NUMBER)
+```
 
-// 整型
-@DataPermission(field = "status", fieldType = DataPermission.FieldType.INTEGER)
+#### 自定义权限提供者
 
-// UUID 类型
-@DataPermission(field = "uuid", fieldType = DataPermission.FieldType.UUID)
+```java
+@Component
+public class CustomDataPermissionProvider implements DataPermissionProvider {
 
-// 布尔类型
-@DataPermission(field = "is_active", fieldType = DataPermission.FieldType.BOOLEAN)
+    @Override
+    public boolean supports(String field) {
+        return "custom_field".equals(field);
+    }
 
-// 自动检测类型
-@DataPermission(field = "mixed_field", fieldType = DataPermission.FieldType.AUTO)
+    @Override
+    public List<String> getPermissionValues(String field) {
+        // 根据业务逻辑返回权限值
+        return getCurrentUserCustomPermissions();
+    }
+
+    @Override
+    public int getPriority() {
+        return 50; // 自定义优先级
+    }
+}
 ```
 
 ### ⚡ 实体类配置

@@ -6,8 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import static com.company.usermodulith.user.internal.UserDataPermissionProvider.USER_PROVIDER;
-
 /**
  * 用户数据访问接口
  * <p>
@@ -19,7 +17,7 @@ import static com.company.usermodulith.user.internal.UserDataPermissionProvider.
  * @since 1.0.0
  */
 @Mapper
-@DataPermission(name = USER_PROVIDER, field = "id", fieldType = DataPermission.FieldType.NUMBER)
+@DataPermission(field = "id", fieldType = DataPermission.FieldType.NUMBER)
 public interface UserMapper extends BaseMapper<UserEntity> {
 
     /**

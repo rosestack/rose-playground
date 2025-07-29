@@ -211,8 +211,6 @@ public class RoseMybatisProperties {
          */
         private boolean enabled = true;
 
-        private String defaultField;
-
         /**
          * 缓存配置
          */

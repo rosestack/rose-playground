@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerIntercept
 import io.github.rosestack.core.spring.SpringBeanUtils;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.mybatis.audit.DefaultAuditStorage;
+import io.github.rosestack.mybatis.datapermission.DataPermissionProviderManager;
 import io.github.rosestack.mybatis.encryption.OptimizedFieldEncryptor;
 import io.github.rosestack.mybatis.filter.TenantIdFilter;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
@@ -30,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -81,7 +83,8 @@ public class RoseMybatisAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler) {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler,
+                                                         @Autowired(required = false) RoseDataPermissionHandler roseDataPermissionHandler) {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
         // 1. 多租户插件（必须放在第一位）
@@ -107,20 +110,14 @@ public class RoseMybatisAutoConfiguration {
         }
 
         // 4. 数据权限插件
-        if (properties.getDataPermission().isEnabled()) {
+        if (properties.getDataPermission().isEnabled() && roseDataPermissionHandler != null) {
             DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
-            dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler());
+            dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler);
             interceptor.addInnerInterceptor(dataPermissionInterceptor);
-            log.info("启用数据权限插件");
+            log.info("启用数据权限插件, 缓存开启: {}", properties.getDataPermission().getCache().isEnabled());
         }
 
         return interceptor;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public RoseDataPermissionHandler roseDataPermissionHandler() {
-        return new RoseDataPermissionHandler(properties);
     }
 
     /**
@@ -164,6 +161,72 @@ public class RoseMybatisAutoConfiguration {
         return SpringBeanUtils.createFilterBean(new TenantIdFilter(), TENANT_ID_FILTER_ORDER);
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public ISqlInjector sqlInjector() {
+        return new DefaultSqlInjector();
+    }
+
+    @Configuration
+    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    static class RoseDataPermissionHandlerConfiguration {
+        @Bean
+        @ConditionalOnMissingBean
+        public RoseDataPermissionHandler roseDataPermissionHandler(ApplicationContext applicationContext, RoseMybatisProperties properties) {
+            DataPermissionProviderManager dataPermissionProviderManager = new DataPermissionProviderManager(applicationContext);
+            dataPermissionProviderManager.init();
+            return new RoseDataPermissionHandler(dataPermissionProviderManager, properties);
+        }
+    }
+
+
+    /**
+     * SQL 性能监控配置
+     * <p>
+     * 当启用性能监控时，配置 P6Spy 进行 SQL 监控。
+     * 这是一个可选的配置，需要引入 p6spy 依赖。
+     * </p>
+     */
+    @Configuration
+    @ConditionalOnClass(name = "com.p6spy.engine.spy.P6DataSource")
+    @ConditionalOnProperty(prefix = "rose.mybatis.performance", name = "enabled", havingValue = "true", matchIfMissing = true)
+    static class PerformanceConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public PerformanceMonitoringConfiguration performanceMonitoringConfiguration(RoseMybatisProperties properties) {
+            return new PerformanceMonitoringConfiguration(properties);
+        }
+    }
+
+    /**
+     * 性能监控配置类
+     */
+    static class PerformanceMonitoringConfiguration {
+
+        private final RoseMybatisProperties properties;
+
+        public PerformanceMonitoringConfiguration(RoseMybatisProperties properties) {
+            this.properties = properties;
+            configureP6Spy();
+        }
+
+        /**
+         * 配置 P6Spy
+         */
+        private void configureP6Spy() {
+            System.setProperty("p6spy.config.executionThreshold",
+                    String.valueOf(properties.getPerformance().getSlowSqlThreshold()));
+
+            if (properties.getPerformance().isFormatSql()) {
+                System.setProperty("p6spy.config.logMessageFormat",
+                        "com.p6spy.engine.spy.appender.CustomLineFormat");
+            }
+
+            log.info("配置 P6Spy，慢查询阈值: {}ms, 格式化 SQL: {}", properties.getPerformance().getSlowSqlThreshold(), properties.getPerformance().isFormatSql());
+        }
+    }
+
     /**
      * 创建分页拦截器
      *
@@ -205,61 +268,5 @@ public class RoseMybatisAutoConfiguration {
 
         // 默认使用 MySQL
         return DbType.MYSQL;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public ISqlInjector sqlInjector() {
-        return new DefaultSqlInjector();
-    }
-
-    /**
-     * SQL 性能监控配置
-     * <p>
-     * 当启用性能监控时，配置 P6Spy 进行 SQL 监控。
-     * 这是一个可选的配置，需要引入 p6spy 依赖。
-     * </p>
-     */
-    @Configuration
-    @ConditionalOnClass(name = "com.p6spy.engine.spy.P6DataSource")
-    @ConditionalOnProperty(prefix = "rose.mybatis.performance", name = "enabled", havingValue = "true", matchIfMissing = true)
-    static class PerformanceConfiguration {
-
-        @Bean
-        @ConditionalOnMissingBean
-        public PerformanceMonitoringConfiguration performanceMonitoringConfiguration(RoseMybatisProperties properties) {
-            log.info("启用 SQL 性能监控，慢查询阈值: {}ms", properties.getPerformance().getSlowSqlThreshold());
-            return new PerformanceMonitoringConfiguration(properties);
-        }
-    }
-
-    /**
-     * 性能监控配置类
-     */
-    static class PerformanceMonitoringConfiguration {
-
-        private final RoseMybatisProperties properties;
-
-        public PerformanceMonitoringConfiguration(RoseMybatisProperties properties) {
-            this.properties = properties;
-            configureP6Spy();
-        }
-
-        /**
-         * 配置 P6Spy
-         */
-        private void configureP6Spy() {
-            // 这里可以添加 P6Spy 的配置逻辑
-            // 例如设置慢查询阈值、SQL 格式化等
-            System.setProperty("p6spy.config.executionThreshold",
-                    String.valueOf(properties.getPerformance().getSlowSqlThreshold()));
-
-            if (properties.getPerformance().isFormatSql()) {
-                System.setProperty("p6spy.config.logMessageFormat",
-                        "com.p6spy.engine.spy.appender.CustomLineFormat");
-            }
-
-            log.info("P6Spy 配置完成");
-        }
     }
 }

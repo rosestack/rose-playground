@@ -1,10 +1,9 @@
 package io.github.rosestack.mybatis.handler;
 
 import com.baomidou.mybatisplus.extension.plugins.handler.MultiDataPermissionHandler;
-import io.github.rosestack.core.spring.SpringBeanUtils;
 import io.github.rosestack.mybatis.annotation.DataPermission;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.datapermission.DataPermissionProvider;
+import io.github.rosestack.mybatis.datapermission.DataPermissionProviderManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
@@ -38,17 +37,17 @@ import static io.github.rosestack.core.util.ServletUtils.getCurrentUserId;
 @Slf4j
 @RequiredArgsConstructor
 public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
-
     // 注解缓存 - 缓存 mappedStatementId 对应的注解信息
     private final Map<String, DataPermission> annotationCache = new ConcurrentHashMap<>();
 
     // 权限值缓存 - 缓存用户权限值，避免重复查询
     private final Map<String, CacheEntry<List<String>>> permissionCache = new ConcurrentHashMap<>();
 
-    private final RoseMybatisProperties properties;
-
     // 上次清理时间
     private volatile long lastCleanupTime = System.currentTimeMillis();
+
+    private final DataPermissionProviderManager providerManager;
+    private final RoseMybatisProperties properties;
 
     /**
      * 缓存条目
@@ -173,7 +172,7 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
      * 构建权限缓存键
      */
     protected String buildPermissionCacheKey(String userId, DataPermission dataPermission) {
-        return String.format("%s:%s:%s", userId, dataPermission.name(), dataPermission.field());
+        return String.format("%s:%s:%s", userId, dataPermission.field(), dataPermission.fieldType());
     }
 
     /**
@@ -268,14 +267,7 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     }
 
     public List<String> getPermissionValues(DataPermission dataPermission) {
-        DataPermissionProvider dataPermissionProvider = SpringBeanUtils.getSortedBeans(DataPermissionProvider.class)
-                .stream().filter(provider -> provider.support(dataPermission.name()))
-                .findFirst().orElse(null);
-        if (dataPermissionProvider == null) {
-            throw new RuntimeException("未找到数据权限提供者");
-        }
-        log.debug("使用 {} 处理数据权限", dataPermissionProvider.getClass().getName());
-        return dataPermissionProvider.getPermissionValues();
+        return providerManager.getPermissionValues(dataPermission.field());
     }
 
     /**

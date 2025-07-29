@@ -123,7 +123,6 @@ class RoseMybatisAutoConfigurationTest {
 
                     assertThat(properties.getTenant().getColumn()).isEqualTo("org_id");
                     assertThat(properties.getEncryption().getDefaultAlgorithm()).isEqualTo("DES");
-                    assertThat(properties.getDataPermission().getDefaultField()).isEqualTo("dept_id");
                     assertThat(properties.getFieldFill().getDefaultUser()).isEqualTo("admin");
                 });
     }
