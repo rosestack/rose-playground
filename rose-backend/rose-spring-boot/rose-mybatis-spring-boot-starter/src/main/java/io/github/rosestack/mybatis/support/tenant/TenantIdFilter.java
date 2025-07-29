@@ -1,7 +1,6 @@
-package io.github.rosestack.mybatis.filter;
+package io.github.rosestack.mybatis.support.tenant;
 
 import io.github.rosestack.core.util.ServletUtils;
-import io.github.rosestack.mybatis.util.TenantContextHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

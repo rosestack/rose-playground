@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
-import io.github.rosestack.mybatis.filter.TenantIdFilter;
+import io.github.rosestack.mybatis.support.tenant.TenantIdFilter;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.interceptor.AuditInterceptor;

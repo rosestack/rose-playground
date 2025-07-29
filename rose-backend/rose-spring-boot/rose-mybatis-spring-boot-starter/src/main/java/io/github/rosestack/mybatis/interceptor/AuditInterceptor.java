@@ -8,7 +8,7 @@ import io.github.rosestack.mybatis.annotation.AuditLog;
 import io.github.rosestack.mybatis.support.audit.AuditLogEntry;
 import io.github.rosestack.mybatis.support.audit.AuditStorage;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.util.TenantContextHolder;
+import io.github.rosestack.mybatis.support.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;

@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.util;
+package io.github.rosestack.mybatis.support.tenant;
 
 import lombok.extern.slf4j.Slf4j;
 

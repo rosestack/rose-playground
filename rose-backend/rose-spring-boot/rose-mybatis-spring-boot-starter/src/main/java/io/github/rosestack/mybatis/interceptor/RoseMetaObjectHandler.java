@@ -2,7 +2,7 @@ package io.github.rosestack.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.util.TenantContextHolder;
+import io.github.rosestack.mybatis.support.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
