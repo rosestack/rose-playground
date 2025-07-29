@@ -1,6 +1,6 @@
 package io.github.rosestack.i18n.spring;
 
-import io.github.rosestack.core.spring.SpringBeanUtils;
+import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.i18n.spring.context.MessageSourceAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class I18nBeanPostProcessor implements BeanPostProcessor {
 
         Class<?> beanType = getTargetClass(bean);
         if (LOCAL_VALIDATOR_FACTORY_BEAN_CLASS.equals(beanType)) {
-            MessageSourceAdapter messageSourceAdapter = SpringBeanUtils.getBean(MessageSourceAdapter.class);
+            MessageSourceAdapter messageSourceAdapter = SpringContextUtils.getBean(MessageSourceAdapter.class);
             if (messageSourceAdapter == null) {
                 logger.warn("No MessageSourceAdapter BeanDefinition was found!");
             } else {

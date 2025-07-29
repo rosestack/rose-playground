@@ -68,7 +68,7 @@ public class SpringExpressionResolver implements Function<Object, Object> {
         evaluationContext.setVariable("tempDir", System.getProperty("java.io.tmpdir"));
         evaluationContext.setVariable("zoneId", ZoneId.systemDefault().getId());
 
-        evaluationContext.setBeanResolver(new BeanFactoryResolver(SpringBeanUtils.getApplicationContext()));
+        evaluationContext.setBeanResolver(new BeanFactoryResolver(SpringContextUtils.getApplicationContext()));
     }
 
     /**

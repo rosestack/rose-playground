@@ -1,6 +1,6 @@
 package io.github.rosestack.mybatis.support.audit;
 
-import io.github.rosestack.core.spring.SpringBeanUtils;
+import io.github.rosestack.core.spring.SpringContextUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -44,7 +44,7 @@ public class DefaultAuditStorage implements AuditStorage {
      */
     private void publishAuditEvent(AuditLogEntry event) {
         try {
-            SpringBeanUtils.getApplicationContext().publishEvent(event);
+            SpringContextUtils.getApplicationContext().publishEvent(event);
             log.debug("审计事件已发布: {}", event);
         } catch (Exception e) {
             log.warn("发布审计事件失败: {}", e.getMessage(), e);

@@ -1,6 +1,6 @@
 package io.github.rosestack.i18n.spring;
 
-import io.github.rosestack.core.spring.SpringBeanUtils;
+import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.i18n.*;
 import io.github.rosestack.i18n.spring.context.ResourceMessageSourceChangedEvent;
 import org.slf4j.Logger;
@@ -135,7 +135,7 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource i
             AbstractMessageSource messageSource = (AbstractMessageSource) instantiateClass(constructor, source);
             messageSources.add(messageSource);
 
-            SpringBeanUtils.invokeAwareInterfaces(messageSource, context);
+            SpringContextUtils.invokeAwareInterfaces(messageSource, context);
 
             messageSource.setDefaultLocale(resolvedDefaultLocale);
             messageSource.setSupportedLocales(resolvedSupportedLocales);

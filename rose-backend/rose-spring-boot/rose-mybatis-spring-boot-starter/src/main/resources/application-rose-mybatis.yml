@@ -2,7 +2,7 @@
 rose:
   mybatis:
     # 是否启用 Rose MyBatis Plus 增强功能
-    enabled: true
+    enabled: false
     
     # 多租户配置
     tenant:

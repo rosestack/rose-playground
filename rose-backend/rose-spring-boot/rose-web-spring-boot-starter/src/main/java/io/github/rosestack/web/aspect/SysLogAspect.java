@@ -1,7 +1,7 @@
 package io.github.rosestack.web.aspect;
 
 import io.github.rosestack.core.jackson.JsonUtils;
-import io.github.rosestack.core.spring.SpringBeanUtils;
+import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.web.annotation.SysLog;
 import io.github.rosestack.web.annotation.SysLogIgnore;
@@ -70,7 +70,7 @@ public class SysLogAspect {
         } finally {
             stopWatch.stop();
             sysLogEvent.setExecutionTime(stopWatch.getTotalTimeMillis());
-            SpringBeanUtils.getApplicationContext().publishEvent(sysLogEvent);
+            SpringContextUtils.getApplicationContext().publishEvent(sysLogEvent);
         }
     }
 
