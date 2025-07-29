@@ -15,7 +15,6 @@
     <description>Rose MyBatis Plus Spring Boot Starter - 提供 MyBatis Plus 的自动配置和增强功能</description>
 
     <properties>
-        <p6spy.version>3.9.1</p6spy.version>
     </properties>
 
     <dependencies>
@@ -52,14 +51,6 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-        </dependency>
-
-        <!-- SQL 性能监控（可选） -->
-        <dependency>
-            <groupId>p6spy</groupId>
-            <artifactId>p6spy</artifactId>
-            <version>${p6spy.version}</version>
-            <optional>true</optional>
         </dependency>
 
         <dependency>

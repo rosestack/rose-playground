@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.encryption;
+package io.github.rosestack.mybatis.support.encryption;
 
 /**
  * 加密算法类型枚举

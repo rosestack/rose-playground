@@ -1,5 +1,6 @@
-package io.github.rosestack.mybatis.datapermission;
+package io.github.rosestack.mybatis.support.datapermission;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -33,6 +34,7 @@ public class DataPermissionProviderManager {
 
     private final ApplicationContext applicationContext;
 
+    @PostConstruct
     public void init() {
         discoverAndRegisterProviders();
         validateFieldUniqueness();

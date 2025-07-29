@@ -43,11 +43,18 @@
 - **业务关联**：与业务操作关联，区别于SQL审计
 - **历史查询**：支持数据变更历史查询
 
+### 🐌 慢查询监控
+- **智能检测**：自动检测超过阈值的慢查询
+- **统计分析**：提供详细的执行统计和排行榜
+- **参数还原**：完整还原 SQL 语句和参数
+- **管理接口**：提供 REST API 进行监控管理
+- **性能优化**：替代 P6Spy，减少性能开销
+
 ### ⚡ 其他增强
 - **分页优化**：智能分页，支持多数据库
 - **乐观锁**：自动版本控制，防止并发冲突
 - **字段填充**：自动填充创建时间、更新时间等
-- **性能监控**：慢查询监控和SQL格式化
+- **慢查询监控**：智能检测、统计分析、性能优化
 
 ## 🚀 快速开始
 
@@ -421,14 +428,59 @@ rose:
       default-field: "user_id"
       sql-log: false
     
-    # 性能监控配置
-    performance:
-      enabled: false
-      slow-sql-threshold: 1000
-      format-sql: true
+    # 慢查询监控配置
+    slow-query:
+      enabled: true                    # 是否启用慢查询监控
+      threshold: 1000                  # 慢查询阈值（毫秒）
+      enable-detail-log: true          # 是否启用详细日志
+      enable-sql-format: true          # 是否启用 SQL 格式化
+      max-sql-length: 2000             # 最大 SQL 长度
+      log-normal-query: false          # 是否记录正常查询
+      log-parameters: true             # 是否记录查询参数
 ```
 
 ## 🔧 高级用法
+
+### 慢查询监控
+
+#### 监控接口
+
+```bash
+# 获取慢查询统计摘要
+GET /rose/mybatis/slow-query/summary
+
+# 获取慢查询排行榜
+GET /rose/mybatis/slow-query/ranking?limit=10
+
+# 获取指定 SQL 详情
+GET /rose/mybatis/slow-query/detail/{sqlId}
+
+# 获取所有慢查询记录
+GET /rose/mybatis/slow-query/all
+
+# 清空统计数据
+POST /rose/mybatis/slow-query/clear
+
+# 健康检查
+GET /rose/mybatis/slow-query/health
+```
+
+#### 统计信息示例
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalQueries": 1500,
+    "slowQueries": 25,
+    "slowQueryRate": 1.67,
+    "uniqueSlowQueries": 8,
+    "maxExecutionTime": 3500,
+    "avgExecutionTime": 1800,
+    "statisticsTime": "2024-01-15T10:30:00"
+  }
+}
+```
 
 ### 自定义加密器
 

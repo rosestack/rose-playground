@@ -13,15 +13,15 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import io.github.rosestack.core.spring.SpringBeanUtils;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
-import io.github.rosestack.mybatis.audit.DefaultAuditStorage;
-import io.github.rosestack.mybatis.datapermission.DataPermissionProviderManager;
-import io.github.rosestack.mybatis.encryption.OptimizedFieldEncryptor;
 import io.github.rosestack.mybatis.filter.TenantIdFilter;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.interceptor.AuditInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
+import io.github.rosestack.mybatis.support.audit.DefaultAuditStorage;
+import io.github.rosestack.mybatis.support.datapermission.DataPermissionProviderManager;
+import io.github.rosestack.mybatis.support.encryption.OptimizedFieldEncryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
@@ -56,6 +56,7 @@ import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_OR
  * @since 1.0.0
  */
 @Slf4j
+@ComponentScan("io.github.rosestack.mybatis")
 @AutoConfiguration
 @RequiredArgsConstructor
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
@@ -82,12 +83,11 @@ public class RoseMybatisAutoConfiguration {
      * @return MyBatis Plus 拦截器
      */
     @Bean
-    @ConditionalOnMissingBean
     public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler,
                                                          @Autowired(required = false) RoseDataPermissionHandler roseDataPermissionHandler) {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
-        // 1. 多租户插件（必须放在第一位）
+        // 多租户插件（必须放在第一位）
         if (properties.getTenant().isEnabled() && tenantLineHandler != null) {
             TenantLineInnerInterceptor tenantInterceptor = new TenantLineInnerInterceptor();
             tenantInterceptor.setTenantLineHandler(new RoseTenantLineHandler(properties));
@@ -95,27 +95,28 @@ public class RoseMybatisAutoConfiguration {
             log.info("启用多租户插件，租户字段: {}", properties.getTenant().getColumn());
         }
 
-        // 2. 分页插件
-        if (properties.getPagination().isEnabled()) {
-            PaginationInnerInterceptor paginationInterceptor = createPaginationInterceptor();
-            interceptor.addInnerInterceptor(paginationInterceptor);
-            log.info("启用分页插件，最大限制: {}", properties.getPagination().getMaxLimit());
-        }
-
-        // 3. 乐观锁插件
+        // 乐观锁插件
         if (properties.getOptimisticLock().isEnabled()) {
             OptimisticLockerInnerInterceptor optimisticLockerInterceptor = new OptimisticLockerInnerInterceptor();
             interceptor.addInnerInterceptor(optimisticLockerInterceptor);
             log.info("启用乐观锁插件");
         }
 
-        // 4. 数据权限插件
+        // 数据权限插件
         if (properties.getDataPermission().isEnabled() && roseDataPermissionHandler != null) {
             DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
             dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler);
             interceptor.addInnerInterceptor(dataPermissionInterceptor);
             log.info("启用数据权限插件, 缓存开启: {}", properties.getDataPermission().getCache().isEnabled());
         }
+
+        // 分页插件
+        if (properties.getPagination().isEnabled()) {
+            PaginationInnerInterceptor paginationInterceptor = createPaginationInterceptor();
+            interceptor.addInnerInterceptor(paginationInterceptor);
+            log.info("启用分页插件，最大限制: {}", properties.getPagination().getMaxLimit());
+        }
+
 
         return interceptor;
     }
@@ -167,64 +168,18 @@ public class RoseMybatisAutoConfiguration {
         return new DefaultSqlInjector();
     }
 
-    @Configuration
+    @Bean
+    @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-    static class RoseDataPermissionHandlerConfiguration {
-        @Bean
-        @ConditionalOnMissingBean
-        public RoseDataPermissionHandler roseDataPermissionHandler(ApplicationContext applicationContext, RoseMybatisProperties properties) {
-            DataPermissionProviderManager dataPermissionProviderManager = new DataPermissionProviderManager(applicationContext);
-            dataPermissionProviderManager.init();
-            return new RoseDataPermissionHandler(dataPermissionProviderManager, properties);
-        }
+    public RoseDataPermissionHandler roseDataPermissionHandler(DataPermissionProviderManager dataPermissionProviderManager) {
+        return new RoseDataPermissionHandler(dataPermissionProviderManager, properties);
     }
 
-
-    /**
-     * SQL 性能监控配置
-     * <p>
-     * 当启用性能监控时，配置 P6Spy 进行 SQL 监控。
-     * 这是一个可选的配置，需要引入 p6spy 依赖。
-     * </p>
-     */
-    @Configuration
-    @ConditionalOnClass(name = "com.p6spy.engine.spy.P6DataSource")
-    @ConditionalOnProperty(prefix = "rose.mybatis.performance", name = "enabled", havingValue = "true", matchIfMissing = true)
-    static class PerformanceConfiguration {
-
-        @Bean
-        @ConditionalOnMissingBean
-        public PerformanceMonitoringConfiguration performanceMonitoringConfiguration(RoseMybatisProperties properties) {
-            return new PerformanceMonitoringConfiguration(properties);
-        }
-    }
-
-    /**
-     * 性能监控配置类
-     */
-    static class PerformanceMonitoringConfiguration {
-
-        private final RoseMybatisProperties properties;
-
-        public PerformanceMonitoringConfiguration(RoseMybatisProperties properties) {
-            this.properties = properties;
-            configureP6Spy();
-        }
-
-        /**
-         * 配置 P6Spy
-         */
-        private void configureP6Spy() {
-            System.setProperty("p6spy.config.executionThreshold",
-                    String.valueOf(properties.getPerformance().getSlowSqlThreshold()));
-
-            if (properties.getPerformance().isFormatSql()) {
-                System.setProperty("p6spy.config.logMessageFormat",
-                        "com.p6spy.engine.spy.appender.CustomLineFormat");
-            }
-
-            log.info("配置 P6Spy，慢查询阈值: {}ms, 格式化 SQL: {}", properties.getPerformance().getSlowSqlThreshold(), properties.getPerformance().isFormatSql());
-        }
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public DataPermissionProviderManager dataPermissionProviderManager(ApplicationContext applicationContext) {
+        return new DataPermissionProviderManager(applicationContext);
     }
 
     /**

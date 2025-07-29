@@ -3,7 +3,7 @@ package io.github.rosestack.mybatis.handler;
 import com.baomidou.mybatisplus.extension.plugins.handler.MultiDataPermissionHandler;
 import io.github.rosestack.mybatis.annotation.DataPermission;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.datapermission.DataPermissionProviderManager;
+import io.github.rosestack.mybatis.support.datapermission.DataPermissionProviderManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;

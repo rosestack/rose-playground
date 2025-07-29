@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.quality;
+package io.github.rosestack.mybatis.support.quality;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

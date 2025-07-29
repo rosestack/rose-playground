@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.encryption;
+package io.github.rosestack.mybatis.support.encryption;
 
 import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm4.Sm4;

@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.datapermission;
+package io.github.rosestack.mybatis.support.datapermission;
 
 /**
  * 数据权限范围枚举

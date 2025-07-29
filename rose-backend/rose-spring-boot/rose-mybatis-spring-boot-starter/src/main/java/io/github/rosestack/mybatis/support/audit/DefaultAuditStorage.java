@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.audit;
+package io.github.rosestack.mybatis.support.audit;
 
 import io.github.rosestack.core.spring.SpringBeanUtils;
 import lombok.RequiredArgsConstructor;

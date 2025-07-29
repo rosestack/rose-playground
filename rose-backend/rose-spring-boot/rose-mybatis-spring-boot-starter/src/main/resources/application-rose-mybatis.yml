@@ -40,18 +40,23 @@ rose:
       # 更新时间字段名
       update-time-column: updated_time
 
-    # SQL 性能监控配置
-    performance:
-      # 是否启用 SQL 性能监控（需要引入 p6spy 依赖）
-      enabled: true
-      # 慢查询阈值（毫秒）
-      slow-sql-threshold: 1
-      # 是否格式化 SQL
-      format-sql: true
-
     data-permission:
       enabled: true
-
+      cache:
+        # 是否启用缓存
+        enabled: true
+        # 缓存过期时间（分钟）
+        expire-minutes: 3600
+        # 缓存清理间隔（分钟）
+        cleanup-interval-minutes: 60
+        # 最大缓存数量
+        max-annotation-cache-size: 10000
+        # 最大权限缓存数量
+        max-permission-cache-size: 50000
+        # 过期率阈值
+        expired-rate: 0.5
+        # 是否启用缓存管理接口
+        management-enabled: true
 
     # 字段加密配置
     encryption:

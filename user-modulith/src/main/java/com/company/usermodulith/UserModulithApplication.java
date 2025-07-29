@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Chen Soul
  * @since 1.0.0
  */
-@SpringBootApplication(scanBasePackages = {"com.company.usermodulith", "io.github.rosestack.mybatis"})
+@SpringBootApplication
 public class UserModulithApplication {
 
     public static void main(String[] args) {

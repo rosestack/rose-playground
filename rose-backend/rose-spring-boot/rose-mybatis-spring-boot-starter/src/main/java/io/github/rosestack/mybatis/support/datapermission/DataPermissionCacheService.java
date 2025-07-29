@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.datapermission;
+package io.github.rosestack.mybatis.support.datapermission;
 
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;

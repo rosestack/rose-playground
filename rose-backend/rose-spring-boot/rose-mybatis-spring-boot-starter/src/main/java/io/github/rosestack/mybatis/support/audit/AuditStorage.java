@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.audit;
+package io.github.rosestack.mybatis.support.audit;
 
 /**
  * 审计存储接口

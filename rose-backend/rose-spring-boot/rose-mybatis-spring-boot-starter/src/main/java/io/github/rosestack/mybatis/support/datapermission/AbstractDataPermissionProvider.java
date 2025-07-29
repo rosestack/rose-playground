@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.datapermission;
+package io.github.rosestack.mybatis.support.datapermission;
 
 import lombok.extern.slf4j.Slf4j;
 

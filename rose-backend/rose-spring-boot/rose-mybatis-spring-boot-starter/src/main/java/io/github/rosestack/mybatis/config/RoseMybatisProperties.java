@@ -43,11 +43,6 @@ public class RoseMybatisProperties {
     private FieldFill fieldFill = new FieldFill();
 
     /**
-     * SQL 性能监控配置
-     */
-    private Performance performance = new Performance();
-
-    /**
      * 字段加密配置
      */
     private Encryption encryption = new Encryption();
@@ -155,27 +150,6 @@ public class RoseMybatisProperties {
     }
 
     /**
-     * SQL 性能监控配置
-     */
-    @Data
-    public static class Performance {
-        /**
-         * 是否启用 SQL 性能监控
-         */
-        private boolean enabled = true;
-
-        /**
-         * 慢查询阈值（毫秒）
-         */
-        private long slowSqlThreshold = 1000L;
-
-        /**
-         * 是否格式化 SQL
-         */
-        private boolean formatSql = true;
-    }
-
-    /**
      * 字段加密配置
      */
     @Data
@@ -241,6 +215,9 @@ public class RoseMybatisProperties {
              */
             private boolean managementEnabled = true;
 
+            /**
+             * 过期率阈值
+             */
             private Double expiredRate = 0.5;
 
             /**

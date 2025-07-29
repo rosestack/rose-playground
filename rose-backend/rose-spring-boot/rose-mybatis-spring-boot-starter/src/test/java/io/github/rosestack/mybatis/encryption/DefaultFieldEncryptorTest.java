@@ -1,6 +1,8 @@
 package io.github.rosestack.mybatis.encryption;
 
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.mybatis.support.encryption.EncryptType;
+import io.github.rosestack.mybatis.support.encryption.OptimizedFieldEncryptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
