@@ -1,6 +1,5 @@
 package io.github.rosestack.web.config;
 
-import io.github.rosestack.core.annotation.RoseStarter;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
@@ -25,7 +24,6 @@ import org.springframework.context.annotation.Import;
         SwaggerConfig.class
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-@RoseStarter(module = "web", properties = RoseWebProperties.class)
 public class RoseWebAutoConfiguration {
 
-} 
+}

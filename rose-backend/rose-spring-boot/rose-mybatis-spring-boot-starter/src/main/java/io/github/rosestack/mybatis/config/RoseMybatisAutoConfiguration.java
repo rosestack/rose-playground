@@ -11,7 +11,6 @@ import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionIntercepto
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import io.github.rosestack.core.annotation.RoseStarter;
 import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.mybatis.filter.TenantIdFilter;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
@@ -53,7 +52,6 @@ import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_OR
  */
 @Slf4j
 @RequiredArgsConstructor
-@RoseStarter(module = "mybatis", properties = RoseMybatisProperties.class)
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
 public class RoseMybatisAutoConfiguration {
 
