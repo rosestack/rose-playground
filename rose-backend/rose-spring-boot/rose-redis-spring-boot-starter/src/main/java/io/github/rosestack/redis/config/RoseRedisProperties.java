@@ -140,39 +140,24 @@ public class RoseRedisProperties {
         private boolean enabled = true;
 
         /**
+         * 默认限流算法
+         */
+        private Algorithm defaultAlgorithm = Algorithm.TOKEN_BUCKET;
+
+        /**
+         * 默认限流速率（每秒请求数）
+         */
+        private int defaultRate = 100;
+
+        /**
+         * 默认时间窗口（秒）
+         */
+        private int defaultTimeWindow = 60;
+
+        /**
          * 限流 key 前缀
          */
-        private String keyPrefix = "rose:rate_limit";
-
-        /**
-         * 限流算法类型
-         */
-        private Algorithm algorithm = Algorithm.TOKEN_BUCKET;
-
-        /**
-         * 令牌桶容量（最大令牌数）
-         */
-        private int capacity = 100;
-
-        /**
-         * 令牌补充速率（每秒补充的令牌数）
-         */
-        private int refillRate = 10;
-
-        /**
-         * 滑动窗口大小（毫秒）
-         */
-        private long windowSize = 60000; // 1分钟
-
-        /**
-         * 滑动窗口内最大请求数
-         */
-        private int maxRequests = 100;
-
-        /**
-         * 异常时是否允许通过（fail-open）
-         */
-        private boolean failOpen = true;
+        private String keyPrefix = "rose:rate-limit:";
 
         /**
          * 限流算法枚举
@@ -182,10 +167,16 @@ public class RoseRedisProperties {
              * 令牌桶算法
              */
             TOKEN_BUCKET,
+
             /**
              * 滑动窗口算法
              */
-            SLIDING_WINDOW
+            SLIDING_WINDOW,
+
+            /**
+             * 固定窗口算法
+             */
+            FIXED_WINDOW
         }
     }
 
@@ -262,23 +253,18 @@ public class RoseRedisProperties {
     @Data
     public static class DataStructure {
         /**
-         * 是否启用数据结构增强操作
+         * 是否启用数据结构操作工具
          */
         private boolean enabled = true;
 
         /**
-         * 批量操作的默认批次大小
+         * 默认批量操作大小
          */
-        private int defaultBatchSize = 100;
+        private int defaultBatchSize = 1000;
 
         /**
-         * 是否启用 Pipeline 优化
+         * 操作超时时间（毫秒）
          */
-        private boolean pipelineEnabled = true;
-
-        /**
-         * Pipeline 批次大小
-         */
-        private int pipelineBatchSize = 100;
+        private long operationTimeout = 5000L;
     }
 }

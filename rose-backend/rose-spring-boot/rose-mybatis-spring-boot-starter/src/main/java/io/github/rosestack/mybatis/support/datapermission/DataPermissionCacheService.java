@@ -110,9 +110,7 @@ public class DataPermissionCacheService {
      * 获取缓存统计信息
      */
     public Map<String, Object> getCacheStatistics() {
-        Map<String, Object> stats = dataPermissionHandler.getCacheStats();
-        log.debug("获取数据权限缓存统计信息: {}", stats);
-        return stats;
+        return dataPermissionHandler.getCacheStats();
     }
 
     /**

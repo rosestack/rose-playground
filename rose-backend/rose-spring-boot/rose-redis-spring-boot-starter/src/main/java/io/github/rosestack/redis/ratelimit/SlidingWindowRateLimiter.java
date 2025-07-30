@@ -1,7 +1,5 @@
 package io.github.rosestack.redis.ratelimit;
 
-import io.github.rosestack.notice.SendRequest;
-import io.github.rosestack.redis.config.RoseRedisProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,133 +8,159 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import java.util.Collections;
 
 /**
- * 基于 Redis 的滑动窗口限流器实现
- * 
- * <p>使用 Redis ZSet 存储请求时间戳，通过 Lua 脚本确保原子性操作。
- * 支持按目标（target）进行独立限流，每个目标维护独立的滑动窗口。
- * 
- * <p>滑动窗口算法特点：
- * <ul>
- *   <li>精确限流：严格按照时间窗口内的请求数量进行限制</li>
- *   <li>平滑处理：窗口随时间滑动，避免固定窗口的边界效应</li>
- *   <li>内存效率：自动清理过期的请求记录</li>
- * </ul>
- * 
- * @author chensoul
+ * 滑动窗口限流器
+ * <p>
+ * 基于滑动窗口算法的限流实现。在指定的时间窗口内统计请求数量，
+ * 超过阈值则拒绝请求。相比固定窗口，滑动窗口能更平滑地处理流量。
+ * </p>
+ *
+ * @author Rose Team
  * @since 1.0.0
  */
 @Slf4j
 @RequiredArgsConstructor
 public class SlidingWindowRateLimiter implements RateLimiter {
-    
+
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RoseRedisProperties properties;
-    
-    /**
-     * 滑动窗口算法 Lua 脚本
-     * 
-     * KEYS[1]: 滑动窗口的 Redis key (ZSet)
-     * ARGV[1]: 窗口大小（毫秒）
-     * ARGV[2]: 最大请求数
-     * ARGV[3]: 当前时间戳（毫秒）
-     * ARGV[4]: 请求唯一标识（用作 ZSet 的 member）
-     * 
-     * 返回值：1表示允许，0表示拒绝
-     */
-    private static final String SLIDING_WINDOW_SCRIPT = """
-            local key = KEYS[1]
-            local window_size = tonumber(ARGV[1])
-            local max_requests = tonumber(ARGV[2])
-            local now = tonumber(ARGV[3])
-            local request_id = ARGV[4]
-            
-            -- 计算窗口开始时间
-            local window_start = now - window_size
-            
-            -- 清理过期的请求记录
-            redis.call('ZREMRANGEBYSCORE', key, 0, window_start)
-            
-            -- 获取当前窗口内的请求数量
-            local current_requests = redis.call('ZCARD', key)
-            
-            -- 检查是否超过限制
-            if current_requests < max_requests then
-                -- 添加当前请求到窗口
-                redis.call('ZADD', key, now, request_id)
-                -- 设置过期时间（窗口大小 + 缓冲时间）
-                redis.call('EXPIRE', key, math.ceil(window_size / 1000) + 60)
-                return 1
-            else
-                return 0
-            end
-            """;
-    
-    private static final DefaultRedisScript<Long> SCRIPT = new DefaultRedisScript<>(SLIDING_WINDOW_SCRIPT, Long.class);
-    
+    private final int rate;           // 限流速率（时间窗口内最大请求数）
+    private final int timeWindow;     // 时间窗口大小（秒）
+    private final String keyPrefix;
+
+    // Lua 脚本：滑动窗口算法
+    private static final String SLIDING_WINDOW_SCRIPT = 
+        "local key = KEYS[1] " +
+        "local window = tonumber(ARGV[1]) * 1000 " +  // 转换为毫秒
+        "local limit = tonumber(ARGV[2]) " +
+        "local now = tonumber(ARGV[3]) " +
+        "local requested = tonumber(ARGV[4]) " +
+        
+        "-- 清理过期的记录 " +
+        "local cutoff = now - window " +
+        "redis.call('ZREMRANGEBYSCORE', key, 0, cutoff) " +
+        
+        "-- 获取当前窗口内的请求数 " +
+        "local current = redis.call('ZCARD', key) " +
+        
+        "local allowed = 0 " +
+        "if current + requested <= limit then " +
+        "  -- 添加当前请求到窗口 " +
+        "  for i = 1, requested do " +
+        "    redis.call('ZADD', key, now, now .. ':' .. i) " +
+        "  end " +
+        "  allowed = 1 " +
+        "end " +
+        
+        "-- 设置过期时间 " +
+        "redis.call('EXPIRE', key, math.ceil(window / 1000) + 1) " +
+        
+        "return {allowed, current, limit - current}";
+
     @Override
-    public boolean allow(SendRequest request) {
-        if (!properties.getRateLimit().isEnabled()) {
+    public boolean tryAcquire(String key) {
+        return tryAcquire(key, 1);
+    }
+
+    @Override
+    public boolean tryAcquire(String key, int permits) {
+        if (permits <= 0) {
             return true;
         }
-        
-        String key = buildKey(request);
-        RoseRedisProperties.RateLimit config = properties.getRateLimit();
-        
+
         try {
-            // 生成请求唯一标识
-            String requestId = generateRequestId(request);
-            
-            Long result = redisTemplate.execute(SCRIPT,
-                Collections.singletonList(key),
-                config.getWindowSize(),
-                config.getMaxRequests(),
-                System.currentTimeMillis(),
-                requestId
-            );
-            
-            boolean allowed = result != null && result == 1L;
-            
-            if (!allowed) {
-                log.debug("Rate limit exceeded for target: {}, key: {}", request.getTarget(), key);
+            String fullKey = buildKey(key);
+            long now = System.currentTimeMillis();
+
+            DefaultRedisScript<Object> script = new DefaultRedisScript<>(SLIDING_WINDOW_SCRIPT, Object.class);
+            Object result = redisTemplate.execute(script, 
+                    Collections.singletonList(fullKey), 
+                    timeWindow, rate, now, permits);
+
+            if (result instanceof java.util.List) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Object> list = (java.util.List<Object>) result;
+                Long allowed = (Long) list.get(0);
+                Long current = (Long) list.get(1);
+                Long remaining = (Long) list.get(2);
+                
+                boolean success = allowed != null && allowed == 1;
+                
+                if (log.isDebugEnabled()) {
+                    log.debug("滑动窗口限流 - key: {}, 请求数: {}, 当前计数: {}, 剩余配额: {}, 结果: {}", 
+                            key, permits, current, remaining, success ? "通过" : "拒绝");
+                }
+                
+                return success;
             }
-            
-            return allowed;
+
+            return false;
         } catch (Exception e) {
-            log.error("Redis sliding window rate limiter error for key: {}", key, e);
-            // 发生异常时根据配置决定是否允许通过
-            return properties.getRateLimit().isFailOpen();
+            log.error("滑动窗口限流执行失败: {}", key, e);
+            // 发生异常时允许请求通过，避免影响业务
+            return true;
         }
     }
-    
+
     @Override
-    public void record(SendRequest request) {
-        // 滑动窗口算法在 allow() 方法中已经记录了请求，这里不需要额外操作
-        // 但可以记录一些统计信息
-        if (log.isDebugEnabled()) {
-            log.debug("Recorded sliding window usage for target: {}", request.getTarget());
+    public long getAvailablePermits(String key) {
+        try {
+            String fullKey = buildKey(key);
+            long now = System.currentTimeMillis();
+            long cutoff = now - (timeWindow * 1000L);
+            
+            // 清理过期记录
+            redisTemplate.opsForZSet().removeRangeByScore(fullKey, 0, cutoff);
+            
+            // 获取当前计数
+            Long current = redisTemplate.opsForZSet().count(fullKey, cutoff, now);
+            return Math.max(0, rate - (current != null ? current : 0));
+        } catch (Exception e) {
+            log.error("获取可用配额失败: {}", key, e);
+            return rate;
         }
     }
-    
-    /**
-     * 构建 Redis key
-     * 
-     * @param request 发送请求
-     * @return Redis key
-     */
-    private String buildKey(SendRequest request) {
-        String prefix = properties.getRateLimit().getKeyPrefix();
-        String target = request.getTarget();
-        return prefix + ":sliding_window:" + target;
+
+    @Override
+    public String getType() {
+        return "SLIDING_WINDOW";
     }
-    
+
+    @Override
+    public void reset(String key) {
+        try {
+            String fullKey = buildKey(key);
+            redisTemplate.delete(fullKey);
+            log.debug("重置滑动窗口状态: {}", key);
+        } catch (Exception e) {
+            log.error("重置滑动窗口状态失败: {}", key, e);
+        }
+    }
+
+    @Override
+    public RateLimitInfo getInfo(String key) {
+        try {
+            String fullKey = buildKey(key);
+            long now = System.currentTimeMillis();
+            long cutoff = now - (timeWindow * 1000L);
+            
+            // 清理过期记录
+            redisTemplate.opsForZSet().removeRangeByScore(fullKey, 0, cutoff);
+            
+            // 获取当前计数
+            Long current = redisTemplate.opsForZSet().count(fullKey, cutoff, now);
+            long currentCount = current != null ? current : 0;
+            long availablePermits = Math.max(0, rate - currentCount);
+            
+            return new RateLimitInfo(key, getType(), rate, timeWindow, availablePermits, 0, 0);
+        } catch (Exception e) {
+            log.error("获取滑动窗口信息失败: {}", key, e);
+            return new RateLimitInfo(key, getType(), rate, timeWindow, rate, 0, 0);
+        }
+    }
+
     /**
-     * 生成请求唯一标识
-     * 
-     * @param request 发送请求
-     * @return 请求唯一标识
+     * 构建完整的 Redis 键名
      */
-    private String generateRequestId(SendRequest request) {
-        // 使用请求ID + 时间戳确保唯一性
-        return request.getRequestId() + ":" + System.nanoTime();
+    private String buildKey(String key) {
+        return keyPrefix + "sliding_window:" + key;
     }
 }

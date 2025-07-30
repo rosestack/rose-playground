@@ -1,150 +1,192 @@
 package io.github.rosestack.redis.ratelimit;
 
-import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.redis.config.RoseRedisProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * 限流管理器
- * 
- * <p>统一管理不同类型的限流器，支持多种限流算法。
- * 根据配置动态选择合适的限流器实现。
- * 
- * @author chensoul
+ * <p>
+ * 负责创建、管理和配置不同类型的限流器实例。
+ * 支持多种限流算法，提供统一的限流服务接口。
+ * </p>
+ *
+ * @author Rose Team
  * @since 1.0.0
  */
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class RateLimitManager {
-    
+
     private final RedisTemplate<String, Object> redisTemplate;
     private final RoseRedisProperties properties;
     
+    // 限流器实例缓存
+    private final ConcurrentHashMap<String, RateLimiter> rateLimiterCache = new ConcurrentHashMap<>();
+
     /**
-     * 限流器缓存，避免重复创建
-     */
-    private final ConcurrentMap<String, RateLimiter> rateLimiterCache = new ConcurrentHashMap<>();
-    
-    /**
-     * 检查是否允许请求通过
-     * 
-     * @param request 发送请求
-     * @param rateLimited 限流注解配置
-     * @return true 表示允许，false 表示拒绝
-     */
-    public boolean allow(SendRequest request, RateLimited rateLimited) {
-        RateLimiter rateLimiter = getRateLimiter(rateLimited);
-        return rateLimiter.allow(request);
-    }
-    
-    /**
-     * 记录一次请求
-     * 
-     * @param request 发送请求
-     * @param rateLimited 限流注解配置
-     */
-    public void record(SendRequest request, RateLimited rateLimited) {
-        RateLimiter rateLimiter = getRateLimiter(rateLimited);
-        rateLimiter.record(request);
-    }
-    
-    /**
-     * 获取限流器实例
-     * 
-     * @param rateLimited 限流注解配置
+     * 获取默认限流器
+     *
+     * @param key 限流键
      * @return 限流器实例
      */
-    private RateLimiter getRateLimiter(RateLimited rateLimited) {
-        // 构建缓存 key
-        String cacheKey = buildCacheKey(rateLimited);
+    public RateLimiter getRateLimiter(String key) {
+        RoseRedisProperties.RateLimit config = properties.getRateLimit();
+        return getRateLimiter(key, config.getDefaultAlgorithm(), config.getDefaultRate(), config.getDefaultTimeWindow());
+    }
+
+    /**
+     * 获取指定算法的限流器
+     *
+     * @param key       限流键
+     * @param algorithm 限流算法
+     * @return 限流器实例
+     */
+    public RateLimiter getRateLimiter(String key, RoseRedisProperties.RateLimit.Algorithm algorithm) {
+        RoseRedisProperties.RateLimit config = properties.getRateLimit();
+        return getRateLimiter(key, algorithm, config.getDefaultRate(), config.getDefaultTimeWindow());
+    }
+
+    /**
+     * 获取指定配置的限流器
+     *
+     * @param key        限流键
+     * @param algorithm  限流算法
+     * @param rate       限流速率
+     * @param timeWindow 时间窗口
+     * @return 限流器实例
+     */
+    public RateLimiter getRateLimiter(String key, RoseRedisProperties.RateLimit.Algorithm algorithm, 
+                                     int rate, int timeWindow) {
+        if (key == null || key.trim().isEmpty()) {
+            throw new IllegalArgumentException("限流键不能为空");
+        }
+
+        String cacheKey = buildCacheKey(key, algorithm, rate, timeWindow);
         
-        return rateLimiterCache.computeIfAbsent(cacheKey, key -> {
-            RoseRedisProperties.RateLimit.Algorithm algorithm = rateLimited.algorithm();
-            
-            switch (algorithm) {
-                case TOKEN_BUCKET:
-                    return createTokenBucketRateLimiter(rateLimited);
-                case SLIDING_WINDOW:
-                    return createSlidingWindowRateLimiter(rateLimited);
-                default:
-                    log.warn("Unknown rate limit algorithm: {}, using default TOKEN_BUCKET", algorithm);
-                    return createTokenBucketRateLimiter(rateLimited);
-            }
+        return rateLimiterCache.computeIfAbsent(cacheKey, k -> {
+            log.debug("创建新的限流器实例: {}, 算法: {}, 速率: {}, 时间窗口: {}", 
+                    key, algorithm, rate, timeWindow);
+            return createRateLimiter(algorithm, rate, timeWindow);
         });
     }
-    
+
     /**
-     * 创建令牌桶限流器
+     * 尝试获取许可
+     *
+     * @param key 限流键
+     * @return 是否获取成功
      */
-    private RateLimiter createTokenBucketRateLimiter(RateLimited rateLimited) {
-        // 创建自定义配置的属性对象
-        RoseRedisProperties customProperties = createCustomProperties(rateLimited);
-        return new RedisRateLimiter(redisTemplate, customProperties);
+    public boolean tryAcquire(String key) {
+        return getRateLimiter(key).tryAcquire(key);
     }
-    
+
     /**
-     * 创建滑动窗口限流器
+     * 尝试获取指定数量的许可
+     *
+     * @param key     限流键
+     * @param permits 许可数量
+     * @return 是否获取成功
      */
-    private RateLimiter createSlidingWindowRateLimiter(RateLimited rateLimited) {
-        // 创建自定义配置的属性对象
-        RoseRedisProperties customProperties = createCustomProperties(rateLimited);
-        return new SlidingWindowRateLimiter(redisTemplate, customProperties);
+    public boolean tryAcquire(String key, int permits) {
+        return getRateLimiter(key).tryAcquire(key, permits);
     }
-    
+
     /**
-     * 创建自定义配置的属性对象
+     * 尝试获取许可（指定算法）
+     *
+     * @param key       限流键
+     * @param algorithm 限流算法
+     * @return 是否获取成功
      */
-    private RoseRedisProperties createCustomProperties(RateLimited rateLimited) {
-        RoseRedisProperties customProperties = new RoseRedisProperties();
-        RoseRedisProperties.RateLimit rateLimit = new RoseRedisProperties.RateLimit();
-        
-        // 复制全局配置
-        rateLimit.setEnabled(properties.getRateLimit().isEnabled());
-        rateLimit.setKeyPrefix(properties.getRateLimit().getKeyPrefix());
-        rateLimit.setAlgorithm(rateLimited.algorithm());
-        
-        // 应用注解配置，如果注解中指定了值则使用注解值，否则使用全局配置
-        rateLimit.setCapacity(rateLimited.capacity() > 0 ? rateLimited.capacity() : properties.getRateLimit().getCapacity());
-        rateLimit.setRefillRate(rateLimited.refillRate() > 0 ? rateLimited.refillRate() : properties.getRateLimit().getRefillRate());
-        rateLimit.setWindowSize(rateLimited.windowSize() > 0 ? rateLimited.windowSize() : properties.getRateLimit().getWindowSize());
-        rateLimit.setMaxRequests(rateLimited.maxRequests() > 0 ? rateLimited.maxRequests() : properties.getRateLimit().getMaxRequests());
-        rateLimit.setFailOpen(rateLimited.failOpen());
-        
-        customProperties.setRateLimit(rateLimit);
-        return customProperties;
+    public boolean tryAcquire(String key, RoseRedisProperties.RateLimit.Algorithm algorithm) {
+        return getRateLimiter(key, algorithm).tryAcquire(key);
     }
-    
+
     /**
-     * 构建缓存 key
+     * 尝试获取许可（完整配置）
+     *
+     * @param key        限流键
+     * @param algorithm  限流算法
+     * @param rate       限流速率
+     * @param timeWindow 时间窗口
+     * @return 是否获取成功
      */
-    private String buildCacheKey(RateLimited rateLimited) {
-        return String.format("%s:%d:%d:%d:%d:%s", 
-            rateLimited.algorithm().name(),
-            rateLimited.capacity(),
-            rateLimited.refillRate(),
-            rateLimited.windowSize(),
-            rateLimited.maxRequests(),
-            rateLimited.failOpen()
-        );
+    public boolean tryAcquire(String key, RoseRedisProperties.RateLimit.Algorithm algorithm, 
+                             int rate, int timeWindow) {
+        return getRateLimiter(key, algorithm, rate, timeWindow).tryAcquire(key);
     }
-    
+
     /**
-     * 清理限流器缓存
+     * 获取限流信息
+     *
+     * @param key 限流键
+     * @return 限流信息
      */
-    public void clearCache() {
-        rateLimiterCache.clear();
-        log.info("Rate limiter cache cleared");
+    public RateLimiter.RateLimitInfo getInfo(String key) {
+        return getRateLimiter(key).getInfo(key);
     }
-    
+
     /**
-     * 获取缓存统计信息
+     * 重置限流状态
+     *
+     * @param key 限流键
      */
-    public int getCacheSize() {
+    public void reset(String key) {
+        getRateLimiter(key).reset(key);
+    }
+
+    /**
+     * 获取当前缓存的限流器数量
+     *
+     * @return 限流器数量
+     */
+    public int getCachedRateLimiterCount() {
         return rateLimiterCache.size();
+    }
+
+    /**
+     * 清理所有限流器实例
+     */
+    public void clearAllRateLimiters() {
+        rateLimiterCache.clear();
+        log.info("清理所有限流器实例");
+    }
+
+    /**
+     * 创建限流器实例
+     */
+    private RateLimiter createRateLimiter(RoseRedisProperties.RateLimit.Algorithm algorithm, 
+                                         int rate, int timeWindow) {
+        String keyPrefix = properties.getRateLimit().getKeyPrefix();
+        
+        switch (algorithm) {
+            case TOKEN_BUCKET:
+                int capacity = rate * 2; // 默认容量为速率的2倍
+                return new TokenBucketRateLimiter(redisTemplate, rate, capacity, keyPrefix);
+                
+            case SLIDING_WINDOW:
+                return new SlidingWindowRateLimiter(redisTemplate, rate, timeWindow, keyPrefix);
+                
+            case FIXED_WINDOW:
+                // TODO: 实现固定窗口算法
+                throw new UnsupportedOperationException("固定窗口算法暂未实现");
+                
+            default:
+                throw new IllegalArgumentException("不支持的限流算法: " + algorithm);
+        }
+    }
+
+    /**
+     * 构建缓存键
+     */
+    private String buildCacheKey(String key, RoseRedisProperties.RateLimit.Algorithm algorithm, 
+                                int rate, int timeWindow) {
+        return String.format("%s:%s:%d:%d", key, algorithm, rate, timeWindow);
     }
 }

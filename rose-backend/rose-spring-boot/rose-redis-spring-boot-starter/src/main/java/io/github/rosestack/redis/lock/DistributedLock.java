@@ -62,9 +62,6 @@ public interface DistributedLock {
 
     /**
      * 释放锁
-     * <p>
-     * 只有锁的持有者才能释放锁。支持可重入锁的计数递减。
-     * </p>
      *
      * @return 是否成功释放锁
      */
@@ -73,7 +70,8 @@ public interface DistributedLock {
     /**
      * 强制释放锁
      * <p>
-     * 强制释放锁，不检查锁的持有者。谨慎使用！
+     * 无论锁是否由当前线程持有，都会强制释放锁。
+     * 谨慎使用，可能会导致并发问题。
      * </p>
      *
      * @return 是否成功释放锁
@@ -88,42 +86,39 @@ public interface DistributedLock {
     boolean isLocked();
 
     /**
-     * 检查当前线程是否持有锁
+     * 检查锁是否被当前线程持有
      *
-     * @return 当前线程是否持有锁
+     * @return 锁是否被当前线程持有
      */
     boolean isHeldByCurrentThread();
 
     /**
      * 获取锁的重入次数
      *
-     * @return 重入次数，如果当前线程未持有锁则返回 0
+     * @return 重入次数
      */
     int getHoldCount();
 
     /**
-     * 获取锁的剩余时间（毫秒）
+     * 获取锁的剩余生存时间
      *
-     * @return 剩余时间，如果锁未被持有或没有设置超时则返回 -1
+     * @return 剩余时间（毫秒），-1 表示永不过期，-2 表示锁不存在
      */
     long getRemainingTimeToLive();
 
     /**
      * 续期锁
-     * <p>
-     * 延长锁的超时时间，通常用于自动续期机制。
-     * </p>
      *
      * @param leaseTime 续期时间
      * @param timeUnit  时间单位
-     * @return 是否成功续期
+     * @return 是否续期成功
      */
     boolean renewLease(long leaseTime, TimeUnit timeUnit);
 
     /**
-     * 获取锁的名称
+     * 获取锁名称
      *
-     * @return 锁的名称
+     * @return 锁名称
      */
     String getName();
 }

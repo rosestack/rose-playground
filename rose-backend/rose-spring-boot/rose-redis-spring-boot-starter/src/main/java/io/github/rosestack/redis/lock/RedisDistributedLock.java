@@ -6,10 +6,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -38,48 +35,48 @@ public class RedisDistributedLock implements DistributedLock {
 
     // Lua 脚本：获取锁
     private static final String LOCK_SCRIPT = 
-            "if redis.call('exists', KEYS[1]) == 0 then " +
-            "    redis.call('hset', KEYS[1], ARGV[2], 1) " +
-            "    redis.call('pexpire', KEYS[1], ARGV[1]) " +
-            "    return nil " +
-            "end " +
-            "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then " +
-            "    redis.call('hincrby', KEYS[1], ARGV[2], 1) " +
-            "    redis.call('pexpire', KEYS[1], ARGV[1]) " +
-            "    return nil " +
-            "end " +
-            "return redis.call('pttl', KEYS[1])";
+        "if redis.call('exists', KEYS[1]) == 0 then " +
+        "  redis.call('hset', KEYS[1], ARGV[2], 1) " +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
+        "  return nil " +
+        "end " +
+        "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then " +
+        "  redis.call('hincrby', KEYS[1], ARGV[2], 1) " +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
+        "  return nil " +
+        "end " +
+        "return redis.call('pttl', KEYS[1])";
 
     // Lua 脚本：释放锁
     private static final String UNLOCK_SCRIPT = 
-            "if redis.call('hexists', KEYS[1], ARGV[2]) == 0 then " +
-            "    return nil " +
-            "end " +
-            "local counter = redis.call('hincrby', KEYS[1], ARGV[2], -1) " +
-            "if counter > 0 then " +
-            "    redis.call('pexpire', KEYS[1], ARGV[1]) " +
-            "    return 0 " +
-            "else " +
-            "    redis.call('del', KEYS[1]) " +
-            "    return 1 " +
-            "end";
+        "if redis.call('hexists', KEYS[1], ARGV[2]) == 0 then " +
+        "  return nil " +
+        "end " +
+        "local counter = redis.call('hincrby', KEYS[1], ARGV[2], -1) " +
+        "if counter > 0 then " +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
+        "  return 0 " +
+        "else " +
+        "  redis.call('del', KEYS[1]) " +
+        "  return 1 " +
+        "end";
 
     // Lua 脚本：续期锁
     private static final String RENEWAL_SCRIPT = 
-            "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then " +
-            "    redis.call('pexpire', KEYS[1], ARGV[1]) " +
-            "    return 1 " +
-            "else " +
-            "    return 0 " +
-            "end";
+        "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then " +
+        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
+        "  return 1 " +
+        "else " +
+        "  return 0 " +
+        "end";
 
     // Lua 脚本：强制释放锁
     private static final String FORCE_UNLOCK_SCRIPT = 
-            "if redis.call('del', KEYS[1]) == 1 then " +
-            "    return 1 " +
-            "else " +
-            "    return 0 " +
-            "end";
+        "if redis.call('del', KEYS[1]) == 1 then " +
+        "  return 1 " +
+        "else " +
+        "  return 0 " +
+        "end";
 
     public RedisDistributedLock(RedisTemplate<String, Object> redisTemplate, 
                                String lockName, 
@@ -181,7 +178,7 @@ public class RedisDistributedLock implements DistributedLock {
                 holdCount.get().set(0);
                 holdCount.remove();
                 cancelRenewalTask();
-                log.warn("强制释放锁: {}", lockName);
+                log.debug("强制释放锁: {}", lockName);
                 return true;
             }
             
@@ -195,7 +192,7 @@ public class RedisDistributedLock implements DistributedLock {
     @Override
     public boolean isLocked() {
         try {
-            return Boolean.TRUE.equals(redisTemplate.hasKey(lockName));
+            return redisTemplate.hasKey(lockName);
         } catch (Exception e) {
             log.error("检查锁状态失败: {}", lockName, e);
             return false;
@@ -204,7 +201,13 @@ public class RedisDistributedLock implements DistributedLock {
 
     @Override
     public boolean isHeldByCurrentThread() {
-        return holdCount.get().get() > 0;
+        try {
+            Object value = redisTemplate.opsForHash().get(lockName, lockValue);
+            return value != null;
+        } catch (Exception e) {
+            log.error("检查锁持有状态失败: {}", lockName, e);
+            return false;
+        }
     }
 
     @Override
@@ -278,36 +281,37 @@ public class RedisDistributedLock implements DistributedLock {
         if (scheduler == null) {
             return;
         }
-        
-        String taskKey = lockValue;
+
+        String taskKey = lockName + ":" + lockValue;
         
         // 取消之前的续期任务
         ScheduledFuture<?> existingTask = renewalTasks.get(taskKey);
         if (existingTask != null && !existingTask.isCancelled()) {
             existingTask.cancel(false);
         }
-        
-        // 续期间隔为租期的 1/3
+
+        // 调度新的续期任务，在锁过期前 1/3 时间进行续期
         long renewalInterval = leaseTime / 3;
-        
         ScheduledFuture<?> renewalTask = scheduler.scheduleAtFixedRate(() -> {
             try {
                 if (isHeldByCurrentThread()) {
                     boolean renewed = renewLease(leaseTime, TimeUnit.MILLISECONDS);
-                    if (!renewed) {
-                        log.warn("锁续期失败，可能已被其他线程释放: {}", lockName);
-                        cancelRenewalTask();
-                    } else {
+                    if (renewed) {
                         log.debug("锁续期成功: {}", lockName);
+                    } else {
+                        log.warn("锁续期失败: {}", lockName);
+                        cancelRenewalTask();
                     }
                 } else {
+                    log.debug("锁不再被当前线程持有，取消续期任务: {}", lockName);
                     cancelRenewalTask();
                 }
             } catch (Exception e) {
                 log.error("锁续期任务执行失败: {}", lockName, e);
+                cancelRenewalTask();
             }
         }, renewalInterval, renewalInterval, TimeUnit.MILLISECONDS);
-        
+
         renewalTasks.put(taskKey, renewalTask);
     }
 
@@ -315,7 +319,7 @@ public class RedisDistributedLock implements DistributedLock {
      * 取消续期任务
      */
     private void cancelRenewalTask() {
-        String taskKey = lockValue;
+        String taskKey = lockName + ":" + lockValue;
         ScheduledFuture<?> task = renewalTasks.remove(taskKey);
         if (task != null && !task.isCancelled()) {
             task.cancel(false);

@@ -3,10 +3,8 @@ package io.github.rosestack.redis.config;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.redis.lock.DistributedLockManager;
 import io.github.rosestack.redis.lock.aspect.LockAspect;
-import io.github.rosestack.redis.ratelimit.RateLimitAspect;
 import io.github.rosestack.redis.ratelimit.RateLimitManager;
-import io.github.rosestack.redis.ratelimit.RedisRateLimiter;
-import io.github.rosestack.redis.ratelimit.SlidingWindowRateLimiter;
+import io.github.rosestack.redis.ratelimit.aspect.RateLimitAspect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -20,6 +18,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.core.RedisTemplate;
+
+import jakarta.annotation.PostConstruct;
 
 /**
  * Rose Redis 自动配置类
@@ -40,7 +40,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 @ComponentScan(basePackages = "io.github.rosestack.redis")
 public class RoseRedisAutoConfiguration {
 
-    public RoseRedisAutoConfiguration() {
+    @PostConstruct
+    public void init() {
         log.info("Rose Redis 自动配置已启用");
     }
 
@@ -56,6 +57,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnBean(RedisTemplate.class)
         public DistributedLockManager distributedLockManager(RedisTemplate<String, Object> redisTemplate,
                                                              RoseRedisProperties properties) {
+            log.info("启用 Rose Redis 分布式锁功能");
             return new DistributedLockManager(redisTemplate, properties);
         }
 
@@ -64,6 +66,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
         @ConditionalOnBean(DistributedLockManager.class)
         public LockAspect distributedLockAspect(DistributedLockManager lockManager) {
+            log.info("启用 Rose Redis 分布式锁切面");
             return new LockAspect(lockManager);
         }
     }
@@ -74,7 +77,7 @@ public class RoseRedisAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisCacheConfiguration {
-        // 缓存增强相关 Bean 配置将在后续任务中实现
+        // TODO: 实现缓存增强配置
     }
 
     /**
@@ -88,24 +91,9 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
         public RateLimitManager rateLimitManager(RedisTemplate<String, Object> redisTemplate,
-                                                 RoseRedisProperties properties) {
+                                                RoseRedisProperties properties) {
+            log.info("启用 Rose Redis 限流功能");
             return new RateLimitManager(redisTemplate, properties);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean
-        @ConditionalOnBean(RateLimitManager.class)
-        public RedisRateLimiter redisRateLimiter(RedisTemplate<String, Object> redisTemplate,
-                                                 RoseRedisProperties properties) {
-            return new RedisRateLimiter(redisTemplate, properties);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean
-        @ConditionalOnBean(RateLimitManager.class)
-        public SlidingWindowRateLimiter slidingWindowRateLimiter(RedisTemplate<String, Object> redisTemplate,
-                                                                 RoseRedisProperties properties) {
-            return new SlidingWindowRateLimiter(redisTemplate, properties);
         }
 
         @Bean
@@ -113,7 +101,8 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
         @ConditionalOnBean(RateLimitManager.class)
         public RateLimitAspect rateLimitAspect(RateLimitManager rateLimitManager,
-                                               RoseRedisProperties properties) {
+                                              RoseRedisProperties properties) {
+            log.info("启用 Rose Redis 限流切面");
             return new RateLimitAspect(rateLimitManager, properties);
         }
     }
@@ -124,7 +113,7 @@ public class RoseRedisAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.message", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisMessageConfiguration {
-        // 消息队列相关 Bean 配置将在后续任务中实现
+        // TODO: 实现消息队列配置
     }
 
     /**
@@ -133,7 +122,7 @@ public class RoseRedisAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.session", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisSessionConfiguration {
-        // 会话管理相关 Bean 配置将在后续任务中实现
+        // TODO: 实现会话管理配置
     }
 
     /**
@@ -142,6 +131,6 @@ public class RoseRedisAutoConfiguration {
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.data-structure", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisDataStructureConfiguration {
-        // 数据结构操作相关 Bean 配置将在后续任务中实现
+        // TODO: 实现数据结构操作配置
     }
 }
