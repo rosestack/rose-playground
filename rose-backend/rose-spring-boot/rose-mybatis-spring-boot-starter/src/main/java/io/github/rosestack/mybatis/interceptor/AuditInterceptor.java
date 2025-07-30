@@ -5,9 +5,9 @@ import io.github.rosestack.core.annotation.FieldSensitive;
 import io.github.rosestack.core.jackson.desensitization.Desensitization;
 import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.mybatis.annotation.AuditLog;
+import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.mybatis.support.audit.AuditLogEntry;
 import io.github.rosestack.mybatis.support.audit.AuditStorage;
-import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.mybatis.support.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static io.github.rosestack.core.util.ServletUtils.getCurrentUserId;
 import static io.github.rosestack.core.util.date.DatePattern.NORM_DATETIME_FORMATTER;
 
 /**
@@ -120,7 +121,7 @@ public class AuditInterceptor implements Interceptor {
                     .executionTime(executionTime)
                     .success(success)
                     .errorMessage(errorMessage)
-                    .userId(ServletUtils.getCurrentUserId())
+                    .userId(getCurrentUserId())
                     .tenantId(TenantContextHolder.getCurrentTenantId())
                     .requestId(ServletUtils.getCurrentRequestId())
                     .build();
@@ -132,7 +133,7 @@ public class AuditInterceptor implements Interceptor {
                     List<AuditLogEntry.FieldChange> fieldChanges = compareObjects(oldValue, parameter, auditLogAnnotation.ignoreFields());
                     auditLogEntry.setFieldChanges(fieldChanges);
                     auditLogEntry.setModule(auditLogAnnotation.module());
-                    auditLogEntry.setBusinessOperation(auditLogAnnotation.operation());
+                    auditLogEntry.setBusinessOperation(auditLogAnnotation.value());
 
                     // 获取实体信息
                     auditLogEntry.setEntityClass(parameter.getClass().getSimpleName());

@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.interceptor;
+package io.github.rosestack.mybatis.handler;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;

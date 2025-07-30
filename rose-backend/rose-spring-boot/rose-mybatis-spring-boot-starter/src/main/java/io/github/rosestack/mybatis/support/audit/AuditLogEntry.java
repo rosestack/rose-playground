@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 统一审计日志实体
+ * 审计日志实体
  */
 @lombok.Data
 @lombok.Builder

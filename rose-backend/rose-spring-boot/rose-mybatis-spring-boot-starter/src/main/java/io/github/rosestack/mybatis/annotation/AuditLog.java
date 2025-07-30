@@ -12,7 +12,7 @@ import java.lang.annotation.*;
  * @author Rose Team
  * @since 1.0.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface AuditLog {
@@ -29,7 +29,7 @@ public @interface AuditLog {
      *
      * @return 业务操作名称
      */
-    String operation() default "";
+    String value() default "";
 
     /**
      * 忽略的字段列表

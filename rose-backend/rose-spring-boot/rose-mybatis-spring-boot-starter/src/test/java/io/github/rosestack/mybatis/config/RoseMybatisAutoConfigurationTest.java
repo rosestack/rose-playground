@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
+import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

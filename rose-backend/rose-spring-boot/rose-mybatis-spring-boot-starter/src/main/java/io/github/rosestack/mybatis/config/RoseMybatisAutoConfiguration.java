@@ -18,7 +18,7 @@ import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.interceptor.AuditInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.interceptor.RoseMetaObjectHandler;
+import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.support.audit.DefaultAuditStorage;
 import io.github.rosestack.mybatis.support.datapermission.DataPermissionProviderManager;
 import io.github.rosestack.mybatis.support.encryption.OptimizedFieldEncryptor;

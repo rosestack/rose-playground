@@ -25,15 +25,4 @@ public @interface EncryptField {
      * @return 加密算法类型
      */
     EncryptType value() default EncryptType.AES;
-
-    /**
-     * 是否支持查询
-     * <p>
-     * 如果启用，会自动生成对应的哈希字段用于查询。
-     * 例如：phone 字段会生成 phone_hash 字段。
-     * </p>
-     *
-     * @return 是否支持查询
-     */
-    boolean searchable() default false;
 }
