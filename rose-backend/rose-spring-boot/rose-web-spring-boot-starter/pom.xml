@@ -6,11 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.github.rosestack</groupId>
-        <artifactId>rose-backend</artifactId>
+        <artifactId>rose-spring-boot</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>rose-web-spring-boot-starter</artifactId>
     <name>Rose Web Spring Boot Starter</name>
     <description>Rose Web Spring Boot 自动配置启动器</description>

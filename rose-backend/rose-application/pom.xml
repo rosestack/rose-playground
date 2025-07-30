@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-server</artifactId>
+    <artifactId>rose-application</artifactId>
     <name>rose-server</name>
 
     <dependencies>

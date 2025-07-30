@@ -31,19 +31,10 @@
     </properties>
 
     <modules>
-        <module>rose-framework/rose-core</module>
-        <module>rose-framework/rose-i18n</module>
-        <module>rose-framework/rose-notice</module>
-        <module>rose-framework/rose-processor</module>
-        <module>rose-spring-boot/rose-auth-spring-boot-starter</module>
-        <module>rose-spring-boot/rose-mybatis-spring-boot-starter</module>
-        <module>rose-spring-boot/rose-redis-spring-boot-starter</module>
-        <module>rose-spring-boot/rose-web-spring-boot-starter</module>
-        <module>rose-service/rose-iam-api</module>
-        <module>rose-service/rose-iam-service</module>
-        <module>rose-service/rose-notification-service</module>
-        <module>rose-service/rose-billing-service</module>
-        <module>rose-server</module>
+        <module>rose-framework</module>
+        <module>rose-spring-boot</module>
+        <module>rose-service</module>
+        <module>rose-application</module>
     </modules>
 
     <dependencyManagement>

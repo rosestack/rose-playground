@@ -4,11 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.github.rosestack</groupId>
-        <artifactId>rose-backend</artifactId>
+        <artifactId>rose-spring-boot</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-mybatis-spring-boot-starter</artifactId>
     <name>rose-mybatis-spring-boot-starter</name>
