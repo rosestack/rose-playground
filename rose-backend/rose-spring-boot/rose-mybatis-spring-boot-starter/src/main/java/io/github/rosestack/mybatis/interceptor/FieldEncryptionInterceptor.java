@@ -2,7 +2,7 @@ package io.github.rosestack.mybatis.interceptor;
 
 import io.github.rosestack.mybatis.annotation.EncryptField;
 import io.github.rosestack.mybatis.support.encryption.FieldEncryptor;
-import lombok.RequiredArgsConstructor;
+import io.github.rosestack.mybatis.support.encryption.HashService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -20,7 +20,7 @@ import java.util.Collection;
  * 字段加密拦截器
  * <p>
  * 拦截 MyBatis 的执行过程，对标记了 @EncryptField 注解的字段进行自动加密和解密。
- * - 在插入和更新时自动加密敏感字段
+ * - 在插入和更新时自动加密敏感字段，并生成对应的哈希字段（如果启用）
  * - 在查询结果返回时自动解密敏感字段
  * </p>
  *
@@ -28,7 +28,6 @@ import java.util.Collection;
  * @since 1.0.0
  */
 @Slf4j
-@RequiredArgsConstructor
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
         @Signature(type = ResultSetHandler.class, method = "handleResultSets", args = {Statement.class})
@@ -36,6 +35,12 @@ import java.util.Collection;
 public class FieldEncryptionInterceptor implements Interceptor {
 
     private final FieldEncryptor fieldEncryptor;
+    private final HashService hashService;
+
+    public FieldEncryptionInterceptor(FieldEncryptor fieldEncryptor, HashService hashService) {
+        this.fieldEncryptor = fieldEncryptor;
+        this.hashService = hashService;
+    }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -110,6 +115,11 @@ public class FieldEncryptionInterceptor implements Interceptor {
                         String encryptedText = fieldEncryptor.encrypt(plainText, encryptField.value());
                         ReflectionUtils.setField(field, obj, encryptedText);
                         log.debug("字段 {} 已加密", field.getName());
+
+                        // 如果启用了哈希查询，生成哈希字段
+                        if (encryptField.searchable()) {
+                            generateHashField(obj, field, plainText, encryptField);
+                        }
                     }
                 } catch (Exception e) {
                     log.error("加密字段 {} 失败: {}", field.getName(), e.getMessage(), e);
@@ -154,6 +164,27 @@ public class FieldEncryptionInterceptor implements Interceptor {
                 }
             }
         });
+    }
+
+    /**
+     * 生成哈希字段
+     */
+    private void generateHashField(Object obj, java.lang.reflect.Field originalField, String plainText, EncryptField encryptField) {
+        try {
+            String hashFieldName = hashService.generateHashFieldName(originalField.getName(), encryptField.hashField());
+            java.lang.reflect.Field hashField = ReflectionUtils.findField(obj.getClass(), hashFieldName);
+
+            if (hashField != null) {
+                ReflectionUtils.makeAccessible(hashField);
+                String hashValue = hashService.generateHash(plainText, encryptField.hashType());
+                ReflectionUtils.setField(hashField, obj, hashValue);
+                log.debug("字段 {} 的哈希字段 {} 已生成", originalField.getName(), hashFieldName);
+            } else {
+                log.warn("未找到哈希字段 {}，请确保实体类中定义了该字段", hashFieldName);
+            }
+        } catch (Exception e) {
+            log.error("生成哈希字段失败: {}", e.getMessage(), e);
+        }
     }
 
     @Override

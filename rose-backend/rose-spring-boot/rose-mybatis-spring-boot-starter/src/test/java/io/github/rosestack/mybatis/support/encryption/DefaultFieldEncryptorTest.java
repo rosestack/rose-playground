@@ -1,8 +1,6 @@
-package io.github.rosestack.mybatis.encryption;
+package io.github.rosestack.mybatis.support.encryption;
 
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.support.encryption.EncryptType;
-import io.github.rosestack.mybatis.support.encryption.OptimizedFieldEncryptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DefaultFieldEncryptorTest {
 
-    private OptimizedFieldEncryptor fieldEncryptor;
+    private DefaultFieldEncryptor fieldEncryptor;
     private RoseMybatisProperties properties;
 
     @BeforeEach
@@ -25,7 +23,7 @@ class DefaultFieldEncryptorTest {
         properties.getEncryption().setEnabled(true);
         properties.getEncryption().setSecretKey("0123456789abcdeffedcba9876543210");
 
-        fieldEncryptor = new OptimizedFieldEncryptor(properties);
+        fieldEncryptor = new DefaultFieldEncryptor(properties);
     }
 
     @Test
@@ -64,7 +62,7 @@ class DefaultFieldEncryptorTest {
     void shouldReturnOriginalWhenEncryptionDisabled() {
         // Given
         properties.getEncryption().setEnabled(false);
-        fieldEncryptor = new OptimizedFieldEncryptor(properties);
+        fieldEncryptor = new DefaultFieldEncryptor(properties);
         String plainText = "13800138000";
 
         // When
@@ -105,7 +103,7 @@ class DefaultFieldEncryptorTest {
 
         // 模拟加密失败的情况 - 使用空密钥
         properties.getEncryption().setSecretKey("");
-        fieldEncryptor = new OptimizedFieldEncryptor(properties);
+        fieldEncryptor = new DefaultFieldEncryptor(properties);
 
         String plainText = "13800138000";
 

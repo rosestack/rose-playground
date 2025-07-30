@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class OptimizedFieldEncryptor implements FieldEncryptor {
+public class DefaultFieldEncryptor implements FieldEncryptor {
     private final RoseMybatisProperties properties;
 
     /**

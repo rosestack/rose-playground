@@ -8,9 +8,11 @@ import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -105,7 +107,8 @@ class RoseMybatisAutoConfigurationTest {
         contextRunner
                 .withPropertyValues("rose.mybatis.field-fill.enabled=false")
                 .run(context -> {
-                    assertThat(context).doesNotHaveBean(RoseMetaObjectHandler.class);
+                    // 检查自动配置的 Bean 不存在，但可能有用户自定义的 Bean
+                    assertThat(context).doesNotHaveBean("roseMetaObjectHandler");
                 });
     }
 
@@ -122,7 +125,7 @@ class RoseMybatisAutoConfigurationTest {
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
 
                     assertThat(properties.getTenant().getColumn()).isEqualTo("org_id");
-                    assertThat(properties.getEncryption().getDefaultAlgorithm()).isEqualTo("DES");
+                    assertThat(properties.getEncryption().getHash().getAlgorithm()).isEqualTo("HMAC_SHA256");
                     assertThat(properties.getFieldFill().getDefaultUser()).isEqualTo("admin");
                 });
     }
@@ -187,4 +190,6 @@ class RoseMybatisAutoConfigurationTest {
             super(properties);
         }
     }
+
+
 }

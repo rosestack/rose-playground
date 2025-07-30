@@ -25,7 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @ConditionalOnBean(DataPermissionCacheService.class)
 @AutoConfigureAfter(DataPermissionCacheService.class)
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DataPermissionCacheController {
 
     private final DataPermissionCacheService cacheService;

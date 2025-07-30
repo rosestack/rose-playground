@@ -169,10 +169,37 @@ public class RoseMybatisProperties {
          */
         private boolean failOnError = true;
 
+
         /**
-         * 默认加密算法
+         * 哈希配置
          */
-        private String defaultAlgorithm = "AES";
+        private Hash hash = new Hash();
+
+        /**
+         * 哈希配置
+         */
+        @Data
+        public static class Hash {
+            /**
+             * 是否启用哈希功能
+             */
+            private boolean enabled = true;
+
+            /**
+             * 全局盐值（生产环境应该从外部配置获取）
+             */
+            private String globalSalt = "rose-mybatis-global-salt-2024";
+
+            /**
+             * 默认哈希算法
+             */
+            private String algorithm = "HMAC_SHA256";
+
+            /**
+             * HMAC 密钥（生产环境应该从外部配置获取）
+             */
+            private String hmacKey = "rose-mybatis-hmac-key-2024";
+        }
     }
 
     /**

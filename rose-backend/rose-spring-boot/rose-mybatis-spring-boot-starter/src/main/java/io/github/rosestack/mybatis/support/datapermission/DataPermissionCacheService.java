@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DataPermissionCacheService {
     private final RoseMybatisProperties properties;
     private final RoseDataPermissionHandler dataPermissionHandler;

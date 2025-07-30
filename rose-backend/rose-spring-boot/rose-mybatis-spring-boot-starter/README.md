@@ -80,6 +80,19 @@ rose:
       fail-on-error: true
       default-algorithm: "AES"
 
+      # 哈希配置
+      hash:
+        # 是否启用哈希功能
+        enabled: true
+        # 全局盐值（生产环境应该从外部配置获取）
+        global-salt: "rose-mybatis-global-salt-2024"
+        # 默认哈希算法（当注解使用 AUTO 时的算法选择）
+        algorithm: "SHA256"  # 可选：SHA256, SHA512, HMAC_SHA256, HMAC_SHA512
+        # HMAC 密钥（生产环境应该从外部配置获取）
+        hmac-key: "rose-mybatis-hmac-key-2024"
+        # 是否优先使用 HMAC 算法（影响 AUTO 选择）
+        use-hmac: true
+
     # 数据权限配置
     data-permission:
       enabled: true
@@ -119,25 +132,55 @@ public class User {
     @TableId
     private Long id;
 
-    // 基础加密
-    @EncryptField(EncryptType.AES)
+    // 手机号：安全加密存储 + 哈希查询（使用配置中的默认算法）
+    @EncryptField(value = EncryptType.AES, searchable = true)
     private String phone;
 
-    @EncryptField(value = EncryptType.AES)
-    private String idCard;
+    @TableField("phone_hash")
+    private String phoneHash; // 自动维护，无需手动设置
 
-    private String email; // 普通字段
+    // 邮箱：安全加密存储 + 哈希查询（明确指定算法）
+    @EncryptField(value = EncryptType.AES, searchable = true, hashType = HashType.HMAC_SHA256)
+    private String email;
+
+    @TableField("email_hash")
+    private String emailHash; // 自动维护
+
+    // 身份证：仅加密存储（不需要查询）
+    @EncryptField(EncryptType.AES)
+    private String idCard;
 }
 
 // 使用示例
 User user = new User();
-user.setPhone("13800138000");     // 存储时自动加密
-user.setIdCard("110101199001011234"); // 存储时自动加密并生成哈希
+user.setPhone("13800138000");     // 存储时自动加密并生成哈希
+user.setEmail("admin@example.com"); // 存储时自动加密并生成哈希
+user.setIdCard("110101199001011234"); // 仅加密存储
 
-userMapper.insert(user); // 插入时自动加密
+userMapper.insert(user); // 插入时自动加密敏感字段并生成哈希字段
 
 User saved = userMapper.selectById(1L); // 查询时自动解密
 System.out.println(saved.getPhone()); // "13800138000" (已解密)
+System.out.println(saved.getPhoneHash()); // "a1b2c3..." (哈希值，用于查询)
+
+// 通过哈希字段精确查询
+@Service
+public class UserQueryService {
+    @Autowired
+    private HashService hashService;
+
+    // 使用默认算法（根据配置自动选择）
+    public User findByPhone(String phone) {
+        String phoneHash = hashService.generateHashWithDefault(phone);
+        return userMapper.findByPhoneHash(phoneHash);
+    }
+
+    // 或者明确指定算法
+    public User findByEmail(String email) {
+        String emailHash = hashService.generateHash(email, HashType.HMAC_SHA256);
+        return userMapper.findByEmailHash(emailHash);
+    }
+}
 ```
 
 ### 🛡️ 动态数据权限

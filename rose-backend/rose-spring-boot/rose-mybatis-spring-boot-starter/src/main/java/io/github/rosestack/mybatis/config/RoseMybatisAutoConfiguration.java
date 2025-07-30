@@ -20,8 +20,9 @@ import io.github.rosestack.mybatis.interceptor.AuditInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.support.audit.DefaultAuditStorage;
+import io.github.rosestack.mybatis.support.encryption.HashService;
 import io.github.rosestack.mybatis.support.datapermission.DataPermissionProviderManager;
-import io.github.rosestack.mybatis.support.encryption.OptimizedFieldEncryptor;
+import io.github.rosestack.mybatis.support.encryption.DefaultFieldEncryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
@@ -141,9 +145,36 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public FieldEncryptionInterceptor fieldEncryptionInterceptor() {
-        log.info("初始化字段加密拦截器，默认算法: {}", properties.getEncryption().getDefaultAlgorithm());
-        return new FieldEncryptionInterceptor(new OptimizedFieldEncryptor(properties));
+    public FieldEncryptionInterceptor fieldEncryptionInterceptor(HashService hashService) {
+        log.info("初始化字段加密拦截器，默认算法: AES");
+        return new FieldEncryptionInterceptor(new DefaultFieldEncryptor(properties), hashService);
+    }
+
+    /**
+     * 哈希服务
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.mybatis.encryption.hash", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public HashService hashService() {
+        log.info("初始化哈希服务，默认算法: {}", properties.getEncryption().getHash().getAlgorithm());
+        return new HashService(properties);
+    }
+
+    /**
+     * 定时任务执行器
+     * 用于数据权限缓存清理等定时任务
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public ScheduledExecutorService scheduledExecutorService() {
+        log.info("初始化定时任务执行器");
+        return Executors.newScheduledThreadPool(2, r -> {
+            Thread thread = new Thread(r, "rose-mybatis-scheduler");
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     @Bean

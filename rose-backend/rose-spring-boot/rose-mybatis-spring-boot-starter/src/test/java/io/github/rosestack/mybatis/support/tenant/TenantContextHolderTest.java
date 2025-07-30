@@ -1,6 +1,5 @@
-package io.github.rosestack.mybatis.util;
+package io.github.rosestack.mybatis.support.tenant;
 
-import io.github.rosestack.mybatis.support.tenant.TenantContextHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
