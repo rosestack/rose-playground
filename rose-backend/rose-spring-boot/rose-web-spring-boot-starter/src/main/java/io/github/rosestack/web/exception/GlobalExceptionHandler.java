@@ -30,7 +30,7 @@ import java.util.Locale;
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
-public class OptimizedGlobalExceptionHandler {
+public class GlobalExceptionHandler {
 
     private final ExceptionHandlerHelper exceptionHelper;
 

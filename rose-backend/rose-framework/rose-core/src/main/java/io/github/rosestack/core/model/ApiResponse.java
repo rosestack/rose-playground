@@ -1,6 +1,7 @@
 package io.github.rosestack.core.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -157,6 +158,7 @@ public class ApiResponse<T> {
      *
      * @return true if this result is a failure, false otherwise
      */
+    @JsonIgnore
     public boolean isError() {
         return !isSuccess();
     }
@@ -177,6 +179,7 @@ public class ApiResponse<T> {
      *
      * @return true if this result is successful, false otherwise
      */
+    @JsonIgnore
     public boolean isSuccess() {
         return SUCCESS == this.code;
     }

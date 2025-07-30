@@ -118,7 +118,7 @@ class UserServiceIntegrationTest {
         assertNotNull(pageResponse);
         assertNotNull(pageResponse.getRecords());
         assertTrue(pageResponse.getRecords().stream()
-            .allMatch(user -> "ACTIVE".equals(user.getStatus().name())));
+            .allMatch(user -> "ACTIVE".equals(user.getStatus())));
 
         System.out.println("活跃用户数量: " + pageResponse.getRecords().size());
     }

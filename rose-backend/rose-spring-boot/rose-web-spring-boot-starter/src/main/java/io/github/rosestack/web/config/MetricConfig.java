@@ -14,7 +14,6 @@ import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +26,7 @@ public class MetricConfig {
     @Bean
     @ConditionalOnAvailableEndpoint
     public AggravateMetricsEndpoint aggravateMetricsEndpoint(MeterRegistry meterRegistry) {
-        log.info("Initializing AggravateMetricsEndpoint");
+        log.info("初始化 AggravateMetricsEndpoint");
 
         return new AggravateMetricsEndpoint(meterRegistry);
     }
@@ -36,7 +35,6 @@ public class MetricConfig {
     TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
     }
-
 
     @WebEndpoint(id = "aggmetrics")
     public class AggravateMetricsEndpoint {

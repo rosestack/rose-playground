@@ -29,19 +29,9 @@ public class RoseWebProperties {
     private CorsConfiguration cors = new CorsConfiguration();
 
     /**
-     * Jackson 配置
-     */
-    private JacksonProperties jackson = new JacksonProperties();
-
-    /**
      * 过滤器配置
      */
     private Filter filter = new Filter();
-
-    /**
-     * 异常处理配置
-     */
-    private Exception exception = new Exception();
 
     /**
      * Swagger 配置

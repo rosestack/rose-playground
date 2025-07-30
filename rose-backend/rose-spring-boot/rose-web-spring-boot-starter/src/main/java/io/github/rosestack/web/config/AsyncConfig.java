@@ -69,6 +69,7 @@ public class AsyncConfig implements AsyncConfigurer {
      */
     @Override
     public Executor getAsyncExecutor() {
+
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         // 使用 Spring Boot 配置属性
@@ -88,6 +89,10 @@ public class AsyncConfig implements AsyncConfigurer {
 
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();
+
+        log.info("创建异步线程池，核心线程数：{}，最大线程数：{}，队列容量：{}，线程前缀：{}",
+                executor.getCorePoolSize(), executor.getMaxPoolSize(), executor.getQueueCapacity(),
+                executor.getThreadNamePrefix());
 
         return executor;
     }

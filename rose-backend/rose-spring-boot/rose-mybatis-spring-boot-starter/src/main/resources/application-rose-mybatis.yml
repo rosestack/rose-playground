@@ -1,9 +1,7 @@
-# Rose MyBatis Plus 配置示例
 rose:
   mybatis:
     # 是否启用 Rose MyBatis Plus 增强功能
     enabled: true
-    
     # 多租户配置
     tenant:
       # 是否启用多租户
@@ -14,7 +12,6 @@ rose:
       ignore-tables: [ ]
       # 忽略多租户的表名前缀列表（根据实际需要配置）
       ignore-table-prefixes: [ ]
-    
     # 分页配置
     pagination:
       # 是否启用分页插件
@@ -25,12 +22,10 @@ rose:
       reasonable: true
       # 数据库类型（mysql, postgresql, oracle, sqlserver, h2, sqlite）
       db-type: mysql
-
     # 乐观锁配置
     optimistic-lock:
       # 是否启用乐观锁
       enabled: true
-
     # 字段填充配置
     field-fill:
       # 是否启用字段自动填充
@@ -39,7 +34,6 @@ rose:
       create-time-column: created_time
       # 更新时间字段名
       update-time-column: updated_time
-
     data-permission:
       enabled: true
       cache:
@@ -55,7 +49,6 @@ rose:
         max-permission-cache-size: 50000
         # 过期率阈值
         expired-rate: 0.5
-
     # 字段加密配置
     encryption:
       # 是否启用字段加密

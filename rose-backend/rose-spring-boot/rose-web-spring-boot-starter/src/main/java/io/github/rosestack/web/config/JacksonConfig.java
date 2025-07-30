@@ -1,8 +1,5 @@
 package io.github.rosestack.web.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-
 /**
  * Jackson 配置
  * <p>
@@ -12,13 +9,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
  * @author rosestack
  * @since 1.0.0
  */
-@ConditionalOnClass(ObjectMapper.class)
 public class JacksonConfig {
 
-    private final RoseWebProperties roseWebProperties;
-
-    public JacksonConfig(RoseWebProperties roseWebProperties) {
-        this.roseWebProperties = roseWebProperties;
-    }
-
-} 
+}

@@ -9,10 +9,10 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
@@ -25,6 +25,7 @@ import java.util.List;
  * @author Rose Team
  * @since 1.0.0
  */
+@Slf4j
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "rose.web.swagger", name = "enabled", havingValue = "true")
 public class SwaggerConfig {
@@ -37,7 +38,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         RoseWebProperties.Swagger swaggerConfig = roseWebProperties.getSwagger();
-        
+
         OpenAPI openAPI = new OpenAPI()
                 .info(buildInfo(swaggerConfig))
                 .servers(buildServers(swaggerConfig));
@@ -45,8 +46,10 @@ public class SwaggerConfig {
         // 根据配置添加安全认证
         if (swaggerConfig.getSecurity().isEnabled()) {
             openAPI.components(buildComponents(swaggerConfig))
-                   .security(buildSecurityRequirements(swaggerConfig));
+                    .security(buildSecurityRequirements(swaggerConfig));
         }
+
+        log.info("构建 OpenAPI 文档: {}", openAPI.getServers().stream().map(Server::getUrl).toList());
 
         return openAPI;
     }
@@ -103,7 +106,7 @@ public class SwaggerConfig {
 
             // 根据配置的流程类型添加相应的流程
             io.swagger.v3.oas.models.security.OAuthFlows flows = new io.swagger.v3.oas.models.security.OAuthFlows();
-            
+
             if (security.getOauth2().getAuthorizationCode().isEnabled()) {
                 flows.authorizationCode(new io.swagger.v3.oas.models.security.OAuthFlow()
                         .authorizationUrl(security.getOauth2().getAuthorizationCode().getAuthorizationUrl())

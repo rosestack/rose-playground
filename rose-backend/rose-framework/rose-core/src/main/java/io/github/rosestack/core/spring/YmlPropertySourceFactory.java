@@ -1,6 +1,7 @@
 package io.github.rosestack.core.spring;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -14,19 +15,24 @@ import java.util.Properties;
 /**
  * yml 配置源工厂
  */
+@Slf4j
 public class YmlPropertySourceFactory extends DefaultPropertySourceFactory {
 
     @Override
-    @SuppressWarnings("null")
     public PropertySource<?> createPropertySource(String name, EncodedResource resource) throws IOException {
         String sourceName = resource.getResource().getFilename();
-        if (StringUtils.isNotBlank(sourceName) && StringUtils.endsWithAny(sourceName, ".yml", ".yaml")) {
+
+        // 如果是 .properties 文件，使用父类处理
+        if (StringUtils.isNotBlank(sourceName) && sourceName.endsWith(".properties")) {
             return super.createPropertySource(name, resource);
         }
 
+        // 处理 .yml 和 .yaml 文件
         YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
         factory.setResources(resource.getResource());
         factory.afterPropertiesSet();
+
+        log.info("加载配置文件: {}", sourceName);
 
         Properties properties = factory.getObject();
         if (properties == null) {
@@ -35,7 +41,5 @@ public class YmlPropertySourceFactory extends DefaultPropertySourceFactory {
 
         String actualSourceName = sourceName != null ? sourceName : "yaml-property-source";
         return new PropertiesPropertySource(actualSourceName, properties);
-
     }
-
 }

@@ -31,7 +31,7 @@ management:
 logging:
   level:
     root: INFO
-#    com.baomidou.mybatisplus.core.mapper: DEBUG
+  #    com.baomidou.mybatisplus.core.mapper: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
@@ -42,7 +42,6 @@ logging:
       max-file-size: 100MB
       max-history: 30
 
-# Rose Web Spring Boot Starter 默认配置
 rose:
   web:
     # 是否启用 Web 功能
@@ -52,10 +51,20 @@ rose:
       # 请求ID过滤器
       request-id:
         enabled: true
-        header-name: "X-Request-ID"
-        mdc-key: "requestId"
-      
       # XSS过滤器
       xss:
         enabled: true
+        excludePaths:
+          - /swagger-ui.html
+          - /swagger-resources/**
+          - /v3/api-docs
+          - /swagger-ui/**
+          - /actuator/**
+
+      caching-request:
+        enabled: true
+
+    swagger:
+      enabled: true
+
 

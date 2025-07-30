@@ -32,6 +32,14 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
             return false;
         }
 
+        // 排除 SpringDoc OpenAPI 相关的端点
+        String className = returnType.getContainingClass().getName();
+        if (className.startsWith("org.springdoc") ||
+            className.contains("OpenApiResource") ||
+            className.contains("SwaggerResource")) {
+            return false;
+        }
+
         // 如果返回值已经是 ApiResponse 类型，不需要再次包装
         return !ApiResponse.class.isAssignableFrom(returnType.getParameterType());
     }

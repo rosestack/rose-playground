@@ -1,6 +1,7 @@
 package io.github.rosestack.web.config;
 
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
@@ -25,12 +26,12 @@ import org.springframework.context.annotation.PropertySource;
         MessageConfig.class,
         MetricConfig.class,
         WebMvcConfig.class,
-        EnvironmentConfig.class,
         SwaggerConfig.class
 })
+@AutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableConfigurationProperties(RoseWebProperties.class)
-@ComponentScan("io.github.rosestack.web")
+@ComponentScan(basePackages = "io.github.rosestack.web")
 @ConditionalOnProperty(prefix = "rose.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @PropertySource(value = "classpath:application-rose-web.yml", factory = YmlPropertySourceFactory.class)
 public class RoseWebAutoConfiguration {

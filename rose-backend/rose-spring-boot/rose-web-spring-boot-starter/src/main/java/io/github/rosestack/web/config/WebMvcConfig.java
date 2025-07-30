@@ -5,7 +5,9 @@ import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.web.filter.CachingRequestFilter;
 import io.github.rosestack.web.filter.RequestIdFilter;
 import io.github.rosestack.web.filter.XssFilter;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -23,9 +25,15 @@ import static io.github.rosestack.core.Constants.FilterOrder.XSS_FILTER_ORDER;
  * @author rosestack
  * @since 1.0.0
  */
+@Slf4j
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
     private final RoseWebProperties roseWebProperties;
+
+    @PostConstruct
+    public void init() {
+        log.info("初始化 Web MVC 配置");
+    }
 
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.filter.request-id", name = "enabled", havingValue = "true", matchIfMissing = true)

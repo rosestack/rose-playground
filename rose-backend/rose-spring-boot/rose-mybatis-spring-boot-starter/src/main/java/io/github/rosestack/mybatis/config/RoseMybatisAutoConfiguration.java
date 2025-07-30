@@ -56,12 +56,12 @@ import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_OR
  */
 @Slf4j
 @RequiredArgsConstructor
-@AutoConfiguration
-@ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
 @PropertySource(value = "classpath:application-rose-mybatis.yml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.mybatis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseMybatisProperties.class)
 @ComponentScan(basePackages = "io.github.rosestack.mybatis")
+@ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
+@AutoConfiguration
 public class RoseMybatisAutoConfiguration {
     private final RoseMybatisProperties properties;
 
@@ -106,7 +106,7 @@ public class RoseMybatisAutoConfiguration {
             DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
             dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler);
             interceptor.addInnerInterceptor(dataPermissionInterceptor);
-            log.info("启用数据权限插件, 缓存时间: {} 分钟", properties.getDataPermission().getCache(). getExpireMinutes());
+            log.info("启用数据权限插件, 缓存时间: {} 分钟", properties.getDataPermission().getCache().getExpireMinutes());
         }
 
         // 分页插件

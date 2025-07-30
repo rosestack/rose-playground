@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -51,16 +50,6 @@ public class UserServiceImpl implements UserService {
         // 创建用户实体
         UserEntity user = userConverter.toEntity(request);
         user.setStatus(UserStatus.ACTIVE);
-
-        // 手动设置审计字段（临时解决方案）
-        LocalDateTime now = LocalDateTime.now();
-        user.setCreatedTime(now);
-        user.setUpdatedTime(now);
-        user.setCreatedBy("system");
-        user.setUpdatedBy("system");
-        user.setDeleted(false);
-        user.setVersion(1);
-
         userMapper.insert(user);
 
         // 发布用户创建事件

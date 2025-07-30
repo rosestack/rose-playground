@@ -172,7 +172,7 @@ public class ExceptionHandlerHelper {
                 return messageSource.getMessage(messageKey, messageArgs, locale);
             }
         } catch (Exception e) {
-            log.debug("获取本地化消息失败: messageKey={}, locale={}", messageKey, locale, e);
+            log.error("获取本地化消息失败: messageKey={}, locale={}", messageKey, locale, e);
         }
 
         // 如果获取本地化消息失败，返回默认消息
