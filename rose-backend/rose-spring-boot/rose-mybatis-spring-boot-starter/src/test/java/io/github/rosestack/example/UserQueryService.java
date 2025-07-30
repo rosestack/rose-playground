@@ -1,7 +1,6 @@
 package io.github.rosestack.example;
 
-import io.github.rosestack.mybatis.support.encryption.HashService;
-import io.github.rosestack.mybatis.support.encryption.HashType;
+import io.github.rosestack.mybatis.support.encryption.hash.HashService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,11 +1,10 @@
-package io.github.rosestack.mybatis.support.encryption;
+package io.github.rosestack.mybatis.support.encryption.hash;
 
 import io.github.rosestack.mybatis.annotation.EncryptField;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -29,6 +28,8 @@ import java.security.NoSuchAlgorithmException;
  */
 @Slf4j
 @RequiredArgsConstructor
+@Component
+@ConditionalOnProperty(prefix = "rose.mybatis.encryption.hash", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class HashService {
 
     private final RoseMybatisProperties properties;

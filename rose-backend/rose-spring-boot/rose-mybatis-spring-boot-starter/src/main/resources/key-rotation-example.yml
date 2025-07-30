@@ -1,0 +1,108 @@
+# 密钥轮换配置示例
+# 这个文件展示了如何在生产环境中配置密钥轮换功能
+
+rose:
+  mybatis:
+    encryption:
+      # 基础加密配置
+      enabled: true
+      secret-key: "your-base64-encoded-secret-key-here"
+      fail-on-error: true
+      
+      # 哈希配置
+      hash:
+        algorithm: "HMAC_SHA256"
+        hmac-key: "your-hmac-key-here"
+      
+      # 密钥轮换配置
+      key-rotation:
+        # 启用密钥轮换功能
+        enabled: true
+        
+        # 自动轮换间隔（天）
+        auto-rotation-days: 90
+        
+        # 密钥保留期（天）- 旧密钥保留多久用于解密
+        key-retention-days: 30
+        
+        # 是否启用自动清理过期密钥
+        auto-cleanup: true
+        
+        # 默认密钥长度配置
+        key-length:
+          # AES密钥长度（位）
+          aes: 256
+          # RSA密钥长度（位）
+          rsa: 2048
+
+---
+# 开发环境配置
+spring:
+  profiles: dev
+
+rose:
+  mybatis:
+    encryption:
+      key-rotation:
+        # 开发环境可以更频繁地轮换用于测试
+        auto-rotation-days: 7
+        key-retention-days: 7
+
+---
+# 测试环境配置
+spring:
+  profiles: test
+
+rose:
+  mybatis:
+    encryption:
+      key-rotation:
+        # 测试环境配置
+        auto-rotation-days: 30
+        key-retention-days: 15
+
+---
+# 生产环境配置
+spring:
+  profiles: prod
+
+rose:
+  mybatis:
+    encryption:
+      # 生产环境应该从环境变量或密钥管理系统获取密钥
+      secret-key: "${ENCRYPTION_SECRET_KEY}"
+      hash:
+        hmac-key: "${HMAC_SECRET_KEY}"
+      
+      key-rotation:
+        # 生产环境更保守的轮换策略
+        auto-rotation-days: 180
+        key-retention-days: 60
+        auto-cleanup: false  # 生产环境手动清理
+
+# 密钥轮换管理接口配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,key-rotation"
+  endpoint:
+    key-rotation:
+      enabled: true
+
+# 安全配置 - 保护密钥轮换接口
+security:
+  key-rotation:
+    # 只允许特定IP访问密钥轮换接口
+    allowed-ips:
+      - "127.0.0.1"
+      - "10.0.0.0/8"
+    # 需要特定角色
+    required-role: "KEY_ADMIN"
+
+# 日志配置
+logging:
+  level:
+    io.github.rosestack.mybatis.support.encryption: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

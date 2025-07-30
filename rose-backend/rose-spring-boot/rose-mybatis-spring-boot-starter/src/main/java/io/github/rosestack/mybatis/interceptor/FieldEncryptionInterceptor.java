@@ -2,13 +2,14 @@ package io.github.rosestack.mybatis.interceptor;
 
 import io.github.rosestack.mybatis.annotation.EncryptField;
 import io.github.rosestack.mybatis.support.encryption.FieldEncryptor;
-import io.github.rosestack.mybatis.support.encryption.HashService;
+import io.github.rosestack.mybatis.support.encryption.hash.HashService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -37,7 +38,7 @@ public class FieldEncryptionInterceptor implements Interceptor {
     private final FieldEncryptor fieldEncryptor;
     private final HashService hashService;
 
-    public FieldEncryptionInterceptor(FieldEncryptor fieldEncryptor, HashService hashService) {
+    public FieldEncryptionInterceptor(FieldEncryptor fieldEncryptor, @Autowired(required = false) HashService hashService) {
         this.fieldEncryptor = fieldEncryptor;
         this.hashService = hashService;
     }
@@ -117,7 +118,7 @@ public class FieldEncryptionInterceptor implements Interceptor {
                         log.debug("字段 {} 已加密", field.getName());
 
                         // 如果启用了哈希查询，生成哈希字段
-                        if (encryptField.searchable()) {
+                        if (encryptField.searchable() && hashService != null) {
                             generateHashField(obj, field, plainText, encryptField);
                         }
                     }

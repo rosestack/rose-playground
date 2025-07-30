@@ -3,7 +3,7 @@ package io.github.rosestack.example;
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.mybatis.annotation.EncryptField;
 import io.github.rosestack.mybatis.support.encryption.EncryptType;
-import io.github.rosestack.mybatis.support.encryption.HashType;
+import io.github.rosestack.mybatis.support.encryption.hash.HashType;
 import lombok.Data;
 
 import java.time.LocalDateTime;

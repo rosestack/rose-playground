@@ -1,5 +1,6 @@
-package io.github.rosestack.mybatis.support.encryption;
+package io.github.rosestack.mybatis.support.encryption.rotation;
 
+import io.github.rosestack.mybatis.support.encryption.EncryptType;
 import lombok.Data;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
@@ -34,19 +35,9 @@ public class KeySpec {
     private EncryptType encryptType;
 
     /**
-     * 哈希算法类型
-     */
-    private HashType hashType;
-
-    /**
      * 对称加密密钥（Base64编码）
      */
     private String secretKey;
-
-    /**
-     * HMAC密钥
-     */
-    private String hmacKey;
 
     /**
      * RSA公钥（用于RSA加密）

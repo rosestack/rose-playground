@@ -1,7 +1,6 @@
 package io.github.rosestack.mybatis.support.datapermission;
 
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -33,10 +33,16 @@ import java.util.concurrent.TimeUnit;
 public class DataPermissionCacheService {
     private final RoseMybatisProperties properties;
     private final RoseDataPermissionHandler dataPermissionHandler;
-    private final ScheduledExecutorService scheduledExecutorService;
+    private ScheduledExecutorService scheduledExecutorService;
 
     @PostConstruct
     public void init() {
+        scheduledExecutorService = Executors.newScheduledThreadPool(2, r -> {
+            Thread thread = new Thread(r, "rose-mybatis-scheduler");
+            thread.setDaemon(true);
+            return thread;
+        });
+
         scheduledExecutorService.scheduleAtFixedRate(this::scheduledCacheCleanup,
                 0, properties.getDataPermission().getCache().getCleanupIntervalMinutes(), TimeUnit.MINUTES);
     }

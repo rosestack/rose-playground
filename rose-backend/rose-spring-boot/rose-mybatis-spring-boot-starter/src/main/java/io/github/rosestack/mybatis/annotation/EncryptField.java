@@ -1,7 +1,7 @@
 package io.github.rosestack.mybatis.annotation;
 
 import io.github.rosestack.mybatis.support.encryption.EncryptType;
-import io.github.rosestack.mybatis.support.encryption.HashType;
+import io.github.rosestack.mybatis.support.encryption.hash.HashType;
 
 import java.lang.annotation.*;
 

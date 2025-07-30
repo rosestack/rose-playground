@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/internal/data-permission-cache")
+@RequestMapping("/api/internal/data-permission/cache")
 @RequiredArgsConstructor
 @ConditionalOnBean(DataPermissionCacheService.class)
 @AutoConfigureAfter(DataPermissionCacheService.class)

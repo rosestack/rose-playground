@@ -1,9 +1,8 @@
-package io.github.rosestack.mybatis.handler;
+package io.github.rosestack.mybatis.support.datapermission;
 
 import com.baomidou.mybatisplus.extension.plugins.handler.MultiDataPermissionHandler;
 import io.github.rosestack.mybatis.annotation.DataPermission;
 import io.github.rosestack.mybatis.config.RoseMybatisProperties;
-import io.github.rosestack.mybatis.support.datapermission.DataPermissionProviderManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
@@ -15,6 +14,8 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
@@ -36,6 +37,8 @@ import static io.github.rosestack.core.util.ServletUtils.getCurrentUserId;
  */
 @Slf4j
 @RequiredArgsConstructor
+@Component
+@ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     // 注解缓存 - 缓存 mappedStatementId 对应的注解信息
     private final Map<String, DataPermission> annotationCache = new ConcurrentHashMap<>();

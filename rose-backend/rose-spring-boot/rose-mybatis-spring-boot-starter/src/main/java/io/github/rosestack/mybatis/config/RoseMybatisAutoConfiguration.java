@@ -13,16 +13,15 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
-import io.github.rosestack.mybatis.support.tenant.TenantIdFilter;
-import io.github.rosestack.mybatis.handler.RoseDataPermissionHandler;
+import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.mybatis.interceptor.AuditInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.support.audit.DefaultAuditStorage;
-import io.github.rosestack.mybatis.support.encryption.HashService;
-import io.github.rosestack.mybatis.support.datapermission.DataPermissionProviderManager;
+import io.github.rosestack.mybatis.support.datapermission.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.support.encryption.DefaultFieldEncryptor;
+import io.github.rosestack.mybatis.support.encryption.hash.HashService;
+import io.github.rosestack.mybatis.support.tenant.TenantIdFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +31,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
@@ -68,7 +63,6 @@ import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_OR
 @EnableConfigurationProperties(RoseMybatisProperties.class)
 @ComponentScan(basePackages = "io.github.rosestack.mybatis")
 public class RoseMybatisAutoConfiguration {
-
     private final RoseMybatisProperties properties;
 
     static {
@@ -89,8 +83,9 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler,
                                                          @Autowired(required = false) RoseDataPermissionHandler roseDataPermissionHandler) {
-        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        log.info("启用 MyBatis Plus 拦截器");
 
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 多租户插件（必须放在第一位）
         if (properties.getTenant().isEnabled() && tenantLineHandler != null) {
             TenantLineInnerInterceptor tenantInterceptor = new TenantLineInnerInterceptor();
@@ -111,14 +106,14 @@ public class RoseMybatisAutoConfiguration {
             DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
             dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler);
             interceptor.addInnerInterceptor(dataPermissionInterceptor);
-            log.info("启用数据权限插件, 缓存开启: {}", properties.getDataPermission().getCache().isEnabled());
+            log.info("启用数据权限插件, 缓存时间: {} 分钟", properties.getDataPermission().getCache(). getExpireMinutes());
         }
 
         // 分页插件
         if (properties.getPagination().isEnabled()) {
             PaginationInnerInterceptor paginationInterceptor = createPaginationInterceptor();
             interceptor.addInnerInterceptor(paginationInterceptor);
-            log.info("启用分页插件，最大限制: {}", properties.getPagination().getMaxLimit());
+            log.info("启用 {} 数据库分页插件，分页大小最大限制: {}", paginationInterceptor.getDbType(), properties.getPagination().getMaxLimit());
         }
         return interceptor;
     }
@@ -146,42 +141,15 @@ public class RoseMybatisAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FieldEncryptionInterceptor fieldEncryptionInterceptor(HashService hashService) {
-        log.info("初始化字段加密拦截器，默认算法: AES");
+        log.info("启用字段加密解密拦截器，默认算法: AES");
         return new FieldEncryptionInterceptor(new DefaultFieldEncryptor(properties), hashService);
-    }
-
-    /**
-     * 哈希服务
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.encryption.hash", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public HashService hashService() {
-        log.info("初始化哈希服务，默认算法: {}", properties.getEncryption().getHash().getAlgorithm());
-        return new HashService(properties);
-    }
-
-    /**
-     * 定时任务执行器
-     * 用于数据权限缓存清理等定时任务
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public ScheduledExecutorService scheduledExecutorService() {
-        log.info("初始化定时任务执行器");
-        return Executors.newScheduledThreadPool(2, r -> {
-            Thread thread = new Thread(r, "rose-mybatis-scheduler");
-            thread.setDaemon(true);
-            return thread;
-        });
     }
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.mybatis.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
     public AuditInterceptor auditInterceptor() {
-        log.info("初始化审计拦截器，日志等级: {}", properties.getAudit().getLogLevel());
+        log.info("启用审计日志拦截器，日志等级: {}", properties.getAudit().getLogLevel());
         return new AuditInterceptor(properties, new DefaultAuditStorage());
     }
 
@@ -195,20 +163,6 @@ public class RoseMybatisAutoConfiguration {
     @ConditionalOnMissingBean
     public ISqlInjector sqlInjector() {
         return new DefaultSqlInjector();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public RoseDataPermissionHandler roseDataPermissionHandler(DataPermissionProviderManager dataPermissionProviderManager) {
-        return new RoseDataPermissionHandler(dataPermissionProviderManager, properties);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public DataPermissionProviderManager dataPermissionProviderManager(ApplicationContext applicationContext) {
-        return new DataPermissionProviderManager(applicationContext);
     }
 
     /**

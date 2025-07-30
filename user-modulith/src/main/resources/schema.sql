@@ -1,10 +1,7 @@
+-- MySQL 用户表创建脚本
 -- 设置字符集
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
--- 创建数据库（如果不存在）
-CREATE DATABASE IF NOT EXISTS `user_modulith` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `user_modulith`;
 
 -- 用户表
 CREATE TABLE IF NOT EXISTS `user` (
