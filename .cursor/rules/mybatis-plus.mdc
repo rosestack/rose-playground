@@ -349,35 +349,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 ## 对象映射规范
 
-### MapStruct 转换器（分页对象转换）
-
-```java
-@Mapper(componentModel = "spring")
-public interface UserConverter {
-    
-    UserResponse toResponse(User user);
-    
-    User toEntity(UserCreateRequest request);
-    
-    /**
-     * 分页对象转换（使用 MyBatis Plus 分页对象）
-     */
-    default IPage<UserResponse> toPageResponse(IPage<User> userPage) {
-        IPage<UserResponse> responsePage = new Page<>();
-        responsePage.setCurrent(userPage.getCurrent());
-        responsePage.setSize(userPage.getSize());
-        responsePage.setTotal(userPage.getTotal());
-        responsePage.setPages(userPage.getPages());
-        
-        List<UserResponse> records = userPage.getRecords().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-        responsePage.setRecords(records);
-        
-        return responsePage;
-    }
-}
-```
 
 ## 性能优化规范
 

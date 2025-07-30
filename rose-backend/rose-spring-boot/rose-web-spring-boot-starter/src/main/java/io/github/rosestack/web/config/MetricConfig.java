@@ -23,10 +23,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @AutoConfigureAfter(MetricsEndpointAutoConfiguration.class)
 public class MetricConfig {
+    private static final String AGG_METRICS = "aggmetrics";
+
     @Bean
     @ConditionalOnAvailableEndpoint
     public AggravateMetricsEndpoint aggravateMetricsEndpoint(MeterRegistry meterRegistry) {
-        log.info("初始化 AggravateMetricsEndpoint");
+        log.info("启用聚合指标监控端点: /actuator/{}", AGG_METRICS);
 
         return new AggravateMetricsEndpoint(meterRegistry);
     }
@@ -36,7 +38,7 @@ public class MetricConfig {
         return new TimedAspect(registry);
     }
 
-    @WebEndpoint(id = "aggmetrics")
+    @WebEndpoint(id = AGG_METRICS)
     public class AggravateMetricsEndpoint {
         public static final String MISSING_NAME_TAG_MESSAGE = "Missing name tag for metric {}";
 

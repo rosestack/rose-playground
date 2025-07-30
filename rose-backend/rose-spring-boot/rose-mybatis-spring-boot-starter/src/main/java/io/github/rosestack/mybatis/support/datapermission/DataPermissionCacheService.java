@@ -43,8 +43,11 @@ public class DataPermissionCacheService {
             return thread;
         });
 
+        long intervalMinutes = properties.getDataPermission().getCache().getCleanupIntervalMinutes();
+
+        log.info("开始调度定时清理任务, 清理间隔: {} 分钟", intervalMinutes);
         scheduledExecutorService.scheduleAtFixedRate(this::scheduledCacheCleanup,
-                0, properties.getDataPermission().getCache().getCleanupIntervalMinutes(), TimeUnit.MINUTES);
+                0, intervalMinutes, TimeUnit.MINUTES);
     }
 
     /**
@@ -61,7 +64,6 @@ public class DataPermissionCacheService {
             Map<String, Object> statsAfter = dataPermissionHandler.getCacheStats();
 
             log.info("定时清理数据权限缓存完成，清理后缓存统计: {}", statsAfter);
-
         } catch (Exception e) {
             log.error("定时清理数据权限缓存失败", e);
         }

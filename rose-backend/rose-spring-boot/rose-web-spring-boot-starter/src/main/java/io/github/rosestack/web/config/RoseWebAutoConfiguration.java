@@ -1,6 +1,8 @@
 package io.github.rosestack.web.config;
 
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,6 +30,7 @@ import org.springframework.context.annotation.PropertySource;
         WebMvcConfig.class,
         SwaggerConfig.class
 })
+@Slf4j
 @AutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableConfigurationProperties(RoseWebProperties.class)
@@ -36,4 +39,8 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource(value = "classpath:application-rose-web.yml", factory = YmlPropertySourceFactory.class)
 public class RoseWebAutoConfiguration {
 
+    @PostConstruct
+    public void init() {
+        log.info("Rose Web 自动配置已启用");
+    }
 }

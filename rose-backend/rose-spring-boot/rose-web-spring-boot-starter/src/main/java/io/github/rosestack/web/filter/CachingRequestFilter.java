@@ -1,22 +1,33 @@
 package io.github.rosestack.web.filter;
 
+import io.github.rosestack.core.spring.AbstractBaseFilter;
+import io.github.rosestack.web.config.RoseWebProperties;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
+ * 请求缓存过滤器
+ * <p>
+ * 缓存请求体内容，允许多次读取
+ * </p>
+ *
  * @author zhijun.chen
  * @since 2.16.3
  */
-public class CachingRequestFilter extends OncePerRequestFilter {
+public class CachingRequestFilter extends AbstractBaseFilter {
+
+    public CachingRequestFilter(RoseWebProperties roseWebProperties) {
+        super(roseWebProperties.getFilter().getExcludePaths());
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {

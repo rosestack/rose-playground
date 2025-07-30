@@ -27,7 +27,7 @@ public class CorsConfig {
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
     public CorsConfigurationSource corsConfigurationSource() {
-        log.info("启用跨域资源共享（CORS）配置");
+        log.info("启用跨域资源共享配置");
         CorsConfiguration cors = roseWebProperties.getCors();
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cors);

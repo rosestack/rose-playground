@@ -10,6 +10,7 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -341,13 +342,14 @@ public abstract class ServletUtils {
             ip = request.getHeader(header);
             ip = getReverseProxyIp(ip);
             if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-                return ip;
+                return normalizeIpAddress(ip);
             }
         }
 
         // Fall back to remote address if no proxy headers found
         ip = request.getRemoteAddr();
-        return getReverseProxyIp(ip);
+        ip = getReverseProxyIp(ip);
+        return normalizeIpAddress(ip);
     }
 
     /**
@@ -389,12 +391,39 @@ public abstract class ServletUtils {
 
     /**
      * 获取客户端真实 IP 地址
+     * <p>
+     * 可以设置优先使用 IPv4:
+     *
+     * <code>System.setProperty("java.net.preferIPv4Stack", "true");</code>
      *
      * @return 客户端 IP 地址，获取失败返回 null
      */
     public static String getClientIp() {
         HttpServletRequest request = getCurrentRequest();
-        return getClientIp(request);
+        String ip = getClientIp(request);
+        return normalizeIpAddress(ip);
+    }
+
+    /**
+     * 标准化 IP 地址，将 IPv6 本地回环地址转换为 IPv4
+     * <p>
+     * 将 IPv6 本地回环地址 "0:0:0:0:0:0:0:1" 或 "::1" 转换为 IPv4 的 "127.0.0.1"
+     * 其他地址保持不变
+     *
+     * @param ip 原始 IP 地址
+     * @return 标准化后的 IP 地址
+     */
+    public static String normalizeIpAddress(String ip) {
+        if (ip == null || ip.isEmpty()) {
+            return ip;
+        }
+
+        // 将 IPv6 本地回环地址转换为 IPv4
+        if ("0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip)) {
+            return "127.0.0.1";
+        }
+
+        return ip;
     }
 
     /**
@@ -534,6 +563,52 @@ public abstract class ServletUtils {
         details.append("User Agent: ").append(getUserAgent()).append("\n");
 
         return details.toString();
+    }
+
+    /**
+     * 获取请求路径
+     * <p>
+     * 优先使用 pathInfo，如果为空则使用 servletPath
+     * </p>
+     *
+     * @param request HTTP 请求
+     * @return 请求路径
+     */
+    public static String getRequestPath(HttpServletRequest request) {
+        String pathInfo = request.getPathInfo();
+        String servletPath = request.getServletPath();
+
+        if (pathInfo != null) {
+            return servletPath + pathInfo;
+        }
+
+        return servletPath != null ? servletPath : request.getRequestURI();
+    }
+
+    /**
+     * 从 URI 字符串中提取路径
+     *
+     * @param uri URI 字符串
+     * @return 路径部分
+     */
+    public static String extractPathFromUri(String uri) {
+        if (ObjectUtils.isEmpty(uri)) {
+            return "";
+        }
+
+        // 移除查询参数
+        int queryIndex = uri.indexOf('?');
+        if (queryIndex != -1) {
+            uri = uri.substring(0, queryIndex);
+        }
+
+        // 移除片段标识符
+        int fragmentIndex = uri.indexOf('#');
+        if (fragmentIndex != -1) {
+            uri = uri.substring(0, fragmentIndex);
+        }
+
+        return uri;
     }
 
     /**

@@ -3,7 +3,7 @@ spring:
     locale: zh_CN
     locale-resolver: accept_header
   messages:
-    basename: classpath:messages
+    basename: messages
     encoding: UTF-8
     cache-duration: PT1H
   # Jackson 序列化配置
@@ -44,6 +44,22 @@ rose:
   web:
     # 是否启用 Web 功能
     enabled: true
+
+    # 全局排除路径配置
+    # 这些路径将被所有过滤器排除，不进行过滤处理
+    global-exclude-paths:
+      - "/actuator/**"
+      - "/swagger-ui/**"
+      - "/v3/api-docs/**"
+      - "/webjars/**"
+      - "/favicon.ico"
+      - "/error"
+      - "/static/**"
+      - "/public/**"
+      # 可以添加更多自定义排除路径
+      # - "/api/health/**"
+      # - "/api/metrics/**"
+
     # 过滤器配置
     filter:
       # 请求ID过滤器

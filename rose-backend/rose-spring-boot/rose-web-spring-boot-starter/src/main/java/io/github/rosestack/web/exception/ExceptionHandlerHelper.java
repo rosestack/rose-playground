@@ -195,21 +195,19 @@ public class ExceptionHandlerHelper {
                               String localizedMessage, int statusCode) {
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        String userAgent = request.getHeader("User-Agent");
-        String remoteAddr = ServletUtils.getClientIp(request);
+        String userAgent = ServletUtils.getUserAgent();
+        String remoteAddr = ServletUtils.getClientIp();
 
         // 根据状态码选择日志级别
         if (statusCode >= 500) {
-            log.error("服务器异常: {} {} - 状态码: {}, 异常类型: {}, 消息: {}, 客户端: {}, User-Agent: {}",
-                    method, uri, statusCode, exception.getClass().getSimpleName(),
-                    localizedMessage, remoteAddr, userAgent, exception);
+            log.error("服务器异常: {} {} - {}, 消息: {}, 客户端 IP: {}, User-Agent: {}",
+                    method, uri, statusCode, localizedMessage, remoteAddr, userAgent, exception);
         } else if (statusCode >= 400) {
-            log.warn("客户端异常: {} {} - 状态码: {}, 异常类型: {}, 消息: {}, 客户端: {}",
-                    method, uri, statusCode, exception.getClass().getSimpleName(),
-                    localizedMessage, remoteAddr);
+            log.warn("客户端异常: {} {} - {}, 消息: {}, 客户端 IP: {}, User-Agent: {}",
+                    method, uri, statusCode, localizedMessage, remoteAddr, userAgent, exception);
         } else {
-            log.info("异常处理: {} {} - 状态码: {}, 异常类型: {}, 消息: {}",
-                    method, uri, statusCode, exception.getClass().getSimpleName(), localizedMessage);
+            log.info("异常: {} {} - 消息: {}, 客户端 IP: {}, User-Agent: {}",
+                    method, uri, statusCode, localizedMessage, remoteAddr, userAgent, exception);
         }
     }
 }

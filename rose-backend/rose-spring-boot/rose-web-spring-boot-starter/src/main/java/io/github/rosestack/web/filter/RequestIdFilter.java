@@ -1,6 +1,7 @@
 package io.github.rosestack.web.filter;
 
 import io.github.rosestack.core.Constants;
+import io.github.rosestack.core.spring.AbstractBaseFilter;
 import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.web.config.RoseWebProperties;
 import jakarta.servlet.FilterChain;
@@ -8,8 +9,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -26,12 +25,10 @@ import static io.github.rosestack.core.Constants.MdcName.MDC_REQUEST_ID;
  * @author rosestack
  * @since 1.0.0
  */
-public class RequestIdFilter extends OncePerRequestFilter {
-
-    private final RoseWebProperties roseWebProperties;
+public class RequestIdFilter extends AbstractBaseFilter {
 
     public RequestIdFilter(RoseWebProperties roseWebProperties) {
-        this.roseWebProperties = roseWebProperties;
+        super(roseWebProperties.getFilter().getExcludePaths());
     }
 
     @Override

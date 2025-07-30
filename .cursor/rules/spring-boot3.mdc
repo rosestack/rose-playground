@@ -115,10 +115,6 @@ alwaysApply: true
     - `@Data`、`@Builder`、`@Value`
     - `@Slf4j`：日志注解
     - `@RequiredArgsConstructor`：构造函数注入
-- **MapStruct**：对象映射工具
-    - 编译时生成映射代码
-    - 类型安全
-    - 高性能
 
 #### 开发辅助
 
@@ -144,10 +140,11 @@ alwaysApply: true
 - **JUnit 4**：功能有限，使用 JUnit 5
 - **Hamcrest**：断言不够流畅，使用 AssertJ
 - **PowerMock**：与现代 JVM 不兼容
+- **MapStruct**：和 lombok 有兼容性问题
 
 #### 性能或架构问题
 
-- **Apache Commons BeanUtils**：性能差，使用 MapStruct
+- **Apache Commons BeanUtils**：性能差
 - **Dozer**：运行时映射性能差
 - **ModelMapper**：运行时映射，不如编译时
 - **Jedis**：连接池管理复杂，使用 Spring Data Redis
@@ -235,7 +232,7 @@ project/
 │           ├── UserEntity.java              # 用户数据库实体
 │           ├── UserMapper.java              # MyBatis Mapper
 │           ├── UserServiceImpl.java         # 用户服务实现
-│           ├── UserConverter.java           # MapStruct对象转换
+│           ├── UserConverter.java           # 对象转换
 │           ├── UserException.java           # 用户模块自定义异常
 │           └── UserStatus.java              # 用户状态枚举
 └── src/main/resources/

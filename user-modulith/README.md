@@ -183,7 +183,6 @@ curl http://localhost:8080/api/users/list
 - **Redis 7.x**：缓存服务
 - **Docker & Docker Compose**：容器化部署
 - **Lombok**：代码生成
-- **MapStruct 1.5.5.Final**：对象映射
 - **TestContainers 1.19.1**：集成测试
 
 ## 🐳 Docker 环境

@@ -1,7 +1,10 @@
 package io.github.rosestack.web.advice;
 
 import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.core.spring.AbstractBaseFilter;
+import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.web.annotation.ResponseIgnore;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -14,7 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 /**
  * 响应体包装器
  * <p>
- * 自动将控制器返回的数据包装为统一的 ApiResponse 格式
+ * 自动将控制器返回的数据包装为统一的 ApiResponse 格式，支持基于 URL 的排除路径
  * </p>
  *
  * @author rosestack
@@ -22,32 +25,25 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
-
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        // 检查方法或类是否标记了 @ResponseIgnore
-        if (returnType.hasMethodAnnotation(ResponseIgnore.class) ||
-                returnType.getContainingClass().isAnnotationPresent(ResponseIgnore.class)) {
-            return false;
-        }
-
-        // 排除 SpringDoc OpenAPI 相关的端点
-        String className = returnType.getContainingClass().getName();
-        if (className.startsWith("org.springdoc") ||
-            className.contains("OpenApiResource") ||
-            className.contains("SwaggerResource")) {
-            return false;
-        }
-
-        // 如果返回值已经是 ApiResponse 类型，不需要再次包装
-        return !ApiResponse.class.isAssignableFrom(returnType.getParameterType());
+        return !returnType.hasMethodAnnotation(ResponseIgnore.class) &&
+                !returnType.getContainingClass().isAnnotationPresent(ResponseIgnore.class) &&
+                !ApiResponse.class.isAssignableFrom(returnType.getParameterType());
     }
 
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
                                   Class<? extends HttpMessageConverter<?>> selectedConverterType,
                                   ServerHttpRequest request, ServerHttpResponse response) {
+        // 检查请求路径是否应该被排除
+        String requestPath = ServletUtils.extractPathFromUri(request.getURI().getPath());
+        if (AbstractBaseFilter.shouldExcludePath(requestPath)) {
+            log.debug("ApiResponseBodyAdvice 跳过包装路径: {}", requestPath);
+            return body;
+        }
 
         // 如果返回值为 null，包装为成功响应
         if (body == null) {
@@ -62,7 +58,7 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
         // 包装为成功响应
         ApiResponse<Object> apiResponse = ApiResponse.success(body);
 
-        log.debug("响应体包装完成，数据类型: {}", body.getClass().getSimpleName());
+        log.debug("响应体包装完成，路径: {}, 数据类型: {}", requestPath, body.getClass().getSimpleName());
 
         return apiResponse;
     }

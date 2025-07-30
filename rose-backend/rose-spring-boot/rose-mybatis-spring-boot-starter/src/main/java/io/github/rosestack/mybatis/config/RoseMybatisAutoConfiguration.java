@@ -11,7 +11,6 @@ import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionIntercepto
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
@@ -21,7 +20,7 @@ import io.github.rosestack.mybatis.support.audit.DefaultAuditStorage;
 import io.github.rosestack.mybatis.support.datapermission.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.support.encryption.DefaultFieldEncryptor;
 import io.github.rosestack.mybatis.support.encryption.hash.HashService;
-import io.github.rosestack.mybatis.support.tenant.TenantIdFilter;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +29,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
-
-import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_ORDER;
 
 /**
  * Rose MyBatis Plus 自动配置类
@@ -71,6 +67,11 @@ public class RoseMybatisAutoConfiguration {
                 (cache) -> cache.maximumSize(1024).expireAfterWrite(5, TimeUnit.SECONDS)));
     }
 
+    @PostConstruct
+    public void init() {
+        log.info("Rose Mybatis 自动配置已启用");
+    }
+
     /**
      * MyBatis Plus 拦截器配置
      * <p>
@@ -83,8 +84,6 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler tenantLineHandler,
                                                          @Autowired(required = false) RoseDataPermissionHandler roseDataPermissionHandler) {
-        log.info("启用 MyBatis Plus 拦截器");
-
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 多租户插件（必须放在第一位）
         if (properties.getTenant().isEnabled() && tenantLineHandler != null) {
@@ -130,7 +129,7 @@ public class RoseMybatisAutoConfiguration {
     @ConditionalOnMissingBean(MetaObjectHandler.class)
     @ConditionalOnProperty(prefix = "rose.mybatis.field-fill", name = "enabled", havingValue = "true", matchIfMissing = true)
     public MetaObjectHandler roseMetaObjectHandler() {
-        log.info("初始化元数据处理器");
+        log.info("启用元数据处理器");
         return new RoseMetaObjectHandler(properties);
     }
 
@@ -151,12 +150,6 @@ public class RoseMybatisAutoConfiguration {
     public AuditLogInterceptor auditInterceptor() {
         log.info("启用审计日志拦截器，日志等级: {}", properties.getAudit().getLogLevel());
         return new AuditLogInterceptor(properties, new DefaultAuditStorage());
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
-    public FilterRegistrationBean<TenantIdFilter> tenantIdFilter() {
-        return SpringContextUtils.createFilterBean(new TenantIdFilter(), TENANT_ID_FILTER_ORDER);
     }
 
     @Bean

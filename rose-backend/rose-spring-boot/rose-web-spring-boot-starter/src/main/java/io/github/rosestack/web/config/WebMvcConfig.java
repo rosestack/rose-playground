@@ -5,7 +5,6 @@ import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.web.filter.CachingRequestFilter;
 import io.github.rosestack.web.filter.RequestIdFilter;
 import io.github.rosestack.web.filter.XssFilter;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,11 +29,6 @@ import static io.github.rosestack.core.Constants.FilterOrder.XSS_FILTER_ORDER;
 public class WebMvcConfig implements WebMvcConfigurer {
     private final RoseWebProperties roseWebProperties;
 
-    @PostConstruct
-    public void init() {
-        log.info("初始化 Web MVC 配置");
-    }
-
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.filter.request-id", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FilterRegistrationBean<RequestIdFilter> requestIdFilter() {
@@ -44,7 +38,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.filter.caching-request", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FilterRegistrationBean<CachingRequestFilter> cachingRequestFilter() {
-        return SpringContextUtils.createFilterBean(new CachingRequestFilter(), CACHING_REQUEST_FILTER_ORDER);
+        return SpringContextUtils.createFilterBean(new CachingRequestFilter(roseWebProperties), CACHING_REQUEST_FILTER_ORDER);
     }
 
     @Bean

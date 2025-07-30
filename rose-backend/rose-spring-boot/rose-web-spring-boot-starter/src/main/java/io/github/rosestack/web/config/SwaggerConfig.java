@@ -49,7 +49,7 @@ public class SwaggerConfig {
                     .security(buildSecurityRequirements(swaggerConfig));
         }
 
-        log.info("构建 OpenAPI 文档: {}", openAPI.getServers().stream().map(Server::getUrl).toList());
+        log.info("启用 OpenAPI 文档: {}", openAPI.getInfo().getTitle());
 
         return openAPI;
     }

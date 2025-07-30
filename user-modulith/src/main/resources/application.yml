@@ -14,6 +14,11 @@ spring:
       max-lifetime: 1800000
       leak-detection-threshold: 60000
 
+# 服务器配置
+server:
+  # 优先使用 IPv4
+  address: 127.0.0.1
+
 # 日志配置
 logging:
   level:

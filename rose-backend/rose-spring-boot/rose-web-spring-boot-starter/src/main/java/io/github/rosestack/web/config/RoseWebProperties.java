@@ -1,7 +1,6 @@
 package io.github.rosestack.web.config;
 
 import lombok.Data;
-import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -43,6 +42,8 @@ public class RoseWebProperties {
      */
     @Data
     public static class Filter {
+        private String[] excludePaths;
+
         /**
          * 请求ID过滤器
          */
