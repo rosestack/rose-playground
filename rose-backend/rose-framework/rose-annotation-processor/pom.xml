@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-annotation-processor</artifactId>
-    <name>rose-processor</name>
+    <name>rose-annotation-processor</name>
 
     <build>
         <plugins>

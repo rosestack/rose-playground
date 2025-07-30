@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-notification</artifactId>
-    <name>rose-notice</name>
+    <name>rose-notification</name>
 
     <dependencies>
         <dependency>
