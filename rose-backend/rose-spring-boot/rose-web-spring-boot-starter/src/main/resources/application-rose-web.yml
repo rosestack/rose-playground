@@ -6,8 +6,6 @@ spring:
     basename: classpath:messages
     encoding: UTF-8
     cache-duration: PT1H
-    fallback-to-system-locale: false
-    use-code-as-default-message: true
   # Jackson 序列化配置
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss

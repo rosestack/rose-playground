@@ -53,10 +53,10 @@ public class RoseWebProperties {
          */
         private Xss xss = new Xss();
 
-        private Caching cachingRequest = new Caching();
+        private CachingRequest cachingRequest = new CachingRequest();
 
         @Data
-        public static class Caching {
+        public static class CachingRequest {
             /**
              * 是否启用
              */
