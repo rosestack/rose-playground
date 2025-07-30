@@ -2,6 +2,7 @@ package io.github.rosestack.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.github.rosestack.core.annotation.FieldSensitive;
+import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.core.jackson.desensitization.Desensitization;
 import io.github.rosestack.core.util.ServletUtils;
 import io.github.rosestack.mybatis.annotation.AuditLog;
@@ -39,7 +40,7 @@ import static io.github.rosestack.core.util.date.DatePattern.NORM_DATETIME_FORMA
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class})
 })
-public class AuditInterceptor implements Interceptor {
+public class AuditLogInterceptor implements Interceptor {
 
     private final RoseMybatisProperties properties;
     private final AuditStorage auditStorage;
@@ -254,9 +255,6 @@ public class AuditInterceptor implements Interceptor {
      * 格式化SQL
      */
     private String formatSql(String sql) {
-        if (!properties.getAudit().isIncludeSql()) {
-            return "[SQL_HIDDEN]";
-        }
         return sql.replaceAll("\\s+", " ").trim();
     }
 
@@ -264,20 +262,7 @@ public class AuditInterceptor implements Interceptor {
      * 格式化参数
      */
     private String formatParameters(Object parameter) {
-        if (!properties.getAudit().isIncludeParameters()) {
-            return "[PARAMS_HIDDEN]";
-        }
-
-        if (parameter == null) {
-            return "null";
-        }
-
-        String paramStr = parameter.toString();
-        if (paramStr.length() > 500) {
-            return paramStr.substring(0, 500) + "...";
-        }
-
-        return paramStr;
+        return JsonUtils.toString(parameter);
     }
 
     /**

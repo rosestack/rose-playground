@@ -1,6 +1,5 @@
 package io.github.rosestack.i18n.spring.context;
 
-import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.util.I18nUtils;
@@ -16,6 +15,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,13 +32,8 @@ public class I18nApplicationListener implements SmartApplicationListener {
     private static final Logger logger = LoggerFactory.getLogger(I18nApplicationListener.class);
 
     private static final String ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME = "org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver";
-
     private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS = ClassUtils.resolveClassName(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME, ClassUtils.getDefaultClassLoader());
-
-    private static final Class<?>[] SUPPORTED_EVENT_TYPES = {
-            ContextRefreshedEvent.class,
-            ContextClosedEvent.class
-    };
+    private static final Class<?>[] SUPPORTED_EVENT_TYPES = {ContextRefreshedEvent.class, ContextClosedEvent.class};
 
     @Override
     public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
@@ -59,7 +54,7 @@ public class I18nApplicationListener implements SmartApplicationListener {
 
         initializeServiceMessageSource(context);
 
-        initializeAcceptHeaderLocaleResolver();
+        initializeAcceptHeaderLocaleResolver(context);
     }
 
     private void initializeServiceMessageSource(ApplicationContext context) {
@@ -67,24 +62,22 @@ public class I18nApplicationListener implements SmartApplicationListener {
         I18nUtils.setI18nMessageSource(i18nMessageSource);
     }
 
-
     @SuppressWarnings("unchecked")
-    private void initializeAcceptHeaderLocaleResolver() {
+    private void initializeAcceptHeaderLocaleResolver(ApplicationContext context) {
         if (ACCEPT_HEADER_LOCALE_RESOLVER_CLASS == null) {
             logger.debug("The class '{}' was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
             return;
         }
 
         Class<AcceptHeaderLocaleResolver> beanClass = (Class<AcceptHeaderLocaleResolver>) ACCEPT_HEADER_LOCALE_RESOLVER_CLASS;
-
-        List<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = SpringContextUtils.getSortedBeans(beanClass);
+        Collection<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = context.getBeansOfType(beanClass).values();
 
         if (acceptHeaderLocaleResolvers.isEmpty()) {
             logger.debug("The '{}' Spring Bean was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
             return;
         }
 
-        I18nMessageSource i18nMessageSource = SpringContextUtils.getBean(I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource = context.getBean(I18nMessageSource.class);
 
         for (AcceptHeaderLocaleResolver acceptHeaderLocaleResolver : acceptHeaderLocaleResolvers) {
             Locale defaultLocale = Locale.getDefault();

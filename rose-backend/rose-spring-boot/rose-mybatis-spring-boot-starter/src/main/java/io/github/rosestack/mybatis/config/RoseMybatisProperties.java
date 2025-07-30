@@ -314,11 +314,6 @@ public class RoseMybatisProperties {
         private boolean includeSql = true;
 
         /**
-         * 是否包含参数
-         */
-        private boolean includeParameters = false;
-
-        /**
          * 日志级别
          */
         private String logLevel = "INFO";

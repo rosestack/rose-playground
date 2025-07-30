@@ -8,6 +8,7 @@ import io.github.rosestack.i18n.spring.boot.cache.RedisMessageCacheLoader;
 import io.github.rosestack.i18n.spring.boot.condition.ConditionalOnI18nEnabled;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,6 +26,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 @ConditionalOnI18nEnabled
 @EnableI18n
 @RequiredArgsConstructor
+@AutoConfiguration
 @EnableConfigurationProperties(I18nProperties.class)
 @Import(I18nAutoConfiguration.MessageCacheLoaderConfiguration.class)
 public class I18nAutoConfiguration {
@@ -50,8 +52,7 @@ public class I18nAutoConfiguration {
         @ConditionalOnClass(RedisTemplate.class)
         @ConditionalOnProperty(name = "rose.i18n.cache.type", havingValue = "REDIS")
         @ConditionalOnMissingBean
-        public MessageCacheLoader redisMessageCacheLoader(
-                RedisTemplate<String, Object> redisTemplate) {
+        public MessageCacheLoader redisMessageCacheLoader(RedisTemplate<String, Object> redisTemplate) {
             return new RedisMessageCacheLoader(i18nProperties.getCache(), redisTemplate);
         }
     }
