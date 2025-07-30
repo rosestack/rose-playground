@@ -21,19 +21,21 @@ public class YmlPropertySourceFactory extends DefaultPropertySourceFactory {
     public PropertySource<?> createPropertySource(String name, EncodedResource resource) throws IOException {
         String sourceName = resource.getResource().getFilename();
         if (StringUtils.isNotBlank(sourceName) && StringUtils.endsWithAny(sourceName, ".yml", ".yaml")) {
-            YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
-            factory.setResources(resource.getResource());
-            factory.afterPropertiesSet();
-
-            Properties properties = factory.getObject();
-            if (properties == null) {
-                properties = new Properties();
-            }
-
-            String actualSourceName = sourceName != null ? sourceName : "yaml-property-source";
-            return new PropertiesPropertySource(actualSourceName, properties);
+            return super.createPropertySource(name, resource);
         }
-        return super.createPropertySource(name, resource);
+
+        YamlPropertiesFactoryBean factory = new YamlPropertiesFactoryBean();
+        factory.setResources(resource.getResource());
+        factory.afterPropertiesSet();
+
+        Properties properties = factory.getObject();
+        if (properties == null) {
+            properties = new Properties();
+        }
+
+        String actualSourceName = sourceName != null ? sourceName : "yaml-property-source";
+        return new PropertiesPropertySource(actualSourceName, properties);
+
     }
 
 }

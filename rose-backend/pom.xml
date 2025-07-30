@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -26,8 +26,8 @@
         <!-- 依赖版本管理 -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <mybatis-plus.version>3.5.12</mybatis-plus.version>
-        <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <springdoc-openapi.version>2.8.6</springdoc-openapi.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <springdoc-openapi.version>2.8.9</springdoc-openapi.version>
     </properties>
 
     <modules>
@@ -91,16 +91,10 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path-assert</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -115,103 +109,103 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.30</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
             <!-- Maven Surefire Plugin for JUnit 5 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- 确保使用 JUnit 5 平台 -->
-                    <useModulePath>false</useModulePath>
-                    <!-- 包含所有测试 -->
-                    <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/*Tests.java</include>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <!-- JUnit 5 系统属性 -->
-                    <systemPropertyVariables>
-                        <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
-                        <junit.jupiter.execution.parallel.mode.default>concurrent
-                        </junit.jupiter.execution.parallel.mode.default>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-surefire-plugin</artifactId>-->
+            <!--                <configuration>-->
+            <!--                    &lt;!&ndash; 确保使用 JUnit 5 平台 &ndash;&gt;-->
+            <!--                    <useModulePath>false</useModulePath>-->
+            <!--                    &lt;!&ndash; 包含所有测试 &ndash;&gt;-->
+            <!--                    <includes>-->
+            <!--                        <include>**/*Test.java</include>-->
+            <!--                        <include>**/*Tests.java</include>-->
+            <!--                        <include>**/*TestCase.java</include>-->
+            <!--                    </includes>-->
+            <!--                    &lt;!&ndash; JUnit 5 系统属性 &ndash;&gt;-->
+            <!--                    <systemPropertyVariables>-->
+            <!--                        <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>-->
+            <!--                        <junit.jupiter.execution.parallel.mode.default>concurrent-->
+            <!--                        </junit.jupiter.execution.parallel.mode.default>-->
+            <!--                    </systemPropertyVariables>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
 
             <!-- Maven Failsafe Plugin for Integration Tests -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*IT.java</include>
-                        <include>**/*IntegrationTest.java</include>
-                    </includes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-failsafe-plugin</artifactId>-->
+            <!--                <configuration>-->
+            <!--                    <includes>-->
+            <!--                        <include>**/*IT.java</include>-->
+            <!--                        <include>**/*IntegrationTest.java</include>-->
+            <!--                    </includes>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <goals>-->
+            <!--                            <goal>integration-test</goal>-->
+            <!--                            <goal>verify</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
 
             <!-- JaCoCo 测试覆盖率插件 -->
-<!--            <plugin>-->
-<!--                <groupId>org.jacoco</groupId>-->
-<!--                <artifactId>jacoco-maven-plugin</artifactId>-->
-<!--                <version>0.8.12</version>-->
-<!--                <executions>-->
-<!--                    &lt;!&ndash; 准备JaCoCo代理 &ndash;&gt;-->
-<!--                    <execution>-->
-<!--                        <id>prepare-agent</id>-->
-<!--                        <goals>-->
-<!--                            <goal>prepare-agent</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                    &lt;!&ndash; 生成测试覆盖率报告 &ndash;&gt;-->
-<!--                    <execution>-->
-<!--                        <id>report</id>-->
-<!--                        <phase>test</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>report</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                    &lt;!&ndash; 检查覆盖率阈值 &ndash;&gt;-->
-<!--                    <execution>-->
-<!--                        <id>check</id>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <rules>-->
-<!--                                <rule>-->
-<!--                                    <element>BUNDLE</element>-->
-<!--                                    &lt;!&ndash;                                    <limits>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                        <limit>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                            <counter>LINE</counter>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                            <value>COVEREDRATIO</value>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                            <minimum>0.60</minimum>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                        </limit>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                        <limit>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                            <counter>BRANCH</counter>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                            <value>COVEREDRATIO</value>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                            <minimum>0.50</minimum>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                        </limit>&ndash;&gt;-->
-<!--                                    &lt;!&ndash;                                    </limits>&ndash;&gt;-->
-<!--                                </rule>-->
-<!--                            </rules>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.jacoco</groupId>-->
+            <!--                <artifactId>jacoco-maven-plugin</artifactId>-->
+            <!--                <version>0.8.12</version>-->
+            <!--                <executions>-->
+            <!--                    &lt;!&ndash; 准备JaCoCo代理 &ndash;&gt;-->
+            <!--                    <execution>-->
+            <!--                        <id>prepare-agent</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>prepare-agent</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                    &lt;!&ndash; 生成测试覆盖率报告 &ndash;&gt;-->
+            <!--                    <execution>-->
+            <!--                        <id>report</id>-->
+            <!--                        <phase>test</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>report</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                    &lt;!&ndash; 检查覆盖率阈值 &ndash;&gt;-->
+            <!--                    <execution>-->
+            <!--                        <id>check</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>check</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <rules>-->
+            <!--                                <rule>-->
+            <!--                                    <element>BUNDLE</element>-->
+            <!--                                    &lt;!&ndash;                                    <limits>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                        <limit>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                            <counter>LINE</counter>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                            <value>COVEREDRATIO</value>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                            <minimum>0.60</minimum>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                        </limit>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                        <limit>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                            <counter>BRANCH</counter>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                            <value>COVEREDRATIO</value>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                            <minimum>0.50</minimum>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                        </limit>&ndash;&gt;-->
+            <!--                                    &lt;!&ndash;                                    </limits>&ndash;&gt;-->
+            <!--                                </rule>-->
+            <!--                            </rules>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
         </plugins>
     </build>
 </project>

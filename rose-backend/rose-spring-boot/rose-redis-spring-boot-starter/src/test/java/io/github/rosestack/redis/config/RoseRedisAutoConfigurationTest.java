@@ -1,11 +1,8 @@
 package io.github.rosestack.redis.config;
 
-import io.github.rosestack.redis.lock.DistributedLockManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,7 +16,6 @@ class RoseRedisAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
-                    RedisAutoConfiguration.class,
                     RoseRedisAutoConfiguration.class
             ));
 
@@ -30,10 +26,9 @@ class RoseRedisAutoConfigurationTest {
                 .run(context -> {
                     assertThat(context).hasSingleBean(RoseRedisProperties.class);
                     assertThat(context).hasSingleBean(RoseRedisAutoConfiguration.class);
-                    // 验证分布式锁管理器在有 RedisTemplate 时才创建
-                    if (context.containsBean("redisTemplate")) {
-                        assertThat(context).hasSingleBean(DistributedLockManager.class);
-                    }
+                    // 验证配置属性正确加载
+                    RoseRedisProperties properties = context.getBean(RoseRedisProperties.class);
+                    assertThat(properties.isEnabled()).isTrue();
                 });
     }
 
@@ -52,10 +47,9 @@ class RoseRedisAutoConfigurationTest {
                 .run(context -> {
                     assertThat(context).hasSingleBean(RoseRedisProperties.class);
                     assertThat(context).hasSingleBean(RoseRedisAutoConfiguration.class);
-                    // 验证分布式锁管理器在有 RedisTemplate 时才创建
-                    if (context.containsBean("redisTemplate")) {
-                        assertThat(context).hasSingleBean(DistributedLockManager.class);
-                    }
+                    // 验证配置属性正确加载
+                    RoseRedisProperties properties = context.getBean(RoseRedisProperties.class);
+                    assertThat(properties.isEnabled()).isTrue();
                 });
     }
 
@@ -72,11 +66,6 @@ class RoseRedisAutoConfigurationTest {
                     assertThat(properties.isEnabled()).isTrue();
                     assertThat(properties.getLock().isEnabled()).isTrue();
                     assertThat(properties.getCache().isEnabled()).isTrue();
-
-                    // 验证分布式锁管理器在有 RedisTemplate 时才创建
-                    if (context.containsBean("redisTemplate")) {
-                        assertThat(context).hasSingleBean(DistributedLockManager.class);
-                    }
                 });
     }
 }

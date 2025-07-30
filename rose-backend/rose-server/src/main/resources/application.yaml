@@ -4,12 +4,7 @@ spring:
     username: root
     password: password
     driver-class-name: com.mysql.cj.jdbc.Driver
-  jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
-    time-zone: GMT+8
-  messages:
-    encoding: UTF-8
-    basename: classpath:messages
+
   mail:
     host: 127.0.0.1
     port: 1025
@@ -23,19 +18,3 @@ spring:
           auth: true
           starttls:
             enable: true
-
-mybatis-plus:
-  mapper-locations: classpath*:mapper/**/*.xml
-  configuration:
-    map-underscore-to-camel-case: true
-  global-config:
-    db-config:
-      id-type: auto
-      logic-delete-value: 1
-      logic-not-delete-value: 0
-      logic-delete-field: deleted
-
-logging:
-  level:
-    root: info
-    io.github.rose: debug

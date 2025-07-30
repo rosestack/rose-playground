@@ -53,14 +53,14 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
      * 获取应用名称
      */
     public static String getApplicationName() {
-        return applicationContext != null ? applicationContext.getApplicationName() : "unknown";
+        return isInitialized() ? applicationContext.getApplicationName() : "unknown";
     }
 
     /**
      * 获取激活的配置文件
      */
     public static String[] getActiveProfiles() {
-        return applicationContext != null ?
+        return isInitialized() ?
                 applicationContext.getEnvironment().getActiveProfiles() :
                 new String[0];
     }
@@ -77,34 +77,37 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
      * 根据类型获取 Bean
      */
     public static <T> T getBean(Class<T> beanClass) throws BeansException {
-        return applicationContext.getBean(beanClass);
+        return isInitialized() ? applicationContext.getBean(beanClass) : null;
     }
 
     /**
      * 根据名称和类型获取 Bean
      */
     public static <T> T getBean(String name, Class<T> beanClass) throws BeansException {
-        return applicationContext.getBean(name, beanClass);
+        return isInitialized() ? applicationContext.getBean(name, beanClass) : null;
     }
 
     /**
      * 根据名称获取 Bean
      */
     public static Object getBean(String name) throws BeansException {
-        return applicationContext.getBean(name);
+        return isInitialized() ? applicationContext.getBean(name) : null;
     }
 
     /**
      * 获取指定类型的所有 Bean
      */
     public static <T> Map<String, T> getBeansOfType(Class<T> type) {
-        return applicationContext.getBeansOfType(type);
+        return isInitialized() ? applicationContext.getBeansOfType(type) : Collections.emptyMap();
     }
 
     /**
      * 获取指定类型的所有 Bean，并按 @Order 注解排序
      */
     public static <T> List<T> getSortedBeans(Class<T> type) {
+        if (applicationContext == null) {
+            return Collections.emptyList();
+        }
         Map<String, T> beansOfType = getBeansOfType(type);
         List<T> beansList = new ArrayList<>(beansOfType.values());
         AnnotationAwareOrderComparator.sort(beansList);
@@ -112,38 +115,10 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
     }
 
     /**
-     * 检查是否包含指定名称的 Bean
-     */
-    public static boolean containsBean(String name) {
-        return applicationContext.containsBean(name);
-    }
-
-    /**
-     * 检查指定名称的 Bean 是否为单例
-     */
-    public static boolean isSingleton(String name) {
-        return applicationContext.isSingleton(name);
-    }
-
-    /**
-     * 获取指定名称 Bean 的类型
-     */
-    public static Class<?> getType(String name) {
-        return applicationContext.getType(name);
-    }
-
-    /**
-     * 获取指定名称 Bean 的别名
-     */
-    public static String[] getAliases(String name) {
-        return applicationContext.getAliases(name);
-    }
-
-    /**
      * 发布事件
      */
     public static void publishEvent(Object event) {
-        if (applicationContext != null) {
+        if (isInitialized()) {
             applicationContext.publishEvent(event);
         }
     }
@@ -152,16 +127,14 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
      * 获取环境变量
      */
     public static String getProperty(String key) {
-        return applicationContext != null ?
-                applicationContext.getEnvironment().getProperty(key) : null;
+        return isInitialized() ? applicationContext.getEnvironment().getProperty(key) : null;
     }
 
     /**
      * 获取环境变量，如果不存在则返回默认值
      */
     public static String getProperty(String key, String defaultValue) {
-        return applicationContext != null ?
-                applicationContext.getEnvironment().getProperty(key, defaultValue) :
+        return isInitialized() ? applicationContext.getEnvironment().getProperty(key, defaultValue) :
                 defaultValue;
     }
 
@@ -169,15 +142,14 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
      * 获取指定类型的环境变量
      */
     public static <T> T getProperty(String key, Class<T> targetType) {
-        return applicationContext != null ?
-                applicationContext.getEnvironment().getProperty(key, targetType) : null;
+        return isInitialized() ? applicationContext.getEnvironment().getProperty(key, targetType) : null;
     }
 
     /**
      * 获取指定类型的环境变量，如果不存在则返回默认值
      */
     public static <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        return applicationContext != null ?
+        return isInitialized() ?
                 applicationContext.getEnvironment().getProperty(key, targetType, defaultValue) :
                 defaultValue;
     }
@@ -186,7 +158,7 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
      * 检查是否存在指定的环境变量
      */
     public static boolean containsProperty(String key) {
-        return applicationContext != null &&
+        return isInitialized() &&
                 applicationContext.getEnvironment().containsProperty(key);
     }
 
@@ -201,16 +173,14 @@ public class SpringContextUtils implements ApplicationContextAware, DisposableBe
      * 获取 Bean 的数量
      */
     public static int getBeanDefinitionCount() {
-        return applicationContext != null ? applicationContext.getBeanDefinitionCount() : 0;
+        return isInitialized() ? applicationContext.getBeanDefinitionCount() : 0;
     }
 
     /**
      * 获取所有 Bean 的名称
      */
     public static String[] getBeanDefinitionNames() {
-        return applicationContext != null ?
-                applicationContext.getBeanDefinitionNames() :
-                new String[0];
+        return isInitialized() ? applicationContext.getBeanDefinitionNames() : new String[0];
     }
 
     /**

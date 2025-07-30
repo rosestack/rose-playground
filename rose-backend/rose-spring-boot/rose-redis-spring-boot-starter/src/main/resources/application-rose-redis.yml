@@ -1,0 +1,51 @@
+rose:
+  redis:
+    # 是否启用 Rose Redis 功能
+    enabled: true
+    # 缓存配置
+    cache:
+      # 默认过期时间（秒）
+      default-ttl: 3600
+      # 缓存键前缀
+      key-prefix: "rose:cache:"
+      # 是否启用缓存统计
+      enable-statistics: false
+    
+    # 分布式锁配置
+    lock:
+      # 锁的默认过期时间（毫秒）
+      default-lease-time: 30000
+      # 锁的等待时间（毫秒）
+      wait-time: 10000
+      # 锁键前缀
+      key-prefix: "rose:lock:"
+    
+    # 限流配置
+    rate-limit:
+      # 是否启用限流
+      enabled: false
+      # 默认限流规则
+      default-rate: 100
+      # 时间窗口（秒）
+      time-window: 60
+      # 限流键前缀
+      key-prefix: "rose:rate-limit:"
+    
+    # 会话配置
+    session:
+      # 会话过期时间（秒）
+      timeout: 1800
+      # 会话键前缀
+      key-prefix: "rose:session:"
+    
+    # 序列化配置
+    serialization:
+      # 默认序列化方式：json, jdk, kryo
+      type: json
+      # 是否压缩
+      compress: false
+
+# 日志配置
+logging:
+  level:
+    io.github.rosestack.redis: DEBUG

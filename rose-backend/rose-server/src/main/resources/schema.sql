@@ -9,7 +9,7 @@ CREATE TABLE `user` (
 ) ;
 
 -- 通知主表
-CREATE TABLE `notification` (
+CREATE TABLE notification (
     id VARCHAR(64) PRIMARY KEY,
     tenant_id VARCHAR(64),
     channel_id VARCHAR(64),
@@ -25,7 +25,7 @@ CREATE TABLE `notification` (
     retry_count INT default -1,
     trace_id VARCHAR(64),
     request_id VARCHAR(64),
-    UNIQUE KEY uk_notification_request_id (request_id)
+    CONSTRAINT uk_notification_request_id UNIQUE (request_id)
 );
 
 -- 通知模板表
