@@ -545,8 +545,8 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         }
 
         // 设置创建时间
-        if (auditLog.getCreatedAt() == null) {
-            auditLog.setCreatedAt(LocalDateTime.now());
+        if (auditLog.getCreatedTime() == null) {
+            auditLog.setCreatedTime(LocalDateTime.now());
         }
 
         // 补充上下文信息

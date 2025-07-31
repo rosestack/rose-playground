@@ -32,7 +32,7 @@ CREATE TABLE audit_log_detail (
     tenant_id VARCHAR(50),
     
     -- ==================== 系统字段 ====================
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
     -- 外键约束
     CONSTRAINT fk_audit_log_detail_audit_log 
@@ -54,7 +54,7 @@ COMMENT ON COLUMN audit_log_detail.detail_value IS '详情值（JSONB格式，�
 COMMENT ON COLUMN audit_log_detail.is_sensitive IS '是否包含敏感数据';
 COMMENT ON COLUMN audit_log_detail.is_encrypted IS '是否已加密存储';
 COMMENT ON COLUMN audit_log_detail.tenant_id IS '租户ID（多租户支持）';
-COMMENT ON COLUMN audit_log_detail.created_at IS '创建时间';
+COMMENT ON COLUMN audit_log_detail.created_time IS '创建时间';
 
 -- =====================================================
 -- 创建索引
@@ -79,7 +79,7 @@ CREATE INDEX idx_audit_detail_encrypted ON audit_log_detail (is_encrypted);
 CREATE INDEX idx_audit_detail_tenant_id ON audit_log_detail (tenant_id);
 
 -- 创建时间索引（时间范围查询）
-CREATE INDEX idx_audit_detail_created_at ON audit_log_detail (created_at);
+CREATE INDEX idx_audit_detail_created_at ON audit_log_detail (created_time);
 
 -- 复合索引：审计日志ID+详情类型（常用查询组合）
 CREATE INDEX idx_audit_detail_log_type ON audit_log_detail (audit_log_id, detail_type);
@@ -153,7 +153,7 @@ BEGIN
     
     -- 删除过期数据
     DELETE FROM audit_log_detail 
-    WHERE created_at < cutoff_date;
+    WHERE created_time < cutoff_date;
     
     -- 获取删除的记录数
     GET DIAGNOSTICS deleted_count = ROW_COUNT;
@@ -239,7 +239,7 @@ RETURNS TABLE (
     detail_type VARCHAR(50),
     detail_key VARCHAR(50),
     matched_value JSONB,
-    created_at TIMESTAMP
+    created_time TIMESTAMP
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -249,10 +249,10 @@ BEGIN
         d.detail_type,
         d.detail_key,
         d.detail_value #> ''' || json_path || ''' as matched_value,
-        d.created_at
+        d.created_time
     FROM audit_log_detail d
     WHERE d.detail_value #>> ''' || json_path || ''' ILIKE ''%' || search_value || '%''
-    ORDER BY d.created_at DESC
+    ORDER BY d.created_time DESC
     LIMIT ' || limit_count;
 END;
 $$ LANGUAGE plpgsql;
@@ -275,7 +275,7 @@ SELECT
     is_sensitive,
     is_encrypted,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE is_sensitive = TRUE;
 
@@ -287,7 +287,7 @@ SELECT
     detail_key,
     detail_value,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE detail_type = 'HTTP';
 
@@ -301,7 +301,7 @@ SELECT
     is_sensitive,
     is_encrypted,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE detail_type = 'DATA_CHANGE';
 
@@ -316,7 +316,7 @@ SELECT
         ELSE detail_value
     END AS detail_value_safe,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE detail_type = 'SECURITY';
 
@@ -328,8 +328,8 @@ SELECT
     SUM(CASE WHEN is_sensitive THEN 1 ELSE 0 END) as sensitive_count,
     SUM(CASE WHEN is_encrypted THEN 1 ELSE 0 END) as encrypted_count,
     AVG(LENGTH(detail_value::TEXT)) as avg_size,
-    MIN(created_at) as first_created,
-    MAX(created_at) as last_created
+    MIN(created_time) as first_created,
+    MAX(created_time) as last_created
 FROM audit_log_detail 
 GROUP BY detail_type;
 
@@ -349,8 +349,8 @@ BEGIN
     END IF;
     
     -- 设置创建时间
-    IF NEW.created_at IS NULL THEN
-        NEW.created_at := CURRENT_TIMESTAMP;
+    IF NEW.created_time IS NULL THEN
+        NEW.created_time := CURRENT_TIMESTAMP;
     END IF;
     
     -- 验证JSON格式
@@ -426,12 +426,12 @@ CREATE TRIGGER tr_audit_detail_after_update
 -- 创建物化视图用于复杂统计（可选）
 -- CREATE MATERIALIZED VIEW mv_audit_detail_daily_stats AS
 -- SELECT 
---     DATE(created_at) as stat_date,
+--     DATE(created_time) as stat_date,
 --     detail_type,
 --     COUNT(*) as daily_count,
 --     SUM(CASE WHEN is_sensitive THEN 1 ELSE 0 END) as sensitive_count
 -- FROM audit_log_detail 
--- GROUP BY DATE(created_at), detail_type
+-- GROUP BY DATE(created_time), detail_type
 -- ORDER BY stat_date DESC, detail_type;
 
 -- 创建刷新物化视图的函数

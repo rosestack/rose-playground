@@ -43,15 +43,14 @@ CREATE TABLE audit_log (
     tenant_id VARCHAR(50),
     trace_id VARCHAR(100),
     execution_time BIGINT,
-    error_code VARCHAR(50),
-    
+
     -- ==================== 安全信息 ====================
     digital_signature VARCHAR(512),
     hash_value VARCHAR(128),
     prev_hash VARCHAR(128),
     
     -- ==================== 系统字段 ====================
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     
     -- 主键约束
@@ -83,11 +82,10 @@ COMMENT ON COLUMN audit_log.app_name IS '应用名称';
 COMMENT ON COLUMN audit_log.tenant_id IS '租户ID（多租户支持）';
 COMMENT ON COLUMN audit_log.trace_id IS '追踪ID（链路追踪）';
 COMMENT ON COLUMN audit_log.execution_time IS '执行耗时（毫秒）';
-COMMENT ON COLUMN audit_log.error_code IS '错误代码';
 COMMENT ON COLUMN audit_log.digital_signature IS '数字签名（完整性保护）';
 COMMENT ON COLUMN audit_log.hash_value IS '哈希值（完整性保护）';
 COMMENT ON COLUMN audit_log.prev_hash IS '前一条记录哈希值（链式完整性保护）';
-COMMENT ON COLUMN audit_log.created_at IS '创建时间';
+COMMENT ON COLUMN audit_log.created_time IS '创建时间';
 COMMENT ON COLUMN audit_log.deleted IS '逻辑删除标识';
 
 -- =====================================================
@@ -305,11 +303,10 @@ SELECT
     tenant_id,
     trace_id,
     execution_time,
-    error_code,
     digital_signature,
     hash_value,
     prev_hash,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = FALSE;
 
@@ -329,8 +326,7 @@ SELECT
     client_ip,
     tenant_id,
     trace_id,
-    error_code,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = FALSE 
   AND risk_level IN ('HIGH', 'CRITICAL');
@@ -348,8 +344,7 @@ SELECT
     request_uri,
     client_ip,
     tenant_id,
-    error_code,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = FALSE 
   AND status = 'FAILURE';
@@ -367,7 +362,7 @@ SELECT
     user_name,
     client_ip,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = FALSE 
   AND DATE(event_time) = CURRENT_DATE;

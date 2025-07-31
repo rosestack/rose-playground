@@ -32,7 +32,7 @@ CREATE TABLE audit_log_detail (
     tenant_id VARCHAR(50) COMMENT '租户ID（多租户支持）',
     
     -- ==================== 系统字段 ====================
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     
     -- 主键约束
     PRIMARY KEY (id),
@@ -72,7 +72,7 @@ CREATE INDEX idx_audit_detail_encrypted ON audit_log_detail (is_encrypted);
 CREATE INDEX idx_audit_detail_tenant_id ON audit_log_detail (tenant_id);
 
 -- 创建时间索引（时间范围查询）
-CREATE INDEX idx_audit_detail_created_at ON audit_log_detail (created_at);
+CREATE INDEX idx_audit_detail_created_at ON audit_log_detail (created_time);
 
 -- 复合索引：审计日志ID+详情类型（常用查询组合）
 CREATE INDEX idx_audit_detail_log_type ON audit_log_detail (audit_log_id, detail_type);
@@ -104,7 +104,7 @@ SELECT
     is_sensitive,
     is_encrypted,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE is_sensitive = 1;
 
@@ -116,7 +116,7 @@ SELECT
     detail_key,
     detail_value,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE detail_type = 'HTTP';
 
@@ -130,7 +130,7 @@ SELECT
     is_sensitive,
     is_encrypted,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE detail_type = 'DATA_CHANGE';
 
@@ -145,7 +145,7 @@ SELECT
         ELSE detail_value
     END AS detail_value_safe,
     tenant_id,
-    created_at
+    created_time
 FROM audit_log_detail 
 WHERE detail_type = 'SECURITY';
 
@@ -207,7 +207,7 @@ BEGIN
     
     -- 删除过期数据
     DELETE FROM audit_log_detail 
-    WHERE created_at < cutoff_date;
+    WHERE created_time < cutoff_date;
     
     -- 获取删除的记录数
     SET deleted_count = ROW_COUNT();
@@ -277,8 +277,8 @@ BEGIN
     END IF;
     
     -- 设置创建时间
-    IF NEW.created_at IS NULL THEN
-        SET NEW.created_at = NOW();
+    IF NEW.created_time IS NULL THEN
+        SET NEW.created_time = NOW();
     END IF;
 END$$
 

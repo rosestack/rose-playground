@@ -17,9 +17,7 @@ public enum AuditDetailKey {
 
     // ==================== HTTP请求相关 ====================
     REQUEST_PARAMS("REQUEST_PARAMS", "HTTP请求参数", AuditDetailType.HTTP_REQUEST, true),
-    REQUEST_BODY("REQUEST_BODY", "HTTP请求体", AuditDetailType.HTTP_REQUEST, true),
     REQUEST_HEADERS("REQUEST_HEADERS", "HTTP请求头", AuditDetailType.HTTP_REQUEST, false),
-    REQUEST_COOKIES("REQUEST_COOKIES", "HTTP请求Cookie", AuditDetailType.HTTP_REQUEST, true),
     RESPONSE_RESULT("RESPONSE_RESULT", "HTTP响应结果", AuditDetailType.HTTP_REQUEST, false),
     RESPONSE_HEADERS("RESPONSE_HEADERS", "HTTP响应头", AuditDetailType.HTTP_REQUEST, false),
 

@@ -4,14 +4,14 @@ import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.audit.enums.AuditEventType;
 import io.github.rosestack.audit.enums.AuditRiskLevel;
 import io.github.rosestack.audit.enums.AuditStatus;
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
@@ -180,13 +180,6 @@ public class AuditLog {
     private Long executionTime;
 
     /**
-     * 错误代码
-     */
-    @Size(max = 50, message = "错误代码长度不能超过50个字符")
-    @TableField("error_code")
-    private String errorCode;
-
-    /**
      * 数字签名（完整性保护）
      */
     @Size(max = 512, message = "数字签名长度不能超过512个字符")
@@ -210,8 +203,8 @@ public class AuditLog {
     /**
      * 创建时间
      */
-    @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
+    private LocalDateTime createdTime;
 
     /**
      * 逻辑删除标识
@@ -263,8 +256,8 @@ public class AuditLog {
      */
     public AuditEventType getEventTypeEnum() {
         for (AuditEventType type : AuditEventType.values()) {
-            if (type.getEventType().equals(this.eventType) && 
-                type.getEventSubType().equals(this.eventSubtype)) {
+            if (type.getEventType().equals(this.eventType) &&
+                    type.getEventSubType().equals(this.eventSubtype)) {
                 return type;
             }
         }

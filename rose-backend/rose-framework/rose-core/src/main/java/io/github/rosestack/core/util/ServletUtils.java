@@ -131,10 +131,11 @@ public abstract class ServletUtils {
     /**
      * 获得所有请求参数（保留多值）
      *
-     * @param request 请求对象
      * @return 参数Map
      */
-    public static Map<String, List<String>> getParamListMap(ServletRequest request) {
+    public static Map<String, List<String>> getRequestParamList() {
+        HttpServletRequest request = getCurrentRequest();
+
         if (request == null) {
             return Collections.emptyMap();
         }
@@ -147,16 +148,6 @@ public abstract class ServletUtils {
             }
         }
         return params;
-    }
-
-    /**
-     * 获得所有请求参数（保留多值）
-     *
-     * @return 参数Map
-     */
-    public static Map<String, List<String>> getParamListMap() {
-        HttpServletRequest request = getCurrentRequest();
-        return getParamListMap(request);
     }
 
     /**
@@ -187,6 +178,22 @@ public abstract class ServletUtils {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
                 headers.put(name, request.getHeader(name));
+            }
+        }
+        return headers;
+    }
+
+    public static Map<String, String> getResponseHeaders() {
+        HttpServletResponse response = getCurrentResponse();
+        if (response == null) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        Collection<String> headerNames = response.getHeaderNames();
+        if (headerNames != null) {
+            for (String name : headerNames) {
+                headers.put(name, response.getHeader(name));
             }
         }
         return headers;
@@ -675,9 +682,5 @@ public abstract class ServletUtils {
             return null;
         }
         return request.getUserPrincipal().getName();
-    }
-
-    public static String getRequestBody() {
-        return null;
     }
 }

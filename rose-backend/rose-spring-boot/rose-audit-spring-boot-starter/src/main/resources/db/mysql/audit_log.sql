@@ -43,15 +43,14 @@ CREATE TABLE audit_log (
     tenant_id VARCHAR(50) COMMENT '租户ID（多租户支持）',
     trace_id VARCHAR(100) COMMENT '追踪ID（链路追踪）',
     execution_time BIGINT COMMENT '执行耗时（毫秒）',
-    error_code VARCHAR(50) COMMENT '错误代码',
-    
+
     -- ==================== 安全信息 ====================
     digital_signature VARCHAR(512) COMMENT '数字签名（完整性保护）',
     hash_value VARCHAR(128) COMMENT '哈希值（完整性保护）',
     prev_hash VARCHAR(128) COMMENT '前一条记录哈希值（链式完整性保护）',
     
     -- ==================== 系统字段 ====================
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标识（0-未删除，1-已删除）',
     
     -- 主键约束
@@ -234,11 +233,10 @@ SELECT
     tenant_id,
     trace_id,
     execution_time,
-    error_code,
     digital_signature,
     hash_value,
     prev_hash,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = 0;
 
@@ -258,8 +256,7 @@ SELECT
     client_ip,
     tenant_id,
     trace_id,
-    error_code,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = 0 
   AND risk_level IN ('HIGH', 'CRITICAL');
@@ -277,8 +274,7 @@ SELECT
     request_uri,
     client_ip,
     tenant_id,
-    error_code,
-    created_at
+    created_time
 FROM audit_log 
 WHERE deleted = 0 
   AND status = 'FAILURE';

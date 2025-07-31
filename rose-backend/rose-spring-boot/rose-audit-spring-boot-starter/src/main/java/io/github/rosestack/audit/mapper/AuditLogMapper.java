@@ -27,8 +27,6 @@ import java.util.Map;
 @Mapper
 public interface AuditLogMapper extends BaseMapper<AuditLog> {
 
-    // ==================== 基础查询方法 ====================
-
     /**
      * 根据用户ID查询审计日志
      *
@@ -80,8 +78,6 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
                 .orderByDesc(AuditLog::getEventTime);
         return selectList(wrapper);
     }
-
-    // ==================== 时间范围查询 ====================
 
     /**
      * 根据时间范围查询审计日志
@@ -149,20 +145,20 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
     /**
      * 根据多个条件分页查询审计日志
      *
-     * @param page        分页参数
-     * @param userId      用户ID（可选）
-     * @param eventType   事件类型（可选）
-     * @param riskLevel   风险等级（可选）
-     * @param status      操作状态（可选）
-     * @param startTime   开始时间（可选）
-     * @param endTime     结束时间（可选）
+     * @param page      分页参数
+     * @param userId    用户ID（可选）
+     * @param eventType 事件类型（可选）
+     * @param riskLevel 风险等级（可选）
+     * @param status    操作状态（可选）
+     * @param startTime 开始时间（可选）
+     * @param endTime   结束时间（可选）
      * @return 分页结果
      */
-    default IPage<AuditLog> selectPageByConditions(Page<AuditLog> page, String userId, String eventType, 
-                                                   String riskLevel, String status, 
+    default IPage<AuditLog> selectPageByConditions(Page<AuditLog> page, String userId, String eventType,
+                                                   String riskLevel, String status,
                                                    LocalDateTime startTime, LocalDateTime endTime) {
         LambdaQueryWrapper<AuditLog> wrapper = new LambdaQueryWrapper<>();
-        
+
         if (userId != null && !userId.trim().isEmpty()) {
             wrapper.eq(AuditLog::getUserId, userId);
         }
@@ -182,7 +178,7 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
         } else if (endTime != null) {
             wrapper.le(AuditLog::getEventTime, endTime);
         }
-        
+
         wrapper.orderByDesc(AuditLog::getEventTime);
         return selectPage(page, wrapper);
     }
@@ -218,7 +214,7 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
     @Select("SELECT event_type, COUNT(*) as count FROM audit_log " +
             "WHERE event_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0 " +
             "GROUP BY event_type ORDER BY count DESC")
-    List<Map<String, Object>> countByEventType(@Param("startTime") LocalDateTime startTime, 
+    List<Map<String, Object>> countByEventType(@Param("startTime") LocalDateTime startTime,
                                                @Param("endTime") LocalDateTime endTime);
 
     /**
@@ -231,7 +227,7 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
     @Select("SELECT risk_level, COUNT(*) as count FROM audit_log " +
             "WHERE event_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0 " +
             "GROUP BY risk_level ORDER BY count DESC")
-    List<Map<String, Object>> countByRiskLevel(@Param("startTime") LocalDateTime startTime, 
+    List<Map<String, Object>> countByRiskLevel(@Param("startTime") LocalDateTime startTime,
                                                @Param("endTime") LocalDateTime endTime);
 
     /**
@@ -244,10 +240,8 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
     @Select("SELECT status, COUNT(*) as count FROM audit_log " +
             "WHERE event_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0 " +
             "GROUP BY status ORDER BY count DESC")
-    List<Map<String, Object>> countByStatus(@Param("startTime") LocalDateTime startTime, 
+    List<Map<String, Object>> countByStatus(@Param("startTime") LocalDateTime startTime,
                                             @Param("endTime") LocalDateTime endTime);
-
-    // ==================== 安全相关查询 ====================
 
     /**
      * 查询高风险审计日志
@@ -294,8 +288,6 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
         return selectList(wrapper);
     }
 
-    // ==================== 数据清理相关 ====================
-
     /**
      * 查询过期的审计日志ID列表（用于批量删除）
      *
@@ -303,7 +295,7 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
      * @param limit      限制数量
      * @return 过期日志ID列表
      */
-    @Select("SELECT id FROM audit_log WHERE created_at < #{expireTime} AND deleted = 0 LIMIT #{limit}")
+    @Select("SELECT id FROM audit_log WHERE created_time < #{expireTime} AND deleted = 0 LIMIT #{limit}")
     List<Long> selectExpiredLogIds(@Param("expireTime") LocalDateTime expireTime, @Param("limit") int limit);
 
     /**
@@ -312,10 +304,8 @@ public interface AuditLogMapper extends BaseMapper<AuditLog> {
      * @param expireTime 过期时间
      * @return 过期日志数量
      */
-    @Select("SELECT COUNT(*) FROM audit_log WHERE created_at < #{expireTime} AND deleted = 0")
+    @Select("SELECT COUNT(*) FROM audit_log WHERE created_time < #{expireTime} AND deleted = 0")
     Long countExpiredLogs(@Param("expireTime") LocalDateTime expireTime);
-
-    // ==================== 租户相关查询 ====================
 
     /**
      * 根据租户ID查询审计日志

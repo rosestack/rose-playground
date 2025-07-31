@@ -104,8 +104,8 @@ public final class AuditValidationUtils {
                 result.addError("无效的详情键: " + auditLogDetail.getDetailKey());
             } else {
                 // 验证敏感数据标记的一致性
-                if (auditLogDetail.getIsSensitive() != null && 
-                    auditLogDetail.getIsSensitive() != detailKey.isSensitive()) {
+                if (auditLogDetail.getIsSensitive() != null &&
+                        auditLogDetail.getIsSensitive() != detailKey.isSensitive()) {
                     result.addWarning("敏感数据标记与详情键定义不一致");
                 }
             }
@@ -207,7 +207,7 @@ public final class AuditValidationUtils {
         for (int i = 0; i < auditLogs.size(); i++) {
             AuditLog auditLog = auditLogs.get(i);
             ValidationResult singleResult = validateAuditLog(auditLog);
-            
+
             if (!singleResult.isValid()) {
                 result.addError("第" + (i + 1) + "条日志验证失败: " + singleResult.getFirstError());
             }
@@ -242,25 +242,25 @@ public final class AuditValidationUtils {
      */
     private static void validateFieldFormats(AuditLog auditLog, ValidationResult result) {
         // 验证IP地址格式
-        if (StringUtils.hasText(auditLog.getClientIp()) && 
-            !IP_PATTERN.matcher(auditLog.getClientIp()).matches()) {
+        if (StringUtils.hasText(auditLog.getClientIp()) &&
+                !IP_PATTERN.matcher(auditLog.getClientIp()).matches()) {
             result.addWarning("客户端IP地址格式不正确: " + auditLog.getClientIp());
         }
 
-        if (StringUtils.hasText(auditLog.getServerIp()) && 
-            !IP_PATTERN.matcher(auditLog.getServerIp()).matches()) {
+        if (StringUtils.hasText(auditLog.getServerIp()) &&
+                !IP_PATTERN.matcher(auditLog.getServerIp()).matches()) {
             result.addWarning("服务器IP地址格式不正确: " + auditLog.getServerIp());
         }
 
         // 验证URI格式
-        if (StringUtils.hasText(auditLog.getRequestUri()) && 
-            !URI_PATTERN.matcher(auditLog.getRequestUri()).matches()) {
+        if (StringUtils.hasText(auditLog.getRequestUri()) &&
+                !URI_PATTERN.matcher(auditLog.getRequestUri()).matches()) {
             result.addWarning("请求URI格式不正确: " + auditLog.getRequestUri());
         }
 
         // 验证追踪ID格式
-        if (StringUtils.hasText(auditLog.getTraceId()) && 
-            !TRACE_ID_PATTERN.matcher(auditLog.getTraceId()).matches()) {
+        if (StringUtils.hasText(auditLog.getTraceId()) &&
+                !TRACE_ID_PATTERN.matcher(auditLog.getTraceId()).matches()) {
             result.addWarning("追踪ID格式不正确: " + auditLog.getTraceId());
         }
 
@@ -307,8 +307,8 @@ public final class AuditValidationUtils {
         }
 
         // 验证时间逻辑
-        if (auditLog.getEventTime() != null && auditLog.getCreatedAt() != null) {
-            if (auditLog.getEventTime().isAfter(auditLog.getCreatedAt().plusMinutes(5))) {
+        if (auditLog.getEventTime() != null && auditLog.getCreatedTime() != null) {
+            if (auditLog.getEventTime().isAfter(auditLog.getCreatedTime().plusMinutes(5))) {
                 result.addWarning("事件时间不应该显著晚于创建时间");
             }
         }
@@ -338,7 +338,7 @@ public final class AuditValidationUtils {
         // 验证风险等级与事件类型的一致性
         AuditEventType eventType = auditLog.getEventTypeEnum();
         AuditRiskLevel auditRiskLevel = auditLog.getRiskLevelEnum();
-        
+
         if (eventType != null && auditRiskLevel != null) {
             AuditRiskLevel expectedAuditRiskLevel = AuditRiskLevel.fromEventType(eventType);
             if (auditRiskLevel.compareTo(expectedAuditRiskLevel) < 0) {

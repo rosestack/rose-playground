@@ -31,7 +31,6 @@ public @interface Audit {
      */
     String value() default "";
 
-
     /**
      * 事件类型
      * <p>
@@ -76,16 +75,6 @@ public @interface Audit {
      */
     boolean recordResult() default false;
 
-    /**
-     * 是否记录HTTP请求信息
-     * <p>
-     * 是否记录HTTP请求头、请求体等信息。
-     * 仅在Web环境下有效。
-     * </p>
-     *
-     * @return 是否记录HTTP请求信息
-     */
-    boolean recordHttpInfo() default true;
 
     String[] maskFields() default {"password", "token", "secret", "key"};
 
@@ -101,17 +90,6 @@ public @interface Audit {
     String condition() default "";
 
     /**
-     * 标签
-     * <p>
-     * 自定义标签，用于标记特殊的审计日志。
-     * 可用于后续的查询和分析。
-     * </p>
-     *
-     * @return 标签数组
-     */
-    String[] tags() default {};
-
-    /**
      * 是否记录异常信息
      * <p>
      * 当方法执行出现异常时，是否记录异常信息到审计日志中。
@@ -120,15 +98,4 @@ public @interface Audit {
      * @return 是否记录异常信息
      */
     boolean recordException() default true;
-
-    /**
-     * 自定义属性
-     * <p>
-     * 自定义的键值对属性，会被记录到审计详情中。
-     * 格式：key1=value1,key2=value2
-     * </p>
-     *
-     * @return 自定义属性字符串
-     */
-    String customAttributes() default "";
 }

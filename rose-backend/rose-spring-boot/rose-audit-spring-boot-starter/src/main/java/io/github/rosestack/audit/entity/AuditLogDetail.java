@@ -3,6 +3,7 @@ package io.github.rosestack.audit.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.enums.AuditDetailType;
+import io.github.rosestack.core.jackson.JsonUtils;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -88,7 +89,7 @@ public class AuditLogDetail {
     /**
      * 创建时间
      */
-    @TableField(value = "created_at", fill = FieldFill.INSERT)
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
     // ==================== 业务方法 ====================
@@ -185,92 +186,12 @@ public class AuditLogDetail {
         return typeEnum == AuditDetailType.SECURITY;
     }
 
-    /**
-     * 创建HTTP请求详情
-     *
-     * @param auditLogId  审计日志ID
-     * @param detailKey   详情键
-     * @param detailValue 详情值
-     * @return 详情实体
-     */
-    public static AuditLogDetail createHttpDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue) {
+    public static AuditLogDetail createDetail(Long auditLogId, AuditDetailKey detailKey, Object detailValue) {
         return AuditLogDetail.builder()
                 .auditLogId(auditLogId)
-                .detailType(AuditDetailType.HTTP_REQUEST.getCode())
+                .detailType(detailKey.getDetailType().getCode())
                 .detailKey(detailKey.getCode())
-                .detailValue(detailValue)
-                .isSensitive(detailKey.isSensitive())
-                .build();
-    }
-
-    /**
-     * 创建数据变更详情
-     *
-     * @param auditLogId  审计日志ID
-     * @param detailKey   详情键
-     * @param detailValue 详情值
-     * @return 详情实体
-     */
-    public static AuditLogDetail createDataChangeDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue) {
-        return AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailType(AuditDetailType.DATA_CHANGE.getCode())
-                .detailKey(detailKey.getCode())
-                .detailValue(detailValue)
-                .isSensitive(detailKey.isSensitive())
-                .build();
-    }
-
-    /**
-     * 创建安全相关详情
-     *
-     * @param auditLogId  审计日志ID
-     * @param detailKey   详情键
-     * @param detailValue 详情值
-     * @return 详情实体
-     */
-    public static AuditLogDetail createSecurityDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue) {
-        return AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailType(AuditDetailType.SECURITY.getCode())
-                .detailKey(detailKey.getCode())
-                .detailValue(detailValue)
-                .isSensitive(detailKey.isSensitive())
-                .build();
-    }
-
-    /**
-     * 创建系统技术详情
-     *
-     * @param auditLogId  审计日志ID
-     * @param detailKey   详情键
-     * @param detailValue 详情值
-     * @return 详情实体
-     */
-    public static AuditLogDetail createSystemDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue) {
-        return AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailType(AuditDetailType.SYSTEM_TECH.getCode())
-                .detailKey(detailKey.getCode())
-                .detailValue(detailValue)
-                .isSensitive(detailKey.isSensitive())
-                .build();
-    }
-
-    /**
-     * 创建操作对象详情
-     *
-     * @param auditLogId  审计日志ID
-     * @param detailKey   详情键
-     * @param detailValue 详情值
-     * @return 详情实体
-     */
-    public static AuditLogDetail createOperationDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue) {
-        return AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailType(AuditDetailType.OPERATION_TARGET.getCode())
-                .detailKey(detailKey.getCode())
-                .detailValue(detailValue)
+                .detailValue(JsonUtils.toString(detailValue))
                 .isSensitive(detailKey.isSensitive())
                 .build();
     }

@@ -1,16 +1,19 @@
 package io.github.rosestack.audit.aspect;
 
 import io.github.rosestack.audit.annotation.Audit;
-import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.entity.AuditLogDetail;
-import io.github.rosestack.audit.enums.*;
+import io.github.rosestack.audit.enums.AuditDetailKey;
+import io.github.rosestack.audit.enums.AuditEventType;
+import io.github.rosestack.audit.enums.AuditRiskLevel;
+import io.github.rosestack.audit.enums.AuditStatus;
 import io.github.rosestack.audit.event.AuditEvent;
-import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.core.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,38 +27,19 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * 审计切面
- * <p>
- * 拦截标记了 @Audit 注解的方法，自动记录审计日志。
- * 支持同步和异步记录，提供丰富的上下文信息收集功能。
- * </p>
- *
- * @author Rose Team
- * @since 1.0.0
- */
 @Slf4j
 @Aspect
-@Component
 @Order(100) // 确保在事务切面之后执行
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuditAspect {
     private final ApplicationEventPublisher eventPublisher;
-    private final AuditProperties auditProperties;
-
-    /**
-     * SpEL表达式解析器
-     */
     private final ExpressionParser expressionParser = new SpelExpressionParser();
 
     /**
@@ -63,11 +47,6 @@ public class AuditAspect {
      */
     @Around("@annotation(audit)")
     public Object around(ProceedingJoinPoint joinPoint, Audit audit) throws Throwable {
-        // 检查是否启用审计
-        if (!auditProperties.isEnabled()) {
-            return joinPoint.proceed();
-        }
-
         // 检查条件表达式
         if (!evaluateCondition(audit.condition(), joinPoint, null)) {
             return joinPoint.proceed();
@@ -100,7 +79,6 @@ public class AuditAspect {
                 }
             } catch (Exception e) {
                 log.error("记录审计日志失败: {}", e.getMessage(), e);
-                // 不影响业务执行
             }
         }
     }
@@ -140,10 +118,6 @@ public class AuditAspect {
 
         // 获取事件类型和子类型
         AuditEventType eventType = getEventType(audit, method);
-        String eventSubtype = eventType.getEventSubType();
-
-        // 获取风险等级
-        AuditRiskLevel auditRiskLevel = getRiskLevel(audit, eventType);
 
         // 构建审计日志
         AuditLog auditLog = AuditLog.builder()
@@ -155,23 +129,12 @@ public class AuditAspect {
 
         // 设置事件类型
         auditLog.setEventType(eventType);
-        auditLog.setEventSubtype(eventSubtype);
+        auditLog.setEventSubtype(eventType.getEventSubType());
 
         // 设置风险等级
-        auditLog.setRiskLevel(auditRiskLevel);
+        auditLog.setRiskLevel(getRiskLevel(audit, eventType));
 
-        // 设置HTTP信息
-        if (audit.recordHttpInfo()) {
-            setHttpInfo(auditLog);
-        }
-
-        // 设置异常信息
-        if (exception != null && audit.recordException()) {
-            auditLog.setErrorCode(exception.getClass().getSimpleName());
-        }
-
-        // 设置自定义属性
-        setCustomAttributes(auditLog, audit);
+        setHttpInfo(auditLog);
 
         return auditLog;
     }
@@ -189,15 +152,13 @@ public class AuditAspect {
                 details.add(buildParameterDetail(joinPoint, audit, auditLogId));
             }
 
-            // 记录返回值
+            // 记录方法返回值
             if (audit.recordResult() && result != null) {
-                details.add(buildResultDetail(result, audit, auditLogId));
+                details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.RESPONSE_RESULT, result));
             }
 
             // 记录HTTP请求信息
-            if (audit.recordHttpInfo()) {
-                details.addAll(buildHttpDetails(auditLogId));
-            }
+            details.addAll(buildHttpDetails(auditLogId));
 
             // 记录异常信息
             if (exception != null && audit.recordException()) {
@@ -236,27 +197,7 @@ public class AuditAspect {
                 newArgs.add(arg);
             }
         }
-
-        return AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailKey(AuditDetailKey.REQUEST_PARAMS.getCode())
-                .detailType(AuditDetailType.HTTP_REQUEST.getCode())
-                .detailValue(JsonUtils.toString(newArgs))
-                .isSensitive(AuditDetailKey.REQUEST_PARAMS.isSensitive())
-                .build();
-    }
-
-    /**
-     * 构建返回值详情
-     */
-    private AuditLogDetail buildResultDetail(Object result, Audit audit, Long auditLogId) {
-        return AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailKey(AuditDetailKey.RESPONSE_RESULT.getCode())
-                .detailType(AuditDetailKey.RESPONSE_RESULT.getDetailType().getCode())
-                .detailValue(JsonUtils.toString(result))
-                .isSensitive(AuditDetailKey.RESPONSE_RESULT.isSensitive())
-                .build();
+        return AuditLogDetail.createDetail(auditLogId, AuditDetailKey.REQUEST_PARAMS, newArgs);
     }
 
     /**
@@ -266,37 +207,16 @@ public class AuditAspect {
         List<AuditLogDetail> details = new ArrayList<>();
 
         try {
-            // 获取请求头
+            // 获取 request 请求头
             Map<String, String> headers = ServletUtils.getRequestHeaders();
             if (!headers.isEmpty()) {
-                String headersJson = JsonUtils.toString(headers);
-
-                AuditLogDetail headerDetail = AuditLogDetail.builder()
-                        .auditLogId(auditLogId)
-                        .detailKey(AuditDetailKey.REQUEST_HEADERS.getCode())
-                        .detailType(AuditDetailKey.REQUEST_HEADERS.getDetailType().getCode())
-                        .detailValue(headersJson)
-                        .isSensitive(AuditDetailKey.REQUEST_HEADERS.isSensitive())
-                        .build();
-
-                details.add(headerDetail);
+                details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.REQUEST_HEADERS, headers));
             }
 
-            // 获取请求参数
-            Map<String, String> params = ServletUtils.getRequestParams();
-            if (!params.isEmpty()) {
-                //TODO 脱敏
-                String paramsJson = JsonUtils.toString(params);
-
-                AuditLogDetail paramDetail = AuditLogDetail.builder()
-                        .auditLogId(auditLogId)
-                        .detailKey(AuditDetailKey.REQUEST_PARAMS.getCode())
-                        .detailType(AuditDetailKey.REQUEST_PARAMS.getDetailType().getCode())
-                        .detailValue(paramsJson)
-                        .isSensitive(AuditDetailKey.REQUEST_PARAMS.isSensitive())
-                        .build();
-
-                details.add(paramDetail);
+            //获取 response 请求头
+            headers = ServletUtils.getResponseHeaders();
+            if (!headers.isEmpty()) {
+                details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.RESPONSE_HEADERS, headers));
             }
         } catch (Exception e) {
             log.warn("构建HTTP详情失败: {}", e.getMessage());
@@ -315,19 +235,9 @@ public class AuditAspect {
             Map<String, Object> exceptionInfo = new HashMap<>();
             exceptionInfo.put("type", exception.getClass().getName());
             exceptionInfo.put("message", exception.getMessage());
-            exceptionInfo.put("stackTrace", getStackTrace(exception));
+            exceptionInfo.put("stackTrace", ExceptionUtils.getStackTrace(exception));
 
-            String exceptionJson = JsonUtils.toString(exceptionInfo);
-
-            AuditLogDetail detail = AuditLogDetail.builder()
-                    .auditLogId(auditLogId)
-                    .detailKey(AuditDetailKey.EXCEPTION_STACK.getCode())
-                    .detailType(AuditDetailKey.EXCEPTION_STACK.getDetailType().getCode())
-                    .detailValue(exceptionJson)
-                    .isSensitive(AuditDetailKey.EXCEPTION_STACK.isSensitive())
-                    .build();
-
-            details.add(detail);
+            details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.EXCEPTION_STACK, exceptionInfo));
         } catch (Exception e) {
             log.warn("构建异常详情失败: {}", e.getMessage());
         }
@@ -339,10 +249,10 @@ public class AuditAspect {
      * 获取操作名称
      */
     private String getOperationName(Audit audit, Method method) {
-        if (StringUtils.hasText(audit.value())) {
+        if (StringUtils.isNoneBlank(audit.value())) {
             return audit.value();
         }
-        if (StringUtils.hasText(audit.value())) {
+        if (StringUtils.isNoneBlank(audit.value())) {
             return audit.value();
         }
         return method.getDeclaringClass().getSimpleName() + "." + method.getName();
@@ -387,33 +297,13 @@ public class AuditAspect {
      * 设置HTTP信息
      */
     private void setHttpInfo(AuditLog auditLog) {
-        try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes != null) {
-                HttpServletRequest request = attributes.getRequest();
-
-                auditLog.setRequestUri(request.getRequestURI());
-                auditLog.setHttpMethod(request.getMethod());
-                auditLog.setClientIp(ServletUtils.getClientIpAddress());
-                auditLog.setUserAgent(ServletUtils.getUserAgent());
-                auditLog.setSessionId(ServletUtils.getCurrentRequest().getSession().getId());
-            }
-        } catch (Exception e) {
-            log.debug("设置HTTP信息失败: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * 设置自定义属性
-     */
-    private void setCustomAttributes(AuditLog auditLog, Audit audit) {
-        if (StringUtils.hasText(audit.customAttributes())) {
-            // 解析自定义属性并设置到审计日志中
-            // 这里可以扩展为更复杂的属性处理逻辑
-        }
-
-        if (audit.tags().length > 0) {
-            // 可以将标签信息设置到某个字段中
+        HttpServletRequest request = ServletUtils.getCurrentRequest();
+        if (request != null) {
+            auditLog.setRequestUri(request.getRequestURI());
+            auditLog.setHttpMethod(request.getMethod());
+            auditLog.setClientIp(ServletUtils.getClientIpAddress());
+            auditLog.setUserAgent(ServletUtils.getUserAgent());
+            auditLog.setSessionId(ServletUtils.getCurrentRequest().getSession().getId());
         }
     }
 
@@ -421,7 +311,7 @@ public class AuditAspect {
      * 评估条件表达式
      */
     private boolean evaluateCondition(String condition, ProceedingJoinPoint joinPoint, Object result) {
-        if (!StringUtils.hasText(condition)) {
+        if (StringUtils.isBlank(condition)) {
             return true;
         }
 
@@ -456,32 +346,7 @@ public class AuditAspect {
     private boolean isSpecialType(Class<?> type) {
         return HttpServletRequest.class.isAssignableFrom(type) ||
                 type.getName().startsWith("org.springframework.") ||
+                type.getName().startsWith("javax.servlet.") ||
                 type.getName().startsWith("jakarta.servlet.");
-    }
-
-    /**
-     * 获取异常堆栈信息（截取前几行）
-     */
-    private String getStackTrace(Throwable exception) {
-        if (exception == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        StackTraceElement[] elements = exception.getStackTrace();
-        int maxLines = 5; // 只保留前5行堆栈信息
-
-        for (int i = 0; i < Math.min(elements.length, maxLines); i++) {
-            if (i > 0) {
-                sb.append("\n");
-            }
-            sb.append(elements[i].toString());
-        }
-
-        if (elements.length > maxLines) {
-            sb.append("\n... and ").append(elements.length - maxLines).append(" more");
-        }
-
-        return sb.toString();
     }
 }

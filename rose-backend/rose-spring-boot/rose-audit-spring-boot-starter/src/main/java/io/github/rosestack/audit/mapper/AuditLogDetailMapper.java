@@ -307,7 +307,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
      * @param limit      限制数量
      * @return 过期详情ID列表
      */
-    @Select("SELECT id FROM audit_log_detail WHERE created_at < #{expireTime} LIMIT #{limit}")
+    @Select("SELECT id FROM audit_log_detail WHERE created_time < #{expireTime} LIMIT #{limit}")
     List<Long> selectExpiredDetailIds(@Param("expireTime") LocalDateTime expireTime, @Param("limit") int limit);
 
     /**
@@ -316,7 +316,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
      * @param expireTime 过期时间
      * @return 过期详情数量
      */
-    @Select("SELECT COUNT(*) FROM audit_log_detail WHERE created_at < #{expireTime}")
+    @Select("SELECT COUNT(*) FROM audit_log_detail WHERE created_time < #{expireTime}")
     Long countExpiredDetails(@Param("expireTime") LocalDateTime expireTime);
 
     // ==================== 租户相关查询 ====================

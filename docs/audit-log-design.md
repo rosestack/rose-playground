@@ -124,7 +124,7 @@ CREATE TABLE audit_log (
     prev_hash VARCHAR(128) COMMENT '前一条记录的哈希值',
     
     -- 系统字段
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     deleted BOOLEAN DEFAULT FALSE COMMENT '逻辑删除标记'
 ) COMMENT='等保三级审计日志主表'
 PARTITION BY RANGE (YEAR(event_time) * 100 + MONTH(event_time)) (
@@ -177,7 +177,7 @@ CREATE TABLE audit_log_detail (
     is_encrypted BOOLEAN DEFAULT FALSE COMMENT '是否已加密存储',
 
     -- 系统字段
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 
     tenant_id VARCHAR(50) COMMENT '租户ID'
 ) COMMENT='审计日志详情表'

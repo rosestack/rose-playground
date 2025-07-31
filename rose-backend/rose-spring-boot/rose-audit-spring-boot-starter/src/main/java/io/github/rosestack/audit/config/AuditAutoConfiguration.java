@@ -91,6 +91,6 @@ public class AuditAutoConfiguration {
     @ConditionalOnProperty(prefix = "rose.audit.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
     public AuditAspect auditAspect(ApplicationEventPublisher eventPublisher) {
         log.debug("注册 AuditAspect Bean");
-        return new AuditAspect(eventPublisher, auditProperties);
+        return new AuditAspect(eventPublisher);
     }
 }
