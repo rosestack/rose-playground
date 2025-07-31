@@ -1,0 +1,145 @@
+rose:
+  audit:
+    # 是否启用审计日志功能
+    enabled: true
+    
+    # 存储配置
+    storage:
+      # 存储类型：database, file, mq
+      type: database
+      # 是否异步存储
+      async: true
+      # 批量处理大小
+      batch-size: 100
+      # 批量处理间隔（毫秒）
+      batch-interval: 5000
+      # 数据库配置
+      database:
+        # 是否启用分区表
+        partition-enabled: true
+        # 分区类型：MONTH, QUARTER, YEAR
+        partition-type: MONTH
+        # 是否启用表压缩
+        compression-enabled: true
+      # 文件存储配置
+      file:
+        # 文件存储路径
+        path: /var/log/audit
+        # 文件滚动策略：SIZE, TIME
+        rollover-strategy: TIME
+        # 最大文件大小（MB）
+        max-file-size: 100
+        # 文件保留天数
+        retention-days: 30
+      # 消息队列配置
+      message-queue:
+        # 队列类型：KAFKA, RABBITMQ, ROCKETMQ
+        type: KAFKA
+        # 主题名称
+        topic: audit-log
+        # 是否启用事务
+        transaction-enabled: false
+      
+    # 加密配置
+    encryption:
+      # 是否启用加密
+      enabled: true
+      # 加密算法
+      algorithm: AES
+      # 加密密钥（生产环境应从外部配置获取）
+      secret-key: "rose-audit-secret-key-2024"
+      # 密钥版本
+      key-version: v1
+      # 加密失败时是否抛出异常
+      fail-on-error: true
+      # 密钥轮换配置
+      key-rotation:
+        # 是否启用密钥轮换
+        enabled: false
+        # 自动轮换间隔（天）
+        auto-rotation-days: 90
+        # 密钥保留期（天）
+        key-retention-days: 30
+        # 是否启用自动清理过期密钥
+        auto-cleanup: true
+      
+    # 脱敏配置
+    masking:
+      # 是否启用脱敏
+      enabled: true
+      # 脱敏规则
+      rules:
+        phone: "138****5678"
+        email: "user***@example.com"
+        idCard: "110101****1234"
+        bankCard: "6222****1234"
+        password: "****MASKED****"
+        token: "****MASKED****"
+        authorization: "Bearer ****MASKED****"
+      # 自定义脱敏字段
+      custom-fields: []
+      # 脱敏失败时是否抛出异常
+      fail-on-error: false
+        
+    # 性能配置
+    performance:
+      # 最大队列大小
+      max-queue-size: 10000
+      # 线程池大小
+      thread-pool-size: 5
+      # 超时时间（毫秒）
+      timeout: 30000
+      # 是否启用背压控制
+      backpressure-enabled: true
+      # 背压阈值
+      backpressure-threshold: 80
+      # 监控配置
+      monitoring:
+        # 是否启用性能监控
+        enabled: true
+        # 监控指标收集间隔（秒）
+        interval-seconds: 60
+        # 是否启用慢查询监控
+        slow-query-enabled: true
+        # 慢查询阈值（毫秒）
+        slow-query-threshold: 1000
+      
+    # 数据保留配置
+    retention:
+      # 数据保留天数
+      days: 365
+      # 是否启用自动清理
+      auto-cleanup: true
+      # 清理任务执行时间（cron表达式）
+      cleanup-cron: "0 0 2 * * ?"
+      # 归档配置
+      archive:
+        # 是否启用归档
+        enabled: false
+        # 归档阈值（天）
+        threshold-days: 90
+        # 归档存储路径
+        storage-path: /var/archive/audit
+        # 归档压缩格式：ZIP, GZIP, TAR
+        compression-format: GZIP
+      
+    # 事件过滤配置
+    filter:
+      # 忽略的事件类型
+      ignore-event-types: []
+      # 忽略的用户
+      ignore-users: ["system", "admin"]
+      # 忽略的IP地址
+      ignore-ips: ["127.0.0.1", "::1"]
+      # 忽略的URI模式（支持通配符）
+      ignore-uri-patterns: ["/health/**", "/actuator/**", "/favicon.ico"]
+      # 最小风险等级
+      min-risk-level: LOW
+      # 采样率配置
+      sampling:
+        # 是否启用采样
+        enabled: false
+        # 采样率（0.0-1.0）
+        rate: 1.0
+        # 按事件类型的采样率
+        event-type-sampling-rates: {}

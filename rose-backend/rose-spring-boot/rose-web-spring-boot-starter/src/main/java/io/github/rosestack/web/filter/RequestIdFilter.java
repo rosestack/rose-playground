@@ -13,7 +13,7 @@ import org.slf4j.MDC;
 import java.io.IOException;
 import java.util.UUID;
 
-import static io.github.rosestack.core.Constants.HeaderName.HEADER_REQUEST_ID;
+import static io.github.rosestack.core.Constants.HeaderName.HEADER_TRACE_ID;
 import static io.github.rosestack.core.Constants.MdcName.MDC_REQUEST_ID;
 
 /**
@@ -34,13 +34,13 @@ public class RequestIdFilter extends AbstractBaseFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String requestId = ServletUtils.getCurrentRequestId();
+        String requestId = ServletUtils.getTraceId();
         if (requestId == null) {
             requestId = generateRequestId();
             MDC.put(Constants.MdcName.MDC_REQUEST_ID, requestId);
         }
         // 设置响应头
-        response.setHeader(HEADER_REQUEST_ID, requestId);
+        response.setHeader(HEADER_TRACE_ID, requestId);
 
         try {
             filterChain.doFilter(request, response);

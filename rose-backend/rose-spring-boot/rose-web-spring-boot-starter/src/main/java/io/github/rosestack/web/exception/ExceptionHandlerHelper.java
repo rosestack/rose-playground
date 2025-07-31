@@ -196,7 +196,7 @@ public class ExceptionHandlerHelper {
         String uri = request.getRequestURI();
         String method = request.getMethod();
         String userAgent = ServletUtils.getUserAgent();
-        String remoteAddr = ServletUtils.getClientIp();
+        String remoteAddr = ServletUtils.getClientIpAddress();
 
         // 根据状态码选择日志级别
         if (statusCode >= 500) {

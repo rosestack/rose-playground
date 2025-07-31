@@ -62,6 +62,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class ServletUtils {
     private static final Map<String, String> URL_DECODE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, String> URL_ENCODE_CACHE = new ConcurrentHashMap<>();
+    private static final String UNKNOWN = "unknown";
 
     /**
      * 用于检测客户端真实 IP 的 HTTP 头列表，按优先级排序
@@ -329,7 +330,7 @@ public abstract class ServletUtils {
         }
     }
 
-    public static String getClientIp(HttpServletRequest request, String... otherHeaderNames) {
+    public static String getClientIpAddress(HttpServletRequest request, String... otherHeaderNames) {
         if (request == null) {
             return null;
         }
@@ -398,9 +399,9 @@ public abstract class ServletUtils {
      *
      * @return 客户端 IP 地址，获取失败返回 null
      */
-    public static String getClientIp() {
+    public static String getClientIpAddress() {
         HttpServletRequest request = getCurrentRequest();
-        String ip = getClientIp(request);
+        String ip = getClientIpAddress(request);
         return normalizeIpAddress(ip);
     }
 
@@ -611,6 +612,14 @@ public abstract class ServletUtils {
         return uri;
     }
 
+    public static String getSessionId() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request != null && request.getSession(false) != null) {
+            return request.getSession().getId();
+        }
+        return UNKNOWN;
+    }
+
     /**
      * 获取当前用户ID
      */
@@ -631,13 +640,13 @@ public abstract class ServletUtils {
         return null;
     }
 
-    public static String getCurrentRequestId() {
+    public static String getTraceId() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
             return null;
         }
 
-        String requestId = request.getHeader(Constants.HeaderName.HEADER_REQUEST_ID);
+        String requestId = request.getHeader(Constants.HeaderName.HEADER_TRACE_ID);
         if (StringUtils.hasLength(requestId)) {
             return requestId;
         }

@@ -19,7 +19,7 @@ public final class Constants {
 
     public static final class HeaderName {
         public static final String HEADER_TENANT_ID = "X-Tenant-ID";
-        public static final String HEADER_REQUEST_ID = "X-Request-ID";
+        public static final String HEADER_TRACE_ID = "X-Trace-ID";
         public static final String HEADER_USER_ID = "X-User-ID";
     }
 

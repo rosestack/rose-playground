@@ -19,33 +19,28 @@ import java.util.regex.Pattern;
 @Slf4j
 public class Desensitization {
     // 手机号正则
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+    public static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
 
     // 邮箱正则
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
+    public static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
 
     // 身份证正则
-    private static final Pattern ID_CARD_PATTERN = Pattern.compile("^\\d{15}|\\d{18}$");
+    public static final Pattern ID_CARD_PATTERN = Pattern.compile("^\\d{15}|\\d{18}$");
 
     // 银行卡正则
-    private static final Pattern BANK_CARD_PATTERN = Pattern.compile("^\\d{16,19}$");
+    public static final Pattern BANK_CARD_PATTERN = Pattern.compile("^\\d{16,19}$");
 
     // 车牌号正则 - 支持新能源和传统车牌
-    private static final Pattern LICENSE_PLATE_PATTERN = Pattern.compile(
+    public static final Pattern LICENSE_PLATE_PATTERN = Pattern.compile(
             "^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$"
     );
 
     // IPv4地址正则
-    private static final Pattern IPV4_PATTERN = Pattern.compile(
+    public static final Pattern IPV4_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$"
     );
 
     public static final char MASK = '*';
-
-    /**
-     * 最大脱敏符号数量 - 避免过长的脱敏符号影响显示
-     */
-    public static final int MAX_MASK_LENGTH = 3;
 
     public static String desensitize(String value, FieldSensitive fieldSensitive) {
         if (!StringUtils.hasText(value)) {
@@ -54,31 +49,31 @@ public class Desensitization {
 
         switch (fieldSensitive.type()) {
             case NAME:
-                return desensitizeName(value);
+                return maskName(value);
             case PHONE:
-                return desensitizePhone(value);
+                return maskPhone(value);
             case EMAIL:
-                return desensitizeEmail(value);
+                return maskEmail(value);
             case ID_CARD:
-                return desensitizeIdCard(value);
+                return maskIdCard(value);
             case BANK_CARD:
-                return desensitizeBankCard(value);
+                return maskBankCard(value);
             case ADDRESS:
-                return desensitizeAddress(value);
+                return maskAddress(value);
             case LICENSE_PLATE:
-                return desensitizeLicensePlate(value);
+                return maskLicensePlate(value);
             case IPV4:
-                return desensitizeIpv4(value);
+                return maskIpAddress(value);
             default:
                 return value;
         }
     }
 
-    public static String desensitizeName(String name) {
-        return desensitizeName(name, MASK);
+    public static String maskName(String name) {
+        return maskName(name, MASK);
     }
 
-    public static String desensitizeName(String name, char maskChar) {
+    public static String maskName(String name, char maskChar) {
         if (!StringUtils.hasText(name)) {
             return name;
         }
@@ -90,11 +85,11 @@ public class Desensitization {
         return desensitizeCustom(name, 1, 1, maskChar);
     }
 
-    public static String desensitizePhone(String phone) {
-        return desensitizePhone(phone, MASK);
+    public static String maskPhone(String phone) {
+        return maskPhone(phone, MASK);
     }
 
-    public static String desensitizePhone(String phone, char maskChar) {
+    public static String maskPhone(String phone, char maskChar) {
         if (!StringUtils.hasText(phone)) {
             return phone;
         }
@@ -106,11 +101,11 @@ public class Desensitization {
         return phone.substring(0, 3) + generateMask(4, maskChar) + phone.substring(7);
     }
 
-    public static String desensitizeEmail(String email) {
-        return desensitizeEmail(email, MASK);
+    public static String maskEmail(String email) {
+        return maskEmail(email, MASK);
     }
 
-    public static String desensitizeEmail(String email, char maskChar) {
+    public static String maskEmail(String email, char maskChar) {
         if (!StringUtils.hasText(email)) {
             return email;
         }
@@ -127,11 +122,11 @@ public class Desensitization {
         return email.substring(0, 3) + generateMask(3, maskChar) + email.substring(atIndex);
     }
 
-    public static String desensitizeIdCard(String idCard) {
-        return desensitizeIdCard(idCard, MASK);
+    public static String maskIdCard(String idCard) {
+        return maskIdCard(idCard, MASK);
     }
 
-    public static String desensitizeIdCard(String idCard, char maskChar) {
+    public static String maskIdCard(String idCard, char maskChar) {
         if (!StringUtils.hasText(idCard)) {
             return idCard;
         }
@@ -147,11 +142,11 @@ public class Desensitization {
         }
     }
 
-    public static String desensitizeBankCard(String bankCard) {
-        return desensitizeBankCard(bankCard, MASK);
+    public static String maskBankCard(String bankCard) {
+        return maskBankCard(bankCard, MASK);
     }
 
-    public static String desensitizeBankCard(String bankCard, char maskChar) {
+    public static String maskBankCard(String bankCard, char maskChar) {
         if (!StringUtils.hasText(bankCard)) {
             return bankCard;
         }
@@ -164,11 +159,11 @@ public class Desensitization {
         return bankCard.substring(0, 4) + generateMask(maskLength, maskChar) + bankCard.substring(bankCard.length() - 4);
     }
 
-    public static String desensitizeAddress(String address) {
-        return desensitizeAddress(address, MASK);
+    public static String maskAddress(String address) {
+        return maskAddress(address, MASK);
     }
 
-    public static String desensitizeAddress(String address, char maskChar) {
+    public static String maskAddress(String address, char maskChar) {
         if (!StringUtils.hasText(address)) {
             return address;
         }
@@ -186,11 +181,11 @@ public class Desensitization {
      * 规则：保留前2位和后2位，中间用***替换
      * 例如：京A12345 -> 京A***45
      */
-    public static String desensitizeLicensePlate(String licensePlate) {
-        return desensitizeLicensePlate(licensePlate, MASK);
+    public static String maskLicensePlate(String licensePlate) {
+        return maskLicensePlate(licensePlate, MASK);
     }
 
-    public static String desensitizeLicensePlate(String licensePlate, char maskChar) {
+    public static String maskLicensePlate(String licensePlate, char maskChar) {
         if (!StringUtils.hasText(licensePlate)) {
             return licensePlate;
         }
@@ -214,11 +209,11 @@ public class Desensitization {
      * 规则：保留前两段，后两段用***替换
      * 例如：192.168.1.100 -> 192.168.***.***
      */
-    public static String desensitizeIpv4(String ipv4) {
-        return desensitizeIpv4(ipv4, MASK);
+    public static String maskIpAddress(String ipv4) {
+        return maskIpAddress(ipv4, MASK);
     }
 
-    public static String desensitizeIpv4(String ipv4, char maskChar) {
+    public static String maskIpAddress(String ipv4, char maskChar) {
         if (!StringUtils.hasText(ipv4)) {
             return ipv4;
         }
@@ -234,6 +229,27 @@ public class Desensitization {
 
         String maskSegment = generateMask(3, maskChar);
         return parts[0] + "." + parts[1] + "." + maskSegment + "." + maskSegment;
+    }
+
+    public static String maskPassword(String password) {
+        return "****MASKED****";
+    }
+
+    /**
+     * Token脱敏
+     */
+    public static String maskToken(String token) {
+        if (!StringUtils.hasText(token)) {
+            return token;
+        }
+
+        if (token.startsWith("Bearer ")) {
+            return "Bearer ****MASKED****";
+        } else if (token.startsWith("Basic ")) {
+            return "Basic ****MASKED****";
+        } else {
+            return "****MASKED****";
+        }
     }
 
     public static String desensitizeAll(String address) {
@@ -268,6 +284,39 @@ public class Desensitization {
     }
 
     /**
+     * 根据模式进行脱敏
+     */
+    public static String maskByPattern(String data) {
+        // 手机号检测
+        if (PHONE_PATTERN.matcher(data).matches()) {
+            return Desensitization.maskPhone(data);
+        }
+
+        // 邮箱检测
+        if (EMAIL_PATTERN.matcher(data).find()) {
+            return Desensitization.maskEmail(data);
+        }
+
+        // 身份证检测
+        if (ID_CARD_PATTERN.matcher(data).matches()) {
+            return Desensitization.maskIdCard(data);
+        }
+
+        // 银行卡检测
+        if (BANK_CARD_PATTERN.matcher(data).matches()) {
+            return Desensitization.maskBankCard(data);
+        }
+
+        // IP地址检测
+        if (IPV4_PATTERN.matcher(data).matches()) {
+            return Desensitization.maskIpAddress(data);
+        }
+
+        // 如果都不匹配，返回原值
+        return data;
+    }
+
+    /**
      * 生成智能脱敏符号
      * <p>
      * 核心优化：限制脱敏符号的最大长度，避免过长的脱敏符号影响显示效果
@@ -283,10 +332,7 @@ public class Desensitization {
             return "";
         }
 
-        // 核心优化：限制最大脱敏符号数量
-        int actualLength = Math.min(length, MAX_MASK_LENGTH);
-
-        return String.valueOf(maskChar).repeat(actualLength);
+        return String.valueOf(maskChar).repeat(length);
     }
 
     /**

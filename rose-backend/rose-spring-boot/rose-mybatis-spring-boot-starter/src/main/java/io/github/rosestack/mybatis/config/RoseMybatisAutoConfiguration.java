@@ -14,9 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerIntercept
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.mybatis.handler.RoseTenantLineHandler;
-import io.github.rosestack.mybatis.interceptor.AuditLogInterceptor;
 import io.github.rosestack.mybatis.interceptor.FieldEncryptionInterceptor;
-import io.github.rosestack.mybatis.support.audit.DefaultAuditStorage;
 import io.github.rosestack.mybatis.support.datapermission.RoseDataPermissionHandler;
 import io.github.rosestack.mybatis.support.encryption.DefaultFieldEncryptor;
 import io.github.rosestack.mybatis.support.encryption.hash.HashService;
@@ -142,14 +140,6 @@ public class RoseMybatisAutoConfiguration {
     public FieldEncryptionInterceptor fieldEncryptionInterceptor(HashService hashService) {
         log.info("启用字段加密解密拦截器，默认算法: AES");
         return new FieldEncryptionInterceptor(new DefaultFieldEncryptor(properties), hashService);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.mybatis.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public AuditLogInterceptor auditInterceptor() {
-        log.info("启用审计日志拦截器，日志等级: {}", properties.getAudit().getLogLevel());
-        return new AuditLogInterceptor(properties, new DefaultAuditStorage());
     }
 
     @Bean
