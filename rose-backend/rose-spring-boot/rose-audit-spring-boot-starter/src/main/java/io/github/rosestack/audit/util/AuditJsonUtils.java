@@ -1,6 +1,7 @@
 package io.github.rosestack.audit.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.core.jackson.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;

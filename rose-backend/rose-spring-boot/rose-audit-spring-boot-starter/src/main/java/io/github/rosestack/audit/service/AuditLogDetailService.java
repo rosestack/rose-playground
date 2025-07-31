@@ -158,12 +158,6 @@ public interface AuditLogDetailService extends IService<AuditLogDetail> {
      */
     List<AuditLogDetail> findSensitiveDetails();
 
-    /**
-     * 查询已加密的详情
-     *
-     * @return 已加密详情列表
-     */
-    List<AuditLogDetail> findEncryptedDetails();
 
     /**
      * 查询敏感但未加密的详情（用于数据安全检查）
@@ -339,11 +333,10 @@ public interface AuditLogDetailService extends IService<AuditLogDetail> {
      * @param detailType  详情类型（可选）
      * @param detailKey   详情键（可选）
      * @param isSensitive 是否敏感（可选）
-     * @param isEncrypted 是否加密（可选）
      * @return 详情列表
      */
     List<AuditLogDetail> findByConditions(Long auditLogId, AuditDetailType detailType, 
-                                          AuditDetailKey detailKey, Boolean isSensitive, Boolean isEncrypted);
+                                          AuditDetailKey detailKey, Boolean isSensitive);
 
     /**
      * 根据时间范围查询详情

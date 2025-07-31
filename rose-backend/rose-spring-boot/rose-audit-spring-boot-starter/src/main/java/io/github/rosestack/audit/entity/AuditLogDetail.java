@@ -3,14 +3,14 @@ package io.github.rosestack.audit.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.enums.AuditDetailType;
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
@@ -71,12 +71,6 @@ public class AuditLogDetail {
      */
     @TableField("is_sensitive")
     private Boolean isSensitive;
-
-    /**
-     * 是否已加密存储
-     */
-    @TableField("is_encrypted")
-    private Boolean isEncrypted;
 
     /**
      * 租户ID（多租户支持）
@@ -188,8 +182,8 @@ public class AuditLogDetail {
     /**
      * 创建HTTP请求详情
      *
-     * @param auditLogId 审计日志ID
-     * @param detailKey  详情键
+     * @param auditLogId  审计日志ID
+     * @param detailKey   详情键
      * @param detailValue 详情值
      * @return 详情实体
      */
@@ -200,15 +194,14 @@ public class AuditLogDetail {
                 .detailKey(detailKey.getCode())
                 .detailValue(detailValue)
                 .isSensitive(detailKey.isSensitive())
-                .isEncrypted(false)
                 .build();
     }
 
     /**
      * 创建数据变更详情
      *
-     * @param auditLogId 审计日志ID
-     * @param detailKey  详情键
+     * @param auditLogId  审计日志ID
+     * @param detailKey   详情键
      * @param detailValue 详情值
      * @return 详情实体
      */
@@ -219,15 +212,14 @@ public class AuditLogDetail {
                 .detailKey(detailKey.getCode())
                 .detailValue(detailValue)
                 .isSensitive(detailKey.isSensitive())
-                .isEncrypted(false)
                 .build();
     }
 
     /**
      * 创建安全相关详情
      *
-     * @param auditLogId 审计日志ID
-     * @param detailKey  详情键
+     * @param auditLogId  审计日志ID
+     * @param detailKey   详情键
      * @param detailValue 详情值
      * @return 详情实体
      */
@@ -238,15 +230,14 @@ public class AuditLogDetail {
                 .detailKey(detailKey.getCode())
                 .detailValue(detailValue)
                 .isSensitive(detailKey.isSensitive())
-                .isEncrypted(detailKey.needsEncryption())
                 .build();
     }
 
     /**
      * 创建系统技术详情
      *
-     * @param auditLogId 审计日志ID
-     * @param detailKey  详情键
+     * @param auditLogId  审计日志ID
+     * @param detailKey   详情键
      * @param detailValue 详情值
      * @return 详情实体
      */
@@ -257,15 +248,14 @@ public class AuditLogDetail {
                 .detailKey(detailKey.getCode())
                 .detailValue(detailValue)
                 .isSensitive(detailKey.isSensitive())
-                .isEncrypted(false)
                 .build();
     }
 
     /**
      * 创建操作对象详情
      *
-     * @param auditLogId 审计日志ID
-     * @param detailKey  详情键
+     * @param auditLogId  审计日志ID
+     * @param detailKey   详情键
      * @param detailValue 详情值
      * @return 详情实体
      */
@@ -276,7 +266,6 @@ public class AuditLogDetail {
                 .detailKey(detailKey.getCode())
                 .detailValue(detailValue)
                 .isSensitive(detailKey.isSensitive())
-                .isEncrypted(false)
                 .build();
     }
 }

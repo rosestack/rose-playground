@@ -3,14 +3,12 @@ package io.github.rosestack.audit.aspect;
 import io.github.rosestack.audit.annotation.Audit;
 import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.entity.AuditLogDetail;
-import io.github.rosestack.audit.enums.AuditDetailKey;
-import io.github.rosestack.audit.enums.AuditEventType;
-import io.github.rosestack.audit.enums.AuditStatus;
-import io.github.rosestack.audit.enums.RiskLevel;
+import io.github.rosestack.audit.enums.*;
 import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.audit.service.AuditLogDetailService;
 import io.github.rosestack.audit.service.AuditLogService;
 import io.github.rosestack.audit.util.AuditJsonUtils;
+import io.github.rosestack.audit.util.AuditMaskingUtils;
 import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.core.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -198,12 +196,12 @@ public class AuditAspect {
 
             // 记录方法参数
             if (audit.recordParams()) {
-                details.addAll(buildParameterDetails(joinPoint, audit, auditLog.getId()));
+                details.add(buildParameterDetail(joinPoint, audit, auditLog.getId()));
             }
 
             // 记录返回值
             if (audit.recordResult() && result != null) {
-                details.addAll(buildResultDetails(result, audit, auditLog.getId()));
+                details.add(buildResultDetail(result, audit, auditLog.getId()));
             }
 
             // 记录HTTP请求信息
@@ -232,76 +230,50 @@ public class AuditAspect {
     /**
      * 构建参数详情
      */
-    private List<AuditLogDetail> buildParameterDetails(ProceedingJoinPoint joinPoint, Audit audit, Long auditLogId) {
-        List<AuditLogDetail> details = new ArrayList<>();
-
+    private AuditLogDetail buildParameterDetail(ProceedingJoinPoint joinPoint, Audit audit, Long auditLogId) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Parameter[] parameters = signature.getMethod().getParameters();
         Object[] args = joinPoint.getArgs();
-        Set<String> ignoreParams = new HashSet<>(Arrays.asList(audit.ignoreParams()));
+        Set<String> maskParams = new HashSet<>(Arrays.asList(audit.maskParams()));
 
+        List<Object> newArgs = new ArrayList<>();
         for (int i = 0; i < parameters.length && i < args.length; i++) {
             Parameter parameter = parameters[i];
             Object arg = args[i];
 
             String paramName = parameter.getName();
-
-            // 跳过忽略的参数
-            if (ignoreParams.contains(paramName.toLowerCase())) {
-                continue;
-            }
-
             // 跳过特殊类型的参数
             if (isSpecialType(parameter.getType())) {
                 continue;
             }
 
-            try {
-                String paramValue = JsonUtils.toString(arg);
-
-                AuditLogDetail detail = AuditLogDetail.builder()
-                        .auditLogId(auditLogId)
-                        .detailKey(AuditDetailKey.REQUEST_PARAMS.getCode())
-                        .detailType(AuditDetailKey.REQUEST_PARAMS.getDetailType().getCode())
-                        .detailValue(paramValue)
-                        .isSensitive(AuditDetailKey.REQUEST_PARAMS.isSensitive())
-                        .isEncrypted(false)
-                        .build();
-
-                details.add(detail);
-            } catch (Exception e) {
-                log.warn("序列化参数失败，参数名: {}, 错误: {}", paramName, e.getMessage());
+            if (maskParams.contains(paramName.toLowerCase()) && parameter.getType() == String.class) {
+                newArgs.add(AuditMaskingUtils.maskByFieldName(paramName.toLowerCase(), (String) arg));
+            } else {
+                newArgs.add(arg);
             }
         }
 
-        return details;
+        return AuditLogDetail.builder()
+                .auditLogId(auditLogId)
+                .detailKey(AuditDetailKey.REQUEST_PARAMS.getCode())
+                .detailType(AuditDetailType.HTTP_REQUEST.getCode())
+                .detailValue(JsonUtils.toString(newArgs))
+                .isSensitive(AuditDetailKey.REQUEST_PARAMS.isSensitive())
+                .build();
     }
 
     /**
      * 构建返回值详情
      */
-    private List<AuditLogDetail> buildResultDetails(Object result, Audit audit, Long auditLogId) {
-        List<AuditLogDetail> details = new ArrayList<>();
-
-        try {
-            // 序列化结果并进行脱敏处理
-            String resultJson = AuditJsonUtils.toMaskedJsonString(result);
-
-            AuditLogDetail detail = AuditLogDetail.builder()
-                    .auditLogId(auditLogId)
-                    .detailKey(AuditDetailKey.RESPONSE_RESULT.getCode())
-                    .detailType(AuditDetailKey.RESPONSE_RESULT.getDetailType().getCode())
-                    .detailValue(resultJson)
-                    .isSensitive(AuditDetailKey.RESPONSE_RESULT.isSensitive())
-                    .isEncrypted(false)
-                    .build();
-
-            details.add(detail);
-        } catch (Exception e) {
-            log.warn("序列化返回值失败: {}", e.getMessage());
-        }
-
-        return details;
+    private AuditLogDetail buildResultDetail(Object result, Audit audit, Long auditLogId) {
+        return AuditLogDetail.builder()
+                .auditLogId(auditLogId)
+                .detailKey(AuditDetailKey.RESPONSE_RESULT.getCode())
+                .detailType(AuditDetailKey.RESPONSE_RESULT.getDetailType().getCode())
+                .detailValue(AuditJsonUtils.toMaskedJsonString(result))
+                .isSensitive(AuditDetailKey.RESPONSE_RESULT.isSensitive())
+                .build();
     }
 
     /**
@@ -312,7 +284,7 @@ public class AuditAspect {
 
         try {
             // 获取请求头
-            Map<String, String> headers = ServletUtils.getHeaders();
+            Map<String, String> headers = ServletUtils.getRequestHeaders();
             if (!headers.isEmpty()) {
                 String headersJson = AuditJsonUtils.toJsonString(headers);
 
@@ -322,16 +294,17 @@ public class AuditAspect {
                         .detailType(AuditDetailKey.REQUEST_HEADERS.getDetailType().getCode())
                         .detailValue(headersJson)
                         .isSensitive(AuditDetailKey.REQUEST_HEADERS.isSensitive())
-                        .isEncrypted(false)
                         .build();
 
                 details.add(headerDetail);
             }
 
+            ServletUtils.getRequestBody();
+
             // 获取请求参数
-            Map<String, String> params = ServletUtils.getParamMap();
+            Map<String, String> params = ServletUtils.getRequestParams();
             if (!params.isEmpty()) {
-                String paramsJson = AuditJsonUtils.toJsonString(params);
+                String paramsJson = AuditJsonUtils.toMaskedJsonString(params);
 
                 AuditLogDetail paramDetail = AuditLogDetail.builder()
                         .auditLogId(auditLogId)
@@ -339,7 +312,6 @@ public class AuditAspect {
                         .detailType(AuditDetailKey.REQUEST_PARAMS.getDetailType().getCode())
                         .detailValue(paramsJson)
                         .isSensitive(AuditDetailKey.REQUEST_PARAMS.isSensitive())
-                        .isEncrypted(false)
                         .build();
 
                 details.add(paramDetail);
@@ -371,7 +343,6 @@ public class AuditAspect {
                     .detailType(AuditDetailKey.EXCEPTION_STACK.getDetailType().getCode())
                     .detailValue(exceptionJson)
                     .isSensitive(AuditDetailKey.EXCEPTION_STACK.isSensitive())
-                    .isEncrypted(false)
                     .build();
 
             details.add(detail);

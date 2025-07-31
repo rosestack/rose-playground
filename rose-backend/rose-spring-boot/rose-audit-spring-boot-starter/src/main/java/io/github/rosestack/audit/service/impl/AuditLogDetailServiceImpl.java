@@ -60,9 +60,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             // 补充上下文信息
             enrichAuditDetailContext(auditLogDetail);
 
-            // 处理敏感数据
-            processSensitiveData(auditLogDetail);
-
             // 保存到数据库
             boolean success = save(auditLogDetail);
             if (!success) {
@@ -97,7 +94,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             // 批量处理
             for (AuditLogDetail detail : auditLogDetails) {
                 enrichAuditDetailContext(detail);
-                processSensitiveData(detail);
             }
 
             // 批量保存
@@ -132,7 +128,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
                 .detailType(detailKey.getDetailType().getCode())
                 .detailValue(detailValue)
                 .isSensitive(detailKey.isSensitive())
-                .isEncrypted(false)
                 .build();
 
         AuditLogDetail savedDetail = recordAuditDetail(detail);
@@ -164,7 +159,7 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         }
 
         // 记录请求头
-        Map<String, String> headers = ServletUtils.getHeaders();
+        Map<String, String> headers = ServletUtils.getRequestHeaders();
         if (!headers.isEmpty()) {
             String headersJson = AuditJsonUtils.toJsonString(headers);
             Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.REQUEST_HEADERS, headersJson);
@@ -239,11 +234,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
     }
 
     @Override
-    public List<AuditLogDetail> findEncryptedDetails() {
-        return auditLogDetailMapper.selectEncryptedDetails();
-    }
-
-    @Override
     public List<AuditLogDetail> findSensitiveButNotEncrypted() {
         return auditLogDetailMapper.selectSensitiveButNotEncrypted();
     }
@@ -263,15 +253,9 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             return true;
         }
 
-        if (Boolean.TRUE.equals(detail.getIsEncrypted())) {
-            log.debug("详情记录已加密，ID: {}", detailId);
-            return true;
-        }
-
         try {
             String encryptedValue = AuditEncryptionUtils.encryptSensitiveData(detail.getDetailValue(), auditProperties);
             detail.setDetailValue(encryptedValue);
-            detail.setIsEncrypted(true);
 
             boolean success = updateById(detail);
             if (success) {
@@ -309,10 +293,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             return null;
         }
 
-        if (!Boolean.TRUE.equals(detail.getIsEncrypted())) {
-            return detail;
-        }
-
         try {
             String decryptedValue = AuditEncryptionUtils.decryptSensitiveData(detail.getDetailValue(), auditProperties);
 
@@ -324,7 +304,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             decryptedDetail.setDetailKey(AuditDetailKey.valueOf(detail.getDetailKey()));
             decryptedDetail.setDetailValue(decryptedValue);
             decryptedDetail.setIsSensitive(detail.getIsSensitive());
-            decryptedDetail.setIsEncrypted(false); // 标记为已解密
             decryptedDetail.setTenantId(detail.getTenantId());
             decryptedDetail.setCreatedAt(detail.getCreatedAt());
 
@@ -355,7 +334,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             maskedDetail.setDetailKey(AuditDetailKey.valueOf(auditLogDetail.getDetailKey()));
             maskedDetail.setDetailValue(maskedValue);
             maskedDetail.setIsSensitive(auditLogDetail.getIsSensitive());
-            maskedDetail.setIsEncrypted(auditLogDetail.getIsEncrypted());
             maskedDetail.setTenantId(auditLogDetail.getTenantId());
             maskedDetail.setCreatedAt(auditLogDetail.getCreatedAt());
 
@@ -414,7 +392,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         // 基础统计
         statistics.put("totalDetails", details.size());
         statistics.put("sensitiveDetails", details.stream().mapToLong(d -> Boolean.TRUE.equals(d.getIsSensitive()) ? 1 : 0).sum());
-        statistics.put("encryptedDetails", details.stream().mapToLong(d -> Boolean.TRUE.equals(d.getIsEncrypted()) ? 1 : 0).sum());
 
         // 详情类型分布
         Map<String, Long> typeDistribution = details.stream()
@@ -609,13 +586,12 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
 
     @Override
     public List<AuditLogDetail> findByConditions(Long auditLogId, AuditDetailType detailType,
-                                                 AuditDetailKey detailKey, Boolean isSensitive, Boolean isEncrypted) {
+                                                 AuditDetailKey detailKey, Boolean isSensitive) {
         return auditLogDetailMapper.selectByConditions(
                 auditLogId,
                 detailType != null ? detailType.getCode() : null,
                 detailKey != null ? detailKey.getCode() : null,
-                isSensitive,
-                isEncrypted
+                isSensitive
         );
     }
 
@@ -703,21 +679,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             return;
         }
 
-        // 如果启用了加密且需要加密
-        if (auditProperties.getEncryption().isEnabled() && auditLogDetail.needsEncryption()) {
-            try {
-                String encryptedValue = AuditEncryptionUtils.encryptSensitiveData(
-                        auditLogDetail.getDetailValue(), auditProperties);
-                auditLogDetail.setDetailValue(encryptedValue);
-                auditLogDetail.setIsEncrypted(true);
-                log.debug("敏感详情数据已加密，详情键: {}", auditLogDetail.getDetailKey());
-            } catch (Exception e) {
-                log.error("敏感详情数据加密失败，详情键: {}, 错误: {}",
-                        auditLogDetail.getDetailKey(), e.getMessage(), e);
-                if (auditProperties.getEncryption().isFailOnError()) {
-                    throw new RuntimeException("敏感详情数据加密失败", e);
-                }
-            }
-        }
+
     }
 }

@@ -141,7 +141,6 @@ class AuditAutoConfigurationTest {
                     assertThat(properties.getStorage().getType()).isEqualTo("database");
                     assertThat(properties.getStorage().isAsync()).isTrue();
                     assertThat(properties.getEncryption().isEnabled()).isTrue();
-                    assertThat(properties.getMasking().isEnabled()).isTrue();
                 });
     }
 }

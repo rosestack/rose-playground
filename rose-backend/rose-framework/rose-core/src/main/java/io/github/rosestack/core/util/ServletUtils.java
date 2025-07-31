@@ -88,12 +88,12 @@ public abstract class ServletUtils {
      * @param name 参数名
      * @return 参数值，不存在时返回 null
      */
-    public static String getParameter(String name) {
+    public static String getRequestParameter(String name) {
         HttpServletRequest request = getCurrentRequest();
         return request != null ? request.getParameter(name) : null;
     }
 
-    public static String getParameter(String name, String defaultValue) {
+    public static String getRequestParameter(String name, String defaultValue) {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
             return defaultValue;
@@ -102,7 +102,7 @@ public abstract class ServletUtils {
         return StringUtils.hasLength(value) ? value : defaultValue;
     }
 
-    public static Map<String, String[]> getParams(ServletRequest request) {
+    public static Map<String, String[]> getRequestParams(ServletRequest request) {
         if (request == null) {
             return Collections.emptyMap();
         }
@@ -110,29 +110,22 @@ public abstract class ServletUtils {
         return Collections.unmodifiableMap(map);
     }
 
-    public static Map<String, String[]> getParams() {
-        HttpServletRequest request = getCurrentRequest();
-        return getParams(request);
-    }
 
-    public static Map<String, String> getParamMap(ServletRequest request) {
+    public static Map<String, String> getRequestParams() {
+        HttpServletRequest request = getCurrentRequest();
+
         if (request == null) {
             return Collections.emptyMap();
         }
 
         Map<String, String> params = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : getParams(request).entrySet()) {
+        for (Map.Entry<String, String[]> entry : getRequestParams(request).entrySet()) {
             String[] values = entry.getValue();
             if (values != null && values.length > 0) {
                 params.put(entry.getKey(), String.join(",", values));
             }
         }
         return params;
-    }
-
-    public static Map<String, String> getParamMap() {
-        HttpServletRequest request = getCurrentRequest();
-        return getParamMap(request);
     }
 
     /**
@@ -147,7 +140,7 @@ public abstract class ServletUtils {
         }
 
         Map<String, List<String>> params = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : getParams(request).entrySet()) {
+        for (Map.Entry<String, String[]> entry : getRequestParams(request).entrySet()) {
             String[] values = entry.getValue();
             if (values != null) {
                 params.put(entry.getKey(), Arrays.asList(values));
@@ -172,17 +165,17 @@ public abstract class ServletUtils {
      * @param name The header name to retrieve
      * @return The header value, or null if not found or no request context
      */
-    public static String getHeader(String name) {
+    public static String getRequestHeader(String name) {
         HttpServletRequest request = getCurrentRequest();
         return request != null ? request.getHeader(name) : null;
     }
 
-    public static String getHeader(String name, String defaultValue) {
-        String value = getHeader(name);
+    public static String getRequestHeader(String name, String defaultValue) {
+        String value = getRequestHeader(name);
         return StringUtils.hasLength(value) ? value : defaultValue;
     }
 
-    public static Map<String, String> getHeaders() {
+    public static Map<String, String> getRequestHeaders() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
             return Collections.emptyMap();
@@ -682,5 +675,9 @@ public abstract class ServletUtils {
             return null;
         }
         return request.getUserPrincipal().getName();
+    }
+
+    public static String getRequestBody() {
+        return null;
     }
 }

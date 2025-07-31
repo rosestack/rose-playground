@@ -98,25 +98,9 @@ public @interface Audit {
      */
     boolean async() default true;
 
-    /**
-     * 忽略的参数名称
-     * <p>
-     * 这些参数不会被记录到审计日志中，如：password、token等敏感信息。
-     * </p>
-     *
-     * @return 忽略的参数名称数组
-     */
-    String[] ignoreParams() default {"password", "token", "secret", "key"};
+    String[] maskParams() default {"password", "token", "secret", "key"};
 
-    /**
-     * 忽略的返回值字段
-     * <p>
-     * 返回值中的这些字段不会被记录，如：password、token等敏感信息。
-     * </p>
-     *
-     * @return 忽略的返回值字段数组
-     */
-    String[] ignoreResultFields() default {"password", "token", "secret", "key"};
+    String[] maskResultFields() default {"password", "token", "secret", "key"};
 
     /**
      * 条件表达式

@@ -2,7 +2,6 @@ package io.github.rosestack.audit.aspect;
 
 import io.github.rosestack.audit.annotation.Audit;
 import io.github.rosestack.audit.entity.AuditLog;
-import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.AuditEventType;
 import io.github.rosestack.audit.enums.RiskLevel;
 import io.github.rosestack.audit.properties.AuditProperties;
@@ -18,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -249,8 +247,8 @@ class AuditAspectTest {
             recordParams = true,
             recordResult = true,
             recordHttpInfo = true,
-            ignoreParams = {"password"},
-            ignoreResultFields = {"token"},
+            maskParams = {"password"},
+            maskResultFields = {"token"},
             tags = {"test", "demo"}
         )
         public String testComplexMethod(String username, String password) {

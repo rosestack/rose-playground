@@ -1,11 +1,8 @@
 package io.github.rosestack.audit.util;
 
-import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.core.jackson.desensitization.Desensitization;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
-
-import java.util.Map;
 
 /**
  * 审计脱敏工具类
@@ -23,7 +20,6 @@ public final class AuditMaskingUtils {
     private AuditMaskingUtils() {
         // 工具类，禁止实例化
     }
-
 
     /**
      * 根据字段名进行脱敏（简化版本，使用默认配置）
@@ -69,66 +65,5 @@ public final class AuditMaskingUtils {
 
         // 使用智能检测
         return Desensitization.maskByPattern(fieldValue);
-    }
-
-    /**
-     * 批量脱敏
-     *
-     * @param dataMap 数据映射
-     * @return 脱敏后的数据映射
-     */
-    public static Map<String, String> maskBatch(Map<String, String> dataMap) {
-        if (dataMap == null || dataMap.isEmpty()) {
-            return dataMap;
-        }
-
-        dataMap.replaceAll((key, value) -> maskByFieldName(key, value));
-        return dataMap;
-    }
-
-    /**
-     * 检查字符串是否包含敏感信息
-     *
-     * @param data       待检查的数据
-     * @param properties 审计配置
-     * @return 是否包含敏感信息
-     */
-    public static boolean containsSensitiveInfo(String data, AuditProperties properties) {
-        if (!StringUtils.hasText(data)) {
-            return false;
-        }
-
-        // 通过尝试脱敏来判断是否包含敏感信息
-        // 如果脱敏后的结果与原始数据不同，说明包含敏感信息
-        String maskedData = Desensitization.maskByPattern(data);
-        return !data.equals(maskedData) ||
-                data.toLowerCase().contains("password") ||
-                data.toLowerCase().contains("token") ||
-                data.toLowerCase().contains("authorization");
-    }
-
-    /**
-     * 获取脱敏统计信息
-     */
-    public static String getMaskingStats(Map<String, String> originalData, Map<String, String> maskedData) {
-        if (originalData == null || maskedData == null) {
-            return "无统计数据";
-        }
-
-        int totalFields = originalData.size();
-        int maskedFields = 0;
-
-        for (Map.Entry<String, String> entry : originalData.entrySet()) {
-            String key = entry.getKey();
-            String originalValue = entry.getValue();
-            String maskedValue = maskedData.get(key);
-
-            if (maskedValue != null && !originalValue.equals(maskedValue)) {
-                maskedFields++;
-            }
-        }
-
-        return String.format("总字段数: %d, 脱敏字段数: %d, 脱敏率: %.2f%%",
-                totalFields, maskedFields, (double) maskedFields / totalFields * 100);
     }
 }

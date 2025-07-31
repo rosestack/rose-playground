@@ -166,18 +166,6 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     }
 
     /**
-     * 查询已加密的详情
-     *
-     * @return 已加密详情列表
-     */
-    default List<AuditLogDetail> selectEncryptedDetails() {
-        LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AuditLogDetail::getIsEncrypted, true)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
-        return selectList(wrapper);
-    }
-
-    /**
      * 查询敏感但未加密的详情（用于数据安全检查）
      *
      * @return 敏感但未加密的详情列表
@@ -185,7 +173,6 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default List<AuditLogDetail> selectSensitiveButNotEncrypted() {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getIsSensitive, true)
-                .eq(AuditLogDetail::getIsEncrypted, false)
                 .orderByDesc(AuditLogDetail::getCreatedAt);
         return selectList(wrapper);
     }
@@ -379,11 +366,10 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
      * @param detailType 详情类型（可选）
      * @param detailKey  详情键（可选）
      * @param isSensitive 是否敏感（可选）
-     * @param isEncrypted 是否加密（可选）
      * @return 详情列表
      */
     default List<AuditLogDetail> selectByConditions(Long auditLogId, String detailType, String detailKey, 
-                                                    Boolean isSensitive, Boolean isEncrypted) {
+                                                    Boolean isSensitive) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         
         if (auditLogId != null) {
@@ -398,10 +384,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
         if (isSensitive != null) {
             wrapper.eq(AuditLogDetail::getIsSensitive, isSensitive);
         }
-        if (isEncrypted != null) {
-            wrapper.eq(AuditLogDetail::getIsEncrypted, isEncrypted);
-        }
-        
+
         wrapper.orderByDesc(AuditLogDetail::getCreatedAt);
         return selectList(wrapper);
     }
