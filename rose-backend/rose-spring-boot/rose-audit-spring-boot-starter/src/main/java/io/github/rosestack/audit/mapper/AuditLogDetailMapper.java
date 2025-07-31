@@ -52,7 +52,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default List<AuditLogDetail> selectByDetailType(String detailType) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getDetailType, detailType)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -65,7 +65,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default List<AuditLogDetail> selectByDetailKey(String detailKey) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getDetailKey, detailKey)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -131,7 +131,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
         }
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(AuditLogDetail::getDetailType, detailTypes)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -147,7 +147,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
         }
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(AuditLogDetail::getDetailKey, detailKeys)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -161,7 +161,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default List<AuditLogDetail> selectSensitiveDetails() {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getIsSensitive, true)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -173,7 +173,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default List<AuditLogDetail> selectSensitiveButNotEncrypted() {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getIsSensitive, true)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -204,7 +204,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default IPage<AuditLogDetail> selectPageByDetailType(Page<AuditLogDetail> page, String detailType) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getDetailType, detailType)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectPage(page, wrapper);
     }
 
@@ -264,8 +264,8 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
      */
     default List<AuditLogDetail> selectByTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
-        wrapper.between(AuditLogDetail::getCreatedAt, startTime, endTime)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+        wrapper.between(AuditLogDetail::getCreatedTime, startTime, endTime)
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -279,8 +279,8 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
      */
     default IPage<AuditLogDetail> selectPageByTimeRange(Page<AuditLogDetail> page, LocalDateTime startTime, LocalDateTime endTime) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
-        wrapper.between(AuditLogDetail::getCreatedAt, startTime, endTime)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+        wrapper.between(AuditLogDetail::getCreatedTime, startTime, endTime)
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectPage(page, wrapper);
     }
 
@@ -330,7 +330,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default List<AuditLogDetail> selectByTenantId(String tenantId) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getTenantId, tenantId)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 
@@ -344,7 +344,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
     default IPage<AuditLogDetail> selectPageByTenantId(Page<AuditLogDetail> page, String tenantId) {
         LambdaQueryWrapper<AuditLogDetail> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AuditLogDetail::getTenantId, tenantId)
-                .orderByDesc(AuditLogDetail::getCreatedAt);
+                .orderByDesc(AuditLogDetail::getCreatedTime);
         return selectPage(page, wrapper);
     }
 
@@ -385,7 +385,7 @@ public interface AuditLogDetailMapper extends BaseMapper<AuditLogDetail> {
             wrapper.eq(AuditLogDetail::getIsSensitive, isSensitive);
         }
 
-        wrapper.orderByDesc(AuditLogDetail::getCreatedAt);
+        wrapper.orderByDesc(AuditLogDetail::getCreatedTime);
         return selectList(wrapper);
     }
 }

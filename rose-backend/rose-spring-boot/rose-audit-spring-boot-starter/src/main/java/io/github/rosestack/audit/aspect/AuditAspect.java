@@ -1,6 +1,7 @@
 package io.github.rosestack.audit.aspect;
 
 import io.github.rosestack.audit.annotation.Audit;
+import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.AuditDetailKey;
@@ -8,7 +9,9 @@ import io.github.rosestack.audit.enums.AuditEventType;
 import io.github.rosestack.audit.enums.AuditRiskLevel;
 import io.github.rosestack.audit.enums.AuditStatus;
 import io.github.rosestack.audit.event.AuditEvent;
+import io.github.rosestack.core.jackson.desensitization.MaskUtils;
 import io.github.rosestack.core.util.ServletUtils;
+import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +29,12 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 
 @Slf4j
 @Aspect
@@ -40,6 +43,8 @@ import java.util.*;
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuditAspect {
     private final ApplicationEventPublisher eventPublisher;
+    private final AuditProperties properties;
+
     private final ExpressionParser expressionParser = new SpelExpressionParser();
 
     /**
@@ -146,23 +151,25 @@ public class AuditAspect {
                                                    Object result, Throwable exception) {
         List<AuditLogDetail> details = new ArrayList<>();
 
+        List<String> maskFields = getMaskFields(audit);
+
         try {
             // 记录方法参数
             if (audit.recordParams()) {
-                details.add(buildParameterDetail(joinPoint, audit, auditLogId));
+                details.add(buildParameterDetail(joinPoint, audit, maskFields, auditLogId));
             }
 
             // 记录方法返回值
             if (audit.recordResult() && result != null) {
-                details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.RESPONSE_RESULT, result));
+                details.add(AuditLogDetail.createDetail(audit, auditLogId, AuditDetailKey.RESPONSE_RESULT, result));
             }
 
             // 记录HTTP请求信息
-            details.addAll(buildHttpDetails(auditLogId));
+            details.addAll(buildHttpDetails(audit, maskFields, auditLogId));
 
             // 记录异常信息
             if (exception != null && audit.recordException()) {
-                details.addAll(buildExceptionDetails(exception, auditLogId));
+                details.addAll(buildExceptionDetails(audit, exception, auditLogId));
             }
         } catch (Exception e) {
             log.error("构建审计详情失败: {}", e.getMessage(), e);
@@ -171,14 +178,20 @@ public class AuditAspect {
         return details;
     }
 
+    private List<String> getMaskFields(Audit audit) {
+        List<String> maskFields = Arrays.asList(audit.maskFields());
+        maskFields.addAll(properties.getMaskFields());
+
+        return maskFields;
+    }
+
     /**
      * 构建参数详情
      */
-    private AuditLogDetail buildParameterDetail(ProceedingJoinPoint joinPoint, Audit audit, Long auditLogId) {
+    private AuditLogDetail buildParameterDetail(ProceedingJoinPoint joinPoint, Audit audit, List<String> maskFields, Long auditLogId) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Parameter[] parameters = signature.getMethod().getParameters();
         Object[] args = joinPoint.getArgs();
-        Set<String> maskParams = new HashSet<>(Arrays.asList(audit.maskFields()));
 
         List<Object> newArgs = new ArrayList<>();
         for (int i = 0; i < parameters.length && i < args.length; i++) {
@@ -191,32 +204,39 @@ public class AuditAspect {
                 continue;
             }
 
-            if (maskParams.contains(paramName.toLowerCase()) && parameter.getType() == String.class) {
-                newArgs.add(arg);
+            if (maskFields.contains(paramName) && parameter.getType() == String.class) {
+                newArgs.add(MaskUtils.maskToken((String) arg));
             } else {
                 newArgs.add(arg);
             }
         }
-        return AuditLogDetail.createDetail(auditLogId, AuditDetailKey.REQUEST_PARAMS, newArgs);
+        return AuditLogDetail.createDetail(audit, auditLogId, AuditDetailKey.REQUEST_PARAMS, newArgs);
     }
 
     /**
      * 构建HTTP详情
      */
-    private List<AuditLogDetail> buildHttpDetails(Long auditLogId) {
+    private List<AuditLogDetail> buildHttpDetails(Audit audit, List<String> maskFields, Long auditLogId) {
         List<AuditLogDetail> details = new ArrayList<>();
+
+        Function<String, String> maskFunction = s -> {
+            if (maskFields.contains(s)) {
+                return MaskUtils.maskToken(s);
+            }
+            return s;
+        };
 
         try {
             // 获取 request 请求头
-            Map<String, String> headers = ServletUtils.getRequestHeaders();
+            Map<String, String> headers = ServletUtils.getRequestHeaders(maskFunction);
             if (!headers.isEmpty()) {
-                details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.REQUEST_HEADERS, headers));
+                details.add(AuditLogDetail.createDetail(audit, auditLogId, AuditDetailKey.REQUEST_HEADERS, headers));
             }
 
             //获取 response 请求头
-            headers = ServletUtils.getResponseHeaders();
+            headers = ServletUtils.getResponseHeaders(maskFunction);
             if (!headers.isEmpty()) {
-                details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.RESPONSE_HEADERS, headers));
+                details.add(AuditLogDetail.createDetail(audit, auditLogId, AuditDetailKey.RESPONSE_HEADERS, headers));
             }
         } catch (Exception e) {
             log.warn("构建HTTP详情失败: {}", e.getMessage());
@@ -228,7 +248,7 @@ public class AuditAspect {
     /**
      * 构建异常详情
      */
-    private List<AuditLogDetail> buildExceptionDetails(Throwable exception, Long auditLogId) {
+    private List<AuditLogDetail> buildExceptionDetails(Audit audit, Throwable exception, Long auditLogId) {
         List<AuditLogDetail> details = new ArrayList<>();
 
         try {
@@ -237,7 +257,7 @@ public class AuditAspect {
             exceptionInfo.put("message", exception.getMessage());
             exceptionInfo.put("stackTrace", ExceptionUtils.getStackTrace(exception));
 
-            details.add(AuditLogDetail.createDetail(auditLogId, AuditDetailKey.EXCEPTION_STACK, exceptionInfo));
+            details.add(AuditLogDetail.createDetail(audit, auditLogId, AuditDetailKey.EXCEPTION_STACK, exceptionInfo));
         } catch (Exception e) {
             log.warn("构建异常详情失败: {}", e.getMessage());
         }

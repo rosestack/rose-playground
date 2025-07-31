@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import io.github.rosestack.core.annotation.FieldSensitive;
 import io.github.rosestack.core.spring.SpringExpressionResolver;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -34,7 +33,7 @@ public class DesensitizationSerializer extends JsonSerializer<String> implements
             return origin;
         }
 
-        return Desensitization.desensitize(origin, fieldSensitive);
+        return MaskUtils.desensitize(origin, fieldSensitive);
     }
 
     @Override

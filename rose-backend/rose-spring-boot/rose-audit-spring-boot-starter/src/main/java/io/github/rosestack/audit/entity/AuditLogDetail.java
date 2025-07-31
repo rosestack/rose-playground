@@ -1,9 +1,11 @@
 package io.github.rosestack.audit.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.github.rosestack.audit.annotation.Audit;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.enums.AuditDetailType;
 import io.github.rosestack.core.jackson.JsonUtils;
+import io.github.rosestack.mybatis.support.encryption.EncryptType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -79,6 +81,8 @@ public class AuditLogDetail {
     @TableField("is_encrypted")
     private Boolean isEncrypted;
 
+    private EncryptType encryptType;
+
     /**
      * 租户ID（多租户支持）
      */
@@ -90,7 +94,7 @@ public class AuditLogDetail {
      * 创建时间
      */
     @TableField(value = "created_time", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdTime;
 
     // ==================== 业务方法 ====================
 
@@ -113,86 +117,19 @@ public class AuditLogDetail {
     public void setDetailKey(AuditDetailKey detailKey) {
         if (detailKey != null) {
             this.detailKey = detailKey.getCode();
-            // 自动设置敏感数据标记
             this.isSensitive = detailKey.isSensitive();
         }
     }
 
-    /**
-     * 获取详情类型枚举
-     *
-     * @return 详情类型枚举
-     */
-    public AuditDetailType getDetailTypeEnum() {
-        return AuditDetailType.fromCode(this.detailType);
-    }
-
-    /**
-     * 获取详情键枚举
-     *
-     * @return 详情键枚举
-     */
-    public AuditDetailKey getDetailKeyEnum() {
-        return AuditDetailKey.fromCode(this.detailKey);
-    }
-
-    /**
-     * 判断是否需要加密
-     *
-     * @return 是否需要加密
-     */
-    public boolean needsEncryption() {
-        AuditDetailKey keyEnum = getDetailKeyEnum();
-        return keyEnum != null && keyEnum.needsEncryption();
-    }
-
-    /**
-     * 判断是否需要脱敏
-     *
-     * @return 是否需要脱敏
-     */
-    public boolean needsMasking() {
-        AuditDetailKey keyEnum = getDetailKeyEnum();
-        return keyEnum != null && keyEnum.needsMasking();
-    }
-
-    /**
-     * 判断是否为HTTP相关详情
-     *
-     * @return 是否为HTTP相关
-     */
-    public boolean isHttpRelated() {
-        AuditDetailType typeEnum = getDetailTypeEnum();
-        return typeEnum == AuditDetailType.HTTP_REQUEST;
-    }
-
-    /**
-     * 判断是否为数据变更相关详情
-     *
-     * @return 是否为数据变更相关
-     */
-    public boolean isDataChangeRelated() {
-        AuditDetailType typeEnum = getDetailTypeEnum();
-        return typeEnum == AuditDetailType.DATA_CHANGE;
-    }
-
-    /**
-     * 判断是否为安全相关详情
-     *
-     * @return 是否为安全相关
-     */
-    public boolean isSecurityRelated() {
-        AuditDetailType typeEnum = getDetailTypeEnum();
-        return typeEnum == AuditDetailType.SECURITY;
-    }
-
-    public static AuditLogDetail createDetail(Long auditLogId, AuditDetailKey detailKey, Object detailValue) {
+    public static AuditLogDetail createDetail(Audit audit, Long auditLogId, AuditDetailKey detailKey, Object detailValue) {
         return AuditLogDetail.builder()
                 .auditLogId(auditLogId)
                 .detailType(detailKey.getDetailType().getCode())
                 .detailKey(detailKey.getCode())
                 .detailValue(JsonUtils.toString(detailValue))
                 .isSensitive(detailKey.isSensitive())
+                .isEncrypted(audit.encryptResult())
+                .encryptType(audit.encryptType())
                 .build();
     }
 }

@@ -4,8 +4,6 @@ package io.github.rosestack.core.jackson.desensitization;
  * 脱敏类型枚举
  */
 public enum SensitiveType {
-
-
     /**
      * 手机号脱敏：138****8000
      */
@@ -17,7 +15,7 @@ public enum SensitiveType {
     ID_CARD,
 
     /**
-     * 邮箱脱敏：abc***@example.com
+     * 邮箱脱敏：abc****@example.com
      */
     EMAIL,
 
@@ -47,9 +45,9 @@ public enum SensitiveType {
     ADDRESS,
 
     /**
-     * 完全脱敏：***
+     * 完全脱敏：**MASKED**
      */
-    SECRET,
+    PASSWORD,
 
     /**
      * 自定义脱敏规则

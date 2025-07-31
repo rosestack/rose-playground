@@ -1,5 +1,6 @@
 package io.github.rosestack.mybatis.config;
 
+import io.github.rosestack.mybatis.support.encryption.EncryptType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -173,7 +174,6 @@ public class RoseMybatisProperties {
          * 密钥轮换配置
          */
         private KeyRotation keyRotation = new KeyRotation();
-
 
         /**
          * 哈希配置

@@ -2,6 +2,7 @@ package io.github.rosestack.audit.annotation;
 
 import io.github.rosestack.audit.enums.AuditEventType;
 import io.github.rosestack.audit.enums.AuditRiskLevel;
+import io.github.rosestack.mybatis.support.encryption.EncryptType;
 
 import java.lang.annotation.*;
 
@@ -75,8 +76,12 @@ public @interface Audit {
      */
     boolean recordResult() default false;
 
+    EncryptType encryptType() default EncryptType.AES;
 
-    String[] maskFields() default {"password", "token", "secret", "key"};
+    boolean encryptResult() default false;
+
+    String[] maskFields() default {"password", "oldPassword", "newPassword",
+            "newPasswordAgain", "token", "access_token", "refresh_token", "secret", "key"};
 
     /**
      * 条件表达式
@@ -98,4 +103,5 @@ public @interface Audit {
      * @return 是否记录异常信息
      */
     boolean recordException() default true;
+
 }

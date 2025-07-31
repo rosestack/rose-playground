@@ -23,6 +23,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 
 /**
@@ -167,6 +168,10 @@ public abstract class ServletUtils {
     }
 
     public static Map<String, String> getRequestHeaders() {
+        return getRequestHeaders(null);
+    }
+
+    public static Map<String, String> getRequestHeaders(Function<String, String> function) {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
             return Collections.emptyMap();
@@ -177,13 +182,22 @@ public abstract class ServletUtils {
         if (headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
-                headers.put(name, request.getHeader(name));
+                if (function != null) {
+                    headers.put(name, function.apply(name));
+                } else {
+                    headers.put(name, request.getHeader(name));
+                }
             }
         }
         return headers;
+
     }
 
     public static Map<String, String> getResponseHeaders() {
+        return getResponseHeaders(null);
+    }
+
+    public static Map<String, String> getResponseHeaders(Function<String, String> function) {
         HttpServletResponse response = getCurrentResponse();
         if (response == null) {
             return Collections.emptyMap();
@@ -193,7 +207,11 @@ public abstract class ServletUtils {
         Collection<String> headerNames = response.getHeaderNames();
         if (headerNames != null) {
             for (String name : headerNames) {
-                headers.put(name, response.getHeader(name));
+                if (function != null) {
+                    headers.put(name, function.apply(name));
+                } else {
+                    headers.put(name, response.getHeader(name));
+                }
             }
         }
         return headers;

@@ -35,25 +35,21 @@ public final class EncryptionUtils {
      */
     private static final ConcurrentMap<String, Cipher> ENCRYPT_CIPHER_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, Cipher> DECRYPT_CIPHER_CACHE = new ConcurrentHashMap<>();
-
-    /**
-     * 性能统计
-     */
     private static final ConcurrentMap<String, Long> PERFORMANCE_STATS = new ConcurrentHashMap<>();
 
-    /**
-     * 默认加密算法
-     */
-    private static final String DEFAULT_ALGORITHM = "AES";
     private static final String DEFAULT_TRANSFORMATION = "AES/ECB/PKCS5Padding";
+
+    public static String encrypt(String plainText, EncryptType encryptType, String secretKey) {
+        return encrypt(plainText, encryptType, secretKey, false);
+    }
 
     /**
      * 加密数据
      *
-     * @param plainText    明文
-     * @param encryptType  加密类型
-     * @param secretKey    密钥
-     * @param failOnError  是否在错误时抛出异常
+     * @param plainText   明文
+     * @param encryptType 加密类型
+     * @param secretKey   密钥
+     * @param failOnError 是否在错误时抛出异常
      * @return 加密后的密文，如果加密失败且不抛出异常则返回原文
      */
     public static String encrypt(String plainText, EncryptType encryptType, String secretKey, boolean failOnError) {
@@ -80,13 +76,17 @@ public final class EncryptionUtils {
         }
     }
 
+    public static String decrypt(String cipherText, EncryptType encryptType, String secretKey) {
+        return decrypt(cipherText, encryptType, secretKey, false);
+    }
+
     /**
      * 解密数据
      *
-     * @param cipherText   密文
-     * @param encryptType  加密类型
-     * @param secretKey    密钥
-     * @param failOnError  是否在错误时抛出异常
+     * @param cipherText  密文
+     * @param encryptType 加密类型
+     * @param secretKey   密钥
+     * @param failOnError 是否在错误时抛出异常
      * @return 解密后的明文，如果解密失败且不抛出异常则返回原文
      */
     public static String decrypt(String cipherText, EncryptType encryptType, String secretKey, boolean failOnError) {
@@ -116,10 +116,10 @@ public final class EncryptionUtils {
     /**
      * 批量加密
      *
-     * @param plainTexts   明文数组
-     * @param encryptType  加密类型
-     * @param secretKey    密钥
-     * @param failOnError  是否在错误时抛出异常
+     * @param plainTexts  明文数组
+     * @param encryptType 加密类型
+     * @param secretKey   密钥
+     * @param failOnError 是否在错误时抛出异常
      * @return 加密后的密文数组
      */
     public static String[] encryptBatch(String[] plainTexts, EncryptType encryptType, String secretKey, boolean failOnError) {
@@ -137,10 +137,10 @@ public final class EncryptionUtils {
     /**
      * 批量解密
      *
-     * @param cipherTexts  密文数组
-     * @param encryptType  加密类型
-     * @param secretKey    密钥
-     * @param failOnError  是否在错误时抛出异常
+     * @param cipherTexts 密文数组
+     * @param encryptType 加密类型
+     * @param secretKey   密钥
+     * @param failOnError 是否在错误时抛出异常
      * @return 解密后的明文数组
      */
     public static String[] decryptBatch(String[] cipherTexts, EncryptType encryptType, String secretKey, boolean failOnError) {
@@ -283,11 +283,11 @@ public final class EncryptionUtils {
     private static byte[] adjustKeyLength(String secretKey, EncryptType encryptType) {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         int requiredLength = getRequiredKeyLength(encryptType);
-        
+
         if (keyBytes.length == requiredLength) {
             return keyBytes;
         }
-        
+
         byte[] adjustedKey = new byte[requiredLength];
         if (keyBytes.length > requiredLength) {
             System.arraycopy(keyBytes, 0, adjustedKey, 0, requiredLength);
@@ -334,8 +334,8 @@ public final class EncryptionUtils {
      * 获取缓存统计信息
      */
     public static String getCacheStats() {
-        return String.format("加密缓存: %d, 解密缓存: %d", 
-                ENCRYPT_CIPHER_CACHE.size(), 
+        return String.format("加密缓存: %d, 解密缓存: %d",
+                ENCRYPT_CIPHER_CACHE.size(),
                 DECRYPT_CIPHER_CACHE.size());
     }
 

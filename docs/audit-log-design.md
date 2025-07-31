@@ -360,9 +360,9 @@ WHERE detail_key = 'REQUEST_PARAMS'
 ```java
 // 常见敏感字段脱敏
 private static final Map<String, String> MASK_PATTERNS = Map.of(
-    "password", "****MASKED****",
-    "token", "****MASKED****",
-    "authorization", "Bearer ****MASKED****",
+    "password", "**MASKED**",
+    "token", "**MASKED**",
+    "authorization", "Bearer **MASKED**",
     "phone", "138****5678",
     "idCard", "110101****1234",
     "bankCard", "6222****1234"
@@ -638,12 +638,12 @@ INSERT INTO audit_log_detail VALUES
   "Accept": "application/json, text/plain, */*",
   "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
   "Content-Type": "application/json",
-  "Authorization": "Bearer ****MASKED****"
+  "Authorization": "Bearer **MASKED**"
 }', FALSE, FALSE, '2024-01-31 09:15:23'),
 
 (2, 1001, '安全相关', 'SECURITY_CONTEXT', '{
   "loginMethod": "PASSWORD",
-  "deviceFingerprint": "fp_****MASKED****",
+  "deviceFingerprint": "fp_**MASKED**",
   "ipLocation": "北京市朝阳区",
   "riskScore": 15,
   "authFactors": ["password", "captcha"]
@@ -821,7 +821,7 @@ INSERT INTO audit_log_detail VALUES
 
 (38, 4001, 'HTTP请求相关', 'REQUEST_HEADERS', '{
   "Content-Type": "application/json",
-  "Authorization": "Bearer ****MASKED****",
+  "Authorization": "Bearer **MASKED**",
   "X-Request-ID": "req_abc123",
   "User-Agent": "ApiClient/1.0"
 }', 'JSON'),

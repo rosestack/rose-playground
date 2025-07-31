@@ -2,7 +2,7 @@ package io.github.rosestack.core.annotation;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.github.rosestack.core.jackson.desensitization.Desensitization;
+import io.github.rosestack.core.jackson.desensitization.MaskUtils;
 import io.github.rosestack.core.jackson.desensitization.DesensitizationSerializer;
 import io.github.rosestack.core.jackson.desensitization.SensitiveType;
 
@@ -38,7 +38,7 @@ public @interface FieldSensitive {
      *
      * @return String
      */
-    char mask() default Desensitization.MASK;
+    char mask() default MaskUtils.MASK;
 
     String expression() default "";
 }

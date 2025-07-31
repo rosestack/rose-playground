@@ -11,6 +11,7 @@ import io.github.rosestack.audit.service.impl.AuditLogServiceImpl;
 import io.github.rosestack.audit.storage.AuditStorage;
 import io.github.rosestack.audit.storage.DatabaseAuditStorage;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
+import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,9 +72,9 @@ public class AuditAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(IService.class)
-    public AuditLogDetailService auditLogDetailService(AuditLogDetailMapper auditLogDetailMapper) {
+    public AuditLogDetailService auditLogDetailService(AuditLogDetailMapper auditLogDetailMapper, RoseMybatisProperties mybatisProperties) {
         log.debug("注册 AuditLogDetailService Bean");
-        return new AuditLogDetailServiceImpl(auditLogDetailMapper, auditProperties);
+        return new AuditLogDetailServiceImpl(auditLogDetailMapper, auditProperties, mybatisProperties);
     }
 
     @Bean
@@ -91,6 +92,6 @@ public class AuditAutoConfiguration {
     @ConditionalOnProperty(prefix = "rose.audit.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
     public AuditAspect auditAspect(ApplicationEventPublisher eventPublisher) {
         log.debug("注册 AuditAspect Bean");
-        return new AuditAspect(eventPublisher);
+        return new AuditAspect(eventPublisher, auditProperties);
     }
 }

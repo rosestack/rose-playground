@@ -47,8 +47,6 @@ public class DefaultFieldEncryptor implements FieldEncryptor {
         return EncryptionUtils.decrypt(cipherText, encryptType, secretKey, properties.getEncryption().isFailOnError());
     }
 
-
-
     /**
      * 获取加密密钥
      */

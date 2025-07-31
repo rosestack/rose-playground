@@ -9,10 +9,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Rose Audit 配置属性
@@ -33,6 +30,8 @@ public class AuditProperties {
      * 是否启用审计日志功能
      */
     private boolean enabled = true;
+
+    private List<String> maskFields = Arrays.asList();
 
     /**
      * 存储配置

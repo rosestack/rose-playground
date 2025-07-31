@@ -11,6 +11,8 @@ import io.github.rosestack.audit.mapper.AuditLogDetailMapper;
 import io.github.rosestack.audit.service.AuditLogDetailService;
 import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.core.util.ServletUtils;
+import io.github.rosestack.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.mybatis.support.encryption.EncryptionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -43,6 +45,7 @@ import java.util.stream.Collectors;
 public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper, AuditLogDetail> implements AuditLogDetailService {
     private final AuditLogDetailMapper auditLogDetailMapper;
     private final AuditProperties auditProperties;
+    private final RoseMybatisProperties mybatisProperties;
 
     @Override
     public AuditLogDetail recordAuditDetail(AuditLogDetail auditLogDetail) {
@@ -51,6 +54,8 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         try {
             // 补充上下文信息
             enrichAuditDetailContext(auditLogDetail);
+            maskSensitiveDetail(auditLogDetail);
+            encryptDetailValue(auditLogDetail);
 
             // 保存到数据库
             boolean success = save(auditLogDetail);
@@ -210,7 +215,7 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             decryptedDetail.setDetailValue(detail.getDetailValue());
             decryptedDetail.setIsSensitive(detail.getIsSensitive());
             decryptedDetail.setTenantId(detail.getTenantId());
-            decryptedDetail.setCreatedAt(detail.getCreatedAt());
+            decryptedDetail.setCreatedTime(detail.getCreatedTime());
 
             return decryptedDetail;
 
@@ -236,7 +241,7 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             maskedDetail.setDetailValue(auditLogDetail.getDetailValue());
             maskedDetail.setIsSensitive(auditLogDetail.getIsSensitive());
             maskedDetail.setTenantId(auditLogDetail.getTenantId());
-            maskedDetail.setCreatedAt(auditLogDetail.getCreatedAt());
+            maskedDetail.setCreatedTime(auditLogDetail.getCreatedTime());
 
             return maskedDetail;
 
@@ -255,6 +260,13 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         return auditLogDetails.stream()
                 .map(this::maskSensitiveDetail)
                 .collect(Collectors.toList());
+    }
+
+    private void encryptDetailValue(AuditLogDetail auditLogDetail) {
+        if (auditLogDetail.getIsEncrypted() != null && auditLogDetail.getIsEncrypted() && auditLogDetail.getEncryptType() != null) {
+            auditLogDetail.setDetailValue(EncryptionUtils.encrypt(auditLogDetail.getDetailValue(),
+                    auditLogDetail.getEncryptType(), mybatisProperties.getEncryption().getSecretKey()));
+        }
     }
 
     // ==================== 统计分析 ====================
@@ -546,8 +558,8 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
      */
     private void enrichAuditDetailContext(AuditLogDetail auditLogDetail) {
         // 设置创建时间
-        if (auditLogDetail.getCreatedAt() == null) {
-            auditLogDetail.setCreatedAt(LocalDateTime.now());
+        if (auditLogDetail.getCreatedTime() == null) {
+            auditLogDetail.setCreatedTime(LocalDateTime.now());
         }
 
         // 设置租户ID
@@ -563,9 +575,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
                     auditLogDetail.setIsSensitive(detailKey.isSensitive());
                 }
             }
-            if (auditLogDetail.getIsEncrypted() == null) {
-                //TODO
-            }
         }
 
         // 设置详情类型
@@ -577,14 +586,4 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         }
     }
 
-    /**
-     * 处理敏感数据
-     */
-    private void processSensitiveData(AuditLogDetail auditLogDetail) {
-        if (!Boolean.TRUE.equals(auditLogDetail.getIsSensitive())) {
-            return;
-        }
-
-
-    }
 }
