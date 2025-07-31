@@ -1,8 +1,8 @@
 package io.github.rosestack.audit.entity;
 
 import io.github.rosestack.audit.enums.AuditEventType;
+import io.github.rosestack.audit.enums.AuditRiskLevel;
 import io.github.rosestack.audit.enums.AuditStatus;
-import io.github.rosestack.audit.enums.RiskLevel;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -67,7 +67,7 @@ class AuditLogTest {
     @Test
     void testSetRiskLevelFromEnum() {
         AuditLog auditLog = new AuditLog();
-        auditLog.setRiskLevel(RiskLevel.HIGH);
+        auditLog.setRiskLevel(AuditRiskLevel.HIGH);
 
         assertThat(auditLog.getRiskLevel()).isEqualTo("HIGH");
     }
@@ -93,10 +93,10 @@ class AuditLogTest {
     @Test
     void testGetRiskLevelEnum() {
         AuditLog auditLog = new AuditLog();
-        auditLog.setRiskLevel(RiskLevel.HIGH);
+        auditLog.setRiskLevel(AuditRiskLevel.HIGH);
 
-        RiskLevel riskLevel = auditLog.getRiskLevelEnum();
-        assertThat(riskLevel).isEqualTo(RiskLevel.HIGH);
+        AuditRiskLevel auditRiskLevel = auditLog.getRiskLevelEnum();
+        assertThat(auditRiskLevel).isEqualTo(AuditRiskLevel.HIGH);
     }
 
     @Test
@@ -124,22 +124,22 @@ class AuditLogTest {
     @Test
     void testIsHighRisk() {
         AuditLog highRiskLog = new AuditLog();
-        highRiskLog.setRiskLevel(RiskLevel.HIGH);
+        highRiskLog.setRiskLevel(AuditRiskLevel.HIGH);
         assertThat(highRiskLog.isHighRisk()).isTrue();
 
         AuditLog lowRiskLog = new AuditLog();
-        lowRiskLog.setRiskLevel(RiskLevel.LOW);
+        lowRiskLog.setRiskLevel(AuditRiskLevel.LOW);
         assertThat(lowRiskLog.isHighRisk()).isFalse();
     }
 
     @Test
     void testNeedsAlert() {
         AuditLog mediumRiskLog = new AuditLog();
-        mediumRiskLog.setRiskLevel(RiskLevel.MEDIUM);
+        mediumRiskLog.setRiskLevel(AuditRiskLevel.MEDIUM);
         assertThat(mediumRiskLog.needsAlert()).isTrue();
 
         AuditLog lowRiskLog = new AuditLog();
-        lowRiskLog.setRiskLevel(RiskLevel.LOW);
+        lowRiskLog.setRiskLevel(AuditRiskLevel.LOW);
         assertThat(lowRiskLog.needsAlert()).isFalse();
     }
 
@@ -155,7 +155,7 @@ class AuditLogTest {
         auditLog.setStatus((AuditStatus) null);
         assertThat(auditLog.getStatus()).isNull();
 
-        auditLog.setRiskLevel((RiskLevel) null);
+        auditLog.setRiskLevel((AuditRiskLevel) null);
         assertThat(auditLog.getRiskLevel()).isNull();
     }
 
@@ -184,7 +184,7 @@ class AuditLogTest {
         // 使用枚举设置类型
         auditLog.setEventType(AuditEventType.AUTH_LOGIN);
         auditLog.setStatus(AuditStatus.SUCCESS);
-        auditLog.setRiskLevel(RiskLevel.LOW);
+        auditLog.setRiskLevel(AuditRiskLevel.LOW);
 
         // 验证设置结果
         assertThat(auditLog.getEventType()).isEqualTo("认证");

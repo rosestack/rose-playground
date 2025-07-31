@@ -4,8 +4,8 @@ import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.enums.AuditEventType;
+import io.github.rosestack.audit.enums.AuditRiskLevel;
 import io.github.rosestack.audit.enums.AuditStatus;
-import io.github.rosestack.audit.enums.RiskLevel;
 import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.mybatis.support.encryption.EncryptionUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -300,8 +300,8 @@ public final class AuditValidationUtils {
 
         // 验证风险等级的有效性
         if (StringUtils.hasText(auditLog.getRiskLevel())) {
-            RiskLevel riskLevel = RiskLevel.fromCode(auditLog.getRiskLevel());
-            if (riskLevel == null) {
+            AuditRiskLevel auditRiskLevel = AuditRiskLevel.fromCode(auditLog.getRiskLevel());
+            if (auditRiskLevel == null) {
                 result.addError("无效的风险等级: " + auditLog.getRiskLevel());
             }
         }
@@ -337,12 +337,12 @@ public final class AuditValidationUtils {
 
         // 验证风险等级与事件类型的一致性
         AuditEventType eventType = auditLog.getEventTypeEnum();
-        RiskLevel riskLevel = auditLog.getRiskLevelEnum();
+        AuditRiskLevel auditRiskLevel = auditLog.getRiskLevelEnum();
         
-        if (eventType != null && riskLevel != null) {
-            RiskLevel expectedRiskLevel = RiskLevel.fromEventType(eventType);
-            if (riskLevel.compareTo(expectedRiskLevel) < 0) {
-                result.addWarning("风险等级可能过低，建议使用: " + expectedRiskLevel.getCode());
+        if (eventType != null && auditRiskLevel != null) {
+            AuditRiskLevel expectedAuditRiskLevel = AuditRiskLevel.fromEventType(eventType);
+            if (auditRiskLevel.compareTo(expectedAuditRiskLevel) < 0) {
+                result.addWarning("风险等级可能过低，建议使用: " + expectedAuditRiskLevel.getCode());
             }
         }
     }

@@ -1,14 +1,11 @@
 package io.github.rosestack.audit.aspect;
 
 import io.github.rosestack.audit.annotation.Audit;
+import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.*;
-import io.github.rosestack.audit.properties.AuditProperties;
-import io.github.rosestack.audit.service.AuditLogDetailService;
-import io.github.rosestack.audit.service.AuditLogService;
-import io.github.rosestack.audit.util.AuditJsonUtils;
-import io.github.rosestack.audit.util.AuditMaskingUtils;
+import io.github.rosestack.audit.event.AuditEvent;
 import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.core.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +16,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.annotation.Order;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -34,7 +32,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 审计切面
@@ -53,9 +50,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuditAspect {
-
-    private final AuditLogService auditLogService;
-    private final AuditLogDetailService auditLogDetailService;
+    private final ApplicationEventPublisher eventPublisher;
     private final AuditProperties auditProperties;
 
     /**
@@ -119,19 +114,14 @@ public class AuditAspect {
             // 构建审计日志
             AuditLog auditLog = buildAuditLog(joinPoint, audit, startTime, executionTime, result, exception, status);
 
-            if (audit.async()) {
-                // 异步记录
-                CompletableFuture<AuditLog> future = auditLogService.recordAuditLogAsync(auditLog);
-                future.thenAccept(savedLog -> recordAuditDetails(joinPoint, audit, savedLog, result, exception))
-                        .exceptionally(throwable -> {
-                            log.error("异步记录审计日志失败: {}", throwable.getMessage(), throwable);
-                            return null;
-                        });
-            } else {
-                // 同步记录
-                AuditLog savedLog = auditLogService.recordAuditLog(auditLog);
-                recordAuditDetails(joinPoint, audit, savedLog, result, exception);
-            }
+            // 构建审计详情
+            List<AuditLogDetail> auditLogDetails = buildAuditDetails(joinPoint, audit, auditLog.getId(), result, exception);
+
+            // 发布审计事件，由监听器处理具体的存储逻辑
+            AuditEvent auditEvent = new AuditEvent(auditLog, auditLogDetails);
+            eventPublisher.publishEvent(auditEvent);
+
+            log.debug("发布审计事件成功，审计日志ID: {}", auditLog.getId());
         } catch (Exception e) {
             log.error("构建审计日志失败: {}", e.getMessage(), e);
         }
@@ -153,7 +143,7 @@ public class AuditAspect {
         String eventSubtype = eventType.getEventSubType();
 
         // 获取风险等级
-        RiskLevel riskLevel = getRiskLevel(audit, eventType);
+        AuditRiskLevel auditRiskLevel = getRiskLevel(audit, eventType);
 
         // 构建审计日志
         AuditLog auditLog = AuditLog.builder()
@@ -168,7 +158,7 @@ public class AuditAspect {
         auditLog.setEventSubtype(eventSubtype);
 
         // 设置风险等级
-        auditLog.setRiskLevel(riskLevel);
+        auditLog.setRiskLevel(auditRiskLevel);
 
         // 设置HTTP信息
         if (audit.recordHttpInfo()) {
@@ -187,44 +177,37 @@ public class AuditAspect {
     }
 
     /**
-     * 记录审计详情
+     * 构建审计详情列表
      */
-    private void recordAuditDetails(ProceedingJoinPoint joinPoint, Audit audit, AuditLog auditLog,
-                                    Object result, Throwable exception) {
-        try {
-            List<AuditLogDetail> details = new ArrayList<>();
+    private List<AuditLogDetail> buildAuditDetails(ProceedingJoinPoint joinPoint, Audit audit, Long auditLogId,
+                                                   Object result, Throwable exception) {
+        List<AuditLogDetail> details = new ArrayList<>();
 
+        try {
             // 记录方法参数
             if (audit.recordParams()) {
-                details.add(buildParameterDetail(joinPoint, audit, auditLog.getId()));
+                details.add(buildParameterDetail(joinPoint, audit, auditLogId));
             }
 
             // 记录返回值
             if (audit.recordResult() && result != null) {
-                details.add(buildResultDetail(result, audit, auditLog.getId()));
+                details.add(buildResultDetail(result, audit, auditLogId));
             }
 
             // 记录HTTP请求信息
             if (audit.recordHttpInfo()) {
-                details.addAll(buildHttpDetails(auditLog.getId()));
+                details.addAll(buildHttpDetails(auditLogId));
             }
 
             // 记录异常信息
             if (exception != null && audit.recordException()) {
-                details.addAll(buildExceptionDetails(exception, auditLog.getId()));
-            }
-
-            // 批量保存详情
-            if (!details.isEmpty()) {
-                if (audit.async()) {
-                    auditLogDetailService.recordAuditDetailBatchAsync(details);
-                } else {
-                    auditLogDetailService.recordAuditDetailBatch(details);
-                }
+                details.addAll(buildExceptionDetails(exception, auditLogId));
             }
         } catch (Exception e) {
-            log.error("记录审计详情失败: {}", e.getMessage(), e);
+            log.error("构建审计详情失败: {}", e.getMessage(), e);
         }
+
+        return details;
     }
 
     /**
@@ -234,7 +217,7 @@ public class AuditAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Parameter[] parameters = signature.getMethod().getParameters();
         Object[] args = joinPoint.getArgs();
-        Set<String> maskParams = new HashSet<>(Arrays.asList(audit.maskParams()));
+        Set<String> maskParams = new HashSet<>(Arrays.asList(audit.maskFields()));
 
         List<Object> newArgs = new ArrayList<>();
         for (int i = 0; i < parameters.length && i < args.length; i++) {
@@ -248,7 +231,7 @@ public class AuditAspect {
             }
 
             if (maskParams.contains(paramName.toLowerCase()) && parameter.getType() == String.class) {
-                newArgs.add(AuditMaskingUtils.maskByFieldName(paramName.toLowerCase(), (String) arg));
+                newArgs.add(arg);
             } else {
                 newArgs.add(arg);
             }
@@ -271,7 +254,7 @@ public class AuditAspect {
                 .auditLogId(auditLogId)
                 .detailKey(AuditDetailKey.RESPONSE_RESULT.getCode())
                 .detailType(AuditDetailKey.RESPONSE_RESULT.getDetailType().getCode())
-                .detailValue(AuditJsonUtils.toMaskedJsonString(result))
+                .detailValue(JsonUtils.toString(result))
                 .isSensitive(AuditDetailKey.RESPONSE_RESULT.isSensitive())
                 .build();
     }
@@ -286,7 +269,7 @@ public class AuditAspect {
             // 获取请求头
             Map<String, String> headers = ServletUtils.getRequestHeaders();
             if (!headers.isEmpty()) {
-                String headersJson = AuditJsonUtils.toJsonString(headers);
+                String headersJson = JsonUtils.toString(headers);
 
                 AuditLogDetail headerDetail = AuditLogDetail.builder()
                         .auditLogId(auditLogId)
@@ -299,12 +282,11 @@ public class AuditAspect {
                 details.add(headerDetail);
             }
 
-            ServletUtils.getRequestBody();
-
             // 获取请求参数
             Map<String, String> params = ServletUtils.getRequestParams();
             if (!params.isEmpty()) {
-                String paramsJson = AuditJsonUtils.toMaskedJsonString(params);
+                //TODO 脱敏
+                String paramsJson = JsonUtils.toString(params);
 
                 AuditLogDetail paramDetail = AuditLogDetail.builder()
                         .auditLogId(auditLogId)
@@ -335,7 +317,7 @@ public class AuditAspect {
             exceptionInfo.put("message", exception.getMessage());
             exceptionInfo.put("stackTrace", getStackTrace(exception));
 
-            String exceptionJson = AuditJsonUtils.toJsonString(exceptionInfo);
+            String exceptionJson = JsonUtils.toString(exceptionInfo);
 
             AuditLogDetail detail = AuditLogDetail.builder()
                     .auditLogId(auditLogId)
@@ -394,11 +376,11 @@ public class AuditAspect {
     /**
      * 获取风险等级
      */
-    private RiskLevel getRiskLevel(Audit audit, AuditEventType eventType) {
-        if (audit.riskLevel() != RiskLevel.LOW) {
+    private AuditRiskLevel getRiskLevel(Audit audit, AuditEventType eventType) {
+        if (audit.riskLevel() != AuditRiskLevel.LOW) {
             return audit.riskLevel();
         }
-        return RiskLevel.fromEventType(eventType);
+        return AuditRiskLevel.fromEventType(eventType);
     }
 
     /**

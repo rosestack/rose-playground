@@ -23,9 +23,6 @@ import java.util.concurrent.CompletableFuture;
  * @since 1.0.0
  */
 public interface AuditLogDetailService extends IService<AuditLogDetail> {
-
-    // ==================== 记录审计详情 ====================
-
     /**
      * 记录审计详情（同步）
      *
@@ -35,62 +32,12 @@ public interface AuditLogDetailService extends IService<AuditLogDetail> {
     AuditLogDetail recordAuditDetail(AuditLogDetail auditLogDetail);
 
     /**
-     * 记录审计详情（异步）
-     *
-     * @param auditLogDetail 审计详情对象
-     * @return 异步结果
-     */
-    CompletableFuture<AuditLogDetail> recordAuditDetailAsync(AuditLogDetail auditLogDetail);
-
-    /**
      * 批量记录审计详情
      *
      * @param auditLogDetails 审计详情列表
      * @return 是否成功
      */
     boolean recordAuditDetailBatch(List<AuditLogDetail> auditLogDetails);
-
-    /**
-     * 批量记录审计详情（异步）
-     *
-     * @param auditLogDetails 审计详情列表
-     * @return 异步结果
-     */
-    CompletableFuture<Boolean> recordAuditDetailBatchAsync(List<AuditLogDetail> auditLogDetails);
-
-    /**
-     * 快速记录审计详情
-     *
-     * @param auditLogId  审计日志ID
-     * @param detailKey   详情键
-     * @param detailValue 详情值
-     * @return 详情ID
-     */
-    Long recordSimpleAuditDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue);
-
-    /**
-     * 记录HTTP请求详情
-     *
-     * @param auditLogId    审计日志ID
-     * @param requestParams 请求参数
-     * @param requestBody   请求体
-     * @param responseBody  响应体
-     * @return 详情ID列表
-     */
-    List<Long> recordHttpDetails(Long auditLogId, Map<String, Object> requestParams, 
-                                String requestBody, String responseBody);
-
-    /**
-     * 记录数据变更详情
-     *
-     * @param auditLogId 审计日志ID
-     * @param beforeData 变更前数据
-     * @param afterData  变更后数据
-     * @return 详情ID列表
-     */
-    List<Long> recordDataChangeDetails(Long auditLogId, Object beforeData, Object afterData);
-
-    // ==================== 查询审计详情 ====================
 
     /**
      * 根据审计日志ID查询所有详情

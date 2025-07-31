@@ -1,7 +1,6 @@
 package io.github.rosestack.audit.config;
 
 import io.github.rosestack.audit.aspect.AuditAspect;
-import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.audit.service.AuditLogDetailService;
 import io.github.rosestack.audit.service.AuditLogService;
 import io.github.rosestack.audit.storage.AuditStorage;

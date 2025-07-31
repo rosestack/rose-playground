@@ -3,11 +3,11 @@ package io.github.rosestack.audit.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.enums.AuditEventType;
-import io.github.rosestack.audit.enums.RiskLevel;
+import io.github.rosestack.audit.enums.AuditRiskLevel;
 import io.github.rosestack.audit.mapper.AuditLogMapper;
-import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.audit.service.AuditLogService;
 import io.github.rosestack.audit.util.AuditValidationUtils;
 import io.github.rosestack.core.util.ServletUtils;
@@ -47,8 +47,6 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
 
     private final AuditLogMapper auditLogMapper;
     private final AuditProperties auditProperties;
-
-    // ==================== 记录审计日志 ====================
 
     @Override
     public AuditLog recordAuditLog(AuditLog auditLog) {
@@ -141,8 +139,8 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         auditLog.setEventType(eventType);
 
         // 设置风险等级
-        RiskLevel riskLevel = RiskLevel.fromEventType(eventType);
-        auditLog.setRiskLevel(riskLevel);
+        AuditRiskLevel auditRiskLevel = AuditRiskLevel.fromEventType(eventType);
+        auditLog.setRiskLevel(auditRiskLevel);
 
         // 记录日志
         AuditLog savedLog = recordAuditLog(auditLog);
@@ -524,8 +522,6 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         return stats;
     }
 
-    // ==================== 私有辅助方法 ====================
-
     /**
      * 验证审计日志数据
      */
@@ -596,9 +592,7 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         auditLog.setHashValue(hashValue);
 
         // 设置数字签名（如果需要）
-        if (auditProperties.getEncryption().isEnabled()) {
-            auditLog.setDigitalSignature(hashValue);
-        }
+        auditLog.setDigitalSignature(hashValue);
     }
 
     /**

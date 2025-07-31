@@ -1,7 +1,7 @@
 package io.github.rosestack.audit.annotation;
 
 import io.github.rosestack.audit.enums.AuditEventType;
-import io.github.rosestack.audit.enums.RiskLevel;
+import io.github.rosestack.audit.enums.AuditRiskLevel;
 
 import java.lang.annotation.*;
 
@@ -52,7 +52,7 @@ public @interface Audit {
      *
      * @return 风险等级
      */
-    RiskLevel riskLevel() default RiskLevel.LOW;
+    AuditRiskLevel riskLevel() default AuditRiskLevel.LOW;
 
     /**
      * 是否记录请求参数
@@ -87,20 +87,7 @@ public @interface Audit {
      */
     boolean recordHttpInfo() default true;
 
-    /**
-     * 是否异步记录
-     * <p>
-     * 是否使用异步方式记录审计日志，避免影响业务性能。
-     * 默认为true，建议保持异步以获得最佳性能。
-     * </p>
-     *
-     * @return 是否异步记录
-     */
-    boolean async() default true;
-
-    String[] maskParams() default {"password", "token", "secret", "key"};
-
-    String[] maskResultFields() default {"password", "token", "secret", "key"};
+    String[] maskFields() default {"password", "token", "secret", "key"};
 
     /**
      * 条件表达式

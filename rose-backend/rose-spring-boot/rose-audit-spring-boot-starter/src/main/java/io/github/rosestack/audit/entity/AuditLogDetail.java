@@ -73,6 +73,12 @@ public class AuditLogDetail {
     private Boolean isSensitive;
 
     /**
+     * 是否加密存储
+     */
+    @TableField("is_encrypted")
+    private Boolean isEncrypted;
+
+    /**
      * 租户ID（多租户支持）
      */
     @Size(max = 50, message = "租户ID长度不能超过50个字符")

@@ -12,7 +12,7 @@ import lombok.Getter;
  * @since 1.0.0
  */
 @Getter
-public enum RiskLevel implements Comparable<RiskLevel> {
+public enum AuditRiskLevel implements Comparable<AuditRiskLevel> {
 
     /**
      * 低风险
@@ -49,7 +49,7 @@ public enum RiskLevel implements Comparable<RiskLevel> {
      */
     private final int level;
 
-    RiskLevel(String code, String description, int level) {
+    AuditRiskLevel(String code, String description, int level) {
         this.code = code;
         this.description = description;
         this.level = level;
@@ -61,10 +61,10 @@ public enum RiskLevel implements Comparable<RiskLevel> {
      * @param code 风险等级代码
      * @return 对应的枚举，如果不存在则返回 null
      */
-    public static RiskLevel fromCode(String code) {
-        for (RiskLevel riskLevel : values()) {
-            if (riskLevel.getCode().equals(code)) {
-                return riskLevel;
+    public static AuditRiskLevel fromCode(String code) {
+        for (AuditRiskLevel auditRiskLevel : values()) {
+            if (auditRiskLevel.getCode().equals(code)) {
+                return auditRiskLevel;
             }
         }
         return null;
@@ -76,7 +76,7 @@ public enum RiskLevel implements Comparable<RiskLevel> {
      * @param eventType 事件类型
      * @return 对应的风险等级
      */
-    public static RiskLevel fromEventType(AuditEventType eventType) {
+    public static AuditRiskLevel fromEventType(AuditEventType eventType) {
         if (eventType.isHighRiskEvent()) {
             return HIGH;
         } else if (eventType.isSecurityEvent()) {
@@ -112,7 +112,7 @@ public enum RiskLevel implements Comparable<RiskLevel> {
 //     * @param other 另一个风险等级
 //     * @return 比较结果：负数表示当前等级较低，0表示相等，正数表示当前等级较高
 //     */
-//    public int compareTo(RiskLevel other) {
+//    public int compareTo(AuditRiskLevel other) {
 //        return Integer.compare(this.level, other.level);
 //    }
 

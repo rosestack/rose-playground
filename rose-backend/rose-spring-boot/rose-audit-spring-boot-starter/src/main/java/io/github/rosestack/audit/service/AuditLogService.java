@@ -23,8 +23,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface AuditLogService extends IService<AuditLog> {
 
-    // ==================== 记录审计日志 ====================
-
     /**
      * 记录审计日志（同步）
      *
@@ -67,10 +65,8 @@ public interface AuditLogService extends IService<AuditLog> {
      * @param status        操作状态
      * @return 审计日志ID
      */
-    Long recordSimpleAuditLog(AuditEventType eventType, String operationName, 
-                             String userId, String requestUri, String status);
-
-    // ==================== 查询审计日志 ====================
+    Long recordSimpleAuditLog(AuditEventType eventType, String operationName,
+                              String userId, String requestUri, String status);
 
     /**
      * 根据用户ID查询审计日志
@@ -119,18 +115,18 @@ public interface AuditLogService extends IService<AuditLog> {
     /**
      * 多条件查询审计日志
      *
-     * @param userId      用户ID（可选）
-     * @param eventType   事件类型（可选）
-     * @param riskLevel   风险等级（可选）
-     * @param status      操作状态（可选）
-     * @param startTime   开始时间（可选）
-     * @param endTime     结束时间（可选）
-     * @param page        分页参数
+     * @param userId    用户ID（可选）
+     * @param eventType 事件类型（可选）
+     * @param riskLevel 风险等级（可选）
+     * @param status    操作状态（可选）
+     * @param startTime 开始时间（可选）
+     * @param endTime   结束时间（可选）
+     * @param page      分页参数
      * @return 分页结果
      */
-    IPage<AuditLog> findByConditions(String userId, String eventType, String riskLevel, 
-                                    String status, LocalDateTime startTime, LocalDateTime endTime, 
-                                    Page<AuditLog> page);
+    IPage<AuditLog> findByConditions(String userId, String eventType, String riskLevel,
+                                     String status, LocalDateTime startTime, LocalDateTime endTime,
+                                     Page<AuditLog> page);
 
     /**
      * 查询高风险审计日志
@@ -234,8 +230,6 @@ public interface AuditLogService extends IService<AuditLog> {
      */
     List<Map<String, Object>> getActivityTrend(LocalDateTime startTime, LocalDateTime endTime, String interval);
 
-    // ==================== 数据管理 ====================
-
     /**
      * 清理过期的审计日志
      *
@@ -272,8 +266,6 @@ public interface AuditLogService extends IService<AuditLog> {
      */
     Map<String, Object> rebuildAuditChain(LocalDateTime startTime, LocalDateTime endTime);
 
-    // ==================== 租户相关 ====================
-
     /**
      * 根据租户ID查询审计日志
      *
@@ -308,8 +300,6 @@ public interface AuditLogService extends IService<AuditLog> {
      * @return 统计报告
      */
     Map<String, Object> getTenantAuditReport(String tenantId, LocalDateTime startTime, LocalDateTime endTime);
-
-    // ==================== 缓存管理 ====================
 
     /**
      * 清空审计日志缓存

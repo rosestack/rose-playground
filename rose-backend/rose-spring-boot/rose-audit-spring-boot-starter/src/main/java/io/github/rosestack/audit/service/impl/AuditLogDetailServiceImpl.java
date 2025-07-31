@@ -3,22 +3,18 @@ package io.github.rosestack.audit.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.enums.AuditDetailType;
 import io.github.rosestack.audit.mapper.AuditLogDetailMapper;
-import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.audit.service.AuditLogDetailService;
-import io.github.rosestack.audit.util.AuditEncryptionUtils;
-import io.github.rosestack.audit.util.AuditJsonUtils;
-import io.github.rosestack.audit.util.AuditMaskingUtils;
 import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.core.util.ServletUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -46,11 +41,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper, AuditLogDetail> implements AuditLogDetailService {
-
     private final AuditLogDetailMapper auditLogDetailMapper;
     private final AuditProperties auditProperties;
-
-    // ==================== 记录审计详情 ====================
 
     @Override
     public AuditLogDetail recordAuditDetail(AuditLogDetail auditLogDetail) {
@@ -73,12 +65,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             log.error("记录审计详情失败: {}", e.getMessage(), e);
             throw new RuntimeException("记录审计详情失败", e);
         }
-    }
-
-    @Override
-    @Async
-    public CompletableFuture<AuditLogDetail> recordAuditDetailAsync(AuditLogDetail auditLogDetail) {
-        return CompletableFuture.supplyAsync(() -> recordAuditDetail(auditLogDetail));
     }
 
     @Override
@@ -113,84 +99,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             throw new RuntimeException("批量记录审计详情失败", e);
         }
     }
-
-    @Override
-    @Async
-    public CompletableFuture<Boolean> recordAuditDetailBatchAsync(List<AuditLogDetail> auditLogDetails) {
-        return CompletableFuture.supplyAsync(() -> recordAuditDetailBatch(auditLogDetails));
-    }
-
-    @Override
-    public Long recordSimpleAuditDetail(Long auditLogId, AuditDetailKey detailKey, String detailValue) {
-        AuditLogDetail detail = AuditLogDetail.builder()
-                .auditLogId(auditLogId)
-                .detailKey(detailKey.getCode())
-                .detailType(detailKey.getDetailType().getCode())
-                .detailValue(detailValue)
-                .isSensitive(detailKey.isSensitive())
-                .build();
-
-        AuditLogDetail savedDetail = recordAuditDetail(detail);
-        return savedDetail.getId();
-    }
-
-    @Override
-    public List<Long> recordHttpDetails(Long auditLogId, Map<String, Object> requestParams,
-                                        String requestBody, String responseBody) {
-        List<Long> detailIds = new ArrayList<>();
-
-        // 记录请求参数
-        if (requestParams != null && !requestParams.isEmpty()) {
-            String paramsJson = AuditJsonUtils.toJsonString(requestParams);
-            Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.REQUEST_PARAMS, paramsJson);
-            detailIds.add(id);
-        }
-
-        // 记录请求体
-        if (StringUtils.hasText(requestBody)) {
-            Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.REQUEST_BODY, requestBody);
-            detailIds.add(id);
-        }
-
-        // 记录响应体
-        if (StringUtils.hasText(responseBody)) {
-            Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.RESPONSE_RESULT, responseBody);
-            detailIds.add(id);
-        }
-
-        // 记录请求头
-        Map<String, String> headers = ServletUtils.getRequestHeaders();
-        if (!headers.isEmpty()) {
-            String headersJson = AuditJsonUtils.toJsonString(headers);
-            Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.REQUEST_HEADERS, headersJson);
-            detailIds.add(id);
-        }
-
-        return detailIds;
-    }
-
-    @Override
-    public List<Long> recordDataChangeDetails(Long auditLogId, Object beforeData, Object afterData) {
-        List<Long> detailIds = new ArrayList<>();
-
-        // 记录变更前数据
-        if (beforeData != null) {
-            String beforeJson = AuditJsonUtils.toJsonString(beforeData);
-            Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.DATA_CHANGE_BEFORE, beforeJson);
-            detailIds.add(id);
-        }
-
-        // 记录变更后数据
-        if (afterData != null) {
-            String afterJson = AuditJsonUtils.toJsonString(afterData);
-            Long id = recordSimpleAuditDetail(auditLogId, AuditDetailKey.DATA_CHANGE_AFTER, afterJson);
-            detailIds.add(id);
-        }
-
-        return detailIds;
-    }
-
-    // ==================== 查询审计详情 ====================
 
     @Override
     @Cacheable(value = "auditDetail", key = "'auditLog:' + #auditLogId")
@@ -254,8 +162,7 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         }
 
         try {
-            String encryptedValue = AuditEncryptionUtils.encryptSensitiveData(detail.getDetailValue(), auditProperties);
-            detail.setDetailValue(encryptedValue);
+            detail.setDetailValue(detail.getDetailValue());
 
             boolean success = updateById(detail);
             if (success) {
@@ -294,15 +201,13 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         }
 
         try {
-            String decryptedValue = AuditEncryptionUtils.decryptSensitiveData(detail.getDetailValue(), auditProperties);
-
             // 创建新对象，不修改原对象
             AuditLogDetail decryptedDetail = new AuditLogDetail();
             decryptedDetail.setId(detail.getId());
             decryptedDetail.setAuditLogId(detail.getAuditLogId());
             decryptedDetail.setDetailType(AuditDetailType.valueOf(detail.getDetailType()));
             decryptedDetail.setDetailKey(AuditDetailKey.valueOf(detail.getDetailKey()));
-            decryptedDetail.setDetailValue(decryptedValue);
+            decryptedDetail.setDetailValue(detail.getDetailValue());
             decryptedDetail.setIsSensitive(detail.getIsSensitive());
             decryptedDetail.setTenantId(detail.getTenantId());
             decryptedDetail.setCreatedAt(detail.getCreatedAt());
@@ -322,17 +227,13 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         }
 
         try {
-            String maskedValue = AuditMaskingUtils.maskByFieldName(
-                    auditLogDetail.getDetailKey(),
-                    auditLogDetail.getDetailValue());
-
             // 创建新对象，不修改原对象
             AuditLogDetail maskedDetail = new AuditLogDetail();
             maskedDetail.setId(auditLogDetail.getId());
             maskedDetail.setAuditLogId(auditLogDetail.getAuditLogId());
             maskedDetail.setDetailType(AuditDetailType.valueOf(auditLogDetail.getDetailType()));
             maskedDetail.setDetailKey(AuditDetailKey.valueOf(auditLogDetail.getDetailKey()));
-            maskedDetail.setDetailValue(maskedValue);
+            maskedDetail.setDetailValue(auditLogDetail.getDetailValue());
             maskedDetail.setIsSensitive(auditLogDetail.getIsSensitive());
             maskedDetail.setTenantId(auditLogDetail.getTenantId());
             maskedDetail.setCreatedAt(auditLogDetail.getCreatedAt());
@@ -655,10 +556,15 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
         }
 
         // 根据详情键设置敏感数据标记
-        if (StringUtils.hasText(auditLogDetail.getDetailKey()) && auditLogDetail.getIsSensitive() == null) {
+        if (StringUtils.hasText(auditLogDetail.getDetailKey())) {
             AuditDetailKey detailKey = AuditDetailKey.fromCode(auditLogDetail.getDetailKey());
-            if (detailKey != null) {
-                auditLogDetail.setIsSensitive(detailKey.isSensitive());
+            if (auditLogDetail.getIsSensitive() == null) {
+                if (detailKey != null) {
+                    auditLogDetail.setIsSensitive(detailKey.isSensitive());
+                }
+            }
+            if (auditLogDetail.getIsEncrypted() == null) {
+                //TODO
             }
         }
 

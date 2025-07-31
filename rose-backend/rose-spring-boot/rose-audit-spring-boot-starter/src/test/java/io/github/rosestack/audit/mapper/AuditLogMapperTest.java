@@ -3,14 +3,9 @@ package io.github.rosestack.audit.mapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.github.rosestack.audit.entity.AuditLog;
-import io.github.rosestack.audit.enums.AuditEventType;
-import io.github.rosestack.audit.enums.AuditStatus;
-import io.github.rosestack.audit.enums.RiskLevel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;

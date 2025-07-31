@@ -1,4 +1,4 @@
-package io.github.rosestack.audit.properties;
+package io.github.rosestack.audit.config;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -42,20 +42,6 @@ public class AuditProperties {
     private Storage storage = new Storage();
 
     /**
-     * 加密配置
-     */
-    @Valid
-    @NotNull
-    private Encryption encryption = new Encryption();
-
-    /**
-     * 性能配置
-     */
-    @Valid
-    @NotNull
-    private Performance performance = new Performance();
-
-    /**
      * 数据保留配置
      */
     @Valid
@@ -79,11 +65,6 @@ public class AuditProperties {
          */
         @NotBlank(message = "存储类型不能为空")
         private String type = "database";
-
-        /**
-         * 是否异步存储
-         */
-        private boolean async = true;
 
         /**
          * 批量处理大小
@@ -185,112 +166,6 @@ public class AuditProperties {
              * 是否启用事务
              */
             private boolean transactionEnabled = false;
-        }
-    }
-
-    /**
-     * 加密配置
-     */
-    @Data
-    public static class Encryption {
-        /**
-         * 是否启用加密
-         */
-        private boolean enabled = true;
-
-        /**
-         * 加密算法
-         */
-        @NotBlank(message = "加密算法不能为空")
-        private String algorithm = "AES";
-
-        /**
-         * 加密密钥（生产环境应从外部配置获取）
-         */
-        @NotBlank(message = "加密密钥不能为空")
-        private String secretKey = "rose-audit-secret-key-2024";
-
-        /**
-         * 密钥版本（支持密钥轮换）
-         */
-        private String keyVersion = "v1";
-
-        /**
-         * 加密失败时是否抛出异常
-         */
-        private boolean failOnError = true;
-    }
-
-    /**
-     * 性能配置
-     */
-    @Data
-    public static class Performance {
-        /**
-         * 最大队列大小
-         */
-        @Min(value = 100, message = "最大队列大小不能小于100")
-        @Max(value = 1000000, message = "最大队列大小不能大于1000000")
-        private int maxQueueSize = 10000;
-
-        /**
-         * 线程池大小
-         */
-        @Min(value = 1, message = "线程池大小不能小于1")
-        @Max(value = 100, message = "线程池大小不能大于100")
-        private int threadPoolSize = 5;
-
-        /**
-         * 超时时间（毫秒）
-         */
-        @Min(value = 1000, message = "超时时间不能小于1秒")
-        @Max(value = 300000, message = "超时时间不能大于5分钟")
-        private long timeout = 30000;
-
-        /**
-         * 是否启用背压控制
-         */
-        private boolean backpressureEnabled = true;
-
-        /**
-         * 背压阈值
-         */
-        @Min(value = 50, message = "背压阈值不能小于50%")
-        @Max(value = 95, message = "背压阈值不能大于95%")
-        private int backpressureThreshold = 80;
-
-        /**
-         * 监控配置
-         */
-        @Valid
-        private Monitoring monitoring = new Monitoring();
-
-        /**
-         * 监控配置
-         */
-        @Data
-        public static class Monitoring {
-            /**
-             * 是否启用性能监控
-             */
-            private boolean enabled = true;
-
-            /**
-             * 监控指标收集间隔（秒）
-             */
-            @Min(value = 1, message = "监控间隔不能小于1秒")
-            private int intervalSeconds = 60;
-
-            /**
-             * 是否启用慢查询监控
-             */
-            private boolean slowQueryEnabled = true;
-
-            /**
-             * 慢查询阈值（毫秒）
-             */
-            @Min(value = 100, message = "慢查询阈值不能小于100毫秒")
-            private long slowQueryThreshold = 1000;
         }
     }
 

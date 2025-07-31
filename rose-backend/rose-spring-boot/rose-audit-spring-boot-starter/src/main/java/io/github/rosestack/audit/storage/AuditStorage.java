@@ -26,13 +26,6 @@ public interface AuditStorage {
      */
     AuditLog store(AuditLog auditLog);
 
-    /**
-     * 存储审计日志（异步）
-     *
-     * @param auditLog 审计日志
-     * @return 异步结果
-     */
-    CompletableFuture<AuditLog> storeAsync(AuditLog auditLog);
 
     /**
      * 批量存储审计日志
@@ -43,14 +36,6 @@ public interface AuditStorage {
     boolean storeBatch(List<AuditLog> auditLogs);
 
     /**
-     * 批量存储审计日志（异步）
-     *
-     * @param auditLogs 审计日志列表
-     * @return 异步结果
-     */
-    CompletableFuture<Boolean> storeBatchAsync(List<AuditLog> auditLogs);
-
-    /**
      * 存储审计详情
      *
      * @param auditLogDetail 审计详情
@@ -59,28 +44,12 @@ public interface AuditStorage {
     AuditLogDetail storeDetail(AuditLogDetail auditLogDetail);
 
     /**
-     * 存储审计详情（异步）
-     *
-     * @param auditLogDetail 审计详情
-     * @return 异步结果
-     */
-    CompletableFuture<AuditLogDetail> storeDetailAsync(AuditLogDetail auditLogDetail);
-
-    /**
      * 批量存储审计详情
      *
      * @param auditLogDetails 审计详情列表
      * @return 是否成功
      */
     boolean storeDetailBatch(List<AuditLogDetail> auditLogDetails);
-
-    /**
-     * 批量存储审计详情（异步）
-     *
-     * @param auditLogDetails 审计详情列表
-     * @return 异步结果
-     */
-    CompletableFuture<Boolean> storeDetailBatchAsync(List<AuditLogDetail> auditLogDetails);
 
     /**
      * 获取存储类型

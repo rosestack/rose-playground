@@ -1,0 +1,41 @@
+package io.github.rosestack.audit.event;
+
+import io.github.rosestack.audit.entity.AuditLog;
+import io.github.rosestack.audit.entity.AuditLogDetail;
+import lombok.Getter;
+
+import java.util.List;
+
+/**
+ * 审计事件
+ * <p>
+ * 当审计日志需要保存时发布此事件，监听器可以根据配置选择不同的存储方式。
+ * </p>
+ *
+ * @author Rose Team
+ * @since 1.0.0
+ */
+@Getter
+public class AuditEvent {
+
+    /**
+     * 审计日志主记录
+     */
+    private final AuditLog auditLog;
+
+    /**
+     * 审计日志详细记录列表
+     */
+    private final List<AuditLogDetail> auditLogDetails;
+
+    /**
+     * 构造函数
+     *
+     * @param auditLog        审计日志主记录
+     * @param auditLogDetails 审计日志详细记录列表
+     */
+    public AuditEvent(AuditLog auditLog, List<AuditLogDetail> auditLogDetails) {
+        this.auditLog = auditLog;
+        this.auditLogDetails = auditLogDetails;
+    }
+}

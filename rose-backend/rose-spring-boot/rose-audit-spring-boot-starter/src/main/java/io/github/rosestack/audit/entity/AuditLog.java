@@ -2,8 +2,8 @@ package io.github.rosestack.audit.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.audit.enums.AuditEventType;
+import io.github.rosestack.audit.enums.AuditRiskLevel;
 import io.github.rosestack.audit.enums.AuditStatus;
-import io.github.rosestack.audit.enums.RiskLevel;
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -248,11 +248,11 @@ public class AuditLog {
     /**
      * 设置风险等级（从枚举）
      *
-     * @param riskLevel 风险等级枚举
+     * @param auditRiskLevel 风险等级枚举
      */
-    public void setRiskLevel(RiskLevel riskLevel) {
-        if (riskLevel != null) {
-            this.riskLevel = riskLevel.getCode();
+    public void setRiskLevel(AuditRiskLevel auditRiskLevel) {
+        if (auditRiskLevel != null) {
+            this.riskLevel = auditRiskLevel.getCode();
         }
     }
 
@@ -285,8 +285,8 @@ public class AuditLog {
      *
      * @return 风险等级枚举
      */
-    public RiskLevel getRiskLevelEnum() {
-        return RiskLevel.fromCode(this.riskLevel);
+    public AuditRiskLevel getRiskLevelEnum() {
+        return AuditRiskLevel.fromCode(this.riskLevel);
     }
 
     /**
@@ -315,8 +315,8 @@ public class AuditLog {
      * @return 是否高风险
      */
     public boolean isHighRisk() {
-        RiskLevel riskLevelEnum = getRiskLevelEnum();
-        return riskLevelEnum != null && riskLevelEnum.isHighRisk();
+        AuditRiskLevel auditRiskLevelEnum = getRiskLevelEnum();
+        return auditRiskLevelEnum != null && auditRiskLevelEnum.isHighRisk();
     }
 
     /**
@@ -325,7 +325,7 @@ public class AuditLog {
      * @return 是否需要告警
      */
     public boolean needsAlert() {
-        RiskLevel riskLevelEnum = getRiskLevelEnum();
-        return riskLevelEnum != null && riskLevelEnum.needsAlert();
+        AuditRiskLevel auditRiskLevelEnum = getRiskLevelEnum();
+        return auditRiskLevelEnum != null && auditRiskLevelEnum.needsAlert();
     }
 }

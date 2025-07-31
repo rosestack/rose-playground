@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.github.rosestack.audit.aspect.AuditAspect;
 import io.github.rosestack.audit.mapper.AuditLogDetailMapper;
 import io.github.rosestack.audit.mapper.AuditLogMapper;
-import io.github.rosestack.audit.properties.AuditProperties;
 import io.github.rosestack.audit.service.AuditLogDetailService;
 import io.github.rosestack.audit.service.AuditLogService;
 import io.github.rosestack.audit.service.impl.AuditLogDetailServiceImpl;
@@ -20,11 +19,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * 审计日志自动配置类
@@ -42,26 +41,18 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Slf4j
 @AutoConfiguration
 @RequiredArgsConstructor
-@EnableAsync
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableConfigurationProperties(AuditProperties.class)
 @ComponentScan(basePackages = "io.github.rosestack.audit")
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
 @PropertySource(value = "classpath:application-rose-audit.yml", factory = YmlPropertySourceFactory.class)
 public class AuditAutoConfiguration {
-
     private final AuditProperties auditProperties;
 
     @PostConstruct
     public void init() {
-        log.info("Rose Audit 自动配置已启用");
-        log.info("审计配置: 存储类型={}, 异步处理={}, 加密={}",
-                auditProperties.getStorage().getType(),
-                auditProperties.getStorage().isAsync(),
-                auditProperties.getEncryption().isEnabled());
+        log.info("审计配置: 存储类型={}", auditProperties.getStorage().getType());
     }
-
-    // ==================== 服务层 Bean 配置 ====================
 
     /**
      * 审计日志服务
@@ -85,25 +76,6 @@ public class AuditAutoConfiguration {
         return new AuditLogDetailServiceImpl(auditLogDetailMapper, auditProperties);
     }
 
-    // ==================== 切面 Bean 配置 ====================
-
-    /**
-     * 审计切面
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.audit.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public AuditAspect auditAspect(AuditLogService auditLogService,
-                                   AuditLogDetailService auditLogDetailService) {
-        log.debug("注册 AuditAspect Bean");
-        return new AuditAspect(auditLogService, auditLogDetailService, auditProperties);
-    }
-
-    // ==================== 存储层 Bean 配置 ====================
-
-    /**
-     * 数据库审计存储实现
-     */
     @Bean
     @ConditionalOnMissingBean(AuditStorage.class)
     @ConditionalOnProperty(prefix = "rose.audit.storage", name = "type", havingValue = "database", matchIfMissing = true)
@@ -111,6 +83,14 @@ public class AuditAutoConfiguration {
     public AuditStorage databaseAuditStorage(AuditLogService auditLogService,
                                              AuditLogDetailService auditLogDetailService) {
         log.debug("注册 DatabaseAuditStorage Bean");
-        return new DatabaseAuditStorage(auditLogService, auditLogDetailService, auditProperties);
+        return new DatabaseAuditStorage(auditLogService, auditLogDetailService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.audit.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public AuditAspect auditAspect(ApplicationEventPublisher eventPublisher) {
+        log.debug("注册 AuditAspect Bean");
+        return new AuditAspect(eventPublisher, auditProperties);
     }
 }
