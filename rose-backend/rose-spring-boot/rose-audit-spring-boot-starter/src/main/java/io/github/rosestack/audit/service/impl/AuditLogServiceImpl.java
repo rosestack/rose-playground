@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static io.github.rosestack.core.util.ServletUtils.getCurrentUserId;
+
 /**
  * 审计日志服务实现类
  * <p>
@@ -549,9 +551,13 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
             auditLog.setCreatedTime(LocalDateTime.now());
         }
 
+        if (ServletUtils.getCurrentRequest() == null) {
+            return;
+        }
+
         // 补充上下文信息
         if (!StringUtils.hasText(auditLog.getUserId())) {
-            auditLog.setUserId(ServletUtils.getCurrentUserId());
+            auditLog.setUserId(getCurrentUserId());
         }
         if (!StringUtils.hasText(auditLog.getUserName())) {
             auditLog.setUserName(ServletUtils.getCurrentUsername());
