@@ -2,12 +2,11 @@ package io.github.rosestack.audit.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.mapper.AuditLogDetailMapper;
 import io.github.rosestack.audit.service.AuditLogDetailService;
-import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +27,8 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper, AuditLogDetail> implements AuditLogDetailService {
-    private final AuditProperties auditProperties;
 
     @Override
     public boolean recordAuditDetailBatch(List<AuditLogDetail> auditLogDetails) {
@@ -49,8 +46,7 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
             }
 
             // 批量保存
-            int batchSize = auditProperties.getStorage().getBatchSize();
-            boolean success = saveBatch(auditLogDetails, batchSize);
+            boolean success = saveBatch(auditLogDetails, 1000); // 默认批次大小
 
             if (success) {
                 log.debug("批量记录审计详情成功，数量: {}", auditLogDetails.size());

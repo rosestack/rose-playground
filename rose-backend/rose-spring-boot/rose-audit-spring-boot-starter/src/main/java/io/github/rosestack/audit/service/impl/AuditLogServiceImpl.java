@@ -4,13 +4,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.mapper.AuditLogMapper;
 import io.github.rosestack.audit.service.AuditLogService;
-import io.github.rosestack.audit.util.AuditSecurityUtils;
-import io.github.rosestack.audit.util.AuditValidationUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Set;
 
 import java.time.LocalDateTime;
 
@@ -30,6 +36,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> implements AuditLogService {
+
+    private final Validator validator;
     @Override
     public AuditLog recordAuditLog(AuditLog auditLog) {
         try {
@@ -61,12 +69,10 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
      * 验证审计日志数据
      */
     private void validateAuditLog(AuditLog auditLog) {
-        AuditValidationUtils.ValidationResult result = AuditValidationUtils.validateAuditLog(auditLog);
-        if (!result.isValid()) {
-            throw new IllegalArgumentException("审计日志数据验证失败: " + result.getFirstError());
-        }
-        if (result.hasWarnings()) {
-            log.warn("审计日志数据验证警告: {}", result.getFirstWarning());
+        Set<ConstraintViolation<AuditLog>> violations = validator.validate(auditLog);
+        if (!violations.isEmpty()) {
+            String errorMessage = violations.iterator().next().getMessage();
+            throw new IllegalArgumentException("审计日志数据验证失败: " + errorMessage);
         }
     }
 
@@ -104,18 +110,33 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
      */
     private void generateHashValues(AuditLog auditLog) {
         try {
-            // 生成安全哈希值
-            String hashValue = AuditSecurityUtils.generateSecureHash(auditLog);
-            auditLog.setHashValue(hashValue);
+            // 生成简单的哈希值
+            String data = String.format("%s-%s-%s-%s",
+                auditLog.getEventType(),
+                auditLog.getOperationName(),
+                auditLog.getUserId(),
+                auditLog.getEventTime());
 
-            // 生成数字签名
-            String salt = AuditSecurityUtils.generateSalt(16);
-            String digitalSignature = AuditSecurityUtils.generateDigitalSignature(hashValue, salt);
-            auditLog.setDigitalSignature(digitalSignature);
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            auditLog.setHashValue(hexString.toString());
 
-            log.debug("生成审计日志安全哈希值和数字签名成功，ID: {}", auditLog.getId());
-        } catch (Exception e) {
-            log.error("生成审计日志安全哈希值失败: {}", e.getMessage(), e);
+            // 生成简单的数字签名
+            String salt = String.valueOf(System.currentTimeMillis());
+            String signatureData = auditLog.getHashValue() + salt;
+            auditLog.setDigitalSignature(String.valueOf(signatureData.hashCode()));
+
+            log.debug("生成审计日志哈希值和数字签名成功，ID: {}", auditLog.getId());
+        } catch (NoSuchAlgorithmException e) {
+            log.error("生成审计日志哈希值失败: {}", e.getMessage(), e);
             // 使用备用方法
             String fallbackHash = String.valueOf(auditLog.toString().hashCode());
             auditLog.setHashValue(fallbackHash);

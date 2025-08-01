@@ -1,16 +1,10 @@
 package io.github.rosestack.audit.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.github.rosestack.audit.entity.AuditLogDetail;
-import io.github.rosestack.audit.enums.AuditDetailKey;
-import io.github.rosestack.audit.enums.AuditDetailType;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 审计日志详情服务接口

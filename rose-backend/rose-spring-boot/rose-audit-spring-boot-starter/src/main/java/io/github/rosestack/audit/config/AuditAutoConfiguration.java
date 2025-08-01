@@ -19,6 +19,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+
+import jakarta.validation.Validator;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 
@@ -56,9 +58,9 @@ public class AuditAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(IService.class)
-    public AuditLogService auditLogService() {
+    public AuditLogService auditLogService(Validator validator) {
         log.debug("注册 AuditLogService Bean");
-        return new AuditLogServiceImpl();
+        return new AuditLogServiceImpl(validator);
     }
 
     /**
@@ -67,9 +69,9 @@ public class AuditAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(IService.class)
-    public AuditLogDetailService auditLogDetailService(AuditProperties properties) {
+    public AuditLogDetailService auditLogDetailService() {
         log.debug("注册 AuditLogDetailService Bean");
-        return new AuditLogDetailServiceImpl(properties);
+        return new AuditLogDetailServiceImpl();
     }
 
     @Bean
