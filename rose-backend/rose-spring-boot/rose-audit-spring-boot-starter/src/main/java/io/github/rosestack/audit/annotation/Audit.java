@@ -80,8 +80,7 @@ public @interface Audit {
 
     boolean encryptResult() default false;
 
-    String[] maskFields() default {"password", "oldPassword", "newPassword",
-            "newPasswordAgain", "token", "access_token", "refresh_token", "secret", "key"};
+    String[] maskFields() default {};
 
     /**
      * 条件表达式

@@ -11,7 +11,6 @@ import io.github.rosestack.audit.enums.AuditStatus;
 import io.github.rosestack.audit.event.AuditEvent;
 import io.github.rosestack.core.jackson.desensitization.MaskUtils;
 import io.github.rosestack.core.util.ServletUtils;
-import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

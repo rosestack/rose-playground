@@ -9,7 +9,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Rose Audit 配置属性
@@ -34,7 +35,8 @@ public class AuditProperties {
     /**
      * 敏感字段脱敏配置
      */
-    private List<String> maskFields = Arrays.asList("password", "token", "secret", "key");
+    private List<String> maskFields = Arrays.asList("password", "oldPassword", "newPassword",
+            "newPasswordAgain", "token", "access_token", "refresh_token", "secret", "key");
 
     /**
      * 存储配置

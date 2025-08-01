@@ -4,7 +4,7 @@ rose:
     enabled: true
 
     # 敏感字段脱敏配置
-    mask-fields: ["password", "token", "secret", "key"]
+    mask-fields: [ "password", "oldPassword", "newPassword","newPasswordAgain", "token", "access_token", "refresh_token", "secret", "key" ]
 
     # 存储配置
     storage:
@@ -29,10 +29,10 @@ rose:
     # 事件过滤配置
     filter:
       # 忽略的用户
-      ignore-users: ["system", "admin"]
+      ignore-users: [ "system", "admin" ]
       # 忽略的IP地址
-      ignore-ips: ["127.0.0.1", "::1"]
+      ignore-ips: [ "127.0.0.1", "::1" ]
       # 忽略的URI模式（支持通配符）
-      ignore-uri-patterns: ["/health/**", "/actuator/**", "/favicon.ico"]
+      ignore-uri-patterns: [ "/health/**", "/actuator/**", "/favicon.ico" ]
       # 最小风险等级
       min-risk-level: LOW
