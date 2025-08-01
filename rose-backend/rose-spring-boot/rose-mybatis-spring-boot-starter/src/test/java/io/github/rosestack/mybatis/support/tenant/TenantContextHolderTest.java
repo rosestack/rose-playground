@@ -53,18 +53,6 @@ class TenantContextHolderTest {
     }
 
     @Test
-    void shouldGetContextInfo() {
-        // Given
-        TenantContextHolder.setCurrentTenantId("tenant-123");
-
-        // When
-        String contextInfo = TenantContextHolder.getContextInfo();
-
-        // Then
-        assertThat(contextInfo).isEqualTo("TenantContext[tenantId=tenant-123]");
-    }
-
-    @Test
     void shouldRunWithTenant() {
         // Given
         String originalTenantId = "original-tenant";

@@ -26,23 +26,6 @@ public interface AuditStorage {
      */
     AuditLog store(AuditLog auditLog);
 
-
-    /**
-     * 批量存储审计日志
-     *
-     * @param auditLogs 审计日志列表
-     * @return 是否成功
-     */
-    boolean storeBatch(List<AuditLog> auditLogs);
-
-    /**
-     * 存储审计详情
-     *
-     * @param auditLogDetail 审计详情
-     * @return 存储后的审计详情
-     */
-    AuditLogDetail storeDetail(AuditLogDetail auditLogDetail);
-
     /**
      * 批量存储审计详情
      *
@@ -50,48 +33,4 @@ public interface AuditStorage {
      * @return 是否成功
      */
     boolean storeDetailBatch(List<AuditLogDetail> auditLogDetails);
-
-    /**
-     * 获取存储类型
-     *
-     * @return 存储类型
-     */
-    String getStorageType();
-
-    /**
-     * 检查存储健康状态
-     *
-     * @return 是否健康
-     */
-    boolean isHealthy();
-
-    /**
-     * 获取存储统计信息
-     *
-     * @return 统计信息
-     */
-    StorageStats getStats();
-
-    /**
-     * 存储统计信息
-     */
-    class StorageStats {
-        private long totalStored;
-        private long totalFailed;
-        private long avgResponseTime;
-        private String lastError;
-
-        // Getters and Setters
-        public long getTotalStored() { return totalStored; }
-        public void setTotalStored(long totalStored) { this.totalStored = totalStored; }
-
-        public long getTotalFailed() { return totalFailed; }
-        public void setTotalFailed(long totalFailed) { this.totalFailed = totalFailed; }
-
-        public long getAvgResponseTime() { return avgResponseTime; }
-        public void setAvgResponseTime(long avgResponseTime) { this.avgResponseTime = avgResponseTime; }
-
-        public String getLastError() { return lastError; }
-        public void setLastError(String lastError) { this.lastError = lastError; }
-    }
 }

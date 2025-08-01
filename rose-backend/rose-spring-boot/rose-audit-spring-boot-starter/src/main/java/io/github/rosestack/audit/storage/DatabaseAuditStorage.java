@@ -32,7 +32,6 @@ public class DatabaseAuditStorage implements AuditStorage {
     // 统计信息
     private final AtomicLong totalStored = new AtomicLong(0);
     private final AtomicLong totalFailed = new AtomicLong(0);
-    private volatile String lastError;
     private volatile long lastResponseTime;
 
     @Override
@@ -46,54 +45,9 @@ public class DatabaseAuditStorage implements AuditStorage {
             return result;
         } catch (Exception e) {
             totalFailed.incrementAndGet();
-            lastError = e.getMessage();
             lastResponseTime = System.currentTimeMillis() - startTime;
             log.error("数据库存储审计日志失败，耗时: {}ms, 错误: {}", lastResponseTime, e.getMessage(), e);
             throw new RuntimeException("数据库存储审计日志失败", e);
-        }
-    }
-
-    @Override
-    public boolean storeBatch(List<AuditLog> auditLogs) {
-        if (auditLogs == null || auditLogs.isEmpty()) {
-            return true;
-        }
-
-        long startTime = System.currentTimeMillis();
-        try {
-            boolean result = auditLogService.recordAuditLogBatch(auditLogs);
-            if (result) {
-                totalStored.addAndGet(auditLogs.size());
-            } else {
-                totalFailed.addAndGet(auditLogs.size());
-            }
-            lastResponseTime = System.currentTimeMillis() - startTime;
-            log.debug("数据库批量存储审计日志完成，数量: {}, 成功: {}, 耗时: {}ms",
-                    auditLogs.size(), result, lastResponseTime);
-            return result;
-        } catch (Exception e) {
-            totalFailed.addAndGet(auditLogs.size());
-            lastError = e.getMessage();
-            lastResponseTime = System.currentTimeMillis() - startTime;
-            log.error("数据库批量存储审计日志失败，数量: {}, 耗时: {}ms, 错误: {}",
-                    auditLogs.size(), lastResponseTime, e.getMessage(), e);
-            throw new RuntimeException("数据库批量存储审计日志失败", e);
-        }
-    }
-
-    @Override
-    public AuditLogDetail storeDetail(AuditLogDetail auditLogDetail) {
-        long startTime = System.currentTimeMillis();
-        try {
-            AuditLogDetail result = auditLogDetailService.recordAuditDetail(auditLogDetail);
-            lastResponseTime = System.currentTimeMillis() - startTime;
-            log.debug("数据库存储审计详情成功，ID: {}, 耗时: {}ms", result.getId(), lastResponseTime);
-            return result;
-        } catch (Exception e) {
-            lastError = e.getMessage();
-            lastResponseTime = System.currentTimeMillis() - startTime;
-            log.error("数据库存储审计详情失败，耗时: {}ms, 错误: {}", lastResponseTime, e.getMessage(), e);
-            throw new RuntimeException("数据库存储审计详情失败", e);
         }
     }
 
@@ -111,38 +65,10 @@ public class DatabaseAuditStorage implements AuditStorage {
                     auditLogDetails.size(), result, lastResponseTime);
             return result;
         } catch (Exception e) {
-            lastError = e.getMessage();
             lastResponseTime = System.currentTimeMillis() - startTime;
             log.error("数据库批量存储审计详情失败，数量: {}, 耗时: {}ms, 错误: {}",
                     auditLogDetails.size(), lastResponseTime, e.getMessage(), e);
             throw new RuntimeException("数据库批量存储审计详情失败", e);
         }
-    }
-
-    @Override
-    public String getStorageType() {
-        return "database";
-    }
-
-    @Override
-    public boolean isHealthy() {
-        try {
-            // 简单的健康检查：尝试查询审计日志数量
-            auditLogService.count();
-            return true;
-        } catch (Exception e) {
-            log.warn("数据库审计存储健康检查失败: {}", e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public StorageStats getStats() {
-        StorageStats stats = new StorageStats();
-        stats.setTotalStored(totalStored.get());
-        stats.setTotalFailed(totalFailed.get());
-        stats.setAvgResponseTime(lastResponseTime);
-        stats.setLastError(lastError);
-        return stats;
     }
 }

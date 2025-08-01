@@ -2,44 +2,21 @@ rose:
   audit:
     # 是否启用审计日志功能
     enabled: true
-    
+
+    # 敏感字段脱敏配置
+    mask-fields: ["password", "token", "secret", "key"]
+
     # 存储配置
     storage:
-      # 存储类型：database, file, mq
+      # 存储类型：目前主要支持 database
       type: database
-      # 是否异步存储
+      # 是否启用异步存储
       async: true
       # 批量处理大小
-      batch-size: 100
+      batch-size: 50
       # 批量处理间隔（毫秒）
       batch-interval: 5000
-      # 数据库配置
-      database:
-        # 是否启用分区表
-        partition-enabled: true
-        # 分区类型：MONTH, QUARTER, YEAR
-        partition-type: MONTH
-        # 是否启用表压缩
-        compression-enabled: true
-      # 文件存储配置
-      file:
-        # 文件存储路径
-        path: /var/log/audit
-        # 文件滚动策略：SIZE, TIME
-        rollover-strategy: TIME
-        # 最大文件大小（MB）
-        max-file-size: 100
-        # 文件保留天数
-        retention-days: 30
-      # 消息队列配置
-      message-queue:
-        # 队列类型：KAFKA, RABBITMQ, ROCKETMQ
-        type: KAFKA
-        # 主题名称
-        topic: audit-log
-        # 是否启用事务
-        transaction-enabled: false
-      
+
     # 数据保留配置
     retention:
       # 数据保留天数
@@ -48,21 +25,9 @@ rose:
       auto-cleanup: true
       # 清理任务执行时间（cron表达式）
       cleanup-cron: "0 0 2 * * ?"
-      # 归档配置
-      archive:
-        # 是否启用归档
-        enabled: false
-        # 归档阈值（天）
-        threshold-days: 90
-        # 归档存储路径
-        storage-path: /var/archive/audit
-        # 归档压缩格式：ZIP, GZIP, TAR
-        compression-format: GZIP
-      
+
     # 事件过滤配置
     filter:
-      # 忽略的事件类型
-      ignore-event-types: []
       # 忽略的用户
       ignore-users: ["system", "admin"]
       # 忽略的IP地址
@@ -71,11 +36,3 @@ rose:
       ignore-uri-patterns: ["/health/**", "/actuator/**", "/favicon.ico"]
       # 最小风险等级
       min-risk-level: LOW
-      # 采样率配置
-      sampling:
-        # 是否启用采样
-        enabled: false
-        # 采样率（0.0-1.0）
-        rate: 1.0
-        # 按事件类型的采样率
-        event-type-sampling-rates: {}

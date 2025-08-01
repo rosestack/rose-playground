@@ -58,15 +58,6 @@ public class TenantContextHolder {
     }
 
     /**
-     * 获取当前上下文信息的字符串表示
-     *
-     * @return 上下文信息字符串
-     */
-    public static String getContextInfo() {
-        return String.format("TenantContext[tenantId=%s]", getCurrentTenantId());
-    }
-
-    /**
      * 在指定的租户上下文中执行操作
      *
      * @param tenantId 租户ID

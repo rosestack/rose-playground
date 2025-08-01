@@ -2,16 +2,12 @@ package io.github.rosestack.audit.config;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.github.rosestack.audit.aspect.AuditAspect;
-import io.github.rosestack.audit.mapper.AuditLogDetailMapper;
-import io.github.rosestack.audit.mapper.AuditLogMapper;
 import io.github.rosestack.audit.service.AuditLogDetailService;
 import io.github.rosestack.audit.service.AuditLogService;
 import io.github.rosestack.audit.service.impl.AuditLogDetailServiceImpl;
 import io.github.rosestack.audit.service.impl.AuditLogServiceImpl;
 import io.github.rosestack.audit.storage.AuditStorage;
 import io.github.rosestack.audit.storage.DatabaseAuditStorage;
-import io.github.rosestack.core.spring.YmlPropertySourceFactory;
-import io.github.rosestack.mybatis.config.RoseMybatisProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.PropertySource;
+
 
 /**
  * 审计日志自动配置类
@@ -46,7 +42,6 @@ import org.springframework.context.annotation.PropertySource;
 @EnableConfigurationProperties(AuditProperties.class)
 @ComponentScan(basePackages = "io.github.rosestack.audit")
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
-@PropertySource(value = "classpath:application-rose-audit.yml", factory = YmlPropertySourceFactory.class)
 public class AuditAutoConfiguration {
     private final AuditProperties auditProperties;
 
@@ -61,9 +56,9 @@ public class AuditAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(IService.class)
-    public AuditLogService auditLogService(AuditLogMapper auditLogMapper) {
+    public AuditLogService auditLogService() {
         log.debug("注册 AuditLogService Bean");
-        return new AuditLogServiceImpl(auditLogMapper, auditProperties);
+        return new AuditLogServiceImpl();
     }
 
     /**
@@ -72,17 +67,16 @@ public class AuditAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(IService.class)
-    public AuditLogDetailService auditLogDetailService(AuditLogDetailMapper auditLogDetailMapper, RoseMybatisProperties mybatisProperties) {
+    public AuditLogDetailService auditLogDetailService(AuditProperties properties) {
         log.debug("注册 AuditLogDetailService Bean");
-        return new AuditLogDetailServiceImpl(auditLogDetailMapper, auditProperties, mybatisProperties);
+        return new AuditLogDetailServiceImpl(properties);
     }
 
     @Bean
     @ConditionalOnMissingBean(AuditStorage.class)
     @ConditionalOnProperty(prefix = "rose.audit.storage", name = "type", havingValue = "database", matchIfMissing = true)
     @ConditionalOnClass(IService.class)
-    public AuditStorage databaseAuditStorage(AuditLogService auditLogService,
-                                             AuditLogDetailService auditLogDetailService) {
+    public AuditStorage databaseAuditStorage(AuditLogService auditLogService, AuditLogDetailService auditLogDetailService) {
         log.debug("注册 DatabaseAuditStorage Bean");
         return new DatabaseAuditStorage(auditLogService, auditLogDetailService);
     }
