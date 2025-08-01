@@ -1,31 +1,20 @@
 package io.github.rosestack.audit.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.github.rosestack.audit.config.AuditProperties;
 import io.github.rosestack.audit.entity.AuditLogDetail;
 import io.github.rosestack.audit.enums.AuditDetailKey;
-import io.github.rosestack.audit.enums.AuditDetailType;
 import io.github.rosestack.audit.mapper.AuditLogDetailMapper;
 import io.github.rosestack.audit.service.AuditLogDetailService;
-import io.github.rosestack.audit.util.AuditSecurityUtils;
-import io.github.rosestack.core.jackson.JsonUtils;
-import io.github.rosestack.core.util.ServletUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 审计日志详情服务实现类
@@ -88,7 +77,7 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
 
         // 设置租户ID
         if (!StringUtils.hasText(auditLogDetail.getTenantId())) {
-            auditLogDetail.setTenantId(ServletUtils.getCurrentTenantId());
+            auditLogDetail.setTenantId("default"); // 默认租户
         }
 
         // 根据详情键设置敏感数据标记
@@ -108,9 +97,6 @@ public class AuditLogDetailServiceImpl extends ServiceImpl<AuditLogDetailMapper,
                 auditLogDetail.setDetailType(detailKey.getDetailType());
             }
         }
-
-        // 安全处理：检查和脱敏敏感数据
-        AuditSecurityUtils.secureAuditDetail(auditLogDetail);
     }
 
 }

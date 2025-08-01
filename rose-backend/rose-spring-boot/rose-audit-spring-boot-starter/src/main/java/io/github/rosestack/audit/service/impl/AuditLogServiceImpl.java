@@ -5,7 +5,6 @@ import io.github.rosestack.audit.entity.AuditLog;
 import io.github.rosestack.audit.mapper.AuditLogMapper;
 import io.github.rosestack.audit.service.AuditLogService;
 import io.github.rosestack.audit.util.AuditSecurityUtils;
-import io.github.rosestack.audit.util.AuditServiceUtils;
 import io.github.rosestack.audit.util.AuditValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,7 @@ import java.time.LocalDateTime;
 public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> implements AuditLogService {
     @Override
     public AuditLog recordAuditLog(AuditLog auditLog) {
-        return AuditServiceUtils.executeWithErrorHandling("记录审计日志", () -> {
+        try {
             log.debug("开始记录审计日志: {}", auditLog.getOperationName());
 
             // 数据验证
@@ -53,7 +52,9 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
 
             log.debug("审计日志记录成功，ID: {}", auditLog.getId());
             return auditLog;
-        }, auditLog.getOperationName());
+        } catch (Exception e) {
+            throw new RuntimeException("记录审计日志失败", e);
+        }
     }
 
     /**
@@ -88,7 +89,7 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
             auditLog.setUserId("system"); // 默认用户
         }
         if (!StringUtils.hasText(auditLog.getTenantId())) {
-            auditLog.setTenantId(AuditServiceUtils.enrichTenantContext(auditLog.getTenantId()));
+            auditLog.setTenantId("default"); // 默认租户
         }
         if (!StringUtils.hasText(auditLog.getClientIp())) {
             auditLog.setClientIp("127.0.0.1"); // 默认IP
