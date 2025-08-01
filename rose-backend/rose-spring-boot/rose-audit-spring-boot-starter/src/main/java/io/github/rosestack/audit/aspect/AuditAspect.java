@@ -51,7 +51,6 @@ public class AuditAspect {
      */
     @Around("@annotation(audit)")
     public Object around(ProceedingJoinPoint joinPoint, Audit audit) throws Throwable {
-        // 检查条件表达式
         if (!evaluateCondition(audit.condition(), joinPoint, null)) {
             return joinPoint.proceed();
         }
@@ -64,7 +63,6 @@ public class AuditAspect {
         AuditStatus status = AuditStatus.SUCCESS;
 
         try {
-            // 执行目标方法
             result = joinPoint.proceed();
             return result;
         } catch (Throwable e) {
@@ -73,12 +71,10 @@ public class AuditAspect {
             throw e;
         } finally {
             try {
-                // 计算执行时间
                 long executionTime = System.currentTimeMillis() - executionStartTime;
 
                 // 再次检查条件（包含返回值）
                 if (evaluateCondition(audit.condition(), joinPoint, result)) {
-                    // 记录审计日志
                     recordAuditLog(joinPoint, audit, startTime, executionTime, result, exception, status);
                 }
             } catch (Exception e) {

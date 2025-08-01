@@ -78,6 +78,9 @@ public @interface Audit {
 
     EncryptType encryptType() default EncryptType.AES;
 
+    /**
+     * 是否加密结果
+     */
     boolean encryptResult() default false;
 
     String[] maskFields() default {};

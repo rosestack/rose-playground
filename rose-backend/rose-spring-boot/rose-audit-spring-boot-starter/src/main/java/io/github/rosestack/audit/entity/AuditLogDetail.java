@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.audit.annotation.Audit;
 import io.github.rosestack.audit.enums.AuditDetailKey;
 import io.github.rosestack.audit.enums.AuditDetailType;
+
 import io.github.rosestack.core.jackson.JsonUtils;
 import io.github.rosestack.mybatis.support.encryption.EncryptType;
 import jakarta.validation.constraints.NotBlank;
