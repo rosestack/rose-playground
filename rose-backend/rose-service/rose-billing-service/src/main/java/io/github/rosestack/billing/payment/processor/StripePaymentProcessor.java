@@ -34,6 +34,11 @@ public class StripePaymentProcessor implements PaymentProcessor {
     private String webhookSecret;
 
     @Override
+    public String getPaymentMethod() {
+        return "STRIPE";
+    }
+
+    @Override
     public PaymentResult processPayment(PaymentRequest request) {
         try {
             log.info("处理Stripe支付：账单 {}, 金额 {}", request.getInvoiceId(), request.getAmount());

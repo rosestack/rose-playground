@@ -32,7 +32,7 @@ import java.security.NoSuchAlgorithmException;
 @ConditionalOnProperty(prefix = "rose.encryption.hash", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class HashService {
 
-    private final RoseCommonProperties.Encryption properties;
+    private final RoseCommonProperties properties;
 
     /**
      * 生成哈希值
@@ -46,7 +46,7 @@ public class HashService {
             return plainText;
         }
 
-        if (!properties.getHash().isEnabled()) {
+        if (!properties.getEncryption().getHash().isEnabled()) {
             log.debug("哈希功能已禁用，返回原始值");
             return plainText;
         }
@@ -66,7 +66,7 @@ public class HashService {
             }
         } catch (Exception e) {
             log.error("哈希计算失败: {}", e.getMessage(), e);
-            if (properties.isFailOnError()) {
+            if (properties.getEncryption().isFailOnError()) {
                 throw new RuntimeException("哈希计算失败", e);
             }
             return plainText;
@@ -78,7 +78,7 @@ public class HashService {
      */
     private String sha256WithSalt(String plainText) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        String salt = properties.getHash().getGlobalSalt();
+        String salt = properties.getEncryption().getHash().getGlobalSalt();
         String saltedText = plainText + salt;
         byte[] hash = digest.digest(saltedText.getBytes(StandardCharsets.UTF_8));
         return bytesToHex(hash);
@@ -89,7 +89,7 @@ public class HashService {
      */
     private String sha512WithSalt(String plainText) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-512");
-        String salt = properties.getHash().getGlobalSalt();
+        String salt = properties.getEncryption().getHash().getGlobalSalt();
         String saltedText = plainText + salt;
         byte[] hash = digest.digest(saltedText.getBytes(StandardCharsets.UTF_8));
         return bytesToHex(hash);
@@ -100,7 +100,7 @@ public class HashService {
      */
     private String hmacSha256(String plainText) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA256");
-        String key = properties.getHash().getHmacKey();
+        String key = properties.getEncryption().getHash().getHmacKey();
         SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         mac.init(secretKey);
         byte[] hash = mac.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
@@ -112,7 +112,7 @@ public class HashService {
      */
     private String hmacSha512(String plainText) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA512");
-        String key = properties.getHash().getHmacKey();
+        String key = properties.getEncryption().getHash().getHmacKey();
         SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
         mac.init(secretKey);
         byte[] hash = mac.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
@@ -169,7 +169,7 @@ public class HashService {
      * @return 默认哈希类型
      */
     public HashType getDefaultHashType() {
-        RoseCommonProperties.Encryption.Hash hashConfig = properties.getHash();
+        RoseCommonProperties.Encryption.Hash hashConfig = properties.getEncryption().getHash();
         String algorithm = hashConfig.getAlgorithm().toUpperCase();
 
         return HashType.valueOf(algorithm);

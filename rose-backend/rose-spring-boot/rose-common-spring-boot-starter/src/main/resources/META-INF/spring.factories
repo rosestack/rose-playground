@@ -1,3 +1,2 @@
-# Spring Boot Auto Configuration
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 io.github.rosestack.spring.boot.common.config.RoseCommonAutoConfiguration

@@ -76,7 +76,7 @@ class SpringThreadUtilsTest {
         assertTrue(status.contains("test-"));
         assertTrue(status.contains("Active: 0"));
 
-        SpringThreadUtils.shutdownAndAwaitTermination(executor);
+        executor.shutdown();
     }
 
     @Test
@@ -95,7 +95,7 @@ class SpringThreadUtilsTest {
         }
 
         // 关闭线程池
-        SpringThreadUtils.shutdownAndAwaitTermination(executor);
+        executor.shutdown();
 
         assertEquals(5, counter.get(), "All tasks should have completed");
     }
@@ -131,7 +131,7 @@ class SpringThreadUtilsTest {
 
             assertThrows(ExecutionException.class, () -> exceptionFuture.get(1, TimeUnit.SECONDS));
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -168,7 +168,7 @@ class SpringThreadUtilsTest {
                 );
             });
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -207,7 +207,7 @@ class SpringThreadUtilsTest {
             assertEquals(2, results[1]);
             assertEquals(3, results[2]);
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -227,7 +227,7 @@ class SpringThreadUtilsTest {
             Integer result = future.get(1, TimeUnit.SECONDS);
             assertEquals(3, result);
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -250,7 +250,7 @@ class SpringThreadUtilsTest {
             );
             assertEquals(testException, executionException.getCause());
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -273,7 +273,7 @@ class SpringThreadUtilsTest {
             assertTrue(status.contains("QueueSize: 0"));
             assertTrue(status.contains("CompletedTasks: 0"));
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -297,7 +297,7 @@ class SpringThreadUtilsTest {
                 SpringThreadUtils.monitorThreadPool(executor, 100, 300);
             });
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -366,7 +366,7 @@ class SpringThreadUtilsTest {
 
             log.info("Completed {} tasks in {} ms", taskCount, endTime - startTime);
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 
@@ -401,7 +401,7 @@ class SpringThreadUtilsTest {
             assertTrue(finalStatus.contains("Active: 0"));
             assertTrue(finalStatus.contains("CompletedTasks: 1"));
         } finally {
-            SpringThreadUtils.shutdownAndAwaitTermination(executor);
+            executor.shutdown();
         }
     }
 } 

@@ -12,17 +12,18 @@ import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInt
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
+import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import io.github.rosestack.spring.boot.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.spring.boot.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.interceptor.FieldEncryptionInterceptor;
 import io.github.rosestack.spring.boot.mybatis.support.datapermission.RoseDataPermissionHandler;
-import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
-import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -137,6 +138,7 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnBean(FieldEncryptor.class)
     public FieldEncryptionInterceptor fieldEncryptionInterceptor(FieldEncryptor fieldEncryptor, HashService hashService) {
         log.info("启用字段加密解密拦截器，默认算法: AES");
         return new FieldEncryptionInterceptor(fieldEncryptor, hashService);

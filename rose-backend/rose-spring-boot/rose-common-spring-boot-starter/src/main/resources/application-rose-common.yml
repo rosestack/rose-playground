@@ -18,5 +18,3 @@ rose:
         algorithm: "HMAC_SHA256"
         # HMAC 密钥（生产环境应该从外部配置获取）
         hmac-key: "rose-mybatis-hmac-key-2024"
-        # 是否使用 HMAC 算法
-        use-hmac: true

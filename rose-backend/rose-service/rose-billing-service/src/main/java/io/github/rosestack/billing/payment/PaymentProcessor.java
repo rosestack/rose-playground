@@ -13,6 +13,8 @@ import java.util.Map;
  * 支付处理器接口
  */
 public interface PaymentProcessor {
+    String getPaymentMethod();
+
     PaymentResult processPayment(PaymentRequest request);
 
     String createPaymentLink(String invoiceId, BigDecimal amount);

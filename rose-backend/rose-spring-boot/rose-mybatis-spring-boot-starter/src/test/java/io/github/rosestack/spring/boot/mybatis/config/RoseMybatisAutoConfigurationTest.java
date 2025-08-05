@@ -1,17 +1,17 @@
 package io.github.rosestack.spring.boot.mybatis.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import io.github.rosestack.spring.boot.mybatis.support.datapermission.RoseDataPermissionHandler;
+import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
+import io.github.rosestack.spring.boot.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.spring.boot.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.interceptor.FieldEncryptionInterceptor;
-import io.github.rosestack.spring.boot.mybatis.handler.RoseMetaObjectHandler;
+import io.github.rosestack.spring.boot.mybatis.support.datapermission.RoseDataPermissionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,9 +36,6 @@ class RoseMybatisAutoConfigurationTest {
 
                     // 验证核心组件被创建
                     assertThat(context).hasSingleBean(MybatisPlusInterceptor.class);
-
-                    // 验证默认启用的功能（这些是通过拦截器创建的，不是独立的Bean）
-                    assertThat(context).hasSingleBean(FieldEncryptionInterceptor.class);
                 });
     }
 
@@ -75,8 +72,8 @@ class RoseMybatisAutoConfigurationTest {
                         "rose.mybatis.encryption.enabled=true"
                 )
                 .run(context -> {
-                    // 加密器是在拦截器内部创建的，不是独立的Bean
-                    assertThat(context).hasSingleBean(FieldEncryptionInterceptor.class);
+                    assertThat(context).doesNotHaveBean(FieldEncryptionInterceptor.class);
+                    assertThat(context).doesNotHaveBean(FieldEncryptor.class);
 
                     RoseMybatisProperties props = context.getBean(RoseMybatisProperties.class);
                     assertThat(props.getEncryption().isEnabled()).isTrue();
@@ -116,7 +113,6 @@ class RoseMybatisAutoConfigurationTest {
         contextRunner
                 .withPropertyValues(
                         "rose.mybatis.tenant.column=org_id",
-                        "rose.mybatis.encryption.default-algorithm=DES",
                         "rose.mybatis.data-permission.default-field=dept_id",
                         "rose.mybatis.field-fill.default-user=admin"
                 )
@@ -124,7 +120,6 @@ class RoseMybatisAutoConfigurationTest {
                     RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
 
                     assertThat(properties.getTenant().getColumn()).isEqualTo("org_id");
-                    assertThat(properties.getEncryption().getHash().getAlgorithm()).isEqualTo("HMAC_SHA256");
                     assertThat(properties.getFieldFill().getDefaultUser()).isEqualTo("admin");
                 });
     }

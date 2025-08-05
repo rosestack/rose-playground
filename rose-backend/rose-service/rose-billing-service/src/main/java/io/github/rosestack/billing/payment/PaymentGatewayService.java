@@ -6,16 +6,14 @@ import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.entity.PaymentRecord;
 import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.billing.enums.PaymentStatus;
-import io.github.rosestack.billing.payment.processor.AlipayPaymentProcessor;
-import io.github.rosestack.billing.payment.processor.StripePaymentProcessor;
-import io.github.rosestack.billing.payment.processor.WechatPaymentProcessor;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,13 +25,17 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PaymentGatewayService {
+    private final Map<String, PaymentProcessor> paymentProcessorMap;
 
-    private final StripePaymentProcessor stripeProcessor;
-    private final AlipayPaymentProcessor alipayProcessor;
-    private final WechatPaymentProcessor wechatProcessor;
     private final PaymentRecordRepository paymentRecordRepository;
+
+    public PaymentGatewayService(List<PaymentProcessor> paymentProcessors, PaymentRecordRepository paymentRecordRepository) {
+        this.paymentRecordRepository = paymentRecordRepository;
+        this.paymentProcessorMap = new HashMap<>();
+
+        paymentProcessors.forEach(processor -> this.paymentProcessorMap.put(processor.getPaymentMethod(), processor));
+    }
 
     /**
      * 处理支付
@@ -125,12 +127,7 @@ public class PaymentGatewayService {
     }
 
     private PaymentProcessor getPaymentProcessor(String paymentMethod) {
-        return switch (paymentMethod.toUpperCase()) {
-            case "STRIPE", "CREDIT_CARD" -> stripeProcessor;
-            case "ALIPAY" -> alipayProcessor;
-            case "WECHAT", "WECHAT_PAY" -> wechatProcessor;
-            default -> throw new IllegalArgumentException("不支持的支付方式：" + paymentMethod);
-        };
+        return paymentProcessorMap.get(paymentMethod);
     }
 
     private String getPaymentMethodByTransactionId(String transactionId) {

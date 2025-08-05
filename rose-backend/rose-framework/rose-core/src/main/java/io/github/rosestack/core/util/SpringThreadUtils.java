@@ -33,48 +33,6 @@ public class SpringThreadUtils {
         }
     }
 
-    public static void shutdownAndAwaitTermination(Executor executor) {
-        if (executor == null) {
-            return;
-        }
-
-        log.info("关闭线程池: {}", executor.getClass().getSimpleName());
-
-        if (executor instanceof ThreadPoolTaskExecutor) {
-            ThreadPoolTaskExecutor taskExecutor = (ThreadPoolTaskExecutor) executor;
-            taskExecutor.shutdown();
-            try {
-                if (!taskExecutor.getThreadPoolExecutor().awaitTermination(120, TimeUnit.SECONDS)) {
-                    taskExecutor.getThreadPoolExecutor().shutdownNow();
-                    if (!taskExecutor.getThreadPoolExecutor().awaitTermination(120, TimeUnit.SECONDS)) {
-                        log.warn("线程池未能正常关闭: {}", executor.getClass().getSimpleName());
-                    }
-                }
-            } catch (InterruptedException e) {
-                taskExecutor.getThreadPoolExecutor().shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        } else if (executor instanceof ExecutorService) {
-            ExecutorService executorService = (ExecutorService) executor;
-            if (((ExecutorService) executor).isShutdown()) {
-                return;
-            }
-            // 对于普通的 ExecutorService，使用原有逻辑
-            executorService.shutdown();
-            try {
-                if (!executorService.awaitTermination(120, TimeUnit.SECONDS)) {
-                    executorService.shutdownNow();
-                    if (!executorService.awaitTermination(120, TimeUnit.SECONDS)) {
-                        log.warn("线程池未能正常关闭: {}", executor.getClass().getSimpleName());
-                    }
-                }
-            } catch (InterruptedException e) {
-                executorService.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
     /**
      * 打印线程异常信息
      * 增强的异常处理，支持 Spring 的 ListenableFuture

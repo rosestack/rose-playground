@@ -34,6 +34,11 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
     private String publicKey;
 
     @Override
+    public String getPaymentMethod() {
+        return "ALIPAY";
+    }
+
+    @Override
     public PaymentResult processPayment(PaymentRequest request) {
         try {
             log.info("处理支付宝支付：账单 {}, 金额 {}", request.getInvoiceId(), request.getAmount());

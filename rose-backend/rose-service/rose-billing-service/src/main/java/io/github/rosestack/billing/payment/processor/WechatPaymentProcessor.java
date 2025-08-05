@@ -34,6 +34,11 @@ public class WechatPaymentProcessor implements PaymentProcessor {
     private String apiKey;
 
     @Override
+    public String getPaymentMethod() {
+        return "WECHAT";
+    }
+
+    @Override
     public PaymentResult processPayment(PaymentRequest request) {
         try {
             log.info("处理微信支付：账单 {}, 金额 {}", request.getInvoiceId(), request.getAmount());
