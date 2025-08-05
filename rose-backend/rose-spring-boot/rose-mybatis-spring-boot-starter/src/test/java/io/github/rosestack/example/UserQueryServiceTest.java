@@ -1,6 +1,6 @@
 package io.github.rosestack.example;
 
-import io.github.rosestack.mybatis.support.encryption.hash.HashService;
+import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,8 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * 用户查询服务测试

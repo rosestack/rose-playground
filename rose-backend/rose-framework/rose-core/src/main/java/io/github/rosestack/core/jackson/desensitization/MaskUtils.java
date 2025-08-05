@@ -1,6 +1,7 @@
 package io.github.rosestack.core.jackson.desensitization;
 
 import io.github.rosestack.core.annotation.FieldSensitive;
+import io.github.rosestack.core.jackson.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -41,9 +42,9 @@ public class MaskUtils {
     );
 
     public static final char MASK = '*';
-    private static final String MASKED = "**MASKED**";
+    public static final String MASKED = "**MASKED**";
 
-    public static String desensitize(String value, FieldSensitive fieldSensitive) {
+    public static String mask(String value, FieldSensitive fieldSensitive) {
         if (!StringUtils.hasText(value)) {
             return value;
         }
@@ -84,10 +85,10 @@ public class MaskUtils {
         }
 
         if (name.length() <= 2) {
-            return desensitizeCustom(name, 1, 0, MASK);
+            return maskCustom(name, 1, 0, MASK);
         }
 
-        return desensitizeCustom(name, 1, 1, MASK);
+        return maskCustom(name, 1, 1, MASK);
     }
 
     public static String maskPhone(String phone) {
@@ -236,7 +237,7 @@ public class MaskUtils {
         }
     }
 
-    public static String desensitizeCustom(String value, int prefixKeep, int suffixKeep, char maskChar) {
+    public static String maskCustom(String value, int prefixKeep, int suffixKeep, char maskChar) {
         if (!StringUtils.hasText(value)) {
             return value;
         }
@@ -287,6 +288,24 @@ public class MaskUtils {
 
         // 如果都不匹配，返回原值
         return data;
+    }
+
+    /**
+     * 对对象中的敏感字段进行脱敏处理
+     * 递归遍历对象的每个属性，如果属性为字符串类型且属性名称在脱敏数组内，则对该属性的值进行脱敏
+     *
+     * @param object          需要脱敏的对象
+     * @param sensitiveFields 敏感字段名称数组
+     * @param <T>             对象类型
+     * @return 脱敏后的对象
+     */
+    public static <T> T maskSensitiveFields(T object, String... sensitiveFields) {
+        if (object == null || sensitiveFields == null || sensitiveFields.length == 0) {
+            return object;
+        }
+
+        // 使用通用方法和脱敏处理器
+        return JsonUtils.processFields(object, JsonUtils.createCustomMaskProcessor(MASKED, sensitiveFields));
     }
 
     /**

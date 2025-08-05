@@ -20,7 +20,7 @@
         <!-- Rose 内部依赖 -->
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-core</artifactId>
+            <artifactId>rose-common-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -42,19 +42,6 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.antherd</groupId>
-            <artifactId>sm-crypto</artifactId>
-            <version>0.3.2.1</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.nashorn</groupId>
-            <artifactId>nashorn-core</artifactId>
-            <version>15.4</version>
-            <optional>true</optional>
         </dependency>
 
         <dependency>

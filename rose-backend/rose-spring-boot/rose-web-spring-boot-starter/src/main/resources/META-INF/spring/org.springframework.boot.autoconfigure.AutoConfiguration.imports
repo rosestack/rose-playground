@@ -1,1 +1,1 @@
-io.github.rosestack.web.config.RoseWebAutoConfiguration
+io.github.rosestack.spring.boot.web.config.RoseWebAutoConfiguration

@@ -1,1 +1,1 @@
-io.github.rosestack.redis.config.RoseRedisAutoConfiguration
+io.github.rosestack.spring.boot.redis.config.RoseRedisAutoConfiguration

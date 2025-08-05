@@ -1,1 +1,1 @@
-io.github.rosestack.audit.config.AuditAutoConfiguration
+io.github.rosestack.spring.boot.audit.config.AuditAutoConfiguration

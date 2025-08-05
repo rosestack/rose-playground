@@ -49,29 +49,6 @@ rose:
         max-permission-cache-size: 50000
         # 过期率阈值
         expired-rate: 0.5
-    # 字段加密配置
-    encryption:
-      # 是否启用字段加密
-      enabled: true
-      # 加密密钥（生产环境应该从外部配置获取）
-      secret-key: "0123456789abcdeffedcba9876543210"
-      # 加密失败时是否抛出异常
-      fail-on-error: true
-      # 默认加密算法
-      default-algorithm: "AES"
-      # 哈希配置
-      hash:
-        # 是否启用哈希功能
-        enabled: true
-        # 全局盐值（生产环境应该从外部配置获取）
-        global-salt: "rose-mybatis-global-salt-2024"
-        # 默认哈希算法
-        algorithm: "HMAC_SHA256"
-        # HMAC 密钥（生产环境应该从外部配置获取）
-        hmac-key: "rose-mybatis-hmac-key-2024"
-        # 是否使用 HMAC 算法
-        use-hmac: true
-
 
 # MyBatis Plus 原生配置
 mybatis-plus:

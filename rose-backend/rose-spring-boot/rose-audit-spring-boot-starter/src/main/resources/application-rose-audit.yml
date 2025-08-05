@@ -4,18 +4,12 @@ rose:
     enabled: true
 
     # 敏感字段脱敏配置
-    mask-fields: [ "password", "oldPassword", "newPassword","newPasswordAgain", "token", "access_token", "refresh_token", "secret", "key" ]
+    mask-fields: [ ]
 
     # 存储配置
     storage:
       # 存储类型：目前主要支持 database
       type: database
-      # 是否启用异步存储
-      async: true
-      # 批量处理大小
-      batch-size: 50
-      # 批量处理间隔（毫秒）
-      batch-interval: 5000
 
     # 数据保留配置
     retention:

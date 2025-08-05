@@ -1,6 +1,6 @@
 package io.github.rosestack.example;
 
-import io.github.rosestack.mybatis.support.encryption.hash.HashService;
+import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,13 +55,13 @@ public class UserQueryService {
         // 根据 UserEntity.email 字段的注解获取正确的哈希算法（HMAC_SHA256）
         String emailHash = hashService.generateHashByField(email, UserEntity.class, "email");
         UserEntity user = userMapper.findByEmailHash(emailHash);
-        
+
         if (user != null) {
             log.info("根据邮箱查询到用户: {}", user.getUsername());
         } else {
             log.info("未找到邮箱为 {} 的用户", email);
         }
-        
+
         return user;
     }
 
@@ -75,10 +75,10 @@ public class UserQueryService {
         // 分别根据字段注解获取正确的哈希算法
         String phoneHash = hashService.generateHashByField(phoneOrEmail, UserEntity.class, "phone");
         String emailHash = hashService.generateHashByField(phoneOrEmail, UserEntity.class, "email");
-        
+
         List<UserEntity> users = userMapper.findByPhoneHashOrEmailHash(phoneHash, emailHash);
         log.info("根据手机号或邮箱查询到 {} 个用户", users.size());
-        
+
         return users;
     }
 
@@ -102,7 +102,7 @@ public class UserQueryService {
     /**
      * 验证手机号是否匹配（防时序攻击）
      *
-     * @param inputPhone    输入的手机号
+     * @param inputPhone      输入的手机号
      * @param storedPhoneHash 存储的手机号哈希
      * @return 是否匹配
      */
@@ -115,7 +115,7 @@ public class UserQueryService {
     /**
      * 验证邮箱是否匹配（防时序攻击）
      *
-     * @param inputEmail    输入的邮箱
+     * @param inputEmail      输入的邮箱
      * @param storedEmailHash 存储的邮箱哈希
      * @return 是否匹配
      */
@@ -137,13 +137,13 @@ public class UserQueryService {
         // 2. 生成 phoneHash、emailHash 字段
         // 3. 填充 createdTime、updatedTime 等字段
         int result = userMapper.insert(user);
-        
+
         if (result > 0) {
             log.info("用户保存成功: {}", user.getUsername());
         } else {
             log.error("用户保存失败");
         }
-        
+
         return user;
     }
 }

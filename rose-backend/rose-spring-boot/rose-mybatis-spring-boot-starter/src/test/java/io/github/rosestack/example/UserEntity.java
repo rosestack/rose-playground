@@ -1,9 +1,9 @@
 package io.github.rosestack.example;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.github.rosestack.mybatis.annotation.EncryptField;
-import io.github.rosestack.mybatis.support.encryption.EncryptType;
-import io.github.rosestack.mybatis.support.encryption.hash.HashType;
+import io.github.rosestack.spring.boot.common.annotation.EncryptField;
+import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
+import io.github.rosestack.spring.boot.common.encryption.enums.HashType;
 import lombok.Data;
 
 import java.time.LocalDateTime;

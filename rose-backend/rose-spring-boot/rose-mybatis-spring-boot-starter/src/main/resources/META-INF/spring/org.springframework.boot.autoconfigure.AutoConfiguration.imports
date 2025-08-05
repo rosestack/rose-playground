@@ -1,1 +1,1 @@
-io.github.rosestack.mybatis.config.RoseMybatisAutoConfiguration
+io.github.rosestack.spring.boot.mybatis.config.RoseMybatisAutoConfiguration
