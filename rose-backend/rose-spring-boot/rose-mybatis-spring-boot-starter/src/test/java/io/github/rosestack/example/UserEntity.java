@@ -1,25 +1,27 @@
 package io.github.rosestack.example;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.github.rosestack.core.entity.BaseTenantEntity;
 import io.github.rosestack.spring.boot.common.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.common.encryption.enums.HashType;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
 
 /**
  * 用户实体示例
  * <p>
  * 演示如何使用安全加密 + 哈希查询的混合方案
+ * 继承自 BaseTenantEntity，获取通用字段
  * </p>
  *
  * @author Rose Team
  * @since 1.0.0
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @TableName("user")
-public class UserEntity {
+public class UserEntity extends BaseTenantEntity {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
@@ -47,26 +49,6 @@ public class UserEntity {
     // 银行卡号：仅加密存储（不需要查询）
     @EncryptField(EncryptType.AES)
     private String bankCard;
-
-    // 自动填充字段
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
-
-    @TableField(fill = FieldFill.INSERT)
-    private String createdBy;
-
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updatedBy;
-
-    // 乐观锁版本字段
-    @Version
-    private Integer version;
-
-    // 租户字段（自动填充）
-    private String tenantId;
 
     // 数据权限字段
     private String userId;

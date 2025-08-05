@@ -71,56 +71,6 @@ public class UserEntity extends BaseTenantEntity {
     @TableField("last_login_ip")
     private String lastLoginIp;
 
-    // 继承的字段会自动映射，但需要在子类中重新定义以添加 MyBatis Plus 注解
-    
-    /**
-     * 创建时间
-     */
-    @TableField(value = "created_time", fill = FieldFill.INSERT)
-    private LocalDateTime createdTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedTime;
-
-    /**
-     * 创建人
-     */
-    @TableField(value = "created_by", fill = FieldFill.INSERT)
-    private String createdBy;
-
-    /**
-     * 更新人
-     */
-    @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
-    private String updatedBy;
-
-    /**
-     * 逻辑删除标识
-     */
-    @TableLogic
-    @TableField("deleted")
-    private Boolean deleted;
-
-    /**
-     * 乐观锁版本号
-     * <p>
-     * 用于乐观锁控制，防止并发更新冲突。
-     * 每次更新时版本号会自动递增。
-     * </p>
-     */
-    @Version
-    @TableField("version")
-    private Integer version;
-
-    /**
-     * 租户ID
-     */
-    @TableField(value = "tenant_id", fill = FieldFill.INSERT)
-    private String tenantId;
-
     /**
      * 用户状态枚举
      */

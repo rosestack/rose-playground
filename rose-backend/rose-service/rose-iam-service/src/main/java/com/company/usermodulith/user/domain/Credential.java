@@ -39,13 +39,4 @@ public class Credential {
      */
     private Boolean status;
 
-    /**
-     * 创建时间
-     */
-    private String createdAt;
-    /**
-     * 修改时间
-     */
-    private String updatedAt;
-
 }

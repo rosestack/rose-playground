@@ -30,7 +30,4 @@ public class TableConfig {
     private String validateRules;
 
     private String width;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
