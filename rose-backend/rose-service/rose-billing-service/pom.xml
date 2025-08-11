@@ -34,12 +34,6 @@
             <artifactId>rose-mybatis-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- 定时任务支持 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
     </dependencies>
 </project>
 

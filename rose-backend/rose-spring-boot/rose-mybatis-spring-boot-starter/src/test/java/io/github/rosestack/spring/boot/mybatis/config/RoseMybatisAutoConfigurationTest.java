@@ -150,18 +150,6 @@ class RoseMybatisAutoConfigurationTest {
                 });
     }
 
-    @Test
-    void testAutoConfiguration_OptimisticLockSettings() {
-        contextRunner
-                .withPropertyValues(
-                        "rose.mybatis.optimistic-lock.enabled=true"
-                )
-                .run(context -> {
-                    RoseMybatisProperties properties = context.getBean(RoseMybatisProperties.class);
-                    assertThat(properties.getOptimisticLock().isEnabled()).isTrue();
-                });
-    }
-
     /**
      * 自定义配置类
      */

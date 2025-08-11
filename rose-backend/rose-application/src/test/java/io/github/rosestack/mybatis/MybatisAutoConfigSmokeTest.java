@@ -1,6 +1,6 @@
 package io.github.rosestack.mybatis;
 
-import io.github.rosestack.RoseServerApplication;
+import io.github.rosestack.TestApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = RoseServerApplication.class)
+@SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles("test")
 class MybatisAutoConfigSmokeTest {
 

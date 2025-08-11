@@ -48,17 +48,6 @@ public class RoseMybatisProperties {
 
     private Encryption encryption = new Encryption();
 
-    /**
-     * 乐观锁配置
-     */
-    private OptimisticLock optimisticLock = new OptimisticLock();
-
-    @Data
-    public static class OptimisticLock {
-        /** 是否启用乐观锁插件 */
-        private boolean enabled = true;
-    }
-
     @Data
     public static class Encryption {
         private boolean enabled = false;
