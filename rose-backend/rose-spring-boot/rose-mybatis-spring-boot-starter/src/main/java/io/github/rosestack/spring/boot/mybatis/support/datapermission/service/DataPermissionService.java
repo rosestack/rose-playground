@@ -1,6 +1,7 @@
-package io.github.rosestack.spring.boot.mybatis.support.datapermission;
+package io.github.rosestack.spring.boot.mybatis.support.datapermission.service;
 
 import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.spring.boot.mybatis.support.datapermission.RoseDataPermissionHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class DataPermissionCacheService {
+public class DataPermissionService {
     private final RoseMybatisProperties properties;
     private final RoseDataPermissionHandler dataPermissionHandler;
     private ScheduledExecutorService scheduledExecutorService;

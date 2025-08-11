@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.common.mybatis.encryption.key-rotation", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "rose.common.encryption.key-rotation", name = "enabled", havingValue = "true")
 public class AutoKeyRotationScheduler {
 
     private final KeyRotationManager keyRotationManager;

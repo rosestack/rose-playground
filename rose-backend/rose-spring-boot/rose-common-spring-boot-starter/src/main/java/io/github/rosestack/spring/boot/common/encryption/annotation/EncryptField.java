@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.common.annotation;
+package io.github.rosestack.spring.boot.common.encryption.annotation;
 
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.common.encryption.enums.HashType;

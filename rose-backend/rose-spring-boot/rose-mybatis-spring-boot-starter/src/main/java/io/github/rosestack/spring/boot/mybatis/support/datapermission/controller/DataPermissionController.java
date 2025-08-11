@@ -1,8 +1,8 @@
-package io.github.rosestack.spring.boot.mybatis.support.datapermission;
+package io.github.rosestack.spring.boot.mybatis.support.datapermission.controller;
 
+import io.github.rosestack.spring.boot.mybatis.support.datapermission.service.DataPermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +23,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/internal/data-permission/cache")
 @RequiredArgsConstructor
-@ConditionalOnBean(DataPermissionCacheService.class)
-@AutoConfigureAfter(DataPermissionCacheService.class)
+@ConditionalOnBean(DataPermissionService.class)
 @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class DataPermissionCacheController {
+public class DataPermissionController {
 
-    private final DataPermissionCacheService cacheService;
+    private final DataPermissionService cacheService;
 
     /**
      * 获取缓存统计信息
@@ -48,9 +47,9 @@ public class DataPermissionCacheController {
      * 获取缓存健康状态
      */
     @GetMapping("/health")
-    public ResponseEntity<DataPermissionCacheService.CacheHealthStatus> getCacheHealth() {
+    public ResponseEntity<DataPermissionService.CacheHealthStatus> getCacheHealth() {
         try {
-            DataPermissionCacheService.CacheHealthStatus health = cacheService.checkCacheHealth();
+            DataPermissionService.CacheHealthStatus health = cacheService.checkCacheHealth();
             return ResponseEntity.ok(health);
         } catch (Exception e) {
             log.error("获取缓存健康状态失败", e);

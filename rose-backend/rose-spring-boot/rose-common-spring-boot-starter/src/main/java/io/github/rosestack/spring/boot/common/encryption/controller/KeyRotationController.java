@@ -1,7 +1,10 @@
-package io.github.rosestack.spring.boot.common.encryption.rotation;
+package io.github.rosestack.spring.boot.common.encryption.controller;
 
 import io.github.rosestack.spring.boot.common.config.RoseCommonProperties;
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
+import io.github.rosestack.spring.boot.common.encryption.rotation.AutoKeyRotationScheduler;
+import io.github.rosestack.spring.boot.common.encryption.rotation.KeyRotationManager;
+import io.github.rosestack.spring.boot.common.encryption.rotation.KeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,7 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/internal/encryption/key-rotation")
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.mybatis.encryption.key-rotation", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "rose.common.encryption.key-rotation", name = "enabled", havingValue = "true")
 public class KeyRotationController {
 
     private final KeyRotationManager keyRotationManager;

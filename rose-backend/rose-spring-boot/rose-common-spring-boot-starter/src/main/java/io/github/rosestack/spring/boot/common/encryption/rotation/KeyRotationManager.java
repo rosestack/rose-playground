@@ -4,6 +4,7 @@ import com.antherd.smcrypto.sm2.Keypair;
 import com.antherd.smcrypto.sm2.Sm2;
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Slf4j
-@Component
 public class KeyRotationManager {
 
     /**

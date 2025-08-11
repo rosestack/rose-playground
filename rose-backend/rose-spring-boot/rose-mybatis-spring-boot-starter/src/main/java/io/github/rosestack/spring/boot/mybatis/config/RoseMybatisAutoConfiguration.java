@@ -11,13 +11,18 @@ import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionIntercepto
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+import io.github.rosestack.core.spring.SpringContextUtils;
 import io.github.rosestack.core.spring.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
 import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import io.github.rosestack.spring.boot.mybatis.handler.RoseMetaObjectHandler;
 import io.github.rosestack.spring.boot.mybatis.handler.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.interceptor.FieldEncryptionInterceptor;
+import io.github.rosestack.spring.boot.mybatis.support.datapermission.DataPermissionProviderManager;
 import io.github.rosestack.spring.boot.mybatis.support.datapermission.RoseDataPermissionHandler;
+import io.github.rosestack.spring.boot.mybatis.support.datapermission.controller.DataPermissionController;
+import io.github.rosestack.spring.boot.mybatis.support.datapermission.service.DataPermissionService;
+import io.github.rosestack.spring.boot.mybatis.support.tenant.TenantIdFilter;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +33,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 import java.util.concurrent.TimeUnit;
+
+import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_ORDER;
 
 /**
  * Rose MyBatis Plus 自动配置类
@@ -54,9 +63,12 @@ import java.util.concurrent.TimeUnit;
 @PropertySource(value = "classpath:application-rose-mybatis.yml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.mybatis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseMybatisProperties.class)
-@ComponentScan(basePackages = "io.github.rosestack.spring.boot.mybatis")
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
 @AutoConfiguration
+@Import({
+        DataPermissionController.class,
+        DataPermissionService.class
+})
 public class RoseMybatisAutoConfiguration {
     private final RoseMybatisProperties properties;
 
@@ -92,12 +104,9 @@ public class RoseMybatisAutoConfiguration {
             log.info("启用多租户插件，租户字段: {}", properties.getTenant().getColumn());
         }
 
-        // 乐观锁插件
-        if (properties.getOptimisticLock().isEnabled()) {
-            OptimisticLockerInnerInterceptor optimisticLockerInterceptor = new OptimisticLockerInnerInterceptor();
-            interceptor.addInnerInterceptor(optimisticLockerInterceptor);
-            log.info("启用乐观锁插件");
-        }
+        OptimisticLockerInnerInterceptor optimisticLockerInterceptor = new OptimisticLockerInnerInterceptor();
+        interceptor.addInnerInterceptor(optimisticLockerInterceptor);
+        log.info("启用乐观锁插件");
 
         // 数据权限插件
         if (properties.getDataPermission().isEnabled() && roseDataPermissionHandler != null) {
@@ -136,12 +145,32 @@ public class RoseMybatisAutoConfiguration {
      * 字段加密拦截器
      */
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(FieldEncryptionInterceptor.class)
     @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnBean(FieldEncryptor.class)
     public FieldEncryptionInterceptor fieldEncryptionInterceptor(FieldEncryptor fieldEncryptor, HashService hashService) {
         log.info("启用字段加密解密拦截器，默认算法: AES");
         return new FieldEncryptionInterceptor(fieldEncryptor, hashService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DataPermissionProviderManager.class)
+    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public DataPermissionProviderManager dataPermissionProviderManager(ApplicationContext applicationContext) {
+        return new DataPermissionProviderManager(applicationContext);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(RoseDataPermissionHandler.class)
+    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public RoseDataPermissionHandler roseDataPermissionHandler(DataPermissionProviderManager providerManager) {
+        return new RoseDataPermissionHandler(providerManager, properties);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
+    public FilterRegistrationBean<TenantIdFilter> tenantIdFilter() {
+        return SpringContextUtils.createFilterBean(new TenantIdFilter(properties.getTenant().getIgnoreTablePrefixes()), TENANT_ID_FILTER_ORDER);
     }
 
     @Bean

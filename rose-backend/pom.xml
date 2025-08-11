@@ -125,19 +125,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- 生成构建信息，便于 /actuator/info 暴露 -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build-info</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>

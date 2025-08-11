@@ -37,8 +37,6 @@ import static io.github.rosestack.core.util.ServletUtils.getCurrentUserId;
  */
 @Slf4j
 @RequiredArgsConstructor
-@Component
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     // 注解缓存 - 缓存 mappedStatementId 对应的注解信息
     private final Map<String, DataPermission> annotationCache = new ConcurrentHashMap<>();

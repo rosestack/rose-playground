@@ -3,9 +3,7 @@ package io.github.rosestack.spring.boot.mybatis.support.datapermission;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,9 +23,7 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DataPermissionProviderManager {
 
     // 字段支持缓存：字段名 -> 支持的提供者列表（按优先级排序）

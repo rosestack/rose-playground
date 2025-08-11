@@ -6,6 +6,7 @@ import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -32,6 +33,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "rose.common.encryption.key-rotation", name = "enabled", havingValue = "true")
 public class RotationAwareFieldEncryptor implements FieldEncryptor {
 
     private final KeyRotationManager keyRotationManager;

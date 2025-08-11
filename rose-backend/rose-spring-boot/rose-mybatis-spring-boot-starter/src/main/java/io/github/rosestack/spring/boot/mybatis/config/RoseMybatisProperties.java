@@ -31,12 +31,6 @@ public class RoseMybatisProperties {
      */
     private Pagination pagination = new Pagination();
 
-
-    /**
-     * 乐观锁配置
-     */
-    private OptimisticLock optimisticLock = new OptimisticLock();
-
     /**
      * 字段填充配置
      */
@@ -53,6 +47,17 @@ public class RoseMybatisProperties {
     private Audit audit = new Audit();
 
     private Encryption encryption = new Encryption();
+
+    /**
+     * 乐观锁配置
+     */
+    private OptimisticLock optimisticLock = new OptimisticLock();
+
+    @Data
+    public static class OptimisticLock {
+        /** 是否启用乐观锁插件 */
+        private boolean enabled = true;
+    }
 
     @Data
     public static class Encryption {
@@ -109,19 +114,6 @@ public class RoseMybatisProperties {
          * 数据库类型（自动检测）
          */
         private String dbType = "mysql";
-    }
-
-
-    /**
-     * 乐观锁配置
-     */
-    @Data
-    public static class OptimisticLock {
-        /**
-         * 是否启用乐观锁
-         */
-        private boolean enabled = true;
-
     }
 
     /**

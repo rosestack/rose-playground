@@ -3,6 +3,7 @@ package io.github.rosestack.billing.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * 计费通知服务
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
  * @author rose
  */
 @Service
+@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class BillingNotificationService {

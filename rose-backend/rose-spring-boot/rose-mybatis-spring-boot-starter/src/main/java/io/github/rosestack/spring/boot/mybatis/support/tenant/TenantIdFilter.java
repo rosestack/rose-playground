@@ -4,16 +4,13 @@ import io.github.rosestack.core.spring.AbstractBaseFilter;
 import io.github.rosestack.core.util.ServletUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.annotation.Order;
 
 import java.io.IOException;
+import java.util.List;
 
-import static io.github.rosestack.core.Constants.FilterOrder.TENANT_ID_FILTER_ORDER;
 import static io.github.rosestack.core.Constants.HeaderName.HEADER_TENANT_ID;
 import static io.github.rosestack.core.Constants.MdcName.MDC_TENANT_ID;
 
@@ -26,13 +23,10 @@ import static io.github.rosestack.core.Constants.MdcName.MDC_TENANT_ID;
  * @author rosestack
  * @since 1.0.0
  */
-@Order(TENANT_ID_FILTER_ORDER)
-@ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
-@WebFilter(filterName = "tenantIdFilter", urlPatterns = "/*")
 public class TenantIdFilter extends AbstractBaseFilter {
 
-    protected TenantIdFilter(String[] excludePaths) {
-        super(excludePaths);
+    public TenantIdFilter(List<String> excludePaths) {
+        super(excludePaths.toArray(new String[0]));
     }
 
     @Override

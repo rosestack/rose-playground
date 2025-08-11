@@ -2,7 +2,7 @@ package io.github.rosestack.example;
 
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.core.entity.BaseTenantEntity;
-import io.github.rosestack.spring.boot.common.annotation.EncryptField;
+import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.common.encryption.enums.HashType;
 import lombok.Data;

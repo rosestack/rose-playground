@@ -8,6 +8,7 @@ import io.github.rosestack.billing.repository.UsageRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class FinancialReportService {
 

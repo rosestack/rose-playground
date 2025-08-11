@@ -1,0 +1,29 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+rose:
+  billing:
+    enabled: false
+  iam:
+    enabled: false
+  web:
+    enabled: true
+  mybatis:
+    enabled: true
+    pagination:
+      enabled: true
+    tenant:
+      enabled: false
+  redis:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+

@@ -1,12 +1,10 @@
 package io.github.rosestack.spring.boot.common.encryption.hash;
 
-import io.github.rosestack.spring.boot.common.annotation.EncryptField;
+import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.config.RoseCommonProperties;
 import io.github.rosestack.spring.boot.common.encryption.enums.HashType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.Mac;
@@ -28,8 +26,6 @@ import java.security.NoSuchAlgorithmException;
  */
 @Slf4j
 @RequiredArgsConstructor
-@Component
-@ConditionalOnProperty(prefix = "rose.encryption.hash", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class HashService {
 
     private final RoseCommonProperties properties;
