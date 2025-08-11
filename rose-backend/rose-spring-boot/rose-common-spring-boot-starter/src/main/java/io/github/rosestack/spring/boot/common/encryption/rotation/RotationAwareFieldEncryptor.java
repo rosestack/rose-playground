@@ -2,8 +2,8 @@ package io.github.rosestack.spring.boot.common.encryption.rotation;
 
 import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm4.Sm4;
-import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
+import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

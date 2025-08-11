@@ -2,8 +2,6 @@ package io.github.rosestack.iam.userpool;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 public class TableConfig {
     private String id;

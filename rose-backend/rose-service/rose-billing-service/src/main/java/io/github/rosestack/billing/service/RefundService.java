@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -40,12 +39,6 @@ public class RefundService {
      */
     @Transactional
     public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason, String idempotencyKey) {
-        if (invoiceId == null || invoiceId.isBlank()) {
-            return RefundResult.failed("invoiceId 不能为空");
-        }
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            return RefundResult.failed("退款金额必须大于0");
-        }
         Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
         if (invoice.getStatus() != InvoiceStatus.PAID) {
             return RefundResult.failed("仅支持对已支付账单发起退款");

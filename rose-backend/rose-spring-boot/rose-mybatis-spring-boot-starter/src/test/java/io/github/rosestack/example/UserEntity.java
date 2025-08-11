@@ -1,6 +1,9 @@
 package io.github.rosestack.example;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.core.entity.BaseTenantEntity;
 import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;

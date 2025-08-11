@@ -1,12 +1,11 @@
 package io.github.rosestack.billing.service;
 
-import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
-import io.github.rosestack.billing.entity.PaymentRecord;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
-import io.github.rosestack.billing.enums.PaymentRecordStatus;
+import io.github.rosestack.billing.event.PaymentSucceededEvent;
 import io.github.rosestack.billing.exception.PlanNotFoundException;
 import io.github.rosestack.billing.exception.SubscriptionNotFoundException;
 import io.github.rosestack.billing.exception.UsageLimitExceededException;
@@ -14,17 +13,11 @@ import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
-import io.github.rosestack.billing.repository.PaymentRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-
-import io.github.rosestack.billing.event.PaymentSucceededEvent;
-import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,7 +31,7 @@ import java.util.UUID;
  *
  * @author rose
  */
-@Validated
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -72,7 +65,8 @@ public class BillingService {
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
-    public TenantSubscription createSubscription(@NotBlank String tenantId, @NotBlank String planId, Boolean startTrial) {
+    public TenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
+        // 参数校验移到 Controller；此处保留业务校验
         SubscriptionPlan plan = planRepository.selectById(planId);
         if (plan == null) {
             throw new PlanNotFoundException(planId);

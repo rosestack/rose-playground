@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.common.encryption.hash;
 
-import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.config.RoseCommonProperties;
+import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.encryption.enums.HashType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

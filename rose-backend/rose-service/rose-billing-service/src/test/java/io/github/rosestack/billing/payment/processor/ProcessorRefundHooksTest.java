@@ -1,15 +1,13 @@
 package io.github.rosestack.billing.payment.processor;
 
-import io.github.rosestack.billing.payment.processor.AlipayPaymentProcessor;
-import io.github.rosestack.billing.payment.processor.WechatPaymentProcessor;
-import io.github.rosestack.billing.payment.processor.StripePaymentProcessor;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProcessorRefundHooksTest {
 

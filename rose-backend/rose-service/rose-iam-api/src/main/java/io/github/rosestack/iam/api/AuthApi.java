@@ -1,10 +1,10 @@
 package io.github.rosestack.iam.api;
 
+import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.iam.dto.UserLoginDTO;
 import io.github.rosestack.iam.dto.UserRegisterDTO;
 import io.github.rosestack.iam.vo.LoginVO;
 import io.github.rosestack.iam.vo.RegisterVO;
-import io.github.rosestack.core.model.ApiResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 

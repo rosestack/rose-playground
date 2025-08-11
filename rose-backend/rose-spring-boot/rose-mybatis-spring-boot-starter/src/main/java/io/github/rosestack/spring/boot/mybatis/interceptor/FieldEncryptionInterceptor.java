@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.mybatis.interceptor;
 
-import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
+import io.github.rosestack.spring.boot.common.encryption.annotation.EncryptField;
 import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;

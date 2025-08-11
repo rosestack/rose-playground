@@ -2,7 +2,6 @@ package io.github.rosestack.spring.boot.common.config;
 
 import io.github.rosestack.spring.boot.common.encryption.DefaultFieldEncryptor;
 import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
-import io.github.rosestack.spring.boot.common.encryption.NoopFieldEncryptor;
 import io.github.rosestack.spring.boot.common.encryption.hash.HashService;
 import io.github.rosestack.spring.boot.common.encryption.rotation.AutoKeyRotationScheduler;
 import io.github.rosestack.spring.boot.common.encryption.rotation.KeyRotationManager;

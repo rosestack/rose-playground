@@ -7,7 +7,6 @@ import io.github.rosestack.billing.repository.OutboxRepository;
 import io.github.rosestack.billing.service.OutboxService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

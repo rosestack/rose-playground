@@ -1,9 +1,9 @@
 package io.github.rosestack.spring.boot.common.encryption.rotation;
 
 import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
-import lombok.Data;
-import lombok.Builder;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;

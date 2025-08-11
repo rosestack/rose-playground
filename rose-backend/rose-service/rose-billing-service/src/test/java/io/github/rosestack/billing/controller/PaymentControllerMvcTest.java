@@ -1,13 +1,12 @@
 package io.github.rosestack.billing.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.rosestack.billing.payment.PaymentStatus;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
+import io.github.rosestack.billing.payment.PaymentStatus;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.InvoiceService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -15,8 +14,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PaymentControllerMvcTest {
 

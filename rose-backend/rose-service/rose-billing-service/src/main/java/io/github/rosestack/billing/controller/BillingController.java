@@ -1,11 +1,13 @@
 package io.github.rosestack.billing.controller;
 
-import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.core.model.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/billing")
 @RequiredArgsConstructor
+@org.springframework.validation.annotation.Validated
+
 public class BillingController {
 
     private final BillingService billingService;
@@ -156,13 +160,16 @@ public class BillingController {
 // DTO 类
 @Data
 class CreateSubscriptionRequest {
+    @NotBlank
     private String tenantId;
+    @NotBlank
     private String planId;
     private Boolean startTrial = true;
 }
 
 @Data
 class ChangePlanRequest {
+    @NotBlank
     private String newPlanId;
 }
 
@@ -173,8 +180,11 @@ class CancelSubscriptionRequest {
 
 @Data
 class RecordUsageRequest {
+    @NotBlank
     private String tenantId;
+    @NotBlank
     private String metricType;
+    @DecimalMin(value = "0")
     private BigDecimal quantity;
     private String resourceId;
     private String metadata;
@@ -182,11 +192,14 @@ class RecordUsageRequest {
 
 @Data
 class GenerateInvoiceRequest {
+    @NotBlank
     private String subscriptionId;
 }
 
 @Data
 class ProcessPaymentRequest {
+    @NotBlank
     private String paymentMethod;
+    @NotBlank
     private String transactionId;
 }

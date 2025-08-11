@@ -2,8 +2,8 @@ package io.github.rosestack.core.annotation;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.github.rosestack.core.jackson.desensitization.MaskUtils;
 import io.github.rosestack.core.jackson.desensitization.FieldSensitiveSerializer;
+import io.github.rosestack.core.jackson.desensitization.MaskUtils;
 import io.github.rosestack.core.jackson.desensitization.SensitiveType;
 
 import java.lang.annotation.ElementType;
