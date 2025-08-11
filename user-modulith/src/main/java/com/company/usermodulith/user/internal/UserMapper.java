@@ -1,4 +1,4 @@
-package io.github.rosestack.iam.internal;
+package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.spring.boot.mybatis.annotation.DataPermission;

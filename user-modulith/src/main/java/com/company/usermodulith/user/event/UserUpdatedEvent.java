@@ -1,4 +1,4 @@
-package io.github.rosestack.iam.event;
+package com.company.usermodulith.user.event;
 
 import lombok.Value;
 

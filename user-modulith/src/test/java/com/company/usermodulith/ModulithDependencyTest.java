@@ -1,6 +1,5 @@
-package io.github.rosestack.iam;
+package com.company.usermodulith;
 
-import com.company.usermodulith.UserModulithApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
 

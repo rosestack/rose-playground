@@ -1,4 +1,4 @@
-package io.github.rosestack.iam.internal;
+package com.company.usermodulith.user.internal;
 
 /**
  * 用户模块异常

@@ -1,4 +1,4 @@
-package io.github.rosestack.iam.internal;
+package com.company.usermodulith.user.internal;
 
 import io.github.rosestack.spring.boot.mybatis.support.datapermission.AbstractDataPermissionProvider;
 import io.github.rosestack.spring.boot.mybatis.support.datapermission.DataScope;

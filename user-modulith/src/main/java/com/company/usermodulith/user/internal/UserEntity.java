@@ -1,4 +1,4 @@
-package io.github.rosestack.iam.internal;
+package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.core.entity.BaseEntity;

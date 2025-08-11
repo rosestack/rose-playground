@@ -1,4 +1,4 @@
-package io.github.rosestack.iam.controller;
+package com.company.usermodulith.user.controller;
 
 import com.company.usermodulith.user.*;
 import io.github.rosestack.core.model.ApiResponse;

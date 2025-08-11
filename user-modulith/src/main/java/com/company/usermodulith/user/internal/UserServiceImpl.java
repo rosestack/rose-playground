@@ -1,12 +1,12 @@
-package io.github.rosestack.iam.internal;
+package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.company.usermodulith.user.*;
 import io.github.rosestack.iam.*;
-import io.github.rosestack.iam.event.UserCreatedEvent;
-import io.github.rosestack.iam.event.UserUpdatedEvent;
+import com.company.usermodulith.user.event.UserCreatedEvent;
+import com.company.usermodulith.user.event.UserUpdatedEvent;
 import io.github.rosestack.core.model.PageRequest;
 import io.github.rosestack.core.model.PageResponse;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package io.github.rosestack.iam;
+package com.company.usermodulith.user;
 
 import io.github.rosestack.core.model.PageRequest;
 import io.github.rosestack.core.model.PageResponse;

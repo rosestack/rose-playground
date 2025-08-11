@@ -1,9 +1,9 @@
-package io.github.rosestack.iam.internal;
+package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import io.github.rosestack.iam.UserCreateRequest;
-import io.github.rosestack.iam.UserResponse;
-import io.github.rosestack.iam.UserUpdateRequest;
+import com.company.usermodulith.user.UserCreateRequest;
+import com.company.usermodulith.user.UserResponse;
+import com.company.usermodulith.user.UserUpdateRequest;
 import io.github.rosestack.core.model.PageResponse;
 import org.springframework.stereotype.Component;
 
