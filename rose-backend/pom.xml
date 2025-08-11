@@ -130,9 +130,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <layoutFactory implementation="org.springframework.boot.loader.tools.DefaultLaunchScript"/>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
