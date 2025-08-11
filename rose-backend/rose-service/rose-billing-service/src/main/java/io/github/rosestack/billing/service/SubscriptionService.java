@@ -14,7 +14,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,8 @@ import java.util.Optional;
  * @author rose
  */
 @Slf4j
+@Validated
+
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepository, TenantSubscription> {
@@ -41,11 +45,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
      * @throws IllegalArgumentException 如果租户ID为空
      */
     @Cacheable(value = "activeSubscriptions", key = "#tenantId", unless = "#result.isEmpty()")
-    public Optional<TenantSubscription> getActiveSubscription(String tenantId) {
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalArgumentException("租户ID不能为空");
-        }
-
+    public Optional<TenantSubscription> getActiveSubscription(@jakarta.validation.constraints.NotBlank String tenantId) {
         try {
             return subscriptionRepository.findActiveByTenantId(tenantId);
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
      */
     public List<TenantSubscription> getSubscriptionsForBilling() {
         List<SubscriptionStatus> activeStatuses = List.of(
-            SubscriptionStatus.ACTIVE, 
+            SubscriptionStatus.ACTIVE,
             SubscriptionStatus.TRIAL
         );
         return subscriptionRepository.findByNextBillingDateBeforeAndStatusIn(

@@ -17,11 +17,14 @@ import io.github.rosestack.billing.repository.UsageRecordRepository;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
-import io.github.rosestack.billing.event.PaymentSucceededEvent;
-
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import io.github.rosestack.billing.event.PaymentSucceededEvent;
+import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,6 +38,7 @@ import java.util.UUID;
  *
  * @author rose
  */
+@Validated
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -68,15 +72,7 @@ public class BillingService {
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
-    public TenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
-        // 参数验证
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalArgumentException("租户ID不能为空");
-        }
-        if (planId == null || planId.trim().isEmpty()) {
-            throw new IllegalArgumentException("订阅计划ID不能为空");
-        }
-
+    public TenantSubscription createSubscription(@NotBlank String tenantId, @NotBlank String planId, Boolean startTrial) {
         SubscriptionPlan plan = planRepository.selectById(planId);
         if (plan == null) {
             throw new PlanNotFoundException(planId);
@@ -260,6 +256,20 @@ public class BillingService {
 
         log.debug("记录使用量，租户: {}, 类型: {}, 数量: {}", tenantId, metricType, quantity);
     }
+
+    /**
+     * 记录使用量（带订阅ID）
+     */
+    public void recordUsage(String tenantId, String subscriptionId, String metricType, BigDecimal quantity,
+                            String resourceId, String metadata) {
+        if (!subscriptionService.validateUsageLimit(tenantId, metricType)) {
+            throw new UsageLimitExceededException(metricType, quantity, BigDecimal.ZERO);
+        }
+        usageService.recordUsage(tenantId, subscriptionId, metricType, quantity, metadata);
+        checkUsageLimitsAsync(tenantId, metricType);
+        log.debug("记录使用量(含订阅)，租户: {}, 订阅: {}, 类型: {}, 数量: {}", tenantId, subscriptionId, metricType, quantity);
+    }
+
 
     /**
      * 获取使用量统计

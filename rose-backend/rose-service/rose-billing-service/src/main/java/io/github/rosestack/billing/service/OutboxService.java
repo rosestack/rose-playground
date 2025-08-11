@@ -13,10 +13,14 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OutboxService {
+
+    private final io.github.rosestack.billing.metrics.OutboxMetricsInterceptor outboxMetrics;
 
     private final OutboxRepository outboxRepository;
     private final OutboxPublisher publisher;
@@ -48,11 +52,14 @@ public class OutboxService {
         int success = 0;
         for (OutboxRecord rec : list) {
             try {
+                // metrics: payload size
+                if (outboxMetrics != null) outboxMetrics.recordPayload(rec.getPayload());
                 publisher.publish(rec.getEventType(), rec.getPayload());
                 rec.setStatus(OutboxStatus.SENT);
                 int affected = outboxRepository.updateById(rec);
                 if (affected == 1) {
                     success++;
+                    if (outboxMetrics != null) outboxMetrics.onSendSuccess(rec, now);
                 } else {
                     log.debug("Outbox update skipped due to concurrent update, id={}", rec.getId());
                 }
@@ -70,6 +77,7 @@ public class OutboxService {
                 } catch (Exception ex) {
                     log.warn("Outbox retry state persist failed, id={}", rec.getId(), ex);
                 }
+                if (outboxMetrics != null) outboxMetrics.onSendFailure(rec);
                 log.warn("Outbox relay failed, id={}, eventType={}", rec.getId(), rec.getEventType(), e);
             }
         }

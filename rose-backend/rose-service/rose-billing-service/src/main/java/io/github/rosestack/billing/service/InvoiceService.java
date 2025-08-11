@@ -11,8 +11,10 @@ import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
+import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +29,8 @@ import java.util.Map;
  * @author rose
  */
 @Slf4j
+@Validated
+
 @Service
 @RequiredArgsConstructor
 public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
@@ -71,17 +75,9 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
-    public void markInvoiceAsPaid(String invoiceId, String paymentMethod, String transactionId) {
-        // 参数验证
-        if (invoiceId == null || invoiceId.trim().isEmpty()) {
-            throw new IllegalArgumentException("账单ID不能为空");
-        }
-        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
-            throw new IllegalArgumentException("支付方式不能为空");
-        }
-        if (transactionId == null || transactionId.trim().isEmpty()) {
-            throw new IllegalArgumentException("交易ID不能为空");
-        }
+    public void markInvoiceAsPaid(@jakarta.validation.constraints.NotBlank String invoiceId,
+                                  @jakarta.validation.constraints.NotBlank String paymentMethod,
+                                  @jakarta.validation.constraints.NotBlank String transactionId) {
 
         Invoice invoice = invoiceRepository.selectById(invoiceId);
         // 幂等性检查：若同一 transactionId 已处理则忽略

@@ -4,7 +4,10 @@ import io.github.rosestack.billing.aspect.annotation.TrackEmailUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackSmsUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackStorageUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackUserChange;
+
 import io.github.rosestack.billing.service.BillingService;
+import io.github.rosestack.billing.service.SubscriptionService;
+import io.github.rosestack.billing.service.UserMetricsService;
 import io.github.rosestack.spring.boot.mybatis.support.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import io.github.rosestack.billing.service.UserMetricsService;
 
 /**
  * 使用量自动监控切面
@@ -32,6 +34,7 @@ public class UsageTrackingAspect {
 
     private final BillingService billingService;
     private final UserMetricsService userMetricsService;
+    private final SubscriptionService subscriptionService;
 
     /**
      * 监控API调用
@@ -46,13 +49,16 @@ public class UsageTrackingAspect {
                     apiPath = joinPoint.getSignature().getName();
                 }
 
-                billingService.recordUsage(
-                        tenantId,
-                        "API_CALLS",
-                        BigDecimal.ONE,
-                        apiPath,
-                        buildApiMetadata(joinPoint)
-                );
+                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .orElse(null);
+                if (subscriptionId != null) {
+                    billingService.recordUsage(tenantId, subscriptionId,
+                            "API_CALLS", BigDecimal.ONE, apiPath, buildApiMetadata(joinPoint));
+                } else {
+                    billingService.recordUsage(tenantId,
+                            "API_CALLS", BigDecimal.ONE, apiPath, buildApiMetadata(joinPoint));
+                }
 
                 log.debug("记录API调用使用量：{} - {}", tenantId, apiPath);
             }
@@ -71,13 +77,18 @@ public class UsageTrackingAspect {
             if (tenantId != null && result instanceof Number) {
                 BigDecimal storageSize = new BigDecimal(result.toString());
 
-                billingService.recordUsage(
-                        tenantId,
-                        "STORAGE",
-                        storageSize,
-                        trackStorageUsage.resourceType(),
-                        buildStorageMetadata(joinPoint, storageSize)
-                );
+                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .orElse(null);
+                if (subscriptionId != null) {
+                    billingService.recordUsage(tenantId, subscriptionId,
+                            "STORAGE", storageSize, trackStorageUsage.resourceType(),
+                            buildStorageMetadata(joinPoint, storageSize));
+                } else {
+                    billingService.recordUsage(tenantId,
+                            "STORAGE", storageSize, trackStorageUsage.resourceType(),
+                            buildStorageMetadata(joinPoint, storageSize));
+                }
 
                 log.debug("记录存储使用量：{} - {} bytes", tenantId, storageSize);
             }
@@ -97,13 +108,18 @@ public class UsageTrackingAspect {
                 // 获取当前用户总数
                 int currentUserCount = getUserCount(tenantId);
 
-                billingService.recordUsage(
-                        tenantId,
-                        "USERS",
-                        new BigDecimal(currentUserCount),
-                        "USER_COUNT",
-                        "{\"operation\":\"" + trackUserChange.operation() + "\"}"
-                );
+                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .orElse(null);
+                if (subscriptionId != null) {
+                    billingService.recordUsage(tenantId, subscriptionId,
+                            "USERS", new BigDecimal(currentUserCount), "USER_COUNT",
+                            "{\"operation\":\"" + trackUserChange.operation() + "\"}");
+                } else {
+                    billingService.recordUsage(tenantId,
+                            "USERS", new BigDecimal(currentUserCount), "USER_COUNT",
+                            "{\"operation\":\"" + trackUserChange.operation() + "\"}");
+                }
 
                 log.debug("记录用户数变化：{} - {} users", tenantId, currentUserCount);
             }
@@ -120,13 +136,18 @@ public class UsageTrackingAspect {
         try {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
-                billingService.recordUsage(
-                        tenantId,
-                        "EMAIL_SENT",
-                        BigDecimal.ONE,
-                        trackEmailUsage.emailType(),
-                        buildEmailMetadata(joinPoint)
-                );
+                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .orElse(null);
+                if (subscriptionId != null) {
+                    billingService.recordUsage(tenantId, subscriptionId,
+                            "EMAIL_SENT", BigDecimal.ONE, trackEmailUsage.emailType(),
+                            buildEmailMetadata(joinPoint));
+                } else {
+                    billingService.recordUsage(tenantId,
+                            "EMAIL_SENT", BigDecimal.ONE, trackEmailUsage.emailType(),
+                            buildEmailMetadata(joinPoint));
+                }
 
                 log.debug("记录邮件发送使用量：{} - {}", tenantId, trackEmailUsage.emailType());
             }
@@ -143,13 +164,18 @@ public class UsageTrackingAspect {
         try {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
-                billingService.recordUsage(
-                        tenantId,
-                        "SMS_SENT",
-                        BigDecimal.ONE,
-                        trackSmsUsage.smsType(),
-                        buildSmsMetadata(joinPoint)
-                );
+                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .orElse(null);
+                if (subscriptionId != null) {
+                    billingService.recordUsage(tenantId, subscriptionId,
+                            "SMS_SENT", BigDecimal.ONE, trackSmsUsage.smsType(),
+                            buildSmsMetadata(joinPoint));
+                } else {
+                    billingService.recordUsage(tenantId,
+                            "SMS_SENT", BigDecimal.ONE, trackSmsUsage.smsType(),
+                            buildSmsMetadata(joinPoint));
+                }
 
                 log.debug("记录短信发送使用量：{} - {}", tenantId, trackSmsUsage.smsType());
             }
