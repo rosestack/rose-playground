@@ -108,14 +108,14 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
             "GROUP BY plan_id")
 
     /**
-     * 统计时间段内新增订阅数（按 start_date）
+     * 统计时间段内新增订阅数（按 start_time）
      */
     @Select("SELECT COUNT(*) FROM tenant_subscription WHERE start_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0")
     long countNewSubscriptions(@Param("startTime") LocalDateTime startTime,
                               @Param("endTime") LocalDateTime endTime);
 
     /**
-     * 统计时间段内取消订阅数（按 cancelled_at）
+     * 统计时间段内取消订阅数（按 cancelled_time）
      */
     @Select("SELECT COUNT(*) FROM tenant_subscription WHERE cancelled_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0")
     long countCancelledSubscriptions(@Param("startTime") LocalDateTime startTime,
@@ -129,7 +129,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
 
     /**
      * 统计时间段内从 TRIAL 转为 ACTIVE 的订阅数（试用转化）
-     * 简化：以 upgraded_at 在区间内且当前状态为 ACTIVE 作为转化
+     * 简化：以 upgraded_time 在区间内且当前状态为 ACTIVE 作为转化
      */
     @Select("SELECT COUNT(*) FROM tenant_subscription WHERE upgraded_time BETWEEN #{startTime} AND #{endTime} AND status = 'ACTIVE' AND deleted = 0")
     long countTrialConverted(@Param("startTime") LocalDateTime startTime,
@@ -155,7 +155,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      */
     @Select("SELECT COUNT(*) FROM tenant_subscription WHERE deleted = 0 AND (" +
             "(in_trial = 1 AND trial_end_time >= #{startTime} AND start_time <= #{endTime}) " +
-            "OR (upgraded_at BETWEEN #{startTime} AND #{endTime})" +
+            "OR (upgraded_time BETWEEN #{startTime} AND #{endTime})" +
             ")")
     long countTrialExposedDuring(@Param("startTime") LocalDateTime startTime,
                                  @Param("endTime") LocalDateTime endTime);

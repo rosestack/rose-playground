@@ -13,10 +13,10 @@ public class OutboxRelayJob {
 
     private final OutboxService outboxService;
 
-    @Scheduled(fixedDelay = 5000, initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${rose.billing.outbox.fixedDelay:5000}", initialDelayString = "${rose.billing.outbox.initialDelay:10000}")
     public void relay() {
         try {
-            int n = outboxService.relayPending(100);
+            int n = outboxService.relayPending(Integer.parseInt(System.getProperty("rose.billing.outbox.limit", "100")));
             if (n > 0) {
                 log.info("Outbox relay sent {} events", n);
             }

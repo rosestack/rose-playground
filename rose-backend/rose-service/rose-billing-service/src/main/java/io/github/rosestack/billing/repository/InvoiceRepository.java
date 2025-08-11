@@ -73,7 +73,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(total_amount), 0) AS total")
           .eq("status", "PAID")
-          .between("paid_at", startDate, endDate);
+          .between("paid_time", startDate, endDate);
         java.util.List<java.util.Map<String, Object>> list = selectMaps(qw);
         if (list.isEmpty() || list.get(0) == null) return java.math.BigDecimal.ZERO;
         Object v = list.get(0).get("total");
@@ -101,12 +101,12 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      */
     default List<java.util.Map<String, Object>> getRevenueStatsByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
-        qw.select("DATE(paid_at) as paymentDate",
+        qw.select("DATE(paid_time) as paymentDate",
                 "COUNT(*) as paymentCount",
                 "SUM(total_amount) as dailyRevenue")
           .eq("status", "PAID")
-          .between("paid_at", startDate, endDate)
-          .groupBy("DATE(paid_at)")
+          .between("paid_time", startDate, endDate)
+          .groupBy("DATE(paid_time)")
           .orderByAsc("paymentDate");
         return selectMaps(qw);
     }
@@ -118,7 +118,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COUNT(*) AS cnt")
           .eq("status", "PAID")
-          .between("paid_at", startDate, endDate);
+          .between("paid_time", startDate, endDate);
         java.util.List<java.util.Map<String, Object>> list = selectMaps(qw);
         Object v = list.isEmpty() ? null : list.get(0).get("cnt");
         return v == null ? 0L : Long.parseLong(v.toString());
@@ -131,7 +131,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(base_amount), 0) AS total")
           .eq("status", "PAID")
-          .between("paid_at", startDate, endDate);
+          .between("paid_time", startDate, endDate);
         java.util.List<java.util.Map<String, Object>> list = selectMaps(qw);
         if (list.isEmpty() || list.get(0) == null) return java.math.BigDecimal.ZERO;
         Object v = list.get(0).get("total");
@@ -150,7 +150,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
                 "COALESCE(SUM(total_amount),0) as revenue",
                 "COALESCE(AVG(total_amount),0) as averageInvoiceValue")
           .eq("status", "PAID")
-          .between("paid_at", startDate, endDate)
+          .between("paid_time", startDate, endDate)
           .groupBy("tenant_id")
           .orderByDesc("revenue")
           .last("LIMIT " + limit);
@@ -162,7 +162,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      */
     @Select("SELECT ts.plan_id AS planId, COALESCE(SUM(i.total_amount),0) AS revenue, COUNT(*) AS invoiceCount " +
             "FROM invoice i JOIN tenant_subscription ts ON i.subscription_id = ts.id " +
-            "WHERE i.status='PAID' AND i.paid_at BETWEEN #{startDate} AND #{endDate} AND i.deleted=0 AND ts.deleted=0 " +
+            "WHERE i.status='PAID' AND i.paid_time BETWEEN #{startDate} AND #{endDate} AND i.deleted=0 AND ts.deleted=0 " +
             "GROUP BY ts.plan_id")
     List<java.util.Map<String, Object>> getRevenueByPlan(@Param("startDate") LocalDateTime startDate,
                                                          @Param("endDate") LocalDateTime endDate);

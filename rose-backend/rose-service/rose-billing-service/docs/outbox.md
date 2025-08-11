@@ -31,11 +31,11 @@ CREATE TABLE outbox (
   payload       JSON         NOT NULL,           -- 事件体（不可变）
   status        VARCHAR(16)  NOT NULL,           -- PENDING / SENT / FAILED
   retry_count   INT          NOT NULL DEFAULT 0,  -- 已重试次数
-  next_retry_at DATETIME     NULL,               -- 下次可重试时间（指数退避）
+  next_retry_time DATETIME     NULL,               -- 下次可重试时间（指数退避）
   create_time   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   update_time   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_status_time (status, next_retry_at),
-  INDEX idx_type_time (event_type, next_retry_at),
+  INDEX idx_status_time (status, next_retry_time),
+  INDEX idx_type_time (event_type, next_retry_time),
   INDEX idx_agg (aggregate_id)
 );
 ```
@@ -48,7 +48,7 @@ CREATE TABLE outbox (
 1) 业务事务内：写入业务表（如 invoice/payment/refund），同时插入 outbox(PENDING)
 2) 事务提交成功：Outbox 记录可见，Relay 任务在短时间内拉取并投递
 3) 投递成功：将 Outbox 记录置为 SENT（或删除）
-4) 投递失败：记录错误并根据退避策略设置 next_retry_at，置为 FAILED/PENDING 等待重试
+4) 投递失败：记录错误并根据退避策略设置 next_retry_time，置为 FAILED/PENDING 等待重试
 
 可靠性要点：
 - 业务写入与 Outbox 写入必须在同一数据库事务内
@@ -95,14 +95,14 @@ Relay 投递（独立定时/常驻任务）：
 ```pseudo
 function relayLoop() {
   while (true) {
-    rows = outbox.selectWhere(status in (PENDING, FAILED) and next_retry_at <= now()).limit(100)
+    rows = outbox.selectWhere(status in (PENDING, FAILED) and next_retry_time <= now()).limit(100)
     for row in rows {
       try {
         sendToMQorWebhook(row.event_type, row.payload)
         outbox.update(row.id, status='SENT')
       } catch (err) {
         backoff = computeBackoff(row.retry_count)     // 2^n * base 退避，设置上限
-        outbox.update(row.id, status='FAILED', retry_count=retry_count+1, next_retry_at=now()+backoff)
+        outbox.update(row.id, status='FAILED', retry_count=retry_count+1, next_retry_time=now()+backoff)
         logError(row.id, err)
       }
     }

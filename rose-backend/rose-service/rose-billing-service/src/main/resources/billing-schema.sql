@@ -233,11 +233,11 @@ CREATE TABLE IF NOT EXISTS `outbox` (
     `payload` JSON NOT NULL COMMENT '事件体',
     `status` VARCHAR(16) NOT NULL COMMENT 'PENDING/SENT/FAILED',
     `retry_count` INT DEFAULT 0 COMMENT '重试次数',
-    `next_retry_at` DATETIME COMMENT '下次重试时间',
+    `next_retry_time` DATETIME COMMENT '下次重试时间',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX idx_status_time (`status`,`next_retry_at`),
-    INDEX idx_type_time (`event_type`,`next_retry_at`),
+    INDEX idx_status_time (`status`,`next_retry_time`),
+    INDEX idx_type_time (`event_type`,`next_retry_time`),
     INDEX idx_agg (`aggregate_id`)
 );
 

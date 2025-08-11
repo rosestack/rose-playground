@@ -16,7 +16,8 @@ public class ReconcilePostingJob {
     @Scheduled(fixedDelayString = "${rose.billing.posting.fixedDelay:300000}", initialDelayString = "${rose.billing.posting.initialDelay:20000}")
     public void postSuccessPayments() {
         try {
-            int count = paymentPostingService.postSuccessPayments(500);
+            int limit = Integer.parseInt(System.getProperty("rose.billing.posting.limit", "500"));
+            int count = paymentPostingService.postSuccessPayments(limit);
             if (count > 0) {
                 log.info("Posting marked {} payment records", count);
             }

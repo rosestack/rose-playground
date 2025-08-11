@@ -72,7 +72,7 @@ CREATE INDEX idx_audit_detail_encrypted ON audit_log_detail (is_encrypted);
 CREATE INDEX idx_audit_detail_tenant_id ON audit_log_detail (tenant_id);
 
 -- 创建时间索引（时间范围查询）
-CREATE INDEX idx_audit_detail_created_at ON audit_log_detail (created_time);
+CREATE INDEX idx_audit_detail_created_time ON audit_log_detail (created_time);
 
 -- 复合索引：审计日志ID+详情类型（常用查询组合）
 CREATE INDEX idx_audit_detail_log_type ON audit_log_detail (audit_log_id, detail_type);
