@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import io.github.rosestack.billing.service.UserMetricsService;
 
 /**
  * 使用量自动监控切面
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 public class UsageTrackingAspect {
 
     private final BillingService billingService;
+    private final UserMetricsService userMetricsService;
 
     /**
      * 监控API调用
@@ -179,9 +181,12 @@ public class UsageTrackingAspect {
     }
 
     private int getUserCount(String tenantId) {
-        // TODO: 实现获取租户用户数的逻辑
-        // 可以通过调用UserService或直接查询数据库
-        return 1; // 占位符
+        try {
+            return userMetricsService.countTenantUsers(tenantId);
+        } catch (Exception e) {
+            log.error("获取租户用户数失败, tenantId={}", tenantId, e);
+            return 0;
+        }
     }
 }
 

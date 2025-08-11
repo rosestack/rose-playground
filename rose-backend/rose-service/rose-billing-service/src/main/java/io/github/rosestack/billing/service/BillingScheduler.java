@@ -1,6 +1,6 @@
 package io.github.rosestack.billing.service;
 
-import io.github.rosestack.billing.entity.BaseTenantSubscription;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,7 +21,6 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class BillingScheduler {
 
@@ -40,11 +38,11 @@ public class BillingScheduler {
 
         try {
             LocalDateTime now = LocalDateTime.now();
-            List<BaseTenantSubscription> dueSubscriptions = subscriptionRepository
+            List<TenantSubscription> dueSubscriptions = subscriptionRepository
                 .findByNextBillingDateBeforeAndStatusIn(now,
                     List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL));
 
-            for (BaseTenantSubscription subscription : dueSubscriptions) {
+            for (TenantSubscription subscription : dueSubscriptions) {
                 try {
                     // 试用期结束处理
                     if (subscription.getInTrial() &&
@@ -88,7 +86,7 @@ public class BillingScheduler {
                     invoiceRepository.updateById(invoice);
 
                     // 暂停相关订阅
-                    BaseTenantSubscription subscription = subscriptionRepository
+                    TenantSubscription subscription = subscriptionRepository
                         .selectById(invoice.getSubscriptionId());
                     if (subscription != null && subscription.getStatus() == SubscriptionStatus.ACTIVE) {
                         subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
@@ -187,7 +185,7 @@ public class BillingScheduler {
     /**
      * 处理试用期到期
      */
-    private void handleTrialExpiry(BaseTenantSubscription subscription) {
+    private void handleTrialExpiry(TenantSubscription subscription) {
         try {
             subscription.setInTrial(false);
             subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);

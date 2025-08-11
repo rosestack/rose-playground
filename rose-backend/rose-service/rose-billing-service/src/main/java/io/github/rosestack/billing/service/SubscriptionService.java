@@ -1,7 +1,7 @@
 package io.github.rosestack.billing.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.github.rosestack.billing.entity.BaseTenantSubscription;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.billing.exception.PlanNotFoundException;
@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -27,9 +26,8 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
-public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepository, BaseTenantSubscription> {
+public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepository, TenantSubscription> {
 
     private final TenantSubscriptionRepository subscriptionRepository;
     private final SubscriptionPlanRepository planRepository;
@@ -43,7 +41,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
      * @throws IllegalArgumentException 如果租户ID为空
      */
     @Cacheable(value = "activeSubscriptions", key = "#tenantId", unless = "#result.isEmpty()")
-    public Optional<BaseTenantSubscription> getActiveSubscription(String tenantId) {
+    public Optional<TenantSubscription> getActiveSubscription(String tenantId) {
         if (tenantId == null || tenantId.trim().isEmpty()) {
             throw new IllegalArgumentException("租户ID不能为空");
         }
@@ -66,13 +64,13 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
     /**
      * 获取租户的订阅历史
      */
-    public List<BaseTenantSubscription> getSubscriptionHistory(String tenantId) {
+    public List<TenantSubscription> getSubscriptionHistory(String tenantId) {
         // 使用 LambdaQueryWrapper 查询租户的所有订阅
         return subscriptionRepository.selectList(
-            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<BaseTenantSubscription>()
-                .eq(BaseTenantSubscription::getTenantId, tenantId)
-                .eq(BaseTenantSubscription::getDeleted, false)
-                .orderByDesc(BaseTenantSubscription::getCreatedTime)
+            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<TenantSubscription>()
+                .eq(TenantSubscription::getTenantId, tenantId)
+                .eq(TenantSubscription::getDeleted, false)
+                .orderByDesc(TenantSubscription::getCreatedTime)
         );
     }
 
@@ -82,7 +80,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
     @Transactional
     @CacheEvict(value = "activeSubscriptions", key = "#subscription.tenantId")
     public void pauseSubscription(String subscriptionId, String reason) {
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
         if (subscription == null) {
             throw new SubscriptionNotFoundException(subscriptionId);
         }
@@ -100,7 +98,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
      */
     @Transactional
     public void resumeSubscription(String subscriptionId) {
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
         if (subscription == null) {
             throw new SubscriptionNotFoundException(subscriptionId);
         }
@@ -118,7 +116,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
      */
     @Transactional
     public void upgradeSubscription(String subscriptionId, String newPlanId) {
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
         if (subscription == null) {
             throw new SubscriptionNotFoundException(subscriptionId);
         }
@@ -144,7 +142,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
     /**
      * 检查试用期是否即将到期
      */
-    public List<BaseTenantSubscription> getTrialExpiringSoon(int days) {
+    public List<TenantSubscription> getTrialExpiringSoon(int days) {
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime endDate = startDate.plusDays(days);
         return subscriptionRepository.findTrialExpiringSoon(startDate, endDate);
@@ -153,7 +151,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
     /**
      * 获取需要计费的订阅
      */
-    public List<BaseTenantSubscription> getSubscriptionsForBilling() {
+    public List<TenantSubscription> getSubscriptionsForBilling() {
         List<SubscriptionStatus> activeStatuses = List.of(
             SubscriptionStatus.ACTIVE, 
             SubscriptionStatus.TRIAL
@@ -176,13 +174,13 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         }
 
         try {
-            Optional<BaseTenantSubscription> subscriptionOpt = getActiveSubscription(tenantId);
+            Optional<TenantSubscription> subscriptionOpt = getActiveSubscription(tenantId);
             if (subscriptionOpt.isEmpty()) {
                 log.debug("租户 {} 没有活跃订阅，拒绝使用量", tenantId);
                 return false;
             }
 
-            BaseTenantSubscription subscription = subscriptionOpt.get();
+            TenantSubscription subscription = subscriptionOpt.get();
             SubscriptionPlan plan = planRepository.selectById(subscription.getPlanId());
             if (plan == null) {
                 log.warn("订阅计划不存在: planId={}", subscription.getPlanId());

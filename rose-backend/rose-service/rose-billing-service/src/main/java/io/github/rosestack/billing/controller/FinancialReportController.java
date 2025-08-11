@@ -3,7 +3,7 @@ package io.github.rosestack.billing.controller;
 import io.github.rosestack.billing.dto.*;
 import io.github.rosestack.billing.service.FinancialReportService;
 import io.github.rosestack.core.model.ApiResponse;
-import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -86,28 +86,5 @@ public class FinancialReportController {
         return ApiResponse.success(report);
     }
 
-    /**
-     * 导出财务报表（Excel格式）
-     */
-    @GetMapping("/export")
-    public void exportReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(defaultValue = "COMPREHENSIVE") String reportType,
-            HttpServletResponse response) {
 
-        try {
-            // 设置响应头
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=financial_report_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx");
-
-            // 生成并写入Excel文件
-            reportService.exportReportToExcel(startDate, endDate, reportType, response.getOutputStream());
-
-        } catch (Exception e) {
-            log.error("导出财务报表失败", e);
-            throw new RuntimeException("导出财务报表失败", e);
-        }
-    }
 }

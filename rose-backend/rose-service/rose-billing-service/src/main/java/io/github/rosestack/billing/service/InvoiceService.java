@@ -5,6 +5,9 @@ import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.exception.InvoiceNotFoundException;
 import io.github.rosestack.billing.repository.InvoiceRepository;
+import io.github.rosestack.billing.repository.PaymentRecordRepository;
+import io.github.rosestack.billing.entity.PaymentRecord;
+import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,11 +28,11 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
 
     private final InvoiceRepository invoiceRepository;
+    private final PaymentRecordRepository paymentRecordRepository;
 
     /**
      * 获取租户的账单列表
@@ -77,29 +80,59 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
         }
 
         Invoice invoice = invoiceRepository.selectById(invoiceId);
+        // 幂等性检查：若同一 transactionId 已处理则忽略
+        if (paymentRecordRepository.findByTransactionId(transactionId).isPresent()) {
+            log.warn("重复回调已忽略: invoiceId={}, transactionId={}", invoiceId, transactionId);
+            return;
+        }
+
         if (invoice == null) {
             throw new InvoiceNotFoundException(invoiceId);
         }
 
-        // 状态验证
+        // 已支付直接忽略，增强回调幂等性
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+            if (transactionId.equals(invoice.getPaymentTransactionId())) {
+                log.warn("账单已支付且交易ID一致，忽略: invoiceId={}, transactionId={}", invoiceId, transactionId);
+            } else {
+                log.warn("账单已支付但交易ID不同，忽略: invoiceId={}, existedTxId={}, incomingTxId={}",
+                        invoiceId, invoice.getPaymentTransactionId(), transactionId);
+            }
+            return;
+        }
+
+        // 状态验证（仅允许从 PENDING/OVERDUE 变为 PAID）
         if (invoice.getStatus() != InvoiceStatus.PENDING && invoice.getStatus() != InvoiceStatus.OVERDUE) {
             throw new IllegalStateException(
                 String.format("账单状态不允许支付: 当前状态=%s, 账单ID=%s", invoice.getStatus(), invoiceId));
         }
 
-        // 防重复支付检查
-        if (invoice.getPaymentTransactionId() != null && invoice.getPaymentTransactionId().equals(transactionId)) {
-            log.warn("重复的支付交易ID: invoiceId={}, transactionId={}", invoiceId, transactionId);
+        // 幂等性检查：transactionId是否已存在
+        var existing = paymentRecordRepository.findByTransactionId(transactionId);
+        if (existing.isPresent()) {
+            log.warn("重复回调已忽略: invoiceId={}, transactionId={}", invoiceId, transactionId);
             return;
         }
 
         try {
+            // 先落支付记录再更新账单，防止并发
+            PaymentRecord record = new PaymentRecord();
+            record.setId(null);
+            record.setInvoiceId(invoiceId);
+            record.setTenantId(invoice.getTenantId());
+            record.setAmount(invoice.getTotalAmount());
+            record.setPaymentMethod(paymentMethod);
+            record.setTransactionId(transactionId);
+            record.setStatus(PaymentRecordStatus.SUCCESS);
+            record.setPaidAt(LocalDateTime.now());
+            paymentRecordRepository.insert(record);
+
             invoice.setStatus(InvoiceStatus.PAID);
             invoice.setPaidAt(LocalDateTime.now());
             invoice.setPaymentMethod(paymentMethod);
             invoice.setPaymentTransactionId(transactionId);
-
             invoiceRepository.updateById(invoice);
+
             log.info("账单已标记为已支付: invoiceId={}, paymentMethod={}, transactionId={}, amount={}",
                     invoiceId, paymentMethod, transactionId, invoice.getTotalAmount());
         } catch (Exception e) {
@@ -188,13 +221,13 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
     public int processOverdueInvoices() {
         List<Invoice> overdueInvoices = invoiceRepository.findByStatusAndDueDateBefore(
                 InvoiceStatus.PENDING, LocalDate.now());
-        
+
         int count = 0;
         for (Invoice invoice : overdueInvoices) {
             markInvoiceAsOverdue(invoice.getId());
             count++;
         }
-        
+
         log.info("处理逾期账单: {} 张", count);
         return count;
     }
@@ -232,7 +265,7 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
                 .add(invoice.getUsageAmount() != null ? invoice.getUsageAmount() : BigDecimal.ZERO)
                 .subtract(invoice.getDiscountAmount() != null ? invoice.getDiscountAmount() : BigDecimal.ZERO)
                 .add(invoice.getTaxAmount() != null ? invoice.getTaxAmount() : BigDecimal.ZERO);
-        
+
         return calculatedTotal.compareTo(invoice.getTotalAmount()) == 0;
     }
 

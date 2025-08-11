@@ -8,7 +8,6 @@ import io.github.rosestack.billing.repository.UsageRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +20,6 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class FinancialReportService {
 
@@ -41,8 +39,10 @@ public class FinancialReportService {
         report.setEndDate(endDate);
         report.setGeneratedAt(LocalDateTime.now());
 
-        // 计算总收入
-        BigDecimal totalRevenue = invoiceRepository.sumPaidAmountByPeriod(startDate, endDate);
+        // 计算总收入（空值兜底为0）
+        BigDecimal totalRevenue = Optional.ofNullable(
+                invoiceRepository.sumPaidAmountByPeriod(startDate, endDate)
+        ).orElse(BigDecimal.ZERO);
         report.setTotalRevenue(totalRevenue);
 
         // 按时间维度统计收入
@@ -166,13 +166,15 @@ public class FinancialReportService {
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
         // 今日收入
-        BigDecimal todayRevenue = invoiceRepository.sumPaidAmountByPeriod(
-            now.toLocalDate().atStartOfDay(), now);
+        BigDecimal todayRevenue = Optional.ofNullable(
+            invoiceRepository.sumPaidAmountByPeriod(now.toLocalDate().atStartOfDay(), now)
+        ).orElse(BigDecimal.ZERO);
         dashboard.setTodayRevenue(todayRevenue);
 
         // 本月收入
-        BigDecimal monthRevenue = invoiceRepository.sumPaidAmountByPeriod(
-            now.toLocalDate().withDayOfMonth(1).atStartOfDay(), now);
+        BigDecimal monthRevenue = Optional.ofNullable(
+            invoiceRepository.sumPaidAmountByPeriod(now.toLocalDate().withDayOfMonth(1).atStartOfDay(), now)
+        ).orElse(BigDecimal.ZERO);
         dashboard.setMonthRevenue(monthRevenue);
 
         // 总活跃订阅
@@ -183,207 +185,227 @@ public class FinancialReportService {
         dashboard.setTrialConversionRate(calculateTrialConversionRate(thirtyDaysAgo, now));
 
         // 月度经常性收入 (MRR)
-        dashboard.setMonthlyRecurringRevenue(calculateMRR());
+        BigDecimal mrr = Optional.ofNullable(calculateMRR()).orElse(BigDecimal.ZERO);
+        dashboard.setMonthlyRecurringRevenue(mrr);
 
         // 年度经常性收入 (ARR)
-        dashboard.setAnnualRecurringRevenue(dashboard.getMonthlyRecurringRevenue().multiply(new BigDecimal("12")));
+        dashboard.setAnnualRecurringRevenue(mrr.multiply(new BigDecimal("12")));
 
         return dashboard;
     }
 
-    /**
-     * 导出报表到Excel
-     */
-    public void exportReportToExcel(LocalDateTime startDate, LocalDateTime endDate,
-                                   String reportType, java.io.OutputStream outputStream) {
-        try {
-            log.info("导出财务报表到Excel：{} - {}，类型：{}", startDate, endDate, reportType);
 
-            // TODO: 实现Excel导出功能
-            // 可以使用Apache POI库来生成Excel文件
-            // 这里提供一个基础的实现框架
-
-            ComprehensiveFinancialReport report = generateComprehensiveReport(startDate, endDate);
-
-            // 创建Excel工作簿
-            // Workbook workbook = new XSSFWorkbook();
-            //
-            // // 创建收入报表工作表
-            // Sheet revenueSheet = workbook.createSheet("收入报表");
-            // createRevenueSheet(revenueSheet, report.getRevenueReport());
-            //
-            // // 创建订阅报表工作表
-            // Sheet subscriptionSheet = workbook.createSheet("订阅报表");
-            // createSubscriptionSheet(subscriptionSheet, report.getSubscriptionReport());
-            //
-            // // 创建使用量报表工作表
-            // Sheet usageSheet = workbook.createSheet("使用量报表");
-            // createUsageSheet(usageSheet, report.getUsageReport());
-            //
-            // // 写入输出流
-            // workbook.write(outputStream);
-            // workbook.close();
-
-            // 临时实现：写入简单的CSV格式数据
-            String csvContent = generateCsvReport(report);
-            outputStream.write(csvContent.getBytes("UTF-8"));
-            outputStream.flush();
-
-            log.info("Excel报表导出完成");
-
-        } catch (Exception e) {
-            log.error("导出Excel报表失败", e);
-            throw new RuntimeException("导出Excel报表失败", e);
-        }
-    }
-
-    /**
-     * 生成CSV格式报表（临时实现）
-     */
-    private String generateCsvReport(ComprehensiveFinancialReport report) {
-        StringBuilder csv = new StringBuilder();
-
-        // CSV头部
-        csv.append("报表类型,开始日期,结束日期,生成时间\n");
-        csv.append("综合财务报表,")
-           .append(report.getStartDate())
-           .append(",")
-           .append(report.getEndDate())
-           .append(",")
-           .append(report.getGeneratedAt())
-           .append("\n\n");
-
-        // 收入数据
-        if (report.getRevenueReport() != null) {
-            csv.append("收入报表\n");
-            csv.append("总收入,").append(report.getRevenueReport().getTotalRevenue()).append("\n");
-            csv.append("增长率,").append(report.getRevenueReport().getGrowthRate()).append("\n");
-            csv.append("平均订单价值,").append(report.getRevenueReport().getAverageOrderValue()).append("\n\n");
-        }
-
-        // 订阅数据
-        if (report.getSubscriptionReport() != null) {
-            csv.append("订阅报表\n");
-            csv.append("总订阅数,").append(report.getSubscriptionReport().getTotalSubscriptions()).append("\n");
-            csv.append("活跃订阅数,").append(report.getSubscriptionReport().getActiveSubscriptions()).append("\n");
-            csv.append("试用订阅数,").append(report.getSubscriptionReport().getTrialSubscriptions()).append("\n");
-            csv.append("流失率,").append(report.getSubscriptionReport().getChurnRate()).append("\n\n");
-        }
-
-        return csv.toString();
-    }
 
     // 私有辅助方法
     private Map<String, BigDecimal> calculateRevenueByPeriod(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
-        // TODO: 实现按时间维度的收入统计
         Map<String, BigDecimal> result = new LinkedHashMap<>();
+        // 复用按天统计的底层数据，再进行聚合
+        List<Map<String, Object>> dailyStats = invoiceRepository.getRevenueStatsByPeriod(startDate, endDate);
+        if (dailyStats == null) return result;
 
-        switch (reportType.toUpperCase()) {
+        switch (reportType == null ? "DAILY" : reportType.toUpperCase()) {
+            case "MONTHLY": {
+                // key: yyyy-MM
+                for (Map<String, Object> row : dailyStats) {
+                    Object dateObj = row.get("paymentDate");
+                    Object valObj = row.get("dailyRevenue");
+                    if (dateObj == null || valObj == null) continue;
+                    String monthKey = dateObj.toString().substring(0, 7);
+                    BigDecimal val = toBigDecimal(valObj);
+                    result.merge(monthKey, val, BigDecimal::add);
+                }
+                break;
+            }
+            case "WEEKLY": {
+                // key: yyyy-ww（简单处理：按 ISO 周序号聚合，若格式不可用则退化为按7日块）
+                for (Map<String, Object> row : dailyStats) {
+                    Object dateObj = row.get("paymentDate");
+                    Object valObj = row.get("dailyRevenue");
+                    if (dateObj == null || valObj == null) continue;
+                    String dateStr = dateObj.toString();
+                    String weekKey = toWeekKey(dateStr); // 例: 2025-W32
+                    BigDecimal val = toBigDecimal(valObj);
+                    result.merge(weekKey, val, BigDecimal::add);
+                }
+                break;
+            }
             case "DAILY":
-                // 按天统计
+            default: {
+                for (Map<String, Object> row : dailyStats) {
+                    Object dateObj = row.get("paymentDate");
+                    Object valObj = row.get("dailyRevenue");
+                    if (dateObj == null || valObj == null) continue;
+                    result.put(dateObj.toString(), toBigDecimal(valObj));
+                }
                 break;
-            case "WEEKLY":
-                // 按周统计
-                break;
-            case "MONTHLY":
-                // 按月统计
-                break;
-            default:
-                // 默认按天统计
-                break;
+            }
         }
-
         return result;
     }
 
     private Map<String, BigDecimal> calculateRevenueByPlan(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现按订阅计划的收入统计
-        return new HashMap<>();
+        Map<String, BigDecimal> map = new LinkedHashMap<>();
+        List<Map<String, Object>> rows = invoiceRepository.getRevenueByPlan(startDate, endDate);
+        if (rows == null) return map;
+        for (Map<String, Object> r : rows) {
+            String planId = Objects.toString(r.get("planId"), null);
+            BigDecimal revenue = toBigDecimal(r.get("revenue"));
+            if (planId != null) map.put(planId, revenue);
+        }
+        return map;
     }
 
     private List<TenantRevenueData> calculateTopTenantsByRevenue(LocalDateTime startDate, LocalDateTime endDate, int limit) {
-        // TODO: 实现Top租户收入统计
-        return new ArrayList<>();
+        List<Map<String, Object>> rows = invoiceRepository.getTopTenantsByRevenue(startDate, endDate, limit);
+        List<TenantRevenueData> list = new ArrayList<>();
+        if (rows == null) return list;
+        for (Map<String, Object> row : rows) {
+            TenantRevenueData d = new TenantRevenueData();
+            d.setTenantId(Objects.toString(row.get("tenantId"), null));
+            d.setRevenue(toBigDecimal(row.get("revenue")));
+            Object cnt = row.get("invoiceCount");
+            d.setInvoiceCount(cnt == null ? 0L : Long.parseLong(cnt.toString()));
+            d.setAverageInvoiceValue(toBigDecimal(row.get("averageInvoiceValue")));
+            list.add(d);
+        }
+        return list;
     }
 
     private BigDecimal calculateGrowthRate(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
-        // TODO: 实现增长率计算
-        return BigDecimal.ZERO;
+        // 简化：与上一同等时长周期对比（支持 DAILY/WEEKLY/MONTHLY 任意类型，均以时间跨度为准）
+        long days = java.time.Duration.between(startDate, endDate).toDays();
+        if (days <= 0) return BigDecimal.ZERO;
+        LocalDateTime prevEnd = startDate;
+        LocalDateTime prevStart = startDate.minusDays(days);
+        BigDecimal current = invoiceRepository.sumPaidAmountByPeriod(startDate, endDate);
+        BigDecimal previous = invoiceRepository.sumPaidAmountByPeriod(prevStart, prevEnd);
+        if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
+            return current == null || current.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : new BigDecimal("1.00");
+        }
+        return current.subtract(previous)
+                .divide(previous, 4, java.math.RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateAverageOrderValue(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现平均订单价值计算
-        return BigDecimal.ZERO;
+        BigDecimal total = invoiceRepository.sumPaidAmountByPeriod(startDate, endDate);
+        long count = invoiceRepository.countPaidInvoicesByPeriod(startDate, endDate);
+        if (count == 0) return BigDecimal.ZERO;
+        return total.divide(BigDecimal.valueOf(count), 2, java.math.RoundingMode.HALF_UP);
     }
 
     private Map<String, Long> calculateSubscriptionsByPlan() {
-        // TODO: 实现按计划统计订阅数
-        return new HashMap<>();
+        Map<String, Long> map = new LinkedHashMap<>();
+        List<Map<String, Object>> rows = subscriptionRepository.countSubscriptionsByPlan();
+        if (rows == null) return map;
+        for (Map<String, Object> r : rows) {
+            String planId = Objects.toString(r.get("planId"), null);
+            Object cnt = r.get("cnt");
+            if (planId != null) map.put(planId, cnt == null ? 0L : Long.parseLong(cnt.toString()));
+        }
+        return map;
     }
 
     private BigDecimal calculateChurnRate(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现流失率计算
-        return BigDecimal.ZERO;
+        // churn = 取消数 / 期初活跃订阅数（更精确：按期初活跃订阅数计算）
+        long cancelled = subscriptionRepository.countCancelledSubscriptions(startDate, endDate);
+        long activeAtStart = subscriptionRepository.countActiveAtDate(startDate);
+        if (activeAtStart == 0) return BigDecimal.ZERO;
+        return new BigDecimal(cancelled).divide(new BigDecimal(activeAtStart), 4, java.math.RoundingMode.HALF_UP);
     }
 
     private long calculateNewSubscriptions(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现新增订阅统计
-        return 0;
+        return subscriptionRepository.countNewSubscriptions(startDate, endDate);
     }
 
     private Map<String, BigDecimal> calculateUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
         log.debug("计算使用量统计: {} - {}", startDate, endDate);
-
+        Map<String, BigDecimal> result = new LinkedHashMap<>();
         try {
-            // 聚合所有租户的使用量统计
-            Map<String, BigDecimal> result = new HashMap<>();
-
-            // 这里简化实现，实际应该查询所有租户的数据
-            // 由于没有全局统计方法，返回空结果
-            log.warn("使用量统计功能需要进一步实现全局查询方法");
-
+            List<Map<String, Object>> rows = usageRepository.sumUsageByType(startDate, endDate);
+            if (rows != null) {
+                for (Map<String, Object> r : rows) {
+                    String metric = Objects.toString(r.get("metricType"), null);
+                    BigDecimal qty = toBigDecimal(r.get("totalQuantity"));
+                    if (metric != null) result.put(metric, qty);
+                }
+            }
             return result;
         } catch (Exception e) {
             log.error("计算使用量统计失败", e);
-            return new HashMap<>();
+            return result;
         }
     }
 
     private List<TenantUsageData> calculateTopTenantsByUsage(LocalDateTime startDate, LocalDateTime endDate, int limit) {
-        // TODO: 实现Top租户使用量统计
-        return new ArrayList<>();
+        List<TenantUsageData> list = new ArrayList<>();
+        List<Map<String, Object>> rows = usageRepository.getTopTenantsByUsage(startDate, endDate, limit);
+        if (rows == null) return list;
+        for (Map<String, Object> r : rows) {
+            TenantUsageData d = new TenantUsageData();
+            d.setTenantId(Objects.toString(r.get("tenantId"), null));
+            d.setTotalUsage(toBigDecimal(r.get("totalUsage")));
+            list.add(d);
+        }
+        return list;
     }
 
     private Map<String, BigDecimal> calculateUsageTrend(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现使用量趋势计算
-        return new HashMap<>();
+        Map<String, BigDecimal> trend = new LinkedHashMap<>();
+        List<Map<String, Object>> rows = usageRepository.sumDailyUsage(startDate, endDate);
+        if (rows != null) {
+            for (Map<String, Object> r : rows) {
+                String day = Objects.toString(r.get("recordDate"), null);
+                BigDecimal qty = toBigDecimal(r.get("dailyUsage"));
+                if (day != null) trend.put(day, qty);
+            }
+        }
+        return trend;
     }
 
     private FinancialKeyMetrics calculateKeyMetrics(LocalDateTime startDate, LocalDateTime endDate) {
         FinancialKeyMetrics metrics = new FinancialKeyMetrics();
-
         // 客户获取成本 (CAC)
         metrics.setCustomerAcquisitionCost(BigDecimal.ZERO);
-
         // 客户生命周期价值 (LTV)
         metrics.setCustomerLifetimeValue(BigDecimal.ZERO);
-
         // LTV/CAC 比率
         metrics.setLtvToCacRatio(BigDecimal.ZERO);
-
         // 净收入留存率 (NRR)
         metrics.setNetRevenueRetention(BigDecimal.ZERO);
-
         return metrics;
     }
 
     private BigDecimal calculateTrialConversionRate(LocalDateTime startDate, LocalDateTime endDate) {
-        // TODO: 实现试用转化率计算
-        return BigDecimal.ZERO;
+        long converted = subscriptionRepository.countTrialConverted(startDate, endDate);
+        long exposed = subscriptionRepository.countTrialExposedDuring(startDate, endDate);
+        if (exposed == 0) return BigDecimal.ZERO;
+        return new BigDecimal(converted).divide(new BigDecimal(exposed), 4, java.math.RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateMRR() {
-        // TODO: 实现月度经常性收入计算
-        return BigDecimal.ZERO;
+        // MRR 近似：统计最近一个计费月内所有已支付账单的 base_amount 之和（周期性收入部分）
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime monthStart = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
+        return invoiceRepository.sumBaseAmountByPeriod(monthStart, now);
+    }
+
+    // 安全转换工具方法
+    private BigDecimal toBigDecimal(Object val) {
+        if (val == null) return BigDecimal.ZERO;
+        if (val instanceof BigDecimal bd) return bd;
+        try { return new BigDecimal(val.toString()); } catch (Exception e) { return BigDecimal.ZERO; }
+    }
+
+    // 简单周Key计算：yyyy-Www（ISO 周序号）
+    private String toWeekKey(String isoDate) {
+        try {
+            java.time.LocalDate d = java.time.LocalDate.parse(isoDate);
+            java.time.temporal.WeekFields wf = java.time.temporal.WeekFields.ISO;
+            int week = d.get(wf.weekOfWeekBasedYear());
+            int year = d.get(wf.weekBasedYear());
+            return String.format("%d-W%02d", year, week);
+        } catch (Exception e) {
+            return isoDate;
+        }
     }
 }

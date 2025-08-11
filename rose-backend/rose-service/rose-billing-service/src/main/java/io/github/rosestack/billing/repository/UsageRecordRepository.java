@@ -114,4 +114,34 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
             "GROUP BY metric_type")
     List<java.util.Map<String, Object>> getCurrentPeriodUsageSummary(@Param("tenantId") String tenantId,
                                                                     @Param("periodStart") LocalDateTime periodStart);
+
+    /**
+     * 获取时间段内各计量类型的全量使用量汇总
+     */
+    @Select("SELECT metric_type as metricType, COALESCE(SUM(quantity),0) as totalQuantity " +
+            "FROM usage_record WHERE record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
+            "GROUP BY metric_type")
+    List<java.util.Map<String, Object>> sumUsageByType(@Param("startDate") LocalDateTime startDate,
+                                                       @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * 获取时间段内租户使用量 Top N（按总量）
+     */
+    @Select("SELECT tenant_id as tenantId, COALESCE(SUM(quantity),0) as totalUsage " +
+            "FROM usage_record WHERE record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
+            "GROUP BY tenant_id ORDER BY totalUsage DESC LIMIT #{limit}")
+    List<java.util.Map<String, Object>> getTopTenantsByUsage(@Param("startDate") LocalDateTime startDate,
+                                                            @Param("endDate") LocalDateTime endDate,
+                                                            @Param("limit") int limit);
+
+    /**
+     * 获取时间段内的全局每日使用量趋势
+     */
+    @Select("SELECT DATE(record_time) as recordDate, COALESCE(SUM(quantity),0) as dailyUsage " +
+            "FROM usage_record WHERE record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
+            "GROUP BY DATE(record_time) ORDER BY recordDate")
+    List<java.util.Map<String, Object>> sumDailyUsage(@Param("startDate") LocalDateTime startDate,
+                                                      @Param("endDate") LocalDateTime endDate);
+
+
 }

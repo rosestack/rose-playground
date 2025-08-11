@@ -151,7 +151,7 @@ public class PaymentGatewayService {
                 record.setPaidAt(LocalDateTime.now());
             }
 
-            paymentRecordRepository.updateById(record);
+            paymentRecordRepository.insert(record);
         } catch (Exception e) {
             log.error("记录支付结果失败", e);
         }

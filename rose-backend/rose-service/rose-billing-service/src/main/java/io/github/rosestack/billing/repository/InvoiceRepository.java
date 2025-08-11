@@ -96,6 +96,43 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
                                                                @Param("endDate") LocalDateTime endDate);
 
     /**
+     * 统计时间段内已支付账单数量
+     */
+    @Select("SELECT COUNT(*) FROM invoice WHERE status = 'PAID' AND paid_at BETWEEN #{startDate} AND #{endDate} AND deleted = 0")
+    long countPaidInvoicesByPeriod(@Param("startDate") LocalDateTime startDate,
+                                   @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * 统计时间段内基础订阅收入（base_amount）
+     */
+    @Select("SELECT COALESCE(SUM(base_amount), 0) FROM invoice WHERE status = 'PAID' AND paid_at BETWEEN #{startDate} AND #{endDate} AND deleted = 0")
+    BigDecimal sumBaseAmountByPeriod(@Param("startDate") LocalDateTime startDate,
+                                     @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * 统计指定时间段内 Top N 租户收入
+     */
+    @Select("SELECT tenant_id as tenantId, COUNT(*) as invoiceCount, COALESCE(SUM(total_amount),0) as revenue, COALESCE(AVG(total_amount),0) as averageInvoiceValue " +
+            "FROM invoice WHERE status='PAID' AND paid_at BETWEEN #{startDate} AND #{endDate} AND deleted=0 " +
+            "GROUP BY tenant_id ORDER BY revenue DESC LIMIT #{limit}")
+    List<java.util.Map<String, Object>> getTopTenantsByRevenue(@Param("startDate") LocalDateTime startDate,
+                                                               @Param("endDate") LocalDateTime endDate,
+                                                               @Param("limit") int limit);
+
+    /**
+     * 统计时间段内按订阅计划的收入
+     */
+    @Select("SELECT ts.plan_id AS planId, COALESCE(SUM(i.total_amount),0) AS revenue, COUNT(*) AS invoiceCount " +
+            "FROM invoice i JOIN tenant_subscription ts ON i.subscription_id = ts.id " +
+            "WHERE i.status='PAID' AND i.paid_at BETWEEN #{startDate} AND #{endDate} AND i.deleted=0 AND ts.deleted=0 " +
+            "GROUP BY ts.plan_id")
+    List<java.util.Map<String, Object>> getRevenueByPlan(@Param("startDate") LocalDateTime startDate,
+                                                         @Param("endDate") LocalDateTime endDate);
+
+
+
+
+    /**
      * 查找逾期账单
      */
     default List<Invoice> findOverdueInvoices(LocalDate currentDate) {

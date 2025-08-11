@@ -22,7 +22,6 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord> {
 

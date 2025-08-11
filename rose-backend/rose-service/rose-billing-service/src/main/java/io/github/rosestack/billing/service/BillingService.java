@@ -1,10 +1,12 @@
 package io.github.rosestack.billing.service;
 
-import io.github.rosestack.billing.entity.BaseTenantSubscription;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
+import io.github.rosestack.billing.entity.PaymentRecord;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
+import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.billing.exception.PlanNotFoundException;
 import io.github.rosestack.billing.exception.SubscriptionNotFoundException;
 import io.github.rosestack.billing.exception.UsageLimitExceededException;
@@ -12,10 +14,10 @@ import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import io.github.rosestack.billing.repository.PaymentRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -32,7 +34,6 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(prefix = "rose.billing", name = "enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class BillingService {
 
@@ -59,7 +60,7 @@ public class BillingService {
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
-    public BaseTenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
+    public TenantSubscription createSubscription(String tenantId, String planId, Boolean startTrial) {
         // 参数验证
         if (tenantId == null || tenantId.trim().isEmpty()) {
             throw new IllegalArgumentException("租户ID不能为空");
@@ -73,7 +74,7 @@ public class BillingService {
             throw new PlanNotFoundException(planId);
         }
 
-        BaseTenantSubscription subscription = new BaseTenantSubscription();
+        TenantSubscription subscription = new TenantSubscription();
         subscription.setId(UUID.randomUUID().toString());
         subscription.setTenantId(tenantId);
         subscription.setPlanId(planId);
@@ -108,7 +109,7 @@ public class BillingService {
     /**
      * 获取租户订阅信息
      */
-    public BaseTenantSubscription getTenantSubscription(String tenantId) {
+    public TenantSubscription getTenantSubscription(String tenantId) {
         return subscriptionRepository.findByTenantId(tenantId)
             .orElseThrow(() -> new SubscriptionNotFoundException("tenant:" + tenantId));
     }
@@ -117,8 +118,8 @@ public class BillingService {
      * 更改订阅计划
      */
     @Transactional
-    public BaseTenantSubscription changePlan(String subscriptionId, String newPlanId) {
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+    public TenantSubscription changePlan(String subscriptionId, String newPlanId) {
+        TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
         if (subscription == null) {
             throw new SubscriptionNotFoundException(subscriptionId);
         }
@@ -140,7 +141,7 @@ public class BillingService {
      */
     @Transactional
     public void cancelSubscription(String subscriptionId, String reason) {
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
         if (subscription == null) {
             throw new SubscriptionNotFoundException(subscriptionId);
         }
@@ -159,7 +160,7 @@ public class BillingService {
      */
     @Transactional
     public Invoice generateInvoice(String subscriptionId) {
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
+        TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
         if (subscription == null) {
             throw new SubscriptionNotFoundException(subscriptionId);
         }
@@ -271,7 +272,7 @@ public class BillingService {
         Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
 
         // 激活或续期订阅
-        BaseTenantSubscription subscription = subscriptionRepository.selectById(invoice.getSubscriptionId());
+        TenantSubscription subscription = subscriptionRepository.selectById(invoice.getSubscriptionId());
         if (subscription == null) {
             throw new SubscriptionNotFoundException(invoice.getSubscriptionId());
         }
@@ -295,7 +296,7 @@ public class BillingService {
      * 检查使用量限制
      */
     public boolean checkUsageLimit(String tenantId, String metricType) {
-        BaseTenantSubscription subscription = subscriptionRepository.findActiveByTenantId(tenantId)
+        TenantSubscription subscription = subscriptionRepository.findActiveByTenantId(tenantId)
             .orElse(null);
 
         if (subscription == null) {
@@ -373,7 +374,7 @@ public class BillingService {
         return "INV-" + System.currentTimeMillis();
     }
 
-    private BigDecimal calculateBaseAmount(BaseTenantSubscription subscription, SubscriptionPlan plan) {
+    private BigDecimal calculateBaseAmount(TenantSubscription subscription, SubscriptionPlan plan) {
         if (subscription.getInTrial()) {
             return BigDecimal.ZERO;
         }
@@ -385,7 +386,7 @@ public class BillingService {
         return pricingCalculator.calculateUsageAmount(tenantId, periodStart, periodEnd, plan);
     }
 
-    private BigDecimal calculateDiscount(BaseTenantSubscription subscription, BigDecimal amount) {
+    private BigDecimal calculateDiscount(TenantSubscription subscription, BigDecimal amount) {
         // 实现折扣逻辑
         // 1. 检查长期订阅折扣
         if (subscription.getAutoRenew()) {

@@ -1,6 +1,5 @@
 package io.github.rosestack.billing.service;
 
-import io.github.rosestack.billing.config.BillingProperties;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.enums.BillingType;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
@@ -18,7 +17,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
@@ -31,9 +29,6 @@ class PricingCalculatorTest {
 
     @Mock
     private UsageRecordRepository usageRepository;
-
-    @Mock
-    private BillingProperties billingProperties;
 
     @InjectMocks
     private PricingCalculator pricingCalculator;
@@ -60,8 +55,7 @@ class PricingCalculatorTest {
         usagePricing.put("storage_gb", new BigDecimal("0.10"));
         testPlan.setUsagePricing(usagePricing);
 
-        // Mock BillingProperties - 使用 lenient 避免不必要的 stubbing 警告
-        lenient().when(billingProperties.getDefaultTaxRate()).thenReturn(new BigDecimal("0.08"));
+        // 使用默认税率（PricingCalculator.defaultTaxRate = 0.10），无需 Mock
     }
 
     @Test
@@ -128,8 +122,8 @@ class PricingCalculatorTest {
         BigDecimal amount = new BigDecimal("100.00");
         
         BigDecimal result = pricingCalculator.calculateTax(amount);
-        
-        assertEquals(new BigDecimal("8.00"), result);
+
+        assertEquals(new BigDecimal("10.00"), result);
     }
 
     @Test

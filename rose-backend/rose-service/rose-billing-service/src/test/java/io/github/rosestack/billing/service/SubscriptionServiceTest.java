@@ -1,6 +1,6 @@
 package io.github.rosestack.billing.service;
 
-import io.github.rosestack.billing.entity.BaseTenantSubscription;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.billing.exception.PlanNotFoundException;
@@ -42,7 +42,7 @@ class SubscriptionServiceTest {
     @InjectMocks
     private SubscriptionService subscriptionService;
 
-    private BaseTenantSubscription testSubscription;
+    private TenantSubscription testSubscription;
     private SubscriptionPlan testPlan;
     private String testTenantId;
     private String testSubscriptionId;
@@ -52,7 +52,7 @@ class SubscriptionServiceTest {
         testTenantId = "tenant-123";
         testSubscriptionId = "subscription-123";
 
-        testSubscription = new BaseTenantSubscription();
+        testSubscription = new TenantSubscription();
         testSubscription.setId(testSubscriptionId);
         testSubscription.setTenantId(testTenantId);
         testSubscription.setPlanId("plan-123");
@@ -69,7 +69,7 @@ class SubscriptionServiceTest {
         when(subscriptionRepository.findActiveByTenantId(testTenantId))
                 .thenReturn(Optional.of(testSubscription));
 
-        Optional<BaseTenantSubscription> result = subscriptionService.getActiveSubscription(testTenantId);
+        Optional<TenantSubscription> result = subscriptionService.getActiveSubscription(testTenantId);
 
         assertTrue(result.isPresent());
         assertEquals(testSubscriptionId, result.get().getId());
@@ -81,7 +81,7 @@ class SubscriptionServiceTest {
         when(subscriptionRepository.findActiveByTenantId(testTenantId))
                 .thenReturn(Optional.empty());
 
-        Optional<BaseTenantSubscription> result = subscriptionService.getActiveSubscription(testTenantId);
+        Optional<TenantSubscription> result = subscriptionService.getActiveSubscription(testTenantId);
 
         assertFalse(result.isPresent());
     }

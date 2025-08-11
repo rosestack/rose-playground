@@ -1,6 +1,5 @@
 package io.github.rosestack.billing.service;
 
-import io.github.rosestack.billing.config.BillingProperties;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.enums.BillingType;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
@@ -24,9 +23,9 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class PricingCalculator {
+    public static final BigDecimal defaultTaxRate = new BigDecimal("0.1");
 
     private final UsageRecordRepository usageRepository;
-    private final BillingProperties billingProperties;
 
     /**
      * 计算使用量费用
@@ -164,8 +163,7 @@ public class PricingCalculator {
      * 计算税费
      */
     public BigDecimal calculateTax(BigDecimal amount) {
-        BigDecimal taxRate = billingProperties.getDefaultTaxRate();
-        return amount.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        return amount.multiply(defaultTaxRate).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
