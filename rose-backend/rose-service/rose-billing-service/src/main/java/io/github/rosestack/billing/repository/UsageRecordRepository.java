@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.UsageRecord;
 import org.apache.ibatis.annotations.Mapper;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,9 +27,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
             LocalDateTime endTime) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("COALESCE(SUM(quantity), 0) AS total")
-          .eq("tenant_id", tenantId)
-          .eq("metric_type", metricType)
-          .between("record_time", startTime, endTime);
+                .eq("tenant_id", tenantId)
+                .eq("metric_type", metricType)
+                .between("record_time", startTime, endTime);
         java.util.List<java.util.Map<String, Object>> list = selectMaps(qw);
         if (list.isEmpty() || list.get(0) == null) return java.math.BigDecimal.ZERO;
         Object v = list.get(0).get("total");
@@ -65,17 +64,17 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 标记使用量为已计费
      */
     default int markAsBilled(String tenantId,
-                              LocalDateTime startTime,
-                              LocalDateTime endTime,
-                              String invoiceId,
-                              LocalDateTime billedAt) {
+                             LocalDateTime startTime,
+                             LocalDateTime endTime,
+                             String invoiceId,
+                             LocalDateTime billedAt) {
         com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UsageRecord> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
         uw.set("billed", 1)
-          .set("billed_at", billedAt)
-          .set("invoice_id", invoiceId)
-          .eq("tenant_id", tenantId)
-          .between("record_time", startTime, endTime)
-          .eq("billed", 0);
+                .set("billed_time", billedAt)
+                .set("invoice_id", invoiceId)
+                .eq("tenant_id", tenantId)
+                .between("record_time", startTime, endTime)
+                .eq("billed", 0);
         return update(null, uw);
     }
 
@@ -85,8 +84,8 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default int deleteOldBilledRecords(LocalDateTime cutoffDate) {
         com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UsageRecord> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
         uw.set("deleted", 1)
-          .lt("record_time", cutoffDate)
-          .eq("billed", 1);
+                .lt("record_time", cutoffDate)
+                .eq("billed", 1);
         return update(null, uw);
     }
 
@@ -96,9 +95,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default List<java.util.Map<String, Object>> getMonthlyUsageStats(String tenantId, LocalDateTime monthStart) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("metric_type as metricType", "SUM(quantity) as totalQuantity")
-          .eq("tenant_id", tenantId)
-          .ge("record_time", monthStart)
-          .groupBy("metric_type");
+                .eq("tenant_id", tenantId)
+                .ge("record_time", monthStart)
+                .groupBy("metric_type");
         return selectMaps(qw);
     }
 
@@ -108,12 +107,12 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default List<java.util.Map<String, Object>> getUsageTrendStats(String tenantId, LocalDateTime startDate, LocalDateTime endDate) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("DATE(record_time) as recordDate",
-                "metric_type as metricType",
-                "SUM(quantity) as dailyQuantity")
-          .eq("tenant_id", tenantId)
-          .between("record_time", startDate, endDate)
-          .groupBy("DATE(record_time)", "metric_type")
-          .orderByAsc("recordDate", "metricType");
+                        "metric_type as metricType",
+                        "SUM(quantity) as dailyQuantity")
+                .eq("tenant_id", tenantId)
+                .between("record_time", startDate, endDate)
+                .groupBy("DATE(record_time)", "metric_type")
+                .orderByAsc("recordDate", "metricType");
         return selectMaps(qw);
     }
 
@@ -123,13 +122,13 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default List<java.util.Map<String, Object>> getCurrentPeriodUsageSummary(String tenantId, LocalDateTime periodStart) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("metric_type as metricType",
-                "COUNT(*) as recordCount",
-                "SUM(quantity) as totalQuantity",
-                "AVG(quantity) as avgQuantity",
-                "MAX(quantity) as maxQuantity")
-          .eq("tenant_id", tenantId)
-          .ge("record_time", periodStart)
-          .groupBy("metric_type");
+                        "COUNT(*) as recordCount",
+                        "SUM(quantity) as totalQuantity",
+                        "AVG(quantity) as avgQuantity",
+                        "MAX(quantity) as maxQuantity")
+                .eq("tenant_id", tenantId)
+                .ge("record_time", periodStart)
+                .groupBy("metric_type");
         return selectMaps(qw);
     }
 
@@ -139,8 +138,8 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default List<java.util.Map<String, Object>> sumUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("metric_type as metricType", "COALESCE(SUM(quantity),0) as totalQuantity")
-          .between("record_time", startDate, endDate)
-          .groupBy("metric_type");
+                .between("record_time", startDate, endDate)
+                .groupBy("metric_type");
         return selectMaps(qw);
     }
 
@@ -150,10 +149,10 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default List<java.util.Map<String, Object>> getTopTenantsByUsage(LocalDateTime startDate, LocalDateTime endDate, int limit) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("tenant_id as tenantId", "COALESCE(SUM(quantity),0) as totalUsage")
-          .between("record_time", startDate, endDate)
-          .groupBy("tenant_id")
-          .orderByDesc("totalUsage")
-          .last("LIMIT " + limit);
+                .between("record_time", startDate, endDate)
+                .groupBy("tenant_id")
+                .orderByDesc("totalUsage")
+                .last("LIMIT " + limit);
         return selectMaps(qw);
     }
 
@@ -163,11 +162,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     default List<java.util.Map<String, Object>> sumDailyUsage(LocalDateTime startDate, LocalDateTime endDate) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         qw.select("DATE(record_time) as recordDate", "COALESCE(SUM(quantity),0) as dailyUsage")
-          .between("record_time", startDate, endDate)
-          .groupBy("DATE(record_time)")
-          .orderByAsc("recordDate");
+                .between("record_time", startDate, endDate)
+                .groupBy("DATE(record_time)")
+                .orderByAsc("recordDate");
         return selectMaps(qw);
     }
-
-
 }

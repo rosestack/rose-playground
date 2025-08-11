@@ -10,9 +10,9 @@ import java.util.Map; /**
  */
 @Data
 public class UsageReport {
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private LocalDateTime generatedAt;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime generatedTime;
     private Map<String, BigDecimal> usageByType;
     private List<TenantUsageData> topTenantsByUsage;
     private Map<String, BigDecimal> usageTrend;

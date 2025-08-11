@@ -9,16 +9,16 @@ public class PaymentSucceededEvent {
     private final String transactionId;
     private final String paymentMethod;
     private final BigDecimal amount;
-    private final LocalDateTime occurredAt;
+    private final LocalDateTime occurredTime;
 
     public PaymentSucceededEvent(String tenantId, String invoiceId, String transactionId,
-                                 String paymentMethod, BigDecimal amount, LocalDateTime occurredAt) {
+                                 String paymentMethod, BigDecimal amount, LocalDateTime occurredTime) {
         this.tenantId = tenantId;
         this.invoiceId = invoiceId;
         this.transactionId = transactionId;
         this.paymentMethod = paymentMethod;
         this.amount = amount;
-        this.occurredAt = occurredAt;
+        this.occurredTime = occurredTime;
     }
 
     public String getTenantId() { return tenantId; }
@@ -26,6 +26,6 @@ public class PaymentSucceededEvent {
     public String getTransactionId() { return transactionId; }
     public String getPaymentMethod() { return paymentMethod; }
     public BigDecimal getAmount() { return amount; }
-    public LocalDateTime getOccurredAt() { return occurredAt; }
+    public LocalDateTime getOccurredTime() { return occurredTime; }
 }
 

@@ -13,5 +13,5 @@ public class RecentTransaction {
     private String tenantName;
     private BigDecimal amount;
     private String status;
-    private LocalDateTime paidAt;
+    private LocalDateTime paidTime;
 }

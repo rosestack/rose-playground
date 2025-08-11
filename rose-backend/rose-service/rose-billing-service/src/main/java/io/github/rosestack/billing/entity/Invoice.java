@@ -91,7 +91,7 @@ public class Invoice extends BaseTenantEntity {
     /**
      * 支付时间
      */
-    private LocalDateTime paidAt;
+    private LocalDateTime paidTime;
 
     /**
      * 支付方式

@@ -38,9 +38,9 @@ public class RefundController {
     public ApiResponse<Void> handleRefundCallback(@PathVariable String paymentMethod,
                                                   @RequestBody Map<String, Object> callbackData) {
         boolean ok = paymentGatewayService.verifyRefundCallback(paymentMethod, callbackData);
-        if (!ok) return ApiResponse.error("invalid refund callback");
+        if (!ok) return ApiResponse.error(io.github.rosestack.billing.enums.BillingErrorCode.INVALID_REFUND_CALLBACK.getCode(), io.github.rosestack.billing.enums.BillingErrorCode.INVALID_REFUND_CALLBACK.getMessage());
         boolean updated = refundService.processRefundCallback(paymentMethod, callbackData);
-        return updated ? ApiResponse.success() : ApiResponse.error("callback update failed");
+        return updated ? ApiResponse.success() : ApiResponse.error(io.github.rosestack.billing.enums.BillingErrorCode.CALLBACK_UPDATE_FAILED.getCode(), io.github.rosestack.billing.enums.BillingErrorCode.CALLBACK_UPDATE_FAILED.getMessage());
     }
 
     @Data

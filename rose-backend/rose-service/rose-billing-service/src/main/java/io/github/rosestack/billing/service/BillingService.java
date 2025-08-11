@@ -83,23 +83,23 @@ public class BillingService {
         subscription.setId(UUID.randomUUID().toString());
         subscription.setTenantId(tenantId);
         subscription.setPlanId(planId);
-        subscription.setStartDate(LocalDateTime.now());
+        subscription.setStartTime(LocalDateTime.now());
         subscription.setAutoRenew(true);
 
         if (startTrial && plan.getTrialDays() != null && plan.getTrialDays() > 0) {
             // 设置试用期
             subscription.setInTrial(true);
-            subscription.setTrialEndDate(LocalDateTime.now().plusDays(plan.getTrialDays()));
+            subscription.setTrialEndTime(LocalDateTime.now().plusDays(plan.getTrialDays()));
             subscription.setStatus(SubscriptionStatus.TRIAL);
-            subscription.setNextBillingDate(subscription.getTrialEndDate());
+            subscription.setNextBillingTime(subscription.getTrialEndTime());
         } else {
             // 直接激活订阅
             subscription.setInTrial(false);
             subscription.setStatus(SubscriptionStatus.ACTIVE);
-            subscription.setNextBillingDate(calculateNextBillingDate(plan));
+            subscription.setNextBillingTime(calculateNextBillingTime(plan));
         }
 
-        subscription.setEndDate(subscription.getNextBillingDate());
+        subscription.setEndTime(subscription.getNextBillingTime());
         subscription.setCurrentPeriodAmount(plan.getBasePrice());
 
         subscriptionRepository.insert(subscription);
@@ -152,7 +152,7 @@ public class BillingService {
         }
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(LocalDateTime.now());
+        subscription.setCancelledTime(LocalDateTime.now());
         subscription.setCancellationReason(reason);
 
         subscriptionRepository.updateById(subscription);
@@ -175,8 +175,8 @@ public class BillingService {
             throw new PlanNotFoundException(subscription.getPlanId());
         }
 
-        LocalDate periodStart = subscription.getNextBillingDate().minusDays(plan.getBillingCycle()).toLocalDate();
-        LocalDate periodEnd = subscription.getNextBillingDate().toLocalDate().minusDays(1);
+        LocalDate periodStart = subscription.getNextBillingTime().minusDays(plan.getBillingCycle()).toLocalDate();
+        LocalDate periodEnd = subscription.getNextBillingTime().toLocalDate().minusDays(1);
 
         Invoice invoice = new Invoice();
         invoice.setId(UUID.randomUUID().toString());
@@ -212,7 +212,7 @@ public class BillingService {
         invoiceRepository.insert(invoice);
 
         // 更新订阅下次计费时间
-        subscription.setNextBillingDate(calculateNextBillingDate(plan));
+        subscription.setNextBillingTime(calculateNextBillingTime(plan));
         subscriptionRepository.updateById(subscription);
 
         // 发送账单通知
@@ -320,7 +320,7 @@ public class BillingService {
         }
 
         // 获取当前计费周期的使用量
-        LocalDateTime periodStart = subscription.getNextBillingDate().minusDays(plan.getBillingCycle());
+        LocalDateTime periodStart = subscription.getNextBillingTime().minusDays(plan.getBillingCycle());
         BigDecimal currentUsage = usageRepository.sumUsageByTenantAndMetricAndPeriod(
             tenantId, metricType, periodStart, LocalDateTime.now());
 
@@ -376,7 +376,7 @@ public class BillingService {
     }
 
     // 私有辅助方法
-    private LocalDateTime calculateNextBillingDate(SubscriptionPlan plan) {
+    private LocalDateTime calculateNextBillingTime(SubscriptionPlan plan) {
         return LocalDateTime.now().plusDays(plan.getBillingCycle());
     }
 

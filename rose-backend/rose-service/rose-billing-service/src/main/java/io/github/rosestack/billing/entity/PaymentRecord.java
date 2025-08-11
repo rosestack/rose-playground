@@ -35,11 +35,11 @@ public class PaymentRecord extends BaseTenantEntity{
 
     // 入账标记
     private Boolean posted;            // 是否已记总账/完成账务入账
-    private LocalDateTime postedAt;
+    private LocalDateTime postedTime;
 
     private Map<String, Object> gatewayResponse;
-    private LocalDateTime paidAt;
-    private LocalDateTime refundedAt;
+    private LocalDateTime paidTime;
+    private LocalDateTime refundedTime;
     private String refundReason;
     private String refundId;
 }

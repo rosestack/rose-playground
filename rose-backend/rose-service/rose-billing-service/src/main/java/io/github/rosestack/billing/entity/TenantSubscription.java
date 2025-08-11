@@ -34,25 +34,17 @@ public class TenantSubscription extends BaseTenantEntity {
      */
     private SubscriptionStatus status;
 
-    /**
-     * 订阅开始时间
-     */
-    private LocalDateTime startDate;
+    /** 订阅开始时间 */
+    private LocalDateTime startTime;
 
-    /**
-     * 订阅结束时间
-     */
-    private LocalDateTime endDate;
+    /** 订阅结束时间 */
+    private LocalDateTime endTime;
 
-    /**
-     * 下次计费时间
-     */
-    private LocalDateTime nextBillingDate;
+    /** 下次计费时间 */
+    private LocalDateTime nextBillingTime;
 
-    /**
-     * 试用结束时间
-     */
-    private LocalDateTime trialEndDate;
+    /** 试用结束时间 */
+    private LocalDateTime trialEndTime;
 
     /**
      * 是否在试用期
@@ -72,7 +64,7 @@ public class TenantSubscription extends BaseTenantEntity {
     /**
      * 取消时间
      */
-    private LocalDateTime cancelledAt;
+    private LocalDateTime cancelledTime;
 
     /**
      * 取消原因
@@ -82,7 +74,7 @@ public class TenantSubscription extends BaseTenantEntity {
     /**
      * 暂停时间
      */
-    private LocalDateTime pausedAt;
+    private LocalDateTime pausedTime;
 
     /**
      * 暂停原因
@@ -92,6 +84,6 @@ public class TenantSubscription extends BaseTenantEntity {
     /**
      * 升级时间
      */
-    private LocalDateTime upgradedAt;
+    private LocalDateTime upgradedTime;
 }
 

@@ -204,7 +204,7 @@ public class PaymentGatewayService {
             record.setGatewayResponse(result.getGatewayResponse());
 
             if (result.isSuccess()) {
-                record.setPaidAt(LocalDateTime.now());
+                record.setPaidTime(LocalDateTime.now());
             }
 
             paymentRecordRepository.insert(record);
@@ -221,7 +221,7 @@ public class PaymentGatewayService {
             if (optionalRecord.isPresent() && result.isSuccess()) {
                 PaymentRecord record = optionalRecord.get();
                 record.setStatus(PaymentRecordStatus.REFUNDED);
-                record.setRefundedAt(LocalDateTime.now());
+                record.setRefundedTime(LocalDateTime.now());
                 record.setRefundReason(reason);
                 record.setRefundId(result.getRefundId());
 

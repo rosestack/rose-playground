@@ -71,7 +71,7 @@ public class UsageRecord extends BaseTenantEntity {
     /**
      * 计费时间
      */
-    private LocalDateTime billedAt;
+    private LocalDateTime billedTime;
 
     /**
      * 关联的账单ID

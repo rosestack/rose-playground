@@ -58,7 +58,7 @@ class RefundCallbackControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(500));
+                .andExpect(jsonPath("$.code").value(io.github.rosestack.billing.enums.BillingErrorCode.INVALID_REFUND_CALLBACK.getCode()));
     }
 }
 

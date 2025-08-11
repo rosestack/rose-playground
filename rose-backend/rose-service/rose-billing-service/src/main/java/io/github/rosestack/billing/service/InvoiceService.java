@@ -124,11 +124,11 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
             record.setPaymentMethod(paymentMethod);
             record.setTransactionId(transactionId);
             record.setStatus(PaymentRecordStatus.SUCCESS);
-            record.setPaidAt(LocalDateTime.now());
+            record.setPaidTime(LocalDateTime.now());
             paymentRecordRepository.insert(record);
 
             invoice.setStatus(InvoiceStatus.PAID);
-            invoice.setPaidAt(LocalDateTime.now());
+            invoice.setPaidTime(LocalDateTime.now());
             invoice.setPaymentMethod(paymentMethod);
             invoice.setPaymentTransactionId(transactionId);
             invoiceRepository.updateById(invoice);

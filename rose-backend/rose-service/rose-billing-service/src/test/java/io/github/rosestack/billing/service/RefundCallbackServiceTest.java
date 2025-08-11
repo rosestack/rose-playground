@@ -27,7 +27,8 @@ class RefundCallbackServiceTest {
         invoiceService = mock(InvoiceService.class);
         refundRecordRepository = mock(RefundRecordRepository.class);
         gatewayService = mock(io.github.rosestack.billing.payment.PaymentGatewayService.class);
-        refundService = new RefundService(invoiceService, gatewayService, refundRecordRepository);
+        io.github.rosestack.billing.repository.PaymentRecordRepository pr = mock(io.github.rosestack.billing.repository.PaymentRecordRepository.class);
+        refundService = new RefundService(invoiceService, gatewayService, refundRecordRepository, pr);
     }
 
     @Test

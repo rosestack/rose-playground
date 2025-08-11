@@ -54,8 +54,8 @@ public interface SubscriptionPlanRepository extends BaseMapper<SubscriptionPlan>
      * 查找有效期内的计划
      */
     @Select("SELECT * FROM subscription_plan WHERE enabled = 1 " +
-            "AND (effective_date IS NULL OR effective_date <= #{now}) " +
-            "AND (expiry_date IS NULL OR expiry_date > #{now}) " +
+            "AND (effective_time IS NULL OR effective_time <= #{now}) " +
+            "AND (expiry_time IS NULL OR expiry_time > #{now}) " +
             "AND deleted = 0")
     List<SubscriptionPlan> findValidPlans(@Param("now") LocalDateTime now);
 }

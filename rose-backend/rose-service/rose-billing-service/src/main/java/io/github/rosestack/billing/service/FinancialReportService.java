@@ -30,35 +30,35 @@ public class FinancialReportService {
     /**
      * 生成收入报表
      */
-    public RevenueReport generateRevenueReport(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
-        log.info("生成收入报表：{} - {}，类型：{}", startDate, endDate, reportType);
+    public RevenueReport generateRevenueReport(LocalDateTime startTime, LocalDateTime endTime, String reportType) {
+        log.info("生成收入报表：{} - {}，类型：{}", startTime, endTime, reportType);
 
         RevenueReport report = new RevenueReport();
         report.setReportType(reportType);
-        report.setStartDate(startDate);
-        report.setEndDate(endDate);
-        report.setGeneratedAt(LocalDateTime.now());
+        report.setStartTime(startTime);
+        report.setEndTime(endTime);
+        report.setGeneratedTime(LocalDateTime.now());
 
         // 计算总收入（空值兜底为0）
         BigDecimal totalRevenue = Optional.ofNullable(
-                invoiceRepository.sumPaidAmountByPeriod(startDate, endDate)
+                invoiceRepository.sumPaidAmountByPeriod(startTime, endTime)
         ).orElse(BigDecimal.ZERO);
         report.setTotalRevenue(totalRevenue);
 
         // 按时间维度统计收入
-        report.setRevenueByPeriod(calculateRevenueByPeriod(startDate, endDate, reportType));
+        report.setRevenueByPeriod(calculateRevenueByPeriod(startTime, endTime, reportType));
 
         // 按订阅计划统计收入
-        report.setRevenueByPlan(calculateRevenueByPlan(startDate, endDate));
+        report.setRevenueByPlan(calculateRevenueByPlan(startTime, endTime));
 
         // 按租户统计收入（Top 10）
-        report.setTopTenantsByRevenue(calculateTopTenantsByRevenue(startDate, endDate, 10));
+        report.setTopTenantsByRevenue(calculateTopTenantsByRevenue(startTime, endTime, 10));
 
         // 计算增长率
-        report.setGrowthRate(calculateGrowthRate(startDate, endDate, reportType));
+        report.setGrowthRate(calculateGrowthRate(startTime, endTime, reportType));
 
         // 计算平均订单价值
-        report.setAverageOrderValue(calculateAverageOrderValue(startDate, endDate));
+        report.setAverageOrderValue(calculateAverageOrderValue(startTime, endTime));
 
         log.info("收入报表生成完成，总收入：{}", totalRevenue);
         return report;
@@ -67,13 +67,13 @@ public class FinancialReportService {
     /**
      * 生成订阅报表
      */
-    public SubscriptionReport generateSubscriptionReport(LocalDateTime startDate, LocalDateTime endDate) {
-        log.info("生成订阅报表：{} - {}", startDate, endDate);
+    public SubscriptionReport generateSubscriptionReport(LocalDateTime startTime, LocalDateTime endTime) {
+        log.info("生成订阅报表：{} - {}", startTime, endTime);
 
         SubscriptionReport report = new SubscriptionReport();
-        report.setStartDate(startDate);
-        report.setEndDate(endDate);
-        report.setGeneratedAt(LocalDateTime.now());
+        report.setStartTime(startTime);
+        report.setEndTime(endTime);
+        report.setGeneratedTime(LocalDateTime.now());
 
         // 总订阅数
         long totalSubscriptions = subscriptionRepository.selectCount(null);
@@ -95,10 +95,10 @@ public class FinancialReportService {
         report.setSubscriptionsByPlan(calculateSubscriptionsByPlan());
 
         // 计算流失率
-        report.setChurnRate(calculateChurnRate(startDate, endDate));
+        report.setChurnRate(calculateChurnRate(startTime, endTime));
 
         // 计算新增订阅
-        report.setNewSubscriptions(calculateNewSubscriptions(startDate, endDate));
+        report.setNewSubscriptions(calculateNewSubscriptions(startTime, endTime));
 
         log.info("订阅报表生成完成，总订阅：{}, 活跃：{}", totalSubscriptions, activeSubscriptions);
         return report;
@@ -107,22 +107,22 @@ public class FinancialReportService {
     /**
      * 生成使用量报表
      */
-    public UsageReport generateUsageReport(LocalDateTime startDate, LocalDateTime endDate) {
-        log.info("生成使用量报表：{} - {}", startDate, endDate);
+    public UsageReport generateUsageReport(LocalDateTime startTime, LocalDateTime endTime) {
+        log.info("生成使用量报表：{} - {}", startTime, endTime);
 
         UsageReport report = new UsageReport();
-        report.setStartDate(startDate);
-        report.setEndDate(endDate);
-        report.setGeneratedAt(LocalDateTime.now());
+        report.setStartTime(startTime);
+        report.setEndTime(endTime);
+        report.setGeneratedTime(LocalDateTime.now());
 
         // 按类型统计使用量
-        report.setUsageByType(calculateUsageByType(startDate, endDate));
+        report.setUsageByType(calculateUsageByType(startTime, endTime));
 
         // 按租户统计使用量（Top 10）
-        report.setTopTenantsByUsage(calculateTopTenantsByUsage(startDate, endDate, 10));
+        report.setTopTenantsByUsage(calculateTopTenantsByUsage(startTime, endTime, 10));
 
         // 使用量趋势
-        report.setUsageTrend(calculateUsageTrend(startDate, endDate));
+        report.setUsageTrend(calculateUsageTrend(startTime, endTime));
 
         log.info("使用量报表生成完成");
         return report;
@@ -131,25 +131,25 @@ public class FinancialReportService {
     /**
      * 生成综合财务报表
      */
-    public ComprehensiveFinancialReport generateComprehensiveReport(LocalDateTime startDate, LocalDateTime endDate) {
-        log.info("生成综合财务报表：{} - {}", startDate, endDate);
+    public ComprehensiveFinancialReport generateComprehensiveReport(LocalDateTime startTime, LocalDateTime endTime) {
+        log.info("生成综合财务报表：{} - {}", startTime, endTime);
 
         ComprehensiveFinancialReport report = new ComprehensiveFinancialReport();
-        report.setStartDate(startDate);
-        report.setEndDate(endDate);
-        report.setGeneratedAt(LocalDateTime.now());
+        report.setStartTime(startTime);
+        report.setEndTime(endTime);
+        report.setGeneratedTime(LocalDateTime.now());
 
         // 收入报表
-        report.setRevenueReport(generateRevenueReport(startDate, endDate, "COMPREHENSIVE"));
+        report.setRevenueReport(generateRevenueReport(startTime, endTime, "COMPREHENSIVE"));
 
         // 订阅报表
-        report.setSubscriptionReport(generateSubscriptionReport(startDate, endDate));
+        report.setSubscriptionReport(generateSubscriptionReport(startTime, endTime));
 
         // 使用量报表
-        report.setUsageReport(generateUsageReport(startDate, endDate));
+        report.setUsageReport(generateUsageReport(startTime, endTime));
 
         // 关键财务指标
-        report.setKeyMetrics(calculateKeyMetrics(startDate, endDate));
+        report.setKeyMetrics(calculateKeyMetrics(startTime, endTime));
 
         log.info("综合财务报表生成完成");
         return report;
@@ -160,7 +160,7 @@ public class FinancialReportService {
      */
     public DashboardData generateDashboardData() {
         DashboardData dashboard = new DashboardData();
-        dashboard.setGeneratedAt(LocalDateTime.now());
+        dashboard.setGeneratedTime(LocalDateTime.now());
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
@@ -197,10 +197,10 @@ public class FinancialReportService {
 
 
     // 私有辅助方法
-    private Map<String, BigDecimal> calculateRevenueByPeriod(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
+    private Map<String, BigDecimal> calculateRevenueByPeriod(LocalDateTime startTime, LocalDateTime endTime, String reportType) {
         Map<String, BigDecimal> result = new LinkedHashMap<>();
         // 复用按天统计的底层数据，再进行聚合
-        List<Map<String, Object>> dailyStats = invoiceRepository.getRevenueStatsByPeriod(startDate, endDate);
+        List<Map<String, Object>> dailyStats = invoiceRepository.getRevenueStatsByPeriod(startTime, endTime);
         if (dailyStats == null) return result;
 
         switch (reportType == null ? "DAILY" : reportType.toUpperCase()) {
@@ -243,9 +243,9 @@ public class FinancialReportService {
         return result;
     }
 
-    private Map<String, BigDecimal> calculateRevenueByPlan(LocalDateTime startDate, LocalDateTime endDate) {
+    private Map<String, BigDecimal> calculateRevenueByPlan(LocalDateTime startTime, LocalDateTime endTime) {
         Map<String, BigDecimal> map = new LinkedHashMap<>();
-        List<Map<String, Object>> rows = invoiceRepository.getRevenueByPlan(startDate, endDate);
+        List<Map<String, Object>> rows = invoiceRepository.getRevenueByPlan(startTime, endTime);
         if (rows == null) return map;
         for (Map<String, Object> r : rows) {
             String planId = Objects.toString(r.get("planId"), null);
@@ -255,8 +255,8 @@ public class FinancialReportService {
         return map;
     }
 
-    private List<TenantRevenueData> calculateTopTenantsByRevenue(LocalDateTime startDate, LocalDateTime endDate, int limit) {
-        List<Map<String, Object>> rows = invoiceRepository.getTopTenantsByRevenue(startDate, endDate, limit);
+    private List<TenantRevenueData> calculateTopTenantsByRevenue(LocalDateTime startTime, LocalDateTime endTime, int limit) {
+        List<Map<String, Object>> rows = invoiceRepository.getTopTenantsByRevenue(startTime, endTime, limit);
         List<TenantRevenueData> list = new ArrayList<>();
         if (rows == null) return list;
         for (Map<String, Object> row : rows) {
@@ -271,13 +271,13 @@ public class FinancialReportService {
         return list;
     }
 
-    private BigDecimal calculateGrowthRate(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
+    private BigDecimal calculateGrowthRate(LocalDateTime startTime, LocalDateTime endTime, String reportType) {
         // 简化：与上一同等时长周期对比（支持 DAILY/WEEKLY/MONTHLY 任意类型，均以时间跨度为准）
-        long days = java.time.Duration.between(startDate, endDate).toDays();
+        long days = java.time.Duration.between(startTime, endTime).toDays();
         if (days <= 0) return BigDecimal.ZERO;
-        LocalDateTime prevEnd = startDate;
-        LocalDateTime prevStart = startDate.minusDays(days);
-        BigDecimal current = invoiceRepository.sumPaidAmountByPeriod(startDate, endDate);
+        LocalDateTime prevEnd = startTime;
+        LocalDateTime prevStart = startTime.minusDays(days);
+        BigDecimal current = invoiceRepository.sumPaidAmountByPeriod(startTime, endTime);
         BigDecimal previous = invoiceRepository.sumPaidAmountByPeriod(prevStart, prevEnd);
         if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
             return current == null || current.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : new BigDecimal("1.00");
@@ -286,9 +286,9 @@ public class FinancialReportService {
                 .divide(previous, 4, java.math.RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calculateAverageOrderValue(LocalDateTime startDate, LocalDateTime endDate) {
-        BigDecimal total = invoiceRepository.sumPaidAmountByPeriod(startDate, endDate);
-        long count = invoiceRepository.countPaidInvoicesByPeriod(startDate, endDate);
+    private BigDecimal calculateAverageOrderValue(LocalDateTime startTime, LocalDateTime endTime) {
+        BigDecimal total = invoiceRepository.sumPaidAmountByPeriod(startTime, endTime);
+        long count = invoiceRepository.countPaidInvoicesByPeriod(startTime, endTime);
         if (count == 0) return BigDecimal.ZERO;
         return total.divide(BigDecimal.valueOf(count), 2, java.math.RoundingMode.HALF_UP);
     }
@@ -305,23 +305,23 @@ public class FinancialReportService {
         return map;
     }
 
-    private BigDecimal calculateChurnRate(LocalDateTime startDate, LocalDateTime endDate) {
+    private BigDecimal calculateChurnRate(LocalDateTime startTime, LocalDateTime endTime) {
         // churn = 取消数 / 期初活跃订阅数（更精确：按期初活跃订阅数计算）
-        long cancelled = subscriptionRepository.countCancelledSubscriptions(startDate, endDate);
-        long activeAtStart = subscriptionRepository.countActiveAtDate(startDate);
+        long cancelled = subscriptionRepository.countCancelledSubscriptions(startTime, endTime);
+        long activeAtStart = subscriptionRepository.countActiveAtDate(startTime);
         if (activeAtStart == 0) return BigDecimal.ZERO;
         return new BigDecimal(cancelled).divide(new BigDecimal(activeAtStart), 4, java.math.RoundingMode.HALF_UP);
     }
 
-    private long calculateNewSubscriptions(LocalDateTime startDate, LocalDateTime endDate) {
-        return subscriptionRepository.countNewSubscriptions(startDate, endDate);
+    private long calculateNewSubscriptions(LocalDateTime startTime, LocalDateTime endTime) {
+        return subscriptionRepository.countNewSubscriptions(startTime, endTime);
     }
 
-    private Map<String, BigDecimal> calculateUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
-        log.debug("计算使用量统计: {} - {}", startDate, endDate);
+    private Map<String, BigDecimal> calculateUsageByType(LocalDateTime startTime, LocalDateTime endTime) {
+        log.debug("计算使用量统计: {} - {}", startTime, endTime);
         Map<String, BigDecimal> result = new LinkedHashMap<>();
         try {
-            List<Map<String, Object>> rows = usageRepository.sumUsageByType(startDate, endDate);
+            List<Map<String, Object>> rows = usageRepository.sumUsageByType(startTime, endTime);
             if (rows != null) {
                 for (Map<String, Object> r : rows) {
                     String metric = Objects.toString(r.get("metricType"), null);
@@ -336,9 +336,9 @@ public class FinancialReportService {
         }
     }
 
-    private List<TenantUsageData> calculateTopTenantsByUsage(LocalDateTime startDate, LocalDateTime endDate, int limit) {
+    private List<TenantUsageData> calculateTopTenantsByUsage(LocalDateTime startTime, LocalDateTime endTime, int limit) {
         List<TenantUsageData> list = new ArrayList<>();
-        List<Map<String, Object>> rows = usageRepository.getTopTenantsByUsage(startDate, endDate, limit);
+        List<Map<String, Object>> rows = usageRepository.getTopTenantsByUsage(startTime, endTime, limit);
         if (rows == null) return list;
         for (Map<String, Object> r : rows) {
             TenantUsageData d = new TenantUsageData();
@@ -349,9 +349,9 @@ public class FinancialReportService {
         return list;
     }
 
-    private Map<String, BigDecimal> calculateUsageTrend(LocalDateTime startDate, LocalDateTime endDate) {
+    private Map<String, BigDecimal> calculateUsageTrend(LocalDateTime startTime, LocalDateTime endTime) {
         Map<String, BigDecimal> trend = new LinkedHashMap<>();
-        List<Map<String, Object>> rows = usageRepository.sumDailyUsage(startDate, endDate);
+        List<Map<String, Object>> rows = usageRepository.sumDailyUsage(startTime, endTime);
         if (rows != null) {
             for (Map<String, Object> r : rows) {
                 String day = Objects.toString(r.get("recordDate"), null);
@@ -362,7 +362,7 @@ public class FinancialReportService {
         return trend;
     }
 
-    private FinancialKeyMetrics calculateKeyMetrics(LocalDateTime startDate, LocalDateTime endDate) {
+    private FinancialKeyMetrics calculateKeyMetrics(LocalDateTime startTime, LocalDateTime endTime) {
         FinancialKeyMetrics metrics = new FinancialKeyMetrics();
         // 客户获取成本 (CAC)
         metrics.setCustomerAcquisitionCost(BigDecimal.ZERO);
@@ -375,9 +375,9 @@ public class FinancialReportService {
         return metrics;
     }
 
-    private BigDecimal calculateTrialConversionRate(LocalDateTime startDate, LocalDateTime endDate) {
-        long converted = subscriptionRepository.countTrialConverted(startDate, endDate);
-        long exposed = subscriptionRepository.countTrialExposedDuring(startDate, endDate);
+    private BigDecimal calculateTrialConversionRate(LocalDateTime startTime, LocalDateTime endTime) {
+        long converted = subscriptionRepository.countTrialConverted(startTime, endTime);
+        long exposed = subscriptionRepository.countTrialExposedDuring(startTime, endTime);
         if (exposed == 0) return BigDecimal.ZERO;
         return new BigDecimal(converted).divide(new BigDecimal(exposed), 4, java.math.RoundingMode.HALF_UP);
     }

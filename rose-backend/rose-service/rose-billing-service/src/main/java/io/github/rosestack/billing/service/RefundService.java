@@ -25,6 +25,7 @@ public class RefundService {
     private final InvoiceService invoiceService;
     private final PaymentGatewayService paymentGatewayService;
     private final RefundRecordRepository refundRecordRepository;
+    private final io.github.rosestack.billing.repository.PaymentRecordRepository paymentRecordRepository;
 
     @Transactional
     public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason) {
@@ -78,12 +79,12 @@ public class RefundService {
         rr.setTransactionId(invoice.getPaymentTransactionId());
         rr.setRefundAmount(amount);
         rr.setReason(reason);
-        rr.setRequestedAt(LocalDateTime.now());
+        rr.setRequestedTime(LocalDateTime.now());
         rr.setIdempotencyKey(idempotencyKey);
         if (result.isSuccess()) {
             rr.setRefundId(result.getRefundId());
             rr.setStatus(RefundStatus.SUCCESS);
-            rr.setCompletedAt(LocalDateTime.now());
+            rr.setCompletedTime(LocalDateTime.now());
         } else {
             rr.setStatus(RefundStatus.FAILED);
         }
@@ -124,7 +125,7 @@ public class RefundService {
             rr.setInvoiceId(invoiceId);
             rr.setPaymentMethod(paymentMethod);
             rr.setRefundId(refundId);
-            rr.setRequestedAt(LocalDateTime.now());
+            rr.setRequestedTime(LocalDateTime.now());
         }
         // 序列化回调为 JSON 字符串（避免 toString 非标准格式）
         try {
@@ -134,12 +135,23 @@ public class RefundService {
         }
         if (callbackAmount != null) rr.setRefundAmount(callbackAmount);
         rr.setStatus(isSuccess ? RefundStatus.SUCCESS : RefundStatus.FAILED);
-        if (isSuccess) rr.setCompletedAt(LocalDateTime.now());
+        if (isSuccess) rr.setCompletedTime(LocalDateTime.now());
 
         if (rr.getId() == null) {
             refundRecordRepository.insert(rr);
         } else {
             refundRecordRepository.updateById(rr);
+        }
+
+        // 同步 PaymentRecord 渠道状态/金额（如有）
+        try {
+            paymentRecordRepository.findByTransactionId(rr.getTransactionId()).ifPresent(pr -> {
+                if (callbackAmount != null) pr.setChannelAmount(callbackAmount);
+                pr.setChannelStatus(isSuccess ? "SUCCESS" : "FAILED");
+                paymentRecordRepository.updateById(pr);
+            });
+        } catch (Exception e) {
+            log.warn("同步 PaymentRecord 渠道字段失败", e);
         }
 
         // 计算累计退款（含本次）以判定是否全额
@@ -155,32 +167,4 @@ public class RefundService {
         return true;
     }
 
-    private boolean isSuccessStatus(String method, String statusRaw) {
-        if (statusRaw == null) return true; // 缺省按成功处理
-        String s = statusRaw.trim().toUpperCase();
-        switch (method.toUpperCase()) {
-            case "ALIPAY":
-                return "REFUND_SUCCESS".equals(s) || "SUCCESS".equals(s);
-            case "WECHAT":
-                return "SUCCESS".equals(s);
-            case "STRIPE":
-                return "SUCCEEDED".equals(s) || "SUCCESS".equals(s);
-            default:
-                return "SUCCESS".equals(s) || "SUCCEEDED".equals(s) || "REFUND_SUCCESS".equals(s);
-        }
-    }
-
-    private BigDecimal parseRefundAmountFallback(Map<String, Object> data) {
-        Object ra = data.get("refund_amount");
-        if (ra != null) return new BigDecimal(ra.toString());
-        Object amt = data.get("amount");
-        if (amt != null) return new BigDecimal(amt.toString());
-        Object rf = data.get("refund_fee");
-        if (rf != null) {
-            try { return new BigDecimal(rf.toString()).movePointLeft(2); } catch (Exception ignored) {}
-        }
-        return null;
-    }
-
 }
-

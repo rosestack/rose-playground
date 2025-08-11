@@ -31,8 +31,7 @@ public class RefundRecord extends BaseTenantEntity {
     private String reason;
     private RefundStatus status;
     private String rawCallback;   // 通道回调原文
-
-    private LocalDateTime requestedAt;
-    private LocalDateTime completedAt;
+    private LocalDateTime requestedTime;
+    private LocalDateTime completedTime;
 }
 

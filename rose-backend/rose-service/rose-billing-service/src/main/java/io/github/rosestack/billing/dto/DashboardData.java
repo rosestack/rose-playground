@@ -10,7 +10,7 @@ import java.util.Map; /**
  */
 @Data
 public class DashboardData {
-    private LocalDateTime generatedAt;
+    private LocalDateTime generatedTime;
     private BigDecimal todayRevenue;
     private BigDecimal monthRevenue;
     private long activeSubscriptions;

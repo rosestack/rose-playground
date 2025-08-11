@@ -18,61 +18,100 @@
 classDiagram
   class SubscriptionPlan {
     +id: String
+    +tenantId: String
     +code: String
     +name: String
-    +enabled: Boolean
+    +billingType: String
     +basePrice: BigDecimal
-    +currency: String
-    +limits: Map<String,Object>
-    +createdAt, updatedAt
+    +billingCycle: int
+    +enabled: Boolean
+    +trialDays: int
+    +effectiveTime: DateTime
+    +expiryTime: DateTime
+    +createTime, updateTime
   }
   class TenantSubscription {
     +id: String
     +tenantId: String
     +planId: String
     +status: SubscriptionStatus
-    +nextBillingDate: LocalDate
-    +createdAt, updatedAt
+    +startTime: DateTime
+    +endTime: DateTime
+    +nextBillingTime: DateTime
+    +trialEndTime: DateTime
+    +inTrial: Boolean
+    +autoRenew: Boolean
+    +currentPeriodAmount: BigDecimal
+    +cancelledTime: DateTime
+    +pausedTime: DateTime
+    +createTime, updateTime
   }
   class Invoice {
     +id: String
     +tenantId: String
+    +invoiceNumber: String
     +subscriptionId: String
     +status: InvoiceStatus
-    +periodStart: LocalDateTime
-    +periodEnd: LocalDateTime
+    +periodStart: Date
+    +periodEnd: Date
     +baseAmount: BigDecimal
     +usageAmount: BigDecimal
     +discountAmount: BigDecimal
     +taxAmount: BigDecimal
     +totalAmount: BigDecimal
+    +dueDate: Date
+    +paidTime: DateTime
     +paymentMethod: String
-    +transactionId: String
-    +paidAt: LocalDateTime
-    +dueDate: LocalDateTime
-    +createdAt, updatedAt
+    +paymentTransactionId: String
+    +notes: String
+    +createTime, updateTime
   }
   class UsageRecord {
     +id: String
     +tenantId: String
-    +subscriptionId: String
     +metricType: String
     +quantity: BigDecimal
-    +recordTime: LocalDateTime
+    +unit: String
+    +recordTime: DateTime
+    +resourceId: String
+    +resourceType: String
+    +metadata: String
     +billed: Boolean
+    +billedTime: DateTime
     +invoiceId: String?
-    +createdAt
+    +createTime, updateTime
   }
   class PaymentRecord {
     +id: String
     +tenantId: String
     +invoiceId: String
+    +amount: BigDecimal
     +paymentMethod: String
     +transactionId: String
-    +amount: BigDecimal
-    +status: PaymentStatus
-    +rawCallback: String
-    +createdAt
+    +gatewayResponse: JSON
+    +status: PaymentRecordStatus
+    +channelStatus: String
+    +channelAmount: BigDecimal
+    +paidTime: DateTime
+    +refundedTime: DateTime
+    +refundReason: String
+    +createTime, updateTime
+  }
+  class RefundRecord {
+    +id: String
+    +tenantId: String
+    +invoiceId: String
+    +paymentMethod: String
+    +transactionId: String
+    +refundId: String
+    +idempotencyKey: String
+    +refundAmount: BigDecimal
+    +reason: String
+    +status: RefundStatus
+    +rawCallback: JSON
+    +requestedTime: DateTime
+    +completedTime: DateTime
+    +createTime, updateTime
   }
   class PricingCalculator {
     <<domain service>>
@@ -88,24 +127,28 @@ classDiagram
   Invoice --> TenantSubscription : belongs-to
   UsageRecord --> TenantSubscription : belongs-to
   PaymentRecord --> Invoice : settles
+  RefundRecord --> Invoice : relates
 
   BillingService --> Invoice
   BillingService --> UsageRecord
   BillingService --> PaymentRecord
+  BillingService --> RefundRecord
   BillingService ..> PricingCalculator
   PaymentGatewayService ..> PaymentRecord
+  PaymentGatewayService ..> RefundRecord
 ```
 
 - 值对象（示例）：
   - Money(amount, currency)，Tax(taxRate, taxAmount)，Discount(type, value)
   - BillingCycle(periodStart, periodEnd)，UsageLimit(metricType, quota, policy)
 
-## 3. 领域状态机
+## 3. 状态机
 
+- 订阅（TenantSubscription.status）
 ```mermaid
 stateDiagram-v2
-  [*] --> PENDING_PAYMENT
-  PENDING_PAYMENT --> ACTIVE: 支付完成
+  [*] --> TRIAL
+  TRIAL --> ACTIVE: 到达 trialEndTime 或主动转正
   ACTIVE --> PAUSED: 暂停
   PAUSED --> ACTIVE: 恢复
   ACTIVE --> CANCELLED: 取消
@@ -113,62 +156,41 @@ stateDiagram-v2
   note right of ACTIVE: 仅 ACTIVE 进入计费周期
 ```
 
+- 账单（Invoice.status）
 ```mermaid
 stateDiagram-v2
   [*] --> PENDING
   PENDING --> PAID: 入账成功
   PENDING --> OVERDUE: 逾期
-  PAID --> [*]
+  PAID --> REFUNDED: 退款全额完成
   OVERDUE --> [*]
-  note right of PAID: 金额锁定/只读
 ```
 
+- 退款记录（RefundRecord.status）
 ```mermaid
 stateDiagram-v2
-  [*] --> INITIATED
-  INITIATED --> VERIFIED: 回调验签通过
-  VERIFIED --> POSTED: 入账成功
-  POSTED --> REFUNDED: 退款
-  REFUNDED --> [*]
+  [*] --> REQUESTED
+  REQUESTED --> PROCESSING: 异步中
+  PROCESSING --> SUCCESS
+  PROCESSING --> FAILED
+  REQUESTED --> SUCCESS: 同步成功
+  REQUESTED --> FAILED: 同步失败
+  SUCCESS --> [*]
+  FAILED --> [*]
 ```
 
-## 4. 关键领域服务
-- PricingCalculator（领域服务）
-  - 输入：SubscriptionPlan、UsageRecords、Discount/Tax 策略
-  - 输出：base/usage/discount/tax/total 金额
-- BillingService（应用编排）
-  - 生成账单：周期聚合用量 → 计算金额 → 持久化 Invoice
-  - 处理支付成功：标记发票已付、结转用量、发送通知、发布事件
-- PaymentGatewayService（防腐层 ACL）
-  - 路由渠道处理器（Alipay/WeChat/Stripe），生成链接、回调验签、交易查询
+- 支付记录（PaymentRecord.status）
+```mermaid
+stateDiagram-v2
+  [*] --> SUCCESS
+  SUCCESS --> REFUNDED: 退款回调/查询确认
+  SUCCESS --> FAILED: 通道失败（小概率）
+  REFUNDED --> [*]
+  FAILED --> [*]
+```
 
-## 5. 领域事件
-- PaymentSucceededEvent(tenantId, invoiceId, transactionId, paymentMethod, amount, occurredAt)
-  - 订阅方：通知服务、对账作业、数据看板
-- 规划事件：InvoiceGeneratedEvent、SubscriptionChangedEvent（升级/降级/暂停/恢复）
-- 事件原则：不可变载荷、与领域语言对齐；推荐 Outbox + MQ 保障送达
-
-## 6. 领域不变式与业务约束
-- 每订阅每周期最多一张有效账单
-- 同一 UsageRecord 仅结转一次（billed=true 且绑定 invoiceId）
-- 同一 (paymentMethod, transactionId) 仅允许一次成功入账（唯一约束）
-- 发票 PAID 后金额与周期不可变（审计）
-- ACTIVE 订阅才能进入计费周期
-
-## 7. 仓储与持久化策略
-- MyBatis-Plus + @TableLogic：逻辑删除自动过滤
-- Wrapper 聚合统计替换手写 SQL；复杂跨表统计保留 SQL 或改造为视图/分步计算
-- 索引建议
-  - Invoice：tenantId+status、subscriptionId+periodStart/periodEnd、transactionId(unique 可选)
-  - UsageRecord：tenantId+recordTime、subscriptionId+billed、metricType+recordTime
-  - PaymentRecord：(paymentMethod, transactionId) UNIQUE、invoiceId+status
-- 审计字段：PaymentRecord.rawCallback 保留回执原文
-
-## 8. 支付与通知集成（ACL）
-- 支付验签（现阶段）：HMAC-SHA256(invoiceId|交易号|timestamp) + 时间窗；后续替换官方 SDK/证书
-- 通知：BillingNotificationClient 调用 notification-service /api/notifications/send（模板 + 变量）
-
-## 9. 典型时序（支付成功链路）
+## 4. 关键流程
+### 4.1 支付成功链路
 ```mermaid
 sequenceDiagram
   autonumber
@@ -190,31 +212,136 @@ sequenceDiagram
   BS-->>PC: {code:200}
 ```
 
-## 10. 风险与演进
-- 幂等与一致性：引入 PaymentRecord 唯一约束、Outbox + MQ 外发、失败重试与死信
-- 对账与退款：日对账作业、差错表、退款/撤销流程与状态机
-- 订阅复杂度：proration、试用/延期、超额与最低承诺、税务与多币种
-- 可观测性：指标（成功率/延迟/掉单）、Tracing、SLO 报表
-- 存储与查询：避免函数导致索引失效（派生列/物化视图/OLAP）
+### 4.2 退款全量/部分退款时序
+```mermaid
+sequenceDiagram
+  autonumber
+  participant API as RefundAPI
+  participant RC as RefundController
+  participant RS as RefundService
+  participant GW as PaymentGatewayService
+  participant IR as InvoiceRepo
+  participant RR as RefundRecordRepo
+  participant PR as PaymentRecordRepo
 
-## 11. 对账与退款领域设计（扩展）
+  API->>RC: POST /refunds {invoiceId, amount, reason}
+  RC->>RS: requestRefund(invoiceId, amount, reason, idempotencyKey?)
+  RS->>IR: 获取 Invoice 并校验(状态=PAID, 交易号存在)
+  RS->>RR: sumSucceededAmountByInvoiceId(invoiceId)
+  RS-->>RC: 金额校验(<= 可退余额)不通过则失败
+  RS->>GW: processRefund(txId, amount, reason, tenantId)
+  alt 同步成功
+    RS->>RR: insert RefundRecord{status=SUCCESS, refundId, refundAmount}
+    RS->>IR: 若累计退款>=totalAmount 则 invoice.status=REFUNDED
+  else 同步失败
+    RS->>RR: insert RefundRecord{status=FAILED}
+  else 异步处理中
+    RS->>RR: insert RefundRecord{status=PROCESSING}
+    note over RS,GW: 异步回调到达 → 触发 processRefundCallback
+  end
 
-### 11.1 对账目标与原则
-- 目标：保证通道流水与内部账务数据一致，快速发现与处理差错；提供审计可追溯性
-- 原则：单向不可变记录（PaymentRecord.rawCallback 保留原文）、可重放的计算（幂等）、差错留痕
+  %% 回调路径（部分/全额）
+  GW-->>RC: 回调(method, data)
+  RC->>GW: verifyRefundCallback(method, data)
+  alt 验签失败
+    RC-->>GW: {code=INVALID_REFUND_CALLBACK}
+  else 验签通过
+    RC->>RS: processRefundCallback(method, data)
+    RS->>RR: upsert RefundRecord{status=SUCCESS/FAILED, refundAmount, rawCallback}
+    RS->>PR: 同步 PaymentRecord.channelStatus/Amount
+    RS->>IR: 若累计退款(含本次成功金额)≥totalAmount → invoice.status=REFUNDED
+    RS-->>RC: {code=200}
+  end
+```
 
-### 11.2 模型扩展
-- PaymentRecord 增补字段
-  - channelStatus: String（SUCCESS/FAILED/PENDING）
-  - channelAmount: BigDecimal（通道确认金额）
-  - posted: Boolean（是否已入账）
-  - postedAt: LocalDateTime
-- ReconciliationDiff 差错记录（新表/聚合）
-  - id, date, tenantId, invoiceId, paymentMethod, transactionId
-  - diffType(MISSING_INTERNAL/MISSING_CHANNEL/AMOUNT_MISMATCH/STATUS_MISMATCH)
-  - channelSnapshot(JSON), internalSnapshot(JSON), resolved(Boolean), resolvedAt, note
+### 4.3 支付回调幂等
+```mermaid
+sequenceDiagram
+  autonumber
+  participant CH as Channel
+  participant PC as PaymentController
+  participant RC as RefundController
+  participant GW as PaymentGatewayService
+  participant IS as InvoiceService
+  participant RS as RefundService
+  participant RR as RefundRecordRepo
+  participant PR as PaymentRecordRepo
 
-### 11.3 日对账流程
+  %% 支付回调幂等（示意）
+  CH->>PC: 支付回调{invoiceId, transactionId}
+  PC->>GW: verifyPaymentCallback(method, data)
+  alt 验签失败
+    PC-->>CH: {code=INVALID_PAYMENT_CALLBACK}
+  else 验签通过
+    PC->>IS: processPayment(invoiceId, transactionId, method)
+    note over IS: 已入账或交易号重复 → 忽略并返回成功
+    IS-->>PC: {code=200}
+  end
+
+  %% 退款回调幂等
+  CH->>RC: 退款回调{invoiceId, refundId, amount?}
+  RC->>GW: verifyRefundCallback(method, data)
+  alt 验签失败
+    RC-->>CH: {code=INVALID_REFUND_CALLBACK}
+  else 验签通过
+    RC->>RS: processRefundCallback(method, data)
+    RS->>RR: 按(invoiceId, refundId) upsert，存在则更新，不存在则插入
+    RS-->>RC: {code=200}
+  end
+```
+
+### 4.4 退款回调幂等
+```mermaid
+sequenceDiagram
+  autonumber
+  participant CH as Channel
+  participant RC as RefundController
+  participant RS as RefundService
+  participant GW as PaymentGatewayService
+  participant RR as RefundRecordRepo
+
+  CH->>RC: 退款回调{invoiceId, refundId, amount?}
+  RC->>GW: verifyRefundCallback(method, data)
+  alt 验签失败
+    RC-->>CH: {code=INVALID_REFUND_CALLBACK}
+  else 验签通过
+    RC->>RS: processRefundCallback(method, data)
+    RS->>RR: 按(invoiceId, refundId) upsert（存在则更新，不存在则插入）
+    RS-->>RC: {code=200}
+  end
+
+  note over RS: 若请求带 idempotencyKey，存在成功记录则直接返回成功(idempotent)
+```
+
+### 4.5 异常落库重试（回调/出账）
+```mermaid
+sequenceDiagram
+  autonumber
+  participant CH as Channel
+  participant RC as CallbackController
+  participant SVC as DomainService
+  participant DB as Database
+  participant OB as Outbox
+  participant RJ as RetryJob
+
+  CH->>RC: 回调(payload)
+  RC->>SVC: handleCallback(payload)
+  SVC->>DB: insert/update 业务记录
+  alt DB异常/网络闪断
+    SVC->>OB: 记录补偿任务(outbox/event)
+    SVC-->>RC: 返回200(已受理)或特定错误码
+    RJ->>OB: 轮询/订阅补偿任务
+    RJ->>DB: 重试插入/更新(带幂等键/唯一约束)
+    RJ-->>OB: 成功后标记完成
+  else 正常
+    SVC-->>RC: 返回200
+  end
+
+  note over SVC, RJ: 建议将回调原文(raw JSON)落盘，失败可重放；关键写入使用幂等键/唯一约束
+```
+
+
+### 4.5 日对账流程
 ```mermaid
 sequenceDiagram
   participant CH as Channel API
@@ -231,29 +358,7 @@ sequenceDiagram
   RC-->>RC: 生成对账报告
 ```
 
-### 11.4 差错处理策略
-- MISSING_INTERNAL（通道有/内部无）：尝试以回执补录 PaymentRecord（标注来源=RECONCILIATION），触发后续入账校验
-- MISSING_CHANNEL（内部有/通道无）：标记异常等待人工复核，必要时申请通道查询/追踪
-- AMOUNT_MISMATCH/STATUS_MISMATCH：以通道为准还是以内部为准需策略配置，默认人工复核
-
-### 11.5 退款领域
-- RefundRecord（新聚合）
-  - id, tenantId, invoiceId, paymentMethod, transactionId, refundId, refundAmount, reason, status(REQUESTED/PROCESSING/SUCCESS/FAILED), createdAt, updatedAt, rawCallback
-- 状态机
-```mermaid
-stateDiagram-v2
-  [*] --> REQUESTED
-  REQUESTED --> PROCESSING: 触发通道退款
-  PROCESSING --> SUCCESS: 回调或查询成功
-  PROCESSING --> FAILED: 回调失败/超时
-  SUCCESS --> [*]
-  FAILED --> [*]
-```
-- 关键约束
-  - 仅 PAID 发票允许退款；退款总额 ≤ 已收金额
-  - 退款成功后生成负向分录（或负向 InvoiceLine），保证账务可追溯
-
-### 11.6 退款时序
+### 4.6 退款时序
 ```mermaid
 sequenceDiagram
   participant API as RefundAPI
@@ -272,7 +377,9 @@ sequenceDiagram
   RF-->>API: 受理/结果
 ```
 
-### 11.7 Outbox + 可靠事件（建议）
-- Outbox 表：记录待外发事件（PaymentSucceeded/RefundSucceeded），事务内写入
-- EventRelay：定时/消息触发可靠外发至 MQ；失败重试与死信
-- 订阅者：通知、对账、BI 等
+## 5. 风险与演进
+- 幂等与一致性：引入 PaymentRecord 唯一约束、Outbox + MQ 外发、失败重试与死信
+- 对账与退款：日对账作业、差错表、退款/撤销流程与状态机
+- 订阅复杂度：proration、试用/延期、超额与最低承诺、税务与多币种
+- 可观测性：指标（成功率/延迟/掉单）、Tracing、SLO 报表
+- 存储与查询：避免函数导致索引失效（派生列/物化视图/OLAP）

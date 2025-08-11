@@ -11,9 +11,9 @@ import java.util.Map;
  */
 @Data
 public class SubscriptionReport {
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private LocalDateTime generatedAt;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime generatedTime;
     private long totalSubscriptions;
     private long activeSubscriptions;
     private long trialSubscriptions;

@@ -86,7 +86,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         }
 
         subscription.setStatus(SubscriptionStatus.PAUSED);
-        subscription.setPausedAt(LocalDateTime.now());
+        subscription.setPausedTime(LocalDateTime.now());
         subscription.setPauseReason(reason);
 
         subscriptionRepository.updateById(subscription);
@@ -104,7 +104,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         }
 
         subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setPausedAt(null);
+        subscription.setPausedTime(null);
         subscription.setPauseReason(null);
 
         subscriptionRepository.updateById(subscription);
@@ -133,7 +133,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
 
         subscription.setPlanId(newPlanId);
         subscription.setCurrentPeriodAmount(newPlan.getBasePrice());
-        subscription.setUpgradedAt(LocalDateTime.now());
+        subscription.setUpgradedTime(LocalDateTime.now());
 
         subscriptionRepository.updateById(subscription);
         log.info("订阅已升级: {} -> {}", subscription.getPlanId(), newPlanId);

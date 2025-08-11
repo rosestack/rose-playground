@@ -115,7 +115,7 @@ class SubscriptionServiceTest {
         subscriptionService.pauseSubscription(testSubscriptionId, "用户请求暂停");
 
         assertEquals(SubscriptionStatus.PAUSED, testSubscription.getStatus());
-        assertNotNull(testSubscription.getPausedAt());
+        assertNotNull(testSubscription.getPausedTime());
         assertEquals("用户请求暂停", testSubscription.getPauseReason());
         verify(subscriptionRepository).updateById(testSubscription);
     }
@@ -133,7 +133,7 @@ class SubscriptionServiceTest {
     @Test
     void testResumeSubscription_Success() {
         testSubscription.setStatus(SubscriptionStatus.PAUSED);
-        testSubscription.setPausedAt(LocalDateTime.now());
+        testSubscription.setPausedTime(LocalDateTime.now());
         testSubscription.setPauseReason("测试暂停");
 
         when(subscriptionRepository.selectById(testSubscriptionId))
@@ -142,7 +142,7 @@ class SubscriptionServiceTest {
         subscriptionService.resumeSubscription(testSubscriptionId);
 
         assertEquals(SubscriptionStatus.ACTIVE, testSubscription.getStatus());
-        assertNull(testSubscription.getPausedAt());
+        assertNull(testSubscription.getPausedTime());
         assertNull(testSubscription.getPauseReason());
         verify(subscriptionRepository).updateById(testSubscription);
     }
@@ -165,7 +165,7 @@ class SubscriptionServiceTest {
 
         assertEquals(newPlanId, testSubscription.getPlanId());
         assertEquals(new BigDecimal("199.00"), testSubscription.getCurrentPeriodAmount());
-        assertNotNull(testSubscription.getUpgradedAt());
+        assertNotNull(testSubscription.getUpgradedTime());
         verify(subscriptionRepository).updateById(testSubscription);
     }
 

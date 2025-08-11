@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * 财务报表控制器
@@ -42,11 +41,11 @@ public class FinancialReportController {
      */
     @GetMapping("/revenue")
     public ApiResponse<RevenueReport> getRevenueReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
             @RequestParam(defaultValue = "MONTHLY") String reportType) {
 
-        RevenueReport report = reportService.generateRevenueReport(startDate, endDate, reportType);
+        RevenueReport report = reportService.generateRevenueReport(startTime, endTime, reportType);
         return ApiResponse.success(report);
     }
 
@@ -55,10 +54,10 @@ public class FinancialReportController {
      */
     @GetMapping("/subscriptions")
     public ApiResponse<SubscriptionReport> getSubscriptionReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
 
-        SubscriptionReport report = reportService.generateSubscriptionReport(startDate, endDate);
+        SubscriptionReport report = reportService.generateSubscriptionReport(startTime, endTime);
         return ApiResponse.success(report);
     }
 
@@ -67,10 +66,10 @@ public class FinancialReportController {
      */
     @GetMapping("/usage")
     public ApiResponse<UsageReport> getUsageReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
 
-        UsageReport report = reportService.generateUsageReport(startDate, endDate);
+        UsageReport report = reportService.generateUsageReport(startTime, endTime);
         return ApiResponse.success(report);
     }
 
@@ -79,10 +78,10 @@ public class FinancialReportController {
      */
     @GetMapping("/comprehensive")
     public ApiResponse<ComprehensiveFinancialReport> getComprehensiveReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
 
-        ComprehensiveFinancialReport report = reportService.generateComprehensiveReport(startDate, endDate);
+        ComprehensiveFinancialReport report = reportService.generateComprehensiveReport(startTime, endTime);
         return ApiResponse.success(report);
     }
 

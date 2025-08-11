@@ -54,7 +54,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
     default List<TenantSubscription> findByNextBillingDateBeforeAndStatusIn(
             LocalDateTime date, List<SubscriptionStatus> statuses) {
         LambdaQueryWrapper<TenantSubscription> wrapper = new LambdaQueryWrapper<>();
-        wrapper.lt(TenantSubscription::getNextBillingDate, date)
+        wrapper.lt(TenantSubscription::getNextBillingTime, date)
                 .in(TenantSubscription::getStatus, statuses);
         return selectList(wrapper);
     }
@@ -63,9 +63,9 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      * 查找试用期即将到期的订阅
      */
     @Select("SELECT * FROM tenant_subscription WHERE in_trial = 1 " +
-            "AND trial_end_date BETWEEN #{startDate} AND #{endDate} AND deleted = 0")
-    List<TenantSubscription> findTrialExpiringSoon(@Param("startDate") LocalDateTime startDate,
-                                                      @Param("endDate") LocalDateTime endDate);
+            "AND trial_end_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0")
+    List<TenantSubscription> findTrialExpiringSoon(@Param("startTime") LocalDateTime startTime,
+                                                      @Param("endTime") LocalDateTime endTime);
 
     /**
      * 统计租户订阅数
@@ -89,11 +89,11 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      * 获取即将到期的订阅
      */
     @Select("SELECT * FROM tenant_subscription " +
-            "WHERE next_billing_date BETWEEN #{startDate} AND #{endDate} " +
+            "WHERE next_billing_time BETWEEN #{startTime} AND #{endTime} " +
             "AND status IN ('ACTIVE', 'TRIAL') AND deleted = 0 " +
-            "ORDER BY next_billing_date")
-    List<TenantSubscription> findSubscriptionsExpiringBetween(@Param("startDate") LocalDateTime startDate,
-                                                                 @Param("endDate") LocalDateTime endDate);
+            "ORDER BY next_billing_time")
+    List<TenantSubscription> findSubscriptionsExpiringBetween(@Param("startTime") LocalDateTime startTime,
+                                                                 @Param("endTime") LocalDateTime endTime);
 
     /**
      * 获取按计划分组的订阅统计
@@ -110,16 +110,16 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
     /**
      * 统计时间段内新增订阅数（按 start_date）
      */
-    @Select("SELECT COUNT(*) FROM tenant_subscription WHERE start_date BETWEEN #{startDate} AND #{endDate} AND deleted = 0")
-    long countNewSubscriptions(@Param("startDate") LocalDateTime startDate,
-                              @Param("endDate") LocalDateTime endDate);
+    @Select("SELECT COUNT(*) FROM tenant_subscription WHERE start_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0")
+    long countNewSubscriptions(@Param("startTime") LocalDateTime startTime,
+                              @Param("endTime") LocalDateTime endTime);
 
     /**
      * 统计时间段内取消订阅数（按 cancelled_at）
      */
-    @Select("SELECT COUNT(*) FROM tenant_subscription WHERE cancelled_at BETWEEN #{startDate} AND #{endDate} AND deleted = 0")
-    long countCancelledSubscriptions(@Param("startDate") LocalDateTime startDate,
-                                     @Param("endDate") LocalDateTime endDate);
+    @Select("SELECT COUNT(*) FROM tenant_subscription WHERE cancelled_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0")
+    long countCancelledSubscriptions(@Param("startTime") LocalDateTime startTime,
+                                     @Param("endTime") LocalDateTime endTime);
 
     /**
      * 统计当前各计划的订阅数量
@@ -131,9 +131,9 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      * 统计时间段内从 TRIAL 转为 ACTIVE 的订阅数（试用转化）
      * 简化：以 upgraded_at 在区间内且当前状态为 ACTIVE 作为转化
      */
-    @Select("SELECT COUNT(*) FROM tenant_subscription WHERE upgraded_at BETWEEN #{startDate} AND #{endDate} AND status = 'ACTIVE' AND deleted = 0")
-    long countTrialConverted(@Param("startDate") LocalDateTime startDate,
-                             @Param("endDate") LocalDateTime endDate);
+    @Select("SELECT COUNT(*) FROM tenant_subscription WHERE upgraded_time BETWEEN #{startTime} AND #{endTime} AND status = 'ACTIVE' AND deleted = 0")
+    long countTrialConverted(@Param("startTime") LocalDateTime startTime,
+                             @Param("endTime") LocalDateTime endTime);
 
     /**
      * 统计时间段内处于 TRIAL 状态的订阅快照（简化）
@@ -146,7 +146,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      * 计算某个时间点的活跃订阅数（期初活跃订阅数）
      */
     @Select("SELECT COUNT(*) FROM tenant_subscription WHERE deleted = 0 AND status = 'ACTIVE' " +
-            "AND start_date <= #{asOf} AND (cancelled_at IS NULL OR cancelled_at > #{asOf})")
+            "AND start_time <= #{asOf} AND (cancelled_time IS NULL OR cancelled_time > #{asOf})")
     long countActiveAtDate(@Param("asOf") LocalDateTime asOf);
 
     /**
@@ -154,11 +154,11 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      * 包含：区间内处于试用状态的订阅 或 区间内完成升级的订阅
      */
     @Select("SELECT COUNT(*) FROM tenant_subscription WHERE deleted = 0 AND (" +
-            "(in_trial = 1 AND trial_end_date >= #{startDate} AND start_date <= #{endDate}) " +
-            "OR (upgraded_at BETWEEN #{startDate} AND #{endDate})" +
+            "(in_trial = 1 AND trial_end_time >= #{startTime} AND start_time <= #{endTime}) " +
+            "OR (upgraded_at BETWEEN #{startTime} AND #{endTime})" +
             ")")
-    long countTrialExposedDuring(@Param("startDate") LocalDateTime startDate,
-                                 @Param("endDate") LocalDateTime endDate);
+    long countTrialExposedDuring(@Param("startTime") LocalDateTime startTime,
+                                 @Param("endTime") LocalDateTime endTime);
 
 
     List<java.util.Map<String, Object>> getSubscriptionStatsByPlan();

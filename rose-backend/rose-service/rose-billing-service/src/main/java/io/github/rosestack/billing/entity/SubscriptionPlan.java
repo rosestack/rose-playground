@@ -98,10 +98,10 @@ public class SubscriptionPlan extends BaseTenantEntity{
     /**
      * 计划生效时间
      */
-    private LocalDateTime effectiveDate;
+    private LocalDateTime effectiveTime;
 
     /**
      * 计划失效时间
      */
-    private LocalDateTime expiryDate;
+    private LocalDateTime expiryTime;
 }

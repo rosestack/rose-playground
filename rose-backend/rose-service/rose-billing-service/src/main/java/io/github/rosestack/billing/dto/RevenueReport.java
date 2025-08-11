@@ -11,9 +11,9 @@ import java.util.Map; /**
 @Data
 public class RevenueReport {
     private String reportType;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private LocalDateTime generatedAt;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime generatedTime;
     private BigDecimal totalRevenue;
     private Map<String, BigDecimal> revenueByPeriod;
     private Map<String, BigDecimal> revenueByPlan;

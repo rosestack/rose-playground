@@ -46,7 +46,7 @@ public class BillingScheduler {
                 try {
                     // 试用期结束处理
                     if (subscription.getInTrial() &&
-                        subscription.getTrialEndDate().isBefore(now)) {
+                        subscription.getTrialEndTime().isBefore(now)) {
                         handleTrialExpiry(subscription);
                         continue;
                     }
@@ -90,7 +90,7 @@ public class BillingScheduler {
                         .selectById(invoice.getSubscriptionId());
                     if (subscription != null && subscription.getStatus() == SubscriptionStatus.ACTIVE) {
                         subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
-                        subscription.setPausedAt(LocalDateTime.now());
+                        subscription.setPausedTime(LocalDateTime.now());
                         subscription.setPauseReason("逾期付款");
                         subscriptionRepository.updateById(subscription);
 

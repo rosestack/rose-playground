@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
  */
 @Data
 public class ComprehensiveFinancialReport {
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private LocalDateTime generatedAt;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime generatedTime;
     private RevenueReport revenueReport;
     private SubscriptionReport subscriptionReport;
     private UsageReport usageReport;
