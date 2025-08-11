@@ -1,6 +1,7 @@
 package io.github.rosestack.billing.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.enums.InvoiceStatus;
@@ -55,7 +56,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      * 统计租户总收入
      */
     default BigDecimal sumPaidAmountByTenantId(String tenantId) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(total_amount), 0) AS total")
           .eq("tenant_id", tenantId)
           .eq("status", "PAID");
@@ -69,7 +70,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      * 统计时间段内的收入
      */
     default BigDecimal sumPaidAmountByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(total_amount), 0) AS total")
           .eq("status", "PAID")
           .between("paid_at", startDate, endDate);
@@ -83,7 +84,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      * 获取租户的账单统计
      */
     default java.util.Map<String, Object> getInvoiceStatsByTenant(String tenantId) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COUNT(*) as totalCount",
                 "COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pendingCount",
                 "COUNT(CASE WHEN status = 'PAID' THEN 1 END) as paidCount",
@@ -99,7 +100,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      * 获取时间段内的每日收入统计
      */
     default List<java.util.Map<String, Object>> getRevenueStatsByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("DATE(paid_at) as paymentDate",
                 "COUNT(*) as paymentCount",
                 "SUM(total_amount) as dailyRevenue")
@@ -114,7 +115,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      * 统计时间段内已支付账单数量
      */
     default long countPaidInvoicesByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COUNT(*) AS cnt")
           .eq("status", "PAID")
           .between("paid_at", startDate, endDate);
@@ -127,7 +128,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
      * 统计时间段内基础订阅收入（base_amount）
      */
     default BigDecimal sumBaseAmountByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(base_amount), 0) AS total")
           .eq("status", "PAID")
           .between("paid_at", startDate, endDate);
@@ -143,7 +144,7 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
     default List<java.util.Map<String, Object>> getTopTenantsByRevenue(LocalDateTime startDate,
                                                                         LocalDateTime endDate,
                                                                         int limit) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Invoice> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("tenant_id as tenantId",
                 "COUNT(*) as invoiceCount",
                 "COALESCE(SUM(total_amount),0) as revenue",

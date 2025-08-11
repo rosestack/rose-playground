@@ -1,6 +1,8 @@
 package io.github.rosestack.billing.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.UsageRecord;
 import org.apache.ibatis.annotations.Mapper;
@@ -25,7 +27,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
             String metricType,
             LocalDateTime startTime,
             LocalDateTime endTime) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(quantity), 0) AS total")
                 .eq("tenant_id", tenantId)
                 .eq("metric_type", metricType)
@@ -68,7 +70,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
                              LocalDateTime endTime,
                              String invoiceId,
                              LocalDateTime billedAt) {
-        com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UsageRecord> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
+        UpdateWrapper<UsageRecord> uw = new UpdateWrapper<>();
         uw.set("billed", 1)
                 .set("billed_time", billedAt)
                 .set("invoice_id", invoiceId)
@@ -82,7 +84,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 删除过期的使用量记录
      */
     default int deleteOldBilledRecords(LocalDateTime cutoffDate) {
-        com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UsageRecord> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
+        UpdateWrapper<UsageRecord> uw = new UpdateWrapper<>();
         uw.set("deleted", 1)
                 .lt("record_time", cutoffDate)
                 .eq("billed", 1);
@@ -93,7 +95,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 获取租户当月使用量统计
      */
     default List<java.util.Map<String, Object>> getMonthlyUsageStats(String tenantId, LocalDateTime monthStart) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("metric_type as metricType", "SUM(quantity) as totalQuantity")
                 .eq("tenant_id", tenantId)
                 .ge("record_time", monthStart)
@@ -105,7 +107,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 获取租户使用量趋势统计
      */
     default List<java.util.Map<String, Object>> getUsageTrendStats(String tenantId, LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("DATE(record_time) as recordDate",
                         "metric_type as metricType",
                         "SUM(quantity) as dailyQuantity")
@@ -120,7 +122,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 获取租户当前使用量汇总
      */
     default List<java.util.Map<String, Object>> getCurrentPeriodUsageSummary(String tenantId, LocalDateTime periodStart) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("metric_type as metricType",
                         "COUNT(*) as recordCount",
                         "SUM(quantity) as totalQuantity",
@@ -136,7 +138,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 获取时间段内各计量类型的全量使用量汇总
      */
     default List<java.util.Map<String, Object>> sumUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("metric_type as metricType", "COALESCE(SUM(quantity),0) as totalQuantity")
                 .between("record_time", startDate, endDate)
                 .groupBy("metric_type");
@@ -147,7 +149,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 获取时间段内租户使用量 Top N（按总量）
      */
     default List<java.util.Map<String, Object>> getTopTenantsByUsage(LocalDateTime startDate, LocalDateTime endDate, int limit) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("tenant_id as tenantId", "COALESCE(SUM(quantity),0) as totalUsage")
                 .between("record_time", startDate, endDate)
                 .groupBy("tenant_id")
@@ -160,7 +162,7 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
      * 获取时间段内的全局每日使用量趋势
      */
     default List<java.util.Map<String, Object>> sumDailyUsage(LocalDateTime startDate, LocalDateTime endDate) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("DATE(record_time) as recordDate", "COALESCE(SUM(quantity),0) as dailyUsage")
                 .between("record_time", startDate, endDate)
                 .groupBy("DATE(record_time)")

@@ -1,6 +1,7 @@
 package io.github.rosestack.billing.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.PaymentRecord;
 import io.github.rosestack.billing.enums.InvoiceStatus;
@@ -8,8 +9,10 @@ import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.billing.exception.InvoiceNotFoundException;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +29,6 @@ import java.util.Map;
  * @author rose
  */
 @Slf4j
-@Validated
-
 @Service
 @RequiredArgsConstructor
 public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
@@ -36,7 +37,7 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
     private final PaymentRecordRepository paymentRecordRepository;
 
     // 可选注入，未配置 Outbox 时不影响主流程
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @Autowired(required = false)
     private OutboxService outboxService;
 
     /**
@@ -72,9 +73,9 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
-    public void markInvoiceAsPaid(@jakarta.validation.constraints.NotBlank String invoiceId,
-                                  @jakarta.validation.constraints.NotBlank String paymentMethod,
-                                  @jakarta.validation.constraints.NotBlank String transactionId) {
+    public void markInvoiceAsPaid(@NotBlank String invoiceId,
+                                  @NotBlank String paymentMethod,
+                                  @NotBlank String transactionId) {
 
         Invoice invoice = invoiceRepository.selectById(invoiceId);
         // 幂等性检查：若同一 transactionId 已处理则忽略
@@ -137,7 +138,7 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
             // Outbox: 支付成功事件（可选）
             if (outboxService != null) {
                 try {
-                    String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                    String payload = new ObjectMapper().writeValueAsString(
                             java.util.Map.of(
                                     "invoiceId", invoiceId,
                                     "transactionId", transactionId,

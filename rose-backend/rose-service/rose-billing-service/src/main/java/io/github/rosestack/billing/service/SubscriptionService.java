@@ -14,7 +14,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,8 +25,6 @@ import java.util.Optional;
  * @author rose
  */
 @Slf4j
-@Validated
-
 @Service
 @RequiredArgsConstructor
 public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepository, TenantSubscription> {

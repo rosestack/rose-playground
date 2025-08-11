@@ -5,7 +5,7 @@ import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.service.RefundService;
 import io.github.rosestack.core.model.ApiResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -52,7 +52,7 @@ public class RefundController {
         @NotBlank
         private String invoiceId;
         @NotNull
-        @Min(value = 0, message = "退款金额必须大于0")
+        @DecimalMin(value = "0.01", message = "退款金额必须大于0")
         private BigDecimal amount;
         private String reason;
     }
