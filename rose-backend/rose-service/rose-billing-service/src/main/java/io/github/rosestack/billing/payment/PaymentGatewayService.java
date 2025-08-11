@@ -93,6 +93,62 @@ public class PaymentGatewayService {
     }
 
     /**
+     * 验证退款回调
+     */
+    public boolean verifyRefundCallback(String paymentMethod, Map<String, Object> callbackData) {
+        try {
+            PaymentProcessor processor = getPaymentProcessor(paymentMethod);
+            boolean isValid = processor.verifyRefundCallback(callbackData);
+            if (!isValid) log.warn("退款回调验证失败：{}", paymentMethod);
+            return isValid;
+        } catch (Exception e) {
+            log.error("退款回调验证失败：{}", paymentMethod, e);
+            return false;
+        }
+    }
+
+    /**
+     * 解析退款金额（回调）
+     */
+    public BigDecimal parseRefundAmount(String paymentMethod, Map<String, Object> data) {
+        PaymentProcessor processor = getPaymentProcessor(paymentMethod);
+        if (processor != null) {
+            try { return processor.parseRefundAmount(data); } catch (Exception ignored) {}
+        }
+        Object ra = data.get("refund_amount");
+        if (ra != null) return new BigDecimal(ra.toString());
+        Object amt = data.get("amount");
+        if (amt != null) return new BigDecimal(amt.toString());
+        Object rf = data.get("refund_fee");
+        if (rf != null) {
+            try { return new BigDecimal(rf.toString()).movePointLeft(2); } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    /**
+     * 判断退款是否成功（回调）
+     */
+    public boolean isRefundSuccess(String paymentMethod, Map<String, Object> data) {
+        PaymentProcessor processor = getPaymentProcessor(paymentMethod);
+        if (processor != null) {
+            try { return processor.isRefundSuccess(data); } catch (Exception ignored) {}
+        }
+        String statusRaw = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", data.getOrDefault("refundStatus", ""))));
+        String s = statusRaw == null ? "" : statusRaw.trim().toUpperCase();
+        switch (paymentMethod.toUpperCase()) {
+            case "ALIPAY":
+                return "REFUND_SUCCESS".equals(s) || "SUCCESS".equals(s);
+            case "WECHAT":
+                return "SUCCESS".equals(s);
+            case "STRIPE":
+                return "SUCCEEDED".equals(s) || "SUCCESS".equals(s);
+            default:
+                return "SUCCESS".equals(s) || "SUCCEEDED".equals(s) || "REFUND_SUCCESS".equals(s);
+        }
+    }
+
+    /**
      * 处理退款
      */
     public RefundResult processRefund(String transactionId, BigDecimal amount, String reason, String tenantId) {

@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.UsageRecord;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,14 +21,21 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
     /**
      * 统计指定时间段内的使用量
      */
-    @Select("SELECT COALESCE(SUM(quantity), 0) FROM usage_record " +
-            "WHERE tenant_id = #{tenantId} AND metric_type = #{metricType} " +
-            "AND record_time BETWEEN #{startTime} AND #{endTime} AND deleted = 0")
-    BigDecimal sumUsageByTenantAndMetricAndPeriod(
-            @Param("tenantId") String tenantId,
-            @Param("metricType") String metricType,
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime);
+    default BigDecimal sumUsageByTenantAndMetricAndPeriod(
+            String tenantId,
+            String metricType,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("COALESCE(SUM(quantity), 0) AS total")
+          .eq("tenant_id", tenantId)
+          .eq("metric_type", metricType)
+          .between("record_time", startTime, endTime);
+        java.util.List<java.util.Map<String, Object>> list = selectMaps(qw);
+        if (list.isEmpty() || list.get(0) == null) return java.math.BigDecimal.ZERO;
+        Object v = list.get(0).get("total");
+        return v == null ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(v.toString());
+    }
 
     /**
      * 查找租户的使用量记录
@@ -40,7 +45,6 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         LambdaQueryWrapper<UsageRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UsageRecord::getTenantId, tenantId)
                 .eq(UsageRecord::getMetricType, metricType)
-                .eq(UsageRecord::getDeleted, false)
                 .orderByDesc(UsageRecord::getRecordTime);
         return selectList(wrapper);
     }
@@ -53,95 +57,117 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         LambdaQueryWrapper<UsageRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UsageRecord::getTenantId, tenantId)
                 .eq(UsageRecord::getBilled, false)
-                .between(UsageRecord::getRecordTime, startTime, endTime)
-                .eq(UsageRecord::getDeleted, false);
+                .between(UsageRecord::getRecordTime, startTime, endTime);
         return selectList(wrapper);
     }
 
     /**
      * 标记使用量为已计费
      */
-    @Update("UPDATE usage_record SET billed = 1, billed_at = #{billedAt}, invoice_id = #{invoiceId} " +
-            "WHERE tenant_id = #{tenantId} AND record_time BETWEEN #{startTime} AND #{endTime} " +
-            "AND billed = 0 AND deleted = 0")
-    int markAsBilled(@Param("tenantId") String tenantId,
-                     @Param("startTime") LocalDateTime startTime,
-                     @Param("endTime") LocalDateTime endTime,
-                     @Param("invoiceId") String invoiceId,
-                     @Param("billedAt") LocalDateTime billedAt);
+    default int markAsBilled(String tenantId,
+                              LocalDateTime startTime,
+                              LocalDateTime endTime,
+                              String invoiceId,
+                              LocalDateTime billedAt) {
+        com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UsageRecord> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
+        uw.set("billed", 1)
+          .set("billed_at", billedAt)
+          .set("invoice_id", invoiceId)
+          .eq("tenant_id", tenantId)
+          .between("record_time", startTime, endTime)
+          .eq("billed", 0);
+        return update(null, uw);
+    }
 
     /**
      * 删除过期的使用量记录
      */
-    @Update("UPDATE usage_record SET deleted = 1 WHERE record_time < #{cutoffDate} AND billed = 1")
-    int deleteOldBilledRecords(@Param("cutoffDate") LocalDateTime cutoffDate);
+    default int deleteOldBilledRecords(LocalDateTime cutoffDate) {
+        com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UsageRecord> uw = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();
+        uw.set("deleted", 1)
+          .lt("record_time", cutoffDate)
+          .eq("billed", 1);
+        return update(null, uw);
+    }
 
     /**
      * 获取租户当月使用量统计
      */
-    @Select("SELECT metric_type as metricType, SUM(quantity) as totalQuantity FROM usage_record " +
-            "WHERE tenant_id = #{tenantId} AND record_time >= #{monthStart} AND deleted = 0 " +
-            "GROUP BY metric_type")
-    List<java.util.Map<String, Object>> getMonthlyUsageStats(@Param("tenantId") String tenantId,
-                                                            @Param("monthStart") LocalDateTime monthStart);
+    default List<java.util.Map<String, Object>> getMonthlyUsageStats(String tenantId, LocalDateTime monthStart) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("metric_type as metricType", "SUM(quantity) as totalQuantity")
+          .eq("tenant_id", tenantId)
+          .ge("record_time", monthStart)
+          .groupBy("metric_type");
+        return selectMaps(qw);
+    }
 
     /**
      * 获取租户使用量趋势统计
      */
-    @Select("SELECT " +
-            "DATE(record_time) as recordDate, " +
-            "metric_type as metricType, " +
-            "SUM(quantity) as dailyQuantity " +
-            "FROM usage_record " +
-            "WHERE tenant_id = #{tenantId} AND record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
-            "GROUP BY DATE(record_time), metric_type " +
-            "ORDER BY recordDate, metricType")
-    List<java.util.Map<String, Object>> getUsageTrendStats(@Param("tenantId") String tenantId,
-                                                          @Param("startDate") LocalDateTime startDate,
-                                                          @Param("endDate") LocalDateTime endDate);
+    default List<java.util.Map<String, Object>> getUsageTrendStats(String tenantId, LocalDateTime startDate, LocalDateTime endDate) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("DATE(record_time) as recordDate",
+                "metric_type as metricType",
+                "SUM(quantity) as dailyQuantity")
+          .eq("tenant_id", tenantId)
+          .between("record_time", startDate, endDate)
+          .groupBy("DATE(record_time)", "metric_type")
+          .orderByAsc("recordDate", "metricType");
+        return selectMaps(qw);
+    }
 
     /**
      * 获取租户当前使用量汇总
      */
-    @Select("SELECT " +
-            "metric_type as metricType, " +
-            "COUNT(*) as recordCount, " +
-            "SUM(quantity) as totalQuantity, " +
-            "AVG(quantity) as avgQuantity, " +
-            "MAX(quantity) as maxQuantity " +
-            "FROM usage_record " +
-            "WHERE tenant_id = #{tenantId} AND record_time >= #{periodStart} AND deleted = 0 " +
-            "GROUP BY metric_type")
-    List<java.util.Map<String, Object>> getCurrentPeriodUsageSummary(@Param("tenantId") String tenantId,
-                                                                    @Param("periodStart") LocalDateTime periodStart);
+    default List<java.util.Map<String, Object>> getCurrentPeriodUsageSummary(String tenantId, LocalDateTime periodStart) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("metric_type as metricType",
+                "COUNT(*) as recordCount",
+                "SUM(quantity) as totalQuantity",
+                "AVG(quantity) as avgQuantity",
+                "MAX(quantity) as maxQuantity")
+          .eq("tenant_id", tenantId)
+          .ge("record_time", periodStart)
+          .groupBy("metric_type");
+        return selectMaps(qw);
+    }
 
     /**
      * 获取时间段内各计量类型的全量使用量汇总
      */
-    @Select("SELECT metric_type as metricType, COALESCE(SUM(quantity),0) as totalQuantity " +
-            "FROM usage_record WHERE record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
-            "GROUP BY metric_type")
-    List<java.util.Map<String, Object>> sumUsageByType(@Param("startDate") LocalDateTime startDate,
-                                                       @Param("endDate") LocalDateTime endDate);
+    default List<java.util.Map<String, Object>> sumUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("metric_type as metricType", "COALESCE(SUM(quantity),0) as totalQuantity")
+          .between("record_time", startDate, endDate)
+          .groupBy("metric_type");
+        return selectMaps(qw);
+    }
 
     /**
      * 获取时间段内租户使用量 Top N（按总量）
      */
-    @Select("SELECT tenant_id as tenantId, COALESCE(SUM(quantity),0) as totalUsage " +
-            "FROM usage_record WHERE record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
-            "GROUP BY tenant_id ORDER BY totalUsage DESC LIMIT #{limit}")
-    List<java.util.Map<String, Object>> getTopTenantsByUsage(@Param("startDate") LocalDateTime startDate,
-                                                            @Param("endDate") LocalDateTime endDate,
-                                                            @Param("limit") int limit);
+    default List<java.util.Map<String, Object>> getTopTenantsByUsage(LocalDateTime startDate, LocalDateTime endDate, int limit) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("tenant_id as tenantId", "COALESCE(SUM(quantity),0) as totalUsage")
+          .between("record_time", startDate, endDate)
+          .groupBy("tenant_id")
+          .orderByDesc("totalUsage")
+          .last("LIMIT " + limit);
+        return selectMaps(qw);
+    }
 
     /**
      * 获取时间段内的全局每日使用量趋势
      */
-    @Select("SELECT DATE(record_time) as recordDate, COALESCE(SUM(quantity),0) as dailyUsage " +
-            "FROM usage_record WHERE record_time BETWEEN #{startDate} AND #{endDate} AND deleted = 0 " +
-            "GROUP BY DATE(record_time) ORDER BY recordDate")
-    List<java.util.Map<String, Object>> sumDailyUsage(@Param("startDate") LocalDateTime startDate,
-                                                      @Param("endDate") LocalDateTime endDate);
+    default List<java.util.Map<String, Object>> sumDailyUsage(LocalDateTime startDate, LocalDateTime endDate) {
+        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UsageRecord> qw = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
+        qw.select("DATE(record_time) as recordDate", "COALESCE(SUM(quantity),0) as dailyUsage")
+          .between("record_time", startDate, endDate)
+          .groupBy("DATE(record_time)")
+          .orderByAsc("recordDate");
+        return selectMaps(qw);
+    }
 
 
 }

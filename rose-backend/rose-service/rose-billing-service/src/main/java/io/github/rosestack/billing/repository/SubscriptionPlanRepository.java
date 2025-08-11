@@ -24,8 +24,7 @@ public interface SubscriptionPlanRepository extends BaseMapper<SubscriptionPlan>
      */
     default Optional<SubscriptionPlan> findByCode(String code) {
         LambdaQueryWrapper<SubscriptionPlan> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SubscriptionPlan::getCode, code)
-                .eq(SubscriptionPlan::getDeleted, false);
+        wrapper.eq(SubscriptionPlan::getCode, code);
         SubscriptionPlan plan = selectOne(wrapper);
         return Optional.ofNullable(plan);
     }
@@ -36,7 +35,6 @@ public interface SubscriptionPlanRepository extends BaseMapper<SubscriptionPlan>
     default List<SubscriptionPlan> findByEnabledTrueOrderByBasePrice() {
         LambdaQueryWrapper<SubscriptionPlan> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SubscriptionPlan::getEnabled, true)
-                .eq(SubscriptionPlan::getDeleted, false)
                 .orderByAsc(SubscriptionPlan::getBasePrice);
         return selectList(wrapper);
     }
@@ -48,8 +46,7 @@ public interface SubscriptionPlanRepository extends BaseMapper<SubscriptionPlan>
         LambdaQueryWrapper<SubscriptionPlan> wrapper = new LambdaQueryWrapper<>();
         wrapper.and(w -> w.eq(SubscriptionPlan::getTenantId, tenantId)
                         .or()
-                        .isNull(SubscriptionPlan::getTenantId))
-                .eq(SubscriptionPlan::getDeleted, false);
+                        .isNull(SubscriptionPlan::getTenantId));
         return selectList(wrapper);
     }
 

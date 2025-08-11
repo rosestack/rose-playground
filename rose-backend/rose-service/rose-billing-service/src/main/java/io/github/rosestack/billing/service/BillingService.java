@@ -18,6 +18,9 @@ import io.github.rosestack.billing.repository.PaymentRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import io.github.rosestack.billing.event.PaymentSucceededEvent;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -45,6 +48,8 @@ public class BillingService {
     private final BillingNotificationService notificationService;
 
     // 新增的服务依赖
+    private final ApplicationEventPublisher eventPublisher;
+
     private final SubscriptionService subscriptionService;
     private final UsageService usageService;
     private final InvoiceService invoiceService;
@@ -286,8 +291,13 @@ public class BillingService {
         usageService.markUsageAsBilled(invoice.getTenantId(), invoice.getPeriodStart().atStartOfDay(),
             invoice.getPeriodEnd().plusDays(1).atStartOfDay(), invoiceId);
 
-        // 发送支付确认通知
+        // 发送支付确认通知（保留同步通知）
         notificationService.sendPaymentConfirmation(subscription.getTenantId(), invoice);
+        // 发布领域事件，供异步监听与扩展
+        eventPublisher.publishEvent(new PaymentSucceededEvent(
+                subscription.getTenantId(), invoiceId, transactionId, paymentMethod,
+                invoice.getTotalAmount(), LocalDateTime.now()
+        ));
 
         log.info("处理支付成功，账单: {}, 金额: {}", invoiceId, invoice.getTotalAmount());
     }

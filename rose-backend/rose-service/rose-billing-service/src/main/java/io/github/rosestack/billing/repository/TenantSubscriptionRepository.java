@@ -25,8 +25,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
      */
     default Optional<TenantSubscription> findByTenantId(String tenantId) {
         LambdaQueryWrapper<TenantSubscription> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TenantSubscription::getTenantId, tenantId)
-                .eq(TenantSubscription::getDeleted, false);
+        wrapper.eq(TenantSubscription::getTenantId, tenantId);
         TenantSubscription subscription = selectOne(wrapper);
         return Optional.ofNullable(subscription);
     }
@@ -37,8 +36,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
     default Optional<TenantSubscription> findByTenantIdAndStatus(String tenantId, SubscriptionStatus status) {
         LambdaQueryWrapper<TenantSubscription> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(TenantSubscription::getTenantId, tenantId)
-                .eq(TenantSubscription::getStatus, status)
-                .eq(TenantSubscription::getDeleted, false);
+                .eq(TenantSubscription::getStatus, status);
         TenantSubscription subscription = selectOne(wrapper);
         return Optional.ofNullable(subscription);
     }
@@ -57,8 +55,7 @@ public interface TenantSubscriptionRepository extends BaseMapper<TenantSubscript
             LocalDateTime date, List<SubscriptionStatus> statuses) {
         LambdaQueryWrapper<TenantSubscription> wrapper = new LambdaQueryWrapper<>();
         wrapper.lt(TenantSubscription::getNextBillingDate, date)
-                .in(TenantSubscription::getStatus, statuses)
-                .eq(TenantSubscription::getDeleted, false);
+                .in(TenantSubscription::getStatus, statuses);
         return selectList(wrapper);
     }
 

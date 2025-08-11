@@ -33,6 +33,13 @@ public class WechatPaymentProcessor implements PaymentProcessor {
     @Value("${rose.billing.payment.wechat.api-key:}")
     private String apiKey;
 
+    // 轻量回调校验配置
+    @Value("${rose.billing.payment.wechat.hmac-secret:}")
+    private String hmacSecret;
+
+    @Value("${rose.billing.payment.wechat.allowed-skew-seconds:300}")
+    private long allowedSkewSeconds;
+
     @Override
     public String getPaymentMethod() {
         return "WECHAT";
@@ -97,15 +104,47 @@ public class WechatPaymentProcessor implements PaymentProcessor {
     @Override
     public boolean verifyCallback(Map<String, Object> callbackData) {
         try {
-            // TODO: 验证微信支付回调签名
-            // return WXPayUtil.isSignatureValid(callbackData, apiKey);
+            // 轻量安全校验：timestamp 时间窗 + HMAC 校验（如未配置 hmac，则降级为字段存在性校验）
+            Object tsObj = callbackData.get("timestamp");
+            if (tsObj != null) {
+                long ts = Long.parseLong(tsObj.toString());
+                long now = System.currentTimeMillis() / 1000;
+                if (Math.abs(now - ts) > allowedSkewSeconds) {
+                    log.warn("微信回调超出时间窗: now={}, ts={}, skew={}", now, ts, allowedSkewSeconds);
+                    return false;
+                }
+            }
 
-            // 模拟验证成功
+            Object signObj = callbackData.get("sign");
+            if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("transaction_id", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String expected = hmacSha256Hex(payload, hmacSecret);
+                if (!expected.equals(signObj.toString())) {
+                    log.warn("微信回调HMAC校验失败");
+                    return false;
+                }
+            }
+
             return callbackData.containsKey("transaction_id") && callbackData.containsKey("result_code");
 
         } catch (Exception e) {
             log.error("验证微信支付回调失败", e);
             return false;
+        }
+    }
+
+    private static String hmacSha256Hex(String data, String key) {
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(result.length * 2);
+            for (byte b : result) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -133,6 +172,46 @@ public class WechatPaymentProcessor implements PaymentProcessor {
             return RefundResult.failed("微信退款失败：" + e.getMessage());
         }
     }
+
+    @Override
+    public boolean verifyRefundCallback(Map<String, Object> callbackData) {
+        try {
+            Object tsObj = callbackData.get("timestamp");
+            if (tsObj != null) {
+                long ts = Long.parseLong(tsObj.toString());
+                long now = System.currentTimeMillis() / 1000;
+                if (Math.abs(now - ts) > allowedSkewSeconds) return false;
+            }
+            Object signObj = callbackData.get("sign");
+            if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("refund_id", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String expected = hmacSha256Hex(payload, hmacSecret);
+                return expected.equals(signObj.toString());
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("验证微信退款回调失败", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isRefundSuccess(java.util.Map<String, Object> data) {
+        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", ""))).toUpperCase();
+        return "SUCCESS".equals(s);
+    }
+
+    @Override
+    public java.math.BigDecimal parseRefundAmount(java.util.Map<String, Object> data) {
+        Object rf = data.get("refund_fee");
+        if (rf != null) {
+            try { return new java.math.BigDecimal(rf.toString()).movePointLeft(2); } catch (Exception ignored) {}
+        }
+        return PaymentProcessor.super.parseRefundAmount(data);
+    }
+
 
     @Override
     public PaymentStatus queryPaymentStatus(String transactionId) {

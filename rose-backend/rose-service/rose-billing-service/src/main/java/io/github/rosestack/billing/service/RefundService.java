@@ -1,0 +1,186 @@
+package io.github.rosestack.billing.service;
+
+import io.github.rosestack.billing.dto.RefundResult;
+import io.github.rosestack.billing.entity.Invoice;
+import io.github.rosestack.billing.entity.RefundRecord;
+import io.github.rosestack.billing.enums.InvoiceStatus;
+import io.github.rosestack.billing.enums.RefundStatus;
+import io.github.rosestack.billing.payment.PaymentGatewayService;
+import io.github.rosestack.billing.repository.RefundRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class RefundService {
+
+    private final InvoiceService invoiceService;
+    private final PaymentGatewayService paymentGatewayService;
+    private final RefundRecordRepository refundRecordRepository;
+
+    @Transactional
+    public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason) {
+        return requestRefund(invoiceId, amount, reason, null);
+    }
+
+    /**
+     * 幂等退款请求（可选 idempotencyKey）
+     */
+    @Transactional
+    public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason, String idempotencyKey) {
+        if (invoiceId == null || invoiceId.isBlank()) {
+            return RefundResult.failed("invoiceId 不能为空");
+        }
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return RefundResult.failed("退款金额必须大于0");
+        }
+        Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
+        if (invoice.getStatus() != InvoiceStatus.PAID) {
+            return RefundResult.failed("仅支持对已支付账单发起退款");
+        }
+        if (invoice.getPaymentTransactionId() == null || invoice.getPaymentTransactionId().isBlank()) {
+            return RefundResult.failed("账单缺少交易号，无法退款");
+        }
+        // 幂等：如传入幂等键且已存在成功记录，直接返回成功
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            var qw = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<RefundRecord>()
+                    .eq(RefundRecord::getInvoiceId, invoiceId)
+                    .eq(RefundRecord::getIdempotencyKey, idempotencyKey)
+                    .eq(RefundRecord::getStatus, RefundStatus.SUCCESS);
+            if (refundRecordRepository.selectCount(qw) > 0) {
+                return RefundResult.success("idempotent");
+            }
+        }
+        // 校验累计退款金额不超过总额
+        BigDecimal refunded = refundRecordRepository.sumSucceededAmountByInvoiceId(invoiceId);
+        BigDecimal remain = invoice.getTotalAmount().subtract(refunded);
+        if (amount.compareTo(remain) > 0) {
+            return RefundResult.failed("退款金额超出可退余额");
+        }
+
+        // 调用网关处理退款
+        RefundResult result = paymentGatewayService.processRefund(
+                invoice.getPaymentTransactionId(), amount, reason, invoice.getTenantId());
+
+        // 记录 RefundRecord
+        RefundRecord rr = new RefundRecord();
+        rr.setTenantId(invoice.getTenantId());
+        rr.setInvoiceId(invoiceId);
+        rr.setPaymentMethod(invoice.getPaymentMethod());
+        rr.setTransactionId(invoice.getPaymentTransactionId());
+        rr.setRefundAmount(amount);
+        rr.setReason(reason);
+        rr.setRequestedAt(LocalDateTime.now());
+        rr.setIdempotencyKey(idempotencyKey);
+        if (result.isSuccess()) {
+            rr.setRefundId(result.getRefundId());
+            rr.setStatus(RefundStatus.SUCCESS);
+            rr.setCompletedAt(LocalDateTime.now());
+        } else {
+            rr.setStatus(RefundStatus.FAILED);
+        }
+        refundRecordRepository.insert(rr);
+
+        // 如为全额退款，将发票标记为 REFUNDED（部分退款保留 PAID）
+        if (result.isSuccess()) {
+            BigDecimal newRefunded = refunded.add(amount);
+            if (newRefunded.compareTo(invoice.getTotalAmount()) >= 0) {
+                invoice.setStatus(InvoiceStatus.REFUNDED);
+                invoiceService.updateById(invoice);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 退款回调处理：更新 RefundRecord 状态与原文，必要时更新发票状态
+     */
+    @Transactional
+    public boolean processRefundCallback(String paymentMethod, Map<String, Object> data) {
+        String invoiceId = String.valueOf(data.getOrDefault("invoiceId", data.getOrDefault("invoice_id", "")));
+        String refundId = String.valueOf(data.getOrDefault("refund_id", data.getOrDefault("id", "")));
+        if (invoiceId.isBlank() || refundId.isBlank()) return false;
+
+        // 金额与状态解析委托给网关（网关内再委派给具体 Processor）
+        BigDecimal callbackAmount = paymentGatewayService.parseRefundAmount(paymentMethod, data);
+        boolean isSuccess = paymentGatewayService.isRefundSuccess(paymentMethod, data);
+
+        // 查或建 RefundRecord
+        var qw = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<RefundRecord>()
+                .eq(RefundRecord::getInvoiceId, invoiceId)
+                .eq(RefundRecord::getRefundId, refundId);
+        RefundRecord rr = refundRecordRepository.selectOne(qw);
+        if (rr == null) {
+            rr = new RefundRecord();
+            rr.setInvoiceId(invoiceId);
+            rr.setPaymentMethod(paymentMethod);
+            rr.setRefundId(refundId);
+            rr.setRequestedAt(LocalDateTime.now());
+        }
+        // 序列化回调为 JSON 字符串（避免 toString 非标准格式）
+        try {
+            rr.setRawCallback(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(data));
+        } catch (Exception e) {
+            rr.setRawCallback(data.toString());
+        }
+        if (callbackAmount != null) rr.setRefundAmount(callbackAmount);
+        rr.setStatus(isSuccess ? RefundStatus.SUCCESS : RefundStatus.FAILED);
+        if (isSuccess) rr.setCompletedAt(LocalDateTime.now());
+
+        if (rr.getId() == null) {
+            refundRecordRepository.insert(rr);
+        } else {
+            refundRecordRepository.updateById(rr);
+        }
+
+        // 计算累计退款（含本次）以判定是否全额
+        Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
+        BigDecimal refunded = refundRecordRepository.sumSucceededAmountByInvoiceId(invoiceId);
+        if (isSuccess && callbackAmount != null) {
+            refunded = refunded.add(callbackAmount);
+        }
+        if (isSuccess && refunded.compareTo(invoice.getTotalAmount()) >= 0 && invoice.getStatus() != InvoiceStatus.REFUNDED) {
+            invoice.setStatus(InvoiceStatus.REFUNDED);
+            invoiceService.updateById(invoice);
+        }
+        return true;
+    }
+
+    private boolean isSuccessStatus(String method, String statusRaw) {
+        if (statusRaw == null) return true; // 缺省按成功处理
+        String s = statusRaw.trim().toUpperCase();
+        switch (method.toUpperCase()) {
+            case "ALIPAY":
+                return "REFUND_SUCCESS".equals(s) || "SUCCESS".equals(s);
+            case "WECHAT":
+                return "SUCCESS".equals(s);
+            case "STRIPE":
+                return "SUCCEEDED".equals(s) || "SUCCESS".equals(s);
+            default:
+                return "SUCCESS".equals(s) || "SUCCEEDED".equals(s) || "REFUND_SUCCESS".equals(s);
+        }
+    }
+
+    private BigDecimal parseRefundAmountFallback(Map<String, Object> data) {
+        Object ra = data.get("refund_amount");
+        if (ra != null) return new BigDecimal(ra.toString());
+        Object amt = data.get("amount");
+        if (amt != null) return new BigDecimal(amt.toString());
+        Object rf = data.get("refund_fee");
+        if (rf != null) {
+            try { return new BigDecimal(rf.toString()).movePointLeft(2); } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+}
+

@@ -1,43 +1,63 @@
 package io.github.rosestack.billing.service;
 
+import io.github.rosestack.billing.config.NotificationProperties;
+import io.github.rosestack.billing.notification.BillingNotificationClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+import java.util.Map;
 
 /**
- * 计费通知服务
- *
- * @author rose
+ * 计费通知服务（对接 notification-service）
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class BillingNotificationService {
 
+    private final BillingNotificationClient notificationClient;
+    private final NotificationProperties notificationProperties;
+
+    private String resolveTargetEmail(String tenantId) {
+        if (notificationProperties.getFallbackEmail() != null && !notificationProperties.getFallbackEmail().isEmpty()) {
+            return notificationProperties.getFallbackEmail();
+        }
+        return tenantId + "@" + notificationProperties.getEmailDomain();
+    }
+
     public void sendSubscriptionConfirmation(String tenantId, Object subscription) {
-        log.info("发送订阅确认通知: 租户 {}", tenantId);
-        // TODO: 集成现有的rose-notification-service
-        // 可以发送邮件、短信等多种通知方式
+        String target = resolveTargetEmail(tenantId);
+        notificationClient.send(target, "EMAIL", "BILLING_SUBSCRIPTION_CONFIRMED",
+                Map.of("tenantId", tenantId));
+        log.info("发送订阅确认通知: tenantId={}, target={}", tenantId, target);
     }
 
     public void sendInvoiceGenerated(String tenantId, Object invoice) {
-        log.info("发送账单生成通知: 租户 {}", tenantId);
-        // TODO: 发送账单生成邮件通知
+        String target = resolveTargetEmail(tenantId);
+        notificationClient.send(target, "EMAIL", "BILLING_INVOICE_GENERATED",
+                Map.of("tenantId", tenantId, "invoiceId", String.valueOf(invoice)));
+        log.info("发送账单生成通知: tenantId={}, target={}", tenantId, target);
     }
 
     public void sendPaymentConfirmation(String tenantId, Object invoice) {
-        log.info("发送支付确认通知: 租户 {}", tenantId);
-        // TODO: 发送支付成功确认邮件
+        String target = resolveTargetEmail(tenantId);
+        notificationClient.send(target, "EMAIL", "BILLING_PAYMENT_SUCCEEDED",
+                Map.of("tenantId", tenantId, "invoiceId", String.valueOf(invoice)));
+        log.info("发送支付确认通知: tenantId={}, target={}", tenantId, target);
     }
 
     public void sendOverdueNotification(String tenantId, Object invoice) {
-        log.info("发送逾期通知: 租户 {}", tenantId);
-        // TODO: 发送逾期付款警告邮件
+        String target = resolveTargetEmail(tenantId);
+        notificationClient.send(target, "EMAIL", "BILLING_INVOICE_OVERDUE",
+                Map.of("tenantId", tenantId, "invoiceId", String.valueOf(invoice)));
+        log.info("发送逾期通知: tenantId={}, target={}", tenantId, target);
     }
 
     public void sendTrialExpiryNotification(String tenantId, Object subscription) {
-        log.info("发送试用期到期通知: 租户 {}", tenantId);
-        // TODO: 发送试用期结束提醒邮件
+        String target = resolveTargetEmail(tenantId);
+        notificationClient.send(target, "EMAIL", "BILLING_TRIAL_EXPIRES",
+                Map.of("tenantId", tenantId));
+        log.info("发送试用期到期通知: tenantId={}, target={}", tenantId, target);
     }
 }

@@ -67,7 +67,9 @@ public class PaymentController {
         // 通用字段优先
         Object v = data.getOrDefault("invoiceId",
                 data.getOrDefault("invoice_id",
-                        data.getOrDefault("out_trade_no", "")));
+                        data.getOrDefault("out_trade_no",
+                                data.getOrDefault("client_reference_id",
+                                        data.getOrDefault("invoice", "")))));
         String s = v == null ? "" : v.toString();
         if (s.isEmpty()) {
             throw new IllegalArgumentException("invoiceId not found in callback: " + method);
@@ -78,7 +80,9 @@ public class PaymentController {
     private String extractTransactionId(String method, Map<String, Object> data) {
         Object v = data.getOrDefault("transactionId",
                 data.getOrDefault("transaction_id",
-                        data.getOrDefault("trade_no", "")));
+                        data.getOrDefault("trade_no",
+                                data.getOrDefault("payment_intent_id",
+                                        data.getOrDefault("id", "")))));
         String s = v == null ? "" : v.toString();
         if (s.isEmpty()) {
             throw new IllegalArgumentException("transactionId not found in callback: " + method);

@@ -28,6 +28,15 @@ public class PaymentRecord extends BaseTenantEntity{
     private String paymentMethod;
     private String transactionId;
     private PaymentRecordStatus status;
+
+    // 通道回执相关
+    private String channelStatus;      // SUCCESS/FAILED/PENDING 等
+    private BigDecimal channelAmount;  // 通道确认金额
+
+    // 入账标记
+    private Boolean posted;            // 是否已记总账/完成账务入账
+    private LocalDateTime postedAt;
+
     private Map<String, Object> gatewayResponse;
     private LocalDateTime paidAt;
     private LocalDateTime refundedAt;

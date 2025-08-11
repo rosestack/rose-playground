@@ -33,6 +33,13 @@ public class StripePaymentProcessor implements PaymentProcessor {
     @Value("${rose.billing.payment.stripe.webhook-secret:}")
     private String webhookSecret;
 
+    // 轻量回调校验（非SDK）：时间窗 + HMAC（可选）
+    @Value("${rose.billing.payment.stripe.hmac-secret:}")
+    private String hmacSecret;
+
+    @Value("${rose.billing.payment.stripe.allowed-skew-seconds:300}")
+    private long allowedSkewSeconds;
+
     @Override
     public String getPaymentMethod() {
         return "STRIPE";
@@ -139,21 +146,29 @@ public class StripePaymentProcessor implements PaymentProcessor {
     @Override
     public boolean verifyCallback(Map<String, Object> callbackData) {
         try {
-            // TODO: 验证真实的Stripe Webhook签名
-            /*
-            String payload = (String) callbackData.get("payload");
-            String sigHeader = (String) callbackData.get("stripe-signature");
-
-            Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
-
-            // 验证事件类型
-            if ("payment_intent.succeeded".equals(event.getType()) ||
-                "checkout.session.completed".equals(event.getType())) {
-                return true;
+            // 轻量安全校验：timestamp 时间窗 + HMAC 校验（如未配置 hmac，则降级为字段校验）
+            Object tsObj = callbackData.get("timestamp");
+            if (tsObj != null) {
+                long ts = Long.parseLong(tsObj.toString());
+                long now = System.currentTimeMillis() / 1000;
+                if (Math.abs(now - ts) > allowedSkewSeconds) {
+                    log.warn("Stripe回调超出时间窗: now={}, ts={}, skew={}", now, ts, allowedSkewSeconds);
+                    return false;
+                }
             }
-            */
 
-            // 模拟验证成功
+            Object signObj = callbackData.get("sign");
+            if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("id", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String expected = hmacSha256Hex(payload, hmacSecret);
+                if (!expected.equals(signObj.toString())) {
+                    log.warn("Stripe回调HMAC校验失败");
+                    return false;
+                }
+            }
+
             return callbackData.containsKey("id") &&
                     callbackData.containsKey("type") &&
                     "payment_intent.succeeded".equals(callbackData.get("type"));
@@ -161,6 +176,19 @@ public class StripePaymentProcessor implements PaymentProcessor {
         } catch (Exception e) {
             log.error("验证Stripe回调失败", e);
             return false;
+        }
+    }
+
+    private static String hmacSha256Hex(String data, String key) {
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(result.length * 2);
+            for (byte b : result) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -189,6 +217,44 @@ public class StripePaymentProcessor implements PaymentProcessor {
             return RefundResult.failed("Stripe退款失败：" + e.getMessage());
         }
     }
+
+    @Override
+    public boolean verifyRefundCallback(Map<String, Object> callbackData) {
+        try {
+            Object tsObj = callbackData.get("timestamp");
+            if (tsObj != null) {
+                long ts = Long.parseLong(tsObj.toString());
+                long now = System.currentTimeMillis() / 1000;
+                if (Math.abs(now - ts) > allowedSkewSeconds) return false;
+            }
+            Object signObj = callbackData.get("sign");
+            if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("refund_id", "")) + "|" +
+                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String expected = hmacSha256Hex(payload, hmacSecret);
+                return expected.equals(signObj.toString());
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("验证Stripe退款回调失败", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isRefundSuccess(java.util.Map<String, Object> data) {
+        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", ""))).toUpperCase();
+        return "SUCCEEDED".equals(s) || "SUCCESS".equals(s);
+    }
+
+    @Override
+    public java.math.BigDecimal parseRefundAmount(java.util.Map<String, Object> data) {
+        Object amt = data.get("amount");
+        if (amt != null) return new java.math.BigDecimal(amt.toString());
+        return PaymentProcessor.super.parseRefundAmount(data);
+    }
+
 
     @Override
     public PaymentStatus queryPaymentStatus(String transactionId) {

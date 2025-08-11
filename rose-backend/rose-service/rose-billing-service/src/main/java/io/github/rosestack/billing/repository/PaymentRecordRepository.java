@@ -22,8 +22,7 @@ public interface PaymentRecordRepository extends BaseMapper<PaymentRecord> {
      */
     default List<PaymentRecord> findByInvoiceId(String invoiceId) {
         LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PaymentRecord::getInvoiceId, invoiceId)
-                .eq(PaymentRecord::getDeleted, false);
+        wrapper.eq(PaymentRecord::getInvoiceId, invoiceId);
         return selectList(wrapper);
     }
 
@@ -33,7 +32,6 @@ public interface PaymentRecordRepository extends BaseMapper<PaymentRecord> {
     default List<PaymentRecord> findByTenantIdOrderByCreateTimeDesc(String tenantId) {
         LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PaymentRecord::getTenantId, tenantId)
-                .eq(PaymentRecord::getDeleted, false)
                 .orderByDesc(PaymentRecord::getCreatedTime);
         return selectList(wrapper);
     }
@@ -43,8 +41,7 @@ public interface PaymentRecordRepository extends BaseMapper<PaymentRecord> {
      */
     default Optional<PaymentRecord> findByTransactionId(String transactionId) {
         LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PaymentRecord::getTransactionId, transactionId)
-                .eq(PaymentRecord::getDeleted, false);
+        wrapper.eq(PaymentRecord::getTransactionId, transactionId);
         PaymentRecord record = selectOne(wrapper);
         return Optional.ofNullable(record);
     }
@@ -54,8 +51,7 @@ public interface PaymentRecordRepository extends BaseMapper<PaymentRecord> {
      */
     default List<PaymentRecord> findByStatus(PaymentRecordStatus status) {
         LambdaQueryWrapper<PaymentRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PaymentRecord::getStatus, status)
-                .eq(PaymentRecord::getDeleted, false);
+        wrapper.eq(PaymentRecord::getStatus, status);
         return selectList(wrapper);
     }
 }
