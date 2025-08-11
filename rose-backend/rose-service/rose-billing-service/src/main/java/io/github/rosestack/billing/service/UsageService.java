@@ -46,6 +46,25 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
     }
 
     /**
+     * 记录使用量（带订阅ID）
+     */
+    @Transactional
+    public void recordUsage(String tenantId, String subscriptionId, String metricType, BigDecimal quantity, String description) {
+        UsageRecord record = new UsageRecord();
+        record.setId(UUID.randomUUID().toString());
+        record.setTenantId(tenantId);
+        record.setSubscriptionId(subscriptionId);
+        record.setMetricType(metricType);
+        record.setQuantity(quantity);
+        record.setDescription(description);
+        record.setRecordTime(LocalDateTime.now());
+        record.setBilled(false);
+        usageRepository.insert(record);
+        log.debug("记录使用量(含订阅): 租户={}, 订阅={}, 类型={}, 数量={}", tenantId, subscriptionId, metricType, quantity);
+    }
+
+
+    /**
      * 批量记录使用量
      *
      * @param records 使用量记录列表，不能为空
@@ -92,7 +111,7 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
     /**
      * 获取租户指定时间段的使用量
      */
-    public BigDecimal getTenantUsage(String tenantId, String metricType, 
+    public BigDecimal getTenantUsage(String tenantId, String metricType,
                                    LocalDateTime startTime, LocalDateTime endTime) {
         return usageRepository.sumUsageByTenantAndMetricAndPeriod(tenantId, metricType, startTime, endTime);
     }
@@ -133,7 +152,7 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
     @Transactional
     public int markUsageAsBilled(String tenantId, LocalDateTime startTime, LocalDateTime endTime, String invoiceId) {
         int count = usageRepository.markAsBilled(tenantId, startTime, endTime, invoiceId, LocalDateTime.now());
-        log.info("标记使用量为已计费: 租户={}, 时间段={} to {}, 账单={}, 记录数={}", 
+        log.info("标记使用量为已计费: 租户={}, 时间段={} to {}, 账单={}, 记录数={}",
                 tenantId, startTime, endTime, invoiceId, count);
         return count;
     }
@@ -180,7 +199,7 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastMonth = now.minusMonths(1);
         BigDecimal historicalUsage = getTenantUsage(tenantId, metricType, lastMonth, now);
-        
+
         // 如果当前使用量超过历史平均的3倍，认为异常
         BigDecimal threshold = historicalUsage.multiply(BigDecimal.valueOf(3));
         return currentUsage.compareTo(threshold) > 0;

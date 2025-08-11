@@ -64,6 +64,8 @@ CREATE TABLE `invoice` (
     `discount_amount` DECIMAL(10,2) DEFAULT 0.00 COMMENT '折扣金额',
     `tax_amount` DECIMAL(10,2) DEFAULT 0.00 COMMENT '税费',
     `total_amount` DECIMAL(10,2) NOT NULL COMMENT '总金额',
+    `currency` VARCHAR(8) COMMENT '币种(ISO)',
+    `price_snapshot` JSON COMMENT '计费快照（定价/税率等的快照）',
     `status` VARCHAR(32) NOT NULL COMMENT '账单状态: DRAFT/PENDING/PAID/OVERDUE/CANCELLED/REFUNDED',
     `due_date` DATE NOT NULL COMMENT '到期日期',
     `paid_time` DATETIME COMMENT '支付时间',
@@ -106,6 +108,7 @@ CREATE TABLE `usage_record` (
     `metadata` TEXT COMMENT '元数据',
     `billed` BOOLEAN DEFAULT FALSE COMMENT '是否已计费',
     `billed_time` DATETIME COMMENT '计费时间',
+    `subscription_id` VARCHAR(64) COMMENT '关联订阅ID',
     `invoice_id` VARCHAR(64) COMMENT '关联账单ID',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -144,6 +147,11 @@ CREATE TABLE `payment_record` (
     `gateway_response` JSON COMMENT '网关原始响应',
     `status` VARCHAR(32) NOT NULL COMMENT '状态: PENDING/SUCCESS/FAILED/REFUNDED',
     `channel_status` VARCHAR(32) COMMENT '渠道状态',
+    `currency` VARCHAR(8) COMMENT '币种(ISO)',
+    `fee_amount` DECIMAL(10,2) COMMENT '通道费用',
+    `net_amount` DECIMAL(10,2) COMMENT '净额=amount-fee',
+    `posted` BOOLEAN COMMENT '是否已入总账',
+    `posted_time` DATETIME COMMENT '入总账时间',
     `channel_amount` DECIMAL(10,2) COMMENT '渠道确认金额',
     `paid_time` DATETIME COMMENT '支付时间',
     `refunded_time` DATETIME COMMENT '退款时间',
@@ -153,6 +161,7 @@ CREATE TABLE `payment_record` (
     INDEX idx_tenant (`tenant_id`),
     INDEX idx_invoice (`invoice_id`),
     INDEX idx_transaction (`transaction_id`),
+    UNIQUE KEY uk_payment_tx (`payment_method`,`transaction_id`),
     FOREIGN KEY (`invoice_id`) REFERENCES `invoice`(`id`)
 );
 
@@ -164,6 +173,7 @@ CREATE TABLE IF NOT EXISTS `refund_record` (
     `payment_method` VARCHAR(64) NOT NULL COMMENT '支付方式',
     `transaction_id` VARCHAR(128) NOT NULL COMMENT '原支付交易号',
     `refund_id` VARCHAR(128) COMMENT '通道退款单号',
+    `currency` VARCHAR(8) COMMENT '币种(ISO)',
     `idempotency_key` VARCHAR(128) COMMENT '幂等键',
     `refund_amount` DECIMAL(10,2) COMMENT '退款金额',
     `reason` VARCHAR(255) COMMENT '退款原因',
@@ -177,9 +187,9 @@ CREATE TABLE IF NOT EXISTS `refund_record` (
     INDEX idx_invoice (`invoice_id`),
     INDEX idx_tx (`transaction_id`),
     INDEX idx_status (`status`),
-    UNIQUE KEY uk_refund_idempotency (`idempotency_key`)
+    UNIQUE KEY uk_refund_idempotency (`idempotency_key`),
+    UNIQUE KEY uk_refund_refund_id (`refund_id`)
 );
-
 
 -- 折扣券表
 CREATE TABLE `discount_coupon` (
@@ -212,6 +222,23 @@ CREATE TABLE `billing_config` (
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     UNIQUE KEY uk_tenant_key (`tenant_id`, `config_key`)
+);
+
+-- Outbox 表（最小设计）
+CREATE TABLE IF NOT EXISTS `outbox` (
+    `id` VARCHAR(64) PRIMARY KEY,
+    `tenant_id` VARCHAR(64) COMMENT '租户ID',
+    `event_type` VARCHAR(128) NOT NULL COMMENT '事件类型',
+    `aggregate_id` VARCHAR(64) NOT NULL COMMENT '聚合ID',
+    `payload` JSON NOT NULL COMMENT '事件体',
+    `status` VARCHAR(16) NOT NULL COMMENT 'PENDING/SENT/FAILED',
+    `retry_count` INT DEFAULT 0 COMMENT '重试次数',
+    `next_retry_at` DATETIME COMMENT '下次重试时间',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_status_time (`status`,`next_retry_at`),
+    INDEX idx_type_time (`event_type`,`next_retry_at`),
+    INDEX idx_agg (`aggregate_id`)
 );
 
 -- 初始化默认订阅计划

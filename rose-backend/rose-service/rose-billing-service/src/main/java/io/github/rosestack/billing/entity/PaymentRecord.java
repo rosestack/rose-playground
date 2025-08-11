@@ -33,6 +33,12 @@ public class PaymentRecord extends BaseTenantEntity{
     private String channelStatus;      // SUCCESS/FAILED/PENDING 等
     private BigDecimal channelAmount;  // 通道确认金额
 
+    // 金额与币种
+    private String currency;          // ISO 货币代码
+    private BigDecimal feeAmount;     // 通道费用
+    private BigDecimal netAmount;     // 净额=amount-fee
+
+
     // 入账标记
     private Boolean posted;            // 是否已记总账/完成账务入账
     private LocalDateTime postedTime;

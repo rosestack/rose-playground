@@ -1,7 +1,7 @@
 package io.github.rosestack.billing.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.rosestack.billing.enums.PaymentStatus;
+import io.github.rosestack.billing.payment.PaymentStatus;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.InvoiceService;

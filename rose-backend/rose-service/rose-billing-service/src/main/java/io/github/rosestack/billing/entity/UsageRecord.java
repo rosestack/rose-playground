@@ -77,5 +77,11 @@ public class UsageRecord extends BaseTenantEntity {
      * 关联的账单ID
      */
     private String invoiceId;
+
+    /**
+     * 关联的订阅ID
+     */
+    private String subscriptionId;
+
 }
 

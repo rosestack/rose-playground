@@ -26,6 +26,8 @@ public class RefundRecord extends BaseTenantEntity {
     private String paymentMethod;
     private String transactionId; // 原支付交易号
     private String refundId;      // 通道退款单号
+    private String currency;         // 币种（ISO 代码）
+
     private String idempotencyKey; // 幂等键
     private BigDecimal refundAmount;
     private String reason;

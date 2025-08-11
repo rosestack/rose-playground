@@ -79,6 +79,18 @@ public class Invoice extends BaseTenantEntity {
     private BigDecimal totalAmount;
 
     /**
+     * 币种（ISO 代码）
+     */
+    private String currency;
+
+    /**
+     * 计费快照（定价/税率/币种等）
+     */
+    private java.util.Map<String, Object> priceSnapshot;
+
+
+
+    /**
      * 账单状态
      */
     private InvoiceStatus status;

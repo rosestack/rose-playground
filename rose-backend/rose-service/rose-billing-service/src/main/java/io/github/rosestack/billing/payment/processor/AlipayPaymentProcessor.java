@@ -3,7 +3,7 @@ package io.github.rosestack.billing.payment.processor;
 import io.github.rosestack.billing.dto.PaymentRequest;
 import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
-import io.github.rosestack.billing.enums.PaymentStatus;
+import io.github.rosestack.billing.payment.PaymentStatus;
 import io.github.rosestack.billing.payment.PaymentProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

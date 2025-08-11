@@ -26,6 +26,9 @@ public class RefundService {
     private final PaymentGatewayService paymentGatewayService;
     private final RefundRecordRepository refundRecordRepository;
     private final io.github.rosestack.billing.repository.PaymentRecordRepository paymentRecordRepository;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private OutboxService outboxService;
+
 
     @Transactional
     public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason) {
@@ -79,6 +82,7 @@ public class RefundService {
         rr.setTransactionId(invoice.getPaymentTransactionId());
         rr.setRefundAmount(amount);
         rr.setReason(reason);
+        rr.setCurrency(invoice.getCurrency());
         rr.setRequestedTime(LocalDateTime.now());
         rr.setIdempotencyKey(idempotencyKey);
         if (result.isSuccess()) {
@@ -97,6 +101,22 @@ public class RefundService {
                 invoice.setStatus(InvoiceStatus.REFUNDED);
                 invoiceService.updateById(invoice);
             }
+        }
+
+        // Outbox: 退款请求同步成功时外发事件
+        if (result.isSuccess() && outboxService != null) {
+            try {
+                String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                        java.util.Map.of(
+                                "invoiceId", invoiceId,
+                                "refundId", rr.getRefundId(),
+                                "amount", amount,
+                                "currency", rr.getCurrency(),
+                                "occurredTime", java.time.LocalDateTime.now().toString()
+                        )
+                );
+                outboxService.saveEvent(invoice.getTenantId(), "RefundSucceeded", invoiceId, payload);
+            } catch (Exception ignore) {}
         }
 
         return result;
@@ -127,11 +147,12 @@ public class RefundService {
             rr.setRefundId(refundId);
             rr.setRequestedTime(LocalDateTime.now());
         }
-        // 序列化回调为 JSON 字符串（避免 toString 非标准格式）
+        // 序列化回调为 JSON 字符串并脱敏
         try {
-            rr.setRawCallback(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(data));
+            String raw = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(data);
+            rr.setRawCallback(io.github.rosestack.billing.util.SensitiveDataMasker.mask(raw));
         } catch (Exception e) {
-            rr.setRawCallback(data.toString());
+            rr.setRawCallback(io.github.rosestack.billing.util.SensitiveDataMasker.mask(data.toString()));
         }
         if (callbackAmount != null) rr.setRefundAmount(callbackAmount);
         rr.setStatus(isSuccess ? RefundStatus.SUCCESS : RefundStatus.FAILED);
@@ -140,7 +161,18 @@ public class RefundService {
         if (rr.getId() == null) {
             refundRecordRepository.insert(rr);
         } else {
-            refundRecordRepository.updateById(rr);
+            int affected = refundRecordRepository.updateById(rr);
+            if (affected != 1) {
+                // 乐观锁并发冲突短重试一次
+                RefundRecord fresh = refundRecordRepository.selectById(rr.getId());
+                if (fresh != null) {
+                    fresh.setRefundAmount(rr.getRefundAmount());
+                    fresh.setStatus(rr.getStatus());
+                    fresh.setCompletedTime(rr.getCompletedTime());
+                    fresh.setRawCallback(rr.getRawCallback());
+                    try { refundRecordRepository.updateById(fresh); } catch (Exception ignore) {}
+                }
+            }
         }
 
         // 同步 PaymentRecord 渠道状态/金额（如有）
@@ -163,6 +195,20 @@ public class RefundService {
         if (isSuccess && refunded.compareTo(invoice.getTotalAmount()) >= 0 && invoice.getStatus() != InvoiceStatus.REFUNDED) {
             invoice.setStatus(InvoiceStatus.REFUNDED);
             invoiceService.updateById(invoice);
+            if (outboxService != null) {
+                try {
+                    String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                            java.util.Map.of(
+                                    "invoiceId", invoiceId,
+                                    "refundId", rr.getRefundId(),
+                                    "totalRefunded", refunded,
+                                    "currency", invoice.getCurrency(),
+                                    "occurredTime", java.time.LocalDateTime.now().toString()
+                            )
+                    );
+                    outboxService.saveEvent(invoice.getTenantId(), "InvoiceRefunded", invoiceId, payload);
+                } catch (Exception ignore) {}
+            }
         }
         return true;
     }

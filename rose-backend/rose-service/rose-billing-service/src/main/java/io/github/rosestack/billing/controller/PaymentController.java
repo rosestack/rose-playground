@@ -2,7 +2,7 @@ package io.github.rosestack.billing.controller;
 
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.billing.entity.Invoice;
-import io.github.rosestack.billing.enums.PaymentStatus;
+import io.github.rosestack.billing.payment.PaymentStatus;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.InvoiceService;

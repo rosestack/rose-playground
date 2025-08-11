@@ -34,6 +34,10 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
     private final InvoiceRepository invoiceRepository;
     private final PaymentRecordRepository paymentRecordRepository;
 
+    // 可选注入，未配置 Outbox 时不影响主流程
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private OutboxService outboxService;
+
     /**
      * 获取租户的账单列表
      */
@@ -123,15 +127,36 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
             record.setAmount(invoice.getTotalAmount());
             record.setPaymentMethod(paymentMethod);
             record.setTransactionId(transactionId);
+            record.setStatus(PaymentRecordStatus.PENDING);
+            paymentRecordRepository.insert(record);
+
+            // 业务确认成功后再更新为 SUCCESS
             record.setStatus(PaymentRecordStatus.SUCCESS);
             record.setPaidTime(LocalDateTime.now());
-            paymentRecordRepository.insert(record);
+            paymentRecordRepository.updateById(record);
 
             invoice.setStatus(InvoiceStatus.PAID);
             invoice.setPaidTime(LocalDateTime.now());
             invoice.setPaymentMethod(paymentMethod);
             invoice.setPaymentTransactionId(transactionId);
             invoiceRepository.updateById(invoice);
+
+            // Outbox: 支付成功事件（可选）
+            if (outboxService != null) {
+                try {
+                    String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                            java.util.Map.of(
+                                    "invoiceId", invoiceId,
+                                    "transactionId", transactionId,
+                                    "paymentMethod", paymentMethod,
+                                    "amount", invoice.getTotalAmount(),
+                                    "currency", invoice.getCurrency(),
+                                    "occurredTime", java.time.LocalDateTime.now().toString()
+                            )
+                    );
+                    outboxService.saveEvent(invoice.getTenantId(), "PaymentSucceeded", invoiceId, payload);
+                } catch (Exception ignore) {}
+            }
 
             log.info("账单已标记为已支付: invoiceId={}, paymentMethod={}, transactionId={}, amount={}",
                     invoiceId, paymentMethod, transactionId, invoice.getTotalAmount());

@@ -54,6 +54,9 @@ public class BillingService {
     private final UsageService usageService;
     private final InvoiceService invoiceService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private TenantBillingConfigService tenantBillingConfigService;
+
     /**
      * 创建租户订阅
      *
@@ -208,6 +211,16 @@ public class BillingService {
         // 计算总金额
         BigDecimal totalAmount = baseAmount.add(usageAmount).subtract(discountAmount).add(taxAmount);
         invoice.setTotalAmount(totalAmount);
+        String currency = tenantBillingConfigService.getCurrency(subscription.getTenantId());
+        invoice.setCurrency(currency);
+        java.util.Map<String, Object> snapshot = new java.util.HashMap<>();
+        snapshot.put("planId", plan.getId());
+        snapshot.put("billingCycle", plan.getBillingCycle());
+        snapshot.put("basePrice", plan.getBasePrice());
+        snapshot.put("trialDays", plan.getTrialDays());
+        snapshot.put("currency", currency);
+        snapshot.put("taxRate", "0.1"); // 示例税率
+        invoice.setPriceSnapshot(snapshot);
 
         invoiceRepository.insert(invoice);
 

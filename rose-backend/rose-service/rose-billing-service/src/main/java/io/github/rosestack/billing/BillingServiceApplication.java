@@ -12,7 +12,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author chensoul
  * @since 1.0.0
  */
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication
+@EnableScheduling
 @MapperScan("io.github.rosestack.billing.repository")
 public class BillingServiceApplication {
 

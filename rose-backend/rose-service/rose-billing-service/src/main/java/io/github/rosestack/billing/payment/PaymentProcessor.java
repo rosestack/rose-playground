@@ -4,7 +4,6 @@ package io.github.rosestack.billing.payment;
 import io.github.rosestack.billing.dto.PaymentRequest;
 import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
-import io.github.rosestack.billing.enums.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.util.Map;

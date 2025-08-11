@@ -5,7 +5,6 @@ import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.entity.PaymentRecord;
 import io.github.rosestack.billing.enums.PaymentRecordStatus;
-import io.github.rosestack.billing.enums.PaymentStatus;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -200,14 +199,19 @@ public class PaymentGatewayService {
             record.setAmount(request.getAmount());
             record.setPaymentMethod(request.getPaymentMethod());
             record.setTransactionId(result.getTransactionId());
-            record.setStatus(result.isSuccess() ? PaymentRecordStatus.SUCCESS : PaymentRecordStatus.FAILED);
+            record.setStatus(result.isSuccess() ? PaymentRecordStatus.SUCCESS : PaymentRecordStatus.PENDING);
             record.setGatewayResponse(result.getGatewayResponse());
 
-            if (result.isSuccess()) {
-                record.setPaidTime(LocalDateTime.now());
-            }
-
             paymentRecordRepository.insert(record);
+
+            if (result.isSuccess()) {
+                record.setStatus(PaymentRecordStatus.SUCCESS);
+                record.setPaidTime(LocalDateTime.now());
+                paymentRecordRepository.updateById(record);
+            } else if (!result.isSuccess()) {
+                record.setStatus(PaymentRecordStatus.FAILED);
+                paymentRecordRepository.updateById(record);
+            }
         } catch (Exception e) {
             log.error("记录支付结果失败", e);
         }
