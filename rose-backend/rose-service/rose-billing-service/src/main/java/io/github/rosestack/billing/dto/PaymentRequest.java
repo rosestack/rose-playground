@@ -1,10 +1,13 @@
 package io.github.rosestack.billing.dto;
 
-import java.math.BigDecimal;
-import java.util.Map;
 import lombok.Data;
 
-/** 支付请求对象 */
+import java.math.BigDecimal;
+import java.util.Map;
+
+/**
+ * 支付请求对象
+ */
 @Data
 public class PaymentRequest {
     private String invoiceId;

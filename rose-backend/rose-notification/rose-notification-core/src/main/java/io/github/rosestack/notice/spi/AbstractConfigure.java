@@ -2,6 +2,7 @@ package io.github.rosestack.notice.spi;
 
 import io.github.rosestack.notice.NoticeException;
 import io.github.rosestack.notice.SenderConfiguration;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractConfigure implements Configurable {

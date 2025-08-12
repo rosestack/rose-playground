@@ -44,18 +44,26 @@ public enum AuditDetailKey {
     RISK_ASSESSMENT("RISK_ASSESSMENT", "风险评估结果", AuditDetailType.SECURITY, false, false),
     THREAT_INDICATORS("THREAT_INDICATORS", "威胁指标", AuditDetailType.SECURITY, false, true);
 
-    /** 详情键代码 */
+    /**
+     * 详情键代码
+     */
     private final String code;
 
-    /** 详情键描述 */
+    /**
+     * 详情键描述
+     */
     private final String description;
 
-    /** 所属详情类型 */
+    /**
+     * 所属详情类型
+     */
     private final AuditDetailType detailType;
 
     private final boolean isEncrypted;
 
-    /** 是否包含敏感数据 */
+    /**
+     * 是否包含敏感数据
+     */
     private final boolean sensitive;
 
     AuditDetailKey(

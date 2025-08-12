@@ -23,7 +23,7 @@ services:
       --lower_case_table_names=1
       --max_allowed_packet=128M
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword" ]
       timeout: 20s
       retries: 10
       interval: 10s

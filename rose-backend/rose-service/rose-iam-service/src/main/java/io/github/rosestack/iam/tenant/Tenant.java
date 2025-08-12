@@ -17,23 +17,35 @@ public class Tenant extends BaseEntity implements HasCodeNameDescription {
 
     private String source;
 
-    /** 企业邮箱域名 */
+    /**
+     * 企业邮箱域名
+     */
     private String emailDomain;
 
-    /** 租户过期时间 */
+    /**
+     * 租户过期时间
+     */
     private String expireTime;
 
-    /** 租户 MAU 上限 */
+    /**
+     * 租户 MAU 上限
+     */
     private Integer mauAmount;
 
-    /** 租户成员上限 */
+    /**
+     * 租户成员上限
+     */
     private Integer memberAmount;
 
-    /** 租户管理员上限 */
+    /**
+     * 租户管理员上限
+     */
     private Integer adminAmount;
 
     private String userPoolId;
 
-    /** 状态 */
+    /**
+     * 状态
+     */
     private Boolean status;
 }

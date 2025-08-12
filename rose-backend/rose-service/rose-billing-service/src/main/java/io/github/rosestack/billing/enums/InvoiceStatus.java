@@ -1,6 +1,8 @@
 package io.github.rosestack.billing.enums;
 
-/** 账单状态枚举 */
+/**
+ * 账单状态枚举
+ */
 public enum InvoiceStatus {
     DRAFT("草稿"),
     PENDING("待支付"),

@@ -21,7 +21,7 @@ public interface RateLimiter {
     /**
      * 尝试获取指定数量的许可
      *
-     * @param key 限流键
+     * @param key     限流键
      * @param permits 许可数量
      * @return 是否获取成功
      */
@@ -57,7 +57,9 @@ public interface RateLimiter {
      */
     RateLimitInfo getInfo(String key);
 
-    /** 限流信息 */
+    /**
+     * 限流信息
+     */
     class RateLimitInfo {
         private final String key;
         private final String type;

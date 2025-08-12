@@ -1,5 +1,9 @@
 package io.github.rosestack.spring.boot.redis.lock;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,9 +11,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 /**
  * 基于 Redis 的分布式锁实现
@@ -21,18 +22,6 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
  */
 @Slf4j
 public class RedisDistributedLock implements DistributedLock {
-
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final String lockName;
-    private final String lockValue;
-    private final long defaultLeaseTime;
-    private final ScheduledExecutorService scheduler;
-
-    // 可重入锁计数器
-    private final ThreadLocal<AtomicInteger> holdCount = ThreadLocal.withInitial(() -> new AtomicInteger(0));
-
-    // 续期任务
-    private final ConcurrentHashMap<String, ScheduledFuture<?>> renewalTasks = new ConcurrentHashMap<>();
 
     // Lua 脚本：获取锁
     private static final String LOCK_SCRIPT = "if redis.call('exists', KEYS[1]) == 0 then "
@@ -46,7 +35,6 @@ public class RedisDistributedLock implements DistributedLock {
             + "  return nil "
             + "end "
             + "return redis.call('pttl', KEYS[1])";
-
     // Lua 脚本：释放锁
     private static final String UNLOCK_SCRIPT = "if redis.call('hexists', KEYS[1], ARGV[2]) == 0 then "
             + "  return nil "
@@ -59,7 +47,6 @@ public class RedisDistributedLock implements DistributedLock {
             + "  redis.call('del', KEYS[1]) "
             + "  return 1 "
             + "end";
-
     // Lua 脚本：续期锁
     private static final String RENEWAL_SCRIPT = "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then "
             + "  redis.call('pexpire', KEYS[1], ARGV[1]) "
@@ -67,10 +54,18 @@ public class RedisDistributedLock implements DistributedLock {
             + "else "
             + "  return 0 "
             + "end";
-
     // Lua 脚本：强制释放锁
     private static final String FORCE_UNLOCK_SCRIPT =
             "if redis.call('del', KEYS[1]) == 1 then " + "  return 1 " + "else " + "  return 0 " + "end";
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final String lockName;
+    private final String lockValue;
+    private final long defaultLeaseTime;
+    private final ScheduledExecutorService scheduler;
+    // 可重入锁计数器
+    private final ThreadLocal<AtomicInteger> holdCount = ThreadLocal.withInitial(() -> new AtomicInteger(0));
+    // 续期任务
+    private final ConcurrentHashMap<String, ScheduledFuture<?>> renewalTasks = new ConcurrentHashMap<>();
 
     public RedisDistributedLock(
             RedisTemplate<String, Object> redisTemplate,
@@ -239,7 +234,9 @@ public class RedisDistributedLock implements DistributedLock {
         return lockName;
     }
 
-    /** 获取锁的核心逻辑 */
+    /**
+     * 获取锁的核心逻辑
+     */
     private boolean acquireLock(long leaseTime) {
         try {
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(LOCK_SCRIPT, Long.class);
@@ -260,7 +257,9 @@ public class RedisDistributedLock implements DistributedLock {
         }
     }
 
-    /** 调度续期任务 */
+    /**
+     * 调度续期任务
+     */
     private void scheduleRenewalTask(long leaseTime) {
         if (scheduler == null) {
             return;
@@ -303,7 +302,9 @@ public class RedisDistributedLock implements DistributedLock {
         renewalTasks.put(taskKey, renewalTask);
     }
 
-    /** 取消续期任务 */
+    /**
+     * 取消续期任务
+     */
     private void cancelRenewalTask() {
         String taskKey = lockName + ":" + lockValue;
         ScheduledFuture<?> task = renewalTasks.remove(taskKey);

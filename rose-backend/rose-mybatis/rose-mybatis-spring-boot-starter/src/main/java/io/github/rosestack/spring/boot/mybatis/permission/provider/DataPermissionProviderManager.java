@@ -1,11 +1,12 @@
 package io.github.rosestack.spring.boot.mybatis.permission.provider;
 
 import jakarta.annotation.PostConstruct;
-import java.util.*;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 数据权限提供者管理器
@@ -28,7 +29,9 @@ public class DataPermissionProviderManager extends AbstractDataPermissionProvide
         log.info("数据权限提供者管理器初始化完成，共注册 {} 个提供者", allProviders.size());
     }
 
-    /** 自动发现和注册权限提供者 */
+    /**
+     * 自动发现和注册权限提供者
+     */
     @Override
     protected void discoverAndRegisterProviders() {
         Map<String, DataPermissionProvider> providers = applicationContext.getBeansOfType(DataPermissionProvider.class);
@@ -69,7 +72,9 @@ public class DataPermissionProviderManager extends AbstractDataPermissionProvide
         }
     }
 
-    /** 获取权限值 */
+    /**
+     * 获取权限值
+     */
     public List<String> getPermissionValues(String field) {
         DataPermissionProvider provider = getProvider(field);
         if (provider != null) {

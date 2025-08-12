@@ -7,9 +7,10 @@ import io.github.rosestack.notification.domain.repository.NotificationChannelRep
 import io.github.rosestack.notification.domain.repository.NotificationTemplateRepository;
 import io.github.rosestack.notification.shared.constant.NotificationConstants;
 import io.github.rosestack.notification.shared.exception.NotificationException;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * 通知领域服务
@@ -23,10 +24,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class NotificationDomainService {
 
-    /** 通知模板仓储 */
+    /**
+     * 通知模板仓储
+     */
     private final NotificationTemplateRepository notificationTemplateRepository;
 
-    /** 通知通道仓储 */
+    /**
+     * 通知通道仓储
+     */
     private final NotificationChannelRepository notificationChannelRepository;
 
     /**
@@ -34,7 +39,7 @@ public class NotificationDomainService {
      *
      * @param templateId 模板ID
      * @param parameters 参数
-     * @param lang 语言
+     * @param lang       语言
      * @return 渲染后的内容
      */
     public String renderNotificationContent(String templateId, Map<String, Object> parameters, String lang) {
@@ -80,7 +85,7 @@ public class NotificationDomainService {
      * <p>根据目标类型和用户偏好选择最佳的通知通道。
      *
      * @param targetType 目标类型
-     * @param tenantId 租户ID
+     * @param tenantId   租户ID
      * @return 选择的通道
      * @throws NotificationException 当没有可用通道时抛出异常
      */

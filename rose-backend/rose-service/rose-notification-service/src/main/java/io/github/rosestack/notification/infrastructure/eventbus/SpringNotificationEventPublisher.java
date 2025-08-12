@@ -18,7 +18,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SpringNotificationEventPublisher implements NotificationEventPublisher {
 
-    /** Spring 应用事件发布器 */
+    /**
+     * Spring 应用事件发布器
+     */
     private final ApplicationEventPublisher publisher;
 
     @Override

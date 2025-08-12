@@ -3,15 +3,16 @@ package io.github.rosestack.billing.service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.github.rosestack.billing.entity.UsageRecord;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 使用量管理服务
@@ -25,7 +26,9 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
 
     private final UsageRecordRepository usageRepository;
 
-    /** 记录使用量 */
+    /**
+     * 记录使用量
+     */
     @Transactional
     public void recordUsage(String tenantId, String metricType, BigDecimal quantity, String description) {
         UsageRecord record = new UsageRecord();
@@ -41,7 +44,9 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
         log.debug("记录使用量: 租户={}, 类型={}, 数量={}", tenantId, metricType, quantity);
     }
 
-    /** 记录使用量（带订阅ID） */
+    /**
+     * 记录使用量（带订阅ID）
+     */
     @Transactional
     public void recordUsage(
             String tenantId, String subscriptionId, String metricType, BigDecimal quantity, String description) {
@@ -102,37 +107,49 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
         log.info("批量记录使用量: {} 条记录", records.size());
     }
 
-    /** 获取租户指定时间段的使用量 */
+    /**
+     * 获取租户指定时间段的使用量
+     */
     public BigDecimal getTenantUsage(
             String tenantId, String metricType, LocalDateTime startTime, LocalDateTime endTime) {
         return usageRepository.sumUsageByTenantAndMetricAndPeriod(tenantId, metricType, startTime, endTime);
     }
 
-    /** 获取租户当月使用量统计 */
+    /**
+     * 获取租户当月使用量统计
+     */
     public List<Map<String, Object>> getMonthlyUsageStats(String tenantId) {
         LocalDateTime monthStart =
                 LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
         return usageRepository.getMonthlyUsageStats(tenantId, monthStart);
     }
 
-    /** 获取租户使用量趋势 */
+    /**
+     * 获取租户使用量趋势
+     */
     public List<Map<String, Object>> getUsageTrend(String tenantId, LocalDateTime startDate, LocalDateTime endDate) {
         return usageRepository.getUsageTrendStats(tenantId, startDate, endDate);
     }
 
-    /** 获取当前计费周期的使用量汇总 */
+    /**
+     * 获取当前计费周期的使用量汇总
+     */
     public List<Map<String, Object>> getCurrentPeriodUsageSummary(String tenantId) {
         LocalDateTime periodStart =
                 LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
         return usageRepository.getCurrentPeriodUsageSummary(tenantId, periodStart);
     }
 
-    /** 获取未计费的使用量记录 */
+    /**
+     * 获取未计费的使用量记录
+     */
     public List<UsageRecord> getUnbilledUsage(String tenantId, LocalDateTime startTime, LocalDateTime endTime) {
         return usageRepository.findByTenantIdAndBilledFalseAndRecordTimeBetween(tenantId, startTime, endTime);
     }
 
-    /** 标记使用量为已计费 */
+    /**
+     * 标记使用量为已计费
+     */
     @Transactional
     public int markUsageAsBilled(String tenantId, LocalDateTime startTime, LocalDateTime endTime, String invoiceId) {
         int count = usageRepository.markAsBilled(tenantId, startTime, endTime, invoiceId, LocalDateTime.now());
@@ -140,7 +157,9 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
         return count;
     }
 
-    /** 清理过期的已计费使用量记录 */
+    /**
+     * 清理过期的已计费使用量记录
+     */
     @Transactional
     public int cleanupOldBilledRecords(LocalDateTime cutoffDate) {
         int count = usageRepository.deleteOldBilledRecords(cutoffDate);
@@ -148,14 +167,18 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
         return count;
     }
 
-    /** 获取租户的使用量历史 */
+    /**
+     * 获取租户的使用量历史
+     */
     public List<UsageRecord> getUsageHistory(String tenantId, String metricType, int limit) {
         List<UsageRecord> records =
                 usageRepository.findByTenantIdAndMetricTypeOrderByRecordTimeDesc(tenantId, metricType);
         return records.size() > limit ? records.subList(0, limit) : records;
     }
 
-    /** 聚合使用量数据 */
+    /**
+     * 聚合使用量数据
+     */
     public Map<String, BigDecimal> aggregateUsageByMetric(
             String tenantId, LocalDateTime startTime, LocalDateTime endTime) {
         List<Map<String, Object>> stats = usageRepository.getUsageTrendStats(tenantId, startTime, endTime);
@@ -166,7 +189,9 @@ public class UsageService extends ServiceImpl<UsageRecordRepository, UsageRecord
                                 BigDecimal.ZERO, stat -> (BigDecimal) stat.get("dailyQuantity"), BigDecimal::add)));
     }
 
-    /** 检查使用量是否异常 */
+    /**
+     * 检查使用量是否异常
+     */
     public boolean isUsageAnomalous(String tenantId, String metricType, BigDecimal currentUsage) {
         // 获取历史平均使用量
         LocalDateTime now = LocalDateTime.now();

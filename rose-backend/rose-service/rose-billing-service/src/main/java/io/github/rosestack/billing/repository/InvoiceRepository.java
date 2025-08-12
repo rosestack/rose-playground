@@ -5,13 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.enums.InvoiceStatus;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 /**
  * 账单数据访问接口
@@ -21,28 +22,36 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface InvoiceRepository extends BaseMapper<Invoice> {
 
-    /** 根据租户ID查找账单列表 */
+    /**
+     * 根据租户ID查找账单列表
+     */
     default List<Invoice> findByTenantIdOrderByCreateTimeDesc(String tenantId) {
         LambdaQueryWrapper<Invoice> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Invoice::getTenantId, tenantId).orderByDesc(Invoice::getCreatedTime);
         return selectList(wrapper);
     }
 
-    /** 根据状态和到期日期查找账单 */
+    /**
+     * 根据状态和到期日期查找账单
+     */
     default List<Invoice> findByStatusAndDueDateBefore(InvoiceStatus status, LocalDate dueDate) {
         LambdaQueryWrapper<Invoice> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Invoice::getStatus, status).lt(Invoice::getDueDate, dueDate);
         return selectList(wrapper);
     }
 
-    /** 查找租户的待支付账单 */
+    /**
+     * 查找租户的待支付账单
+     */
     default List<Invoice> findByTenantIdAndStatusIn(String tenantId, List<InvoiceStatus> statuses) {
         LambdaQueryWrapper<Invoice> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Invoice::getTenantId, tenantId).in(Invoice::getStatus, statuses);
         return selectList(wrapper);
     }
 
-    /** 统计租户总收入 */
+    /**
+     * 统计租户总收入
+     */
     default BigDecimal sumPaidAmountByTenantId(String tenantId) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(total_amount), 0) AS total")
@@ -54,7 +63,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return v == null ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(v.toString());
     }
 
-    /** 统计时间段内的收入 */
+    /**
+     * 统计时间段内的收入
+     */
     default BigDecimal sumPaidAmountByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(total_amount), 0) AS total")
@@ -66,7 +77,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return v == null ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(v.toString());
     }
 
-    /** 获取租户的账单统计 */
+    /**
+     * 获取租户的账单统计
+     */
     default java.util.Map<String, Object> getInvoiceStatsByTenant(String tenantId) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select(
@@ -81,7 +94,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return list.isEmpty() ? java.util.Map.of() : list.get(0);
     }
 
-    /** 获取时间段内的每日收入统计 */
+    /**
+     * 获取时间段内的每日收入统计
+     */
     default List<java.util.Map<String, Object>> getRevenueStatsByPeriod(
             LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
@@ -93,7 +108,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return selectMaps(qw);
     }
 
-    /** 统计时间段内已支付账单数量 */
+    /**
+     * 统计时间段内已支付账单数量
+     */
     default long countPaidInvoicesByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COUNT(*) AS cnt").eq("status", "PAID").between("paid_time", startDate, endDate);
@@ -102,7 +119,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return v == null ? 0L : Long.parseLong(v.toString());
     }
 
-    /** 统计时间段内基础订阅收入（base_amount） */
+    /**
+     * 统计时间段内基础订阅收入（base_amount）
+     */
     default BigDecimal sumBaseAmountByPeriod(LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
         qw.select("COALESCE(SUM(base_amount), 0) AS total")
@@ -114,7 +133,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return v == null ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(v.toString());
     }
 
-    /** 统计指定时间段内 Top N 租户收入 */
+    /**
+     * 统计指定时间段内 Top N 租户收入
+     */
     default List<java.util.Map<String, Object>> getTopTenantsByRevenue(
             LocalDateTime startDate, LocalDateTime endDate, int limit) {
         QueryWrapper<Invoice> qw = new QueryWrapper<>();
@@ -131,7 +152,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
         return selectMaps(qw);
     }
 
-    /** 统计时间段内按订阅计划的收入 */
+    /**
+     * 统计时间段内按订阅计划的收入
+     */
     @Select("SELECT ts.plan_id AS planId, COALESCE(SUM(i.total_amount),0) AS revenue, COUNT(*) AS invoiceCount "
             + "FROM invoice i JOIN tenant_subscription ts ON i.subscription_id = ts.id "
             + "WHERE i.status='PAID' AND i.paid_time BETWEEN #{startDate} AND #{endDate} AND i.deleted=0 AND ts.deleted=0 "
@@ -139,7 +162,9 @@ public interface InvoiceRepository extends BaseMapper<Invoice> {
     List<java.util.Map<String, Object>> getRevenueByPlan(
             @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    /** 查找逾期账单 */
+    /**
+     * 查找逾期账单
+     */
     default List<Invoice> findOverdueInvoices(LocalDate currentDate) {
         LambdaQueryWrapper<Invoice> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Invoice::getStatus, InvoiceStatus.OVERDUE)

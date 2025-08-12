@@ -1,6 +1,8 @@
 package io.github.rosestack.billing.enums;
 
-/** 计费类型枚举 */
+/**
+ * 计费类型枚举
+ */
 public enum BillingType {
     MONTHLY("按月订阅"),
     YEARLY("按年订阅"),

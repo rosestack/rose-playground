@@ -25,13 +25,13 @@ import org.springframework.context.annotation.Bean;
         properties = {"management.endpoint.i18n.enabled=true", "management.endpoints.web.exposure.include=*"})
 class I18nEndpointTest {
 
+    @Autowired
+    private ApplicationContext context;
+
     @BeforeAll
     static void init() {
         Locale.setDefault(Locale.CHINA);
     }
-
-    @Autowired
-    private ApplicationContext context;
 
     @Test
     void shouldReturnCommonI18nMessages() {

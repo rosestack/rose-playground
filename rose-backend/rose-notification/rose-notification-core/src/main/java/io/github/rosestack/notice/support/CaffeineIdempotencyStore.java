@@ -3,9 +3,12 @@ package io.github.rosestack.notice.support;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.rosestack.notice.spi.IdempotencyStore;
+
 import java.time.Duration;
 
-/** 基于 Caffeine 的幂等存储，支持 TTL 与容量上限。 */
+/**
+ * 基于 Caffeine 的幂等存储，支持 TTL 与容量上限。
+ */
 public class CaffeineIdempotencyStore implements IdempotencyStore {
     private final Cache<String, Boolean> cache;
 

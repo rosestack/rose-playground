@@ -32,20 +32,26 @@ public class BetweenFormatter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 格式化级别的最大个数 */
+    /**
+     * 格式化级别的最大个数
+     */
     private final int levelMaxCount;
 
-    /** 时长毫秒数 */
+    /**
+     * 时长毫秒数
+     */
     private long betweenMs;
 
-    /** 格式化级别 */
+    /**
+     * 格式化级别
+     */
     private Level level;
 
     /**
      * 构造
      *
      * @param betweenMs 日期间隔
-     * @param level 级别，按照天、小时、分、秒、毫秒分为5个等级，根据传入等级，格式化到相应级别
+     * @param level     级别，按照天、小时、分、秒、毫秒分为5个等级，根据传入等级，格式化到相应级别
      */
     public BetweenFormatter(long betweenMs, Level level) {
         this(betweenMs, level, 0);
@@ -54,8 +60,8 @@ public class BetweenFormatter implements Serializable {
     /**
      * 构造
      *
-     * @param betweenMs 日期间隔
-     * @param level 级别，按照天、小时、分、秒、毫秒分为5个等级，根据传入等级，格式化到相应级别
+     * @param betweenMs     日期间隔
+     * @param level         级别，按照天、小时、分、秒、毫秒分为5个等级，根据传入等级，格式化到相应级别
      * @param levelMaxCount 格式化级别的最大个数，假如级别个数为1，但是级别到秒，那只显示一个级别
      */
     public BetweenFormatter(long betweenMs, Level level, int levelMaxCount) {
@@ -170,18 +176,30 @@ public class BetweenFormatter implements Serializable {
      */
     public enum Level {
 
-        /** 天 */
+        /**
+         * 天
+         */
         DAY("天"),
-        /** 小时 */
+        /**
+         * 小时
+         */
         HOUR("小时"),
-        /** 分钟 */
+        /**
+         * 分钟
+         */
         MINUTE("分钟"),
-        /** 秒 */
+        /**
+         * 秒
+         */
         SECOND("秒"),
-        /** 毫秒 */
+        /**
+         * 毫秒
+         */
         MILLISECOND("毫秒");
 
-        /** 级别名称 */
+        /**
+         * 级别名称
+         */
         private final String name;
 
         /**
@@ -205,17 +223,29 @@ public class BetweenFormatter implements Serializable {
 
     public enum DateUnit {
 
-        /** 一毫秒 */
+        /**
+         * 一毫秒
+         */
         MS(1),
-        /** 一秒的毫秒数 */
+        /**
+         * 一秒的毫秒数
+         */
         SECOND(1000),
-        /** 一分钟的毫秒数 */
+        /**
+         * 一分钟的毫秒数
+         */
         MINUTE(SECOND.getMillis() * 60),
-        /** 一小时的毫秒数 */
+        /**
+         * 一小时的毫秒数
+         */
         HOUR(MINUTE.getMillis() * 60),
-        /** 一天的毫秒数 */
+        /**
+         * 一天的毫秒数
+         */
         DAY(HOUR.getMillis() * 24),
-        /** 一周的毫秒数 */
+        /**
+         * 一周的毫秒数
+         */
         WEEK(DAY.getMillis() * 7);
 
         /**

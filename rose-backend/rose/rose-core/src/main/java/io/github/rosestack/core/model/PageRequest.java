@@ -13,28 +13,39 @@ import java.io.Serializable;
  */
 public class PageRequest implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    /** 默认页码 */
+    /**
+     * 默认页码
+     */
     public static final int DEFAULT_PAGE = 1;
-
-    /** 默认页大小 */
+    /**
+     * 默认页大小
+     */
     public static final int DEFAULT_SIZE = 10;
-
-    /** 最大页大小 */
+    /**
+     * 最大页大小
+     */
     public static final int MAX_SIZE = 1000;
 
-    /** 页码（从1开始） */
+    @Serial
+    private static final long serialVersionUID = 1L;
+    /**
+     * 页码（从1开始）
+     */
     private int page = DEFAULT_PAGE;
 
-    /** 页大小 */
+    /**
+     * 页大小
+     */
     private int size = DEFAULT_SIZE;
 
-    /** 排序字段 */
+    /**
+     * 排序字段
+     */
     private String sortBy;
 
-    /** 排序方向（asc/desc） */
+    /**
+     * 排序方向（asc/desc）
+     */
     private String sortDirection = "desc";
 
     public PageRequest() {}

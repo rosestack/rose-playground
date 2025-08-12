@@ -8,10 +8,13 @@ import io.github.rosestack.notification.domain.value.TargetType;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.NotificationChannelTypeHandler;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.NotificationStatusTypeHandler;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.TargetTypeTypeHandler;
-import java.time.LocalDateTime;
 import lombok.Data;
 
-/** Notification 持久化对象 */
+import java.time.LocalDateTime;
+
+/**
+ * Notification 持久化对象
+ */
 @Data
 @TableName("notification")
 public class NotificationEntity {

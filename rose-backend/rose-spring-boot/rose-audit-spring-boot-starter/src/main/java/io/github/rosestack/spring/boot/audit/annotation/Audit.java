@@ -3,6 +3,7 @@ package io.github.rosestack.spring.boot.audit.annotation;
 import io.github.rosestack.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.audit.enums.AuditEventType;
 import io.github.rosestack.spring.boot.audit.enums.AuditRiskLevel;
+
 import java.lang.annotation.*;
 
 @Target({ElementType.METHOD})

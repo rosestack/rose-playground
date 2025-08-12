@@ -5,13 +5,14 @@ import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.payment.PaymentProcessor;
 import io.github.rosestack.billing.payment.PaymentStatus;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 支付宝支付处理器具体实现
@@ -38,6 +39,20 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
 
     @Value("${rose.billing.payment.alipay.allowed-skew-seconds:300}")
     private long allowedSkewSeconds;
+
+    private static String hmacSha256Hex(String data, String key) {
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(
+                    key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(result.length * 2);
+            for (byte b : result) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public String getPaymentMethod() {
@@ -140,20 +155,6 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
         } catch (Exception e) {
             log.error("验证支付宝回调失败", e);
             return false;
-        }
-    }
-
-    private static String hmacSha256Hex(String data, String key) {
-        try {
-            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            mac.init(new javax.crypto.spec.SecretKeySpec(
-                    key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
-            byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder(result.length * 2);
-            for (byte b : result) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 

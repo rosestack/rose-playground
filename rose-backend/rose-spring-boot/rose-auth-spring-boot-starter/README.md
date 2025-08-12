@@ -7,6 +7,7 @@
 ### 1. 添加依赖
 
 ```xml
+
 <dependency>
     <groupId>io.github.rosestack</groupId>
     <artifactId>rose-auth-spring-boot-starter</artifactId>
@@ -23,7 +24,7 @@ rose:
   auth:
     # 是否启用认证模块
     enabled: true
-    
+
     # JWT 配置
     jwt:
       # JWT 密钥（生产环境请修改）
@@ -32,21 +33,21 @@ rose:
       access-token-expiration: PT1H
       # 刷新令牌过期时间（7天）
       refresh-token-expiration: P7D
-    
+
     # 安全配置
     security:
       # 最大登录尝试次数
       max-login-attempts: 5
       # 账户锁定时间（15分钟）
       lockout-duration: PT15M
-      
+
       # 密码策略
       password:
         min-length: 8
         require-uppercase: true
         require-lowercase: true
         require-digits: true
-    
+
     # CORS 配置
     cors:
       allowed-origins:
@@ -78,45 +79,45 @@ public class Application {
 ### ✅ 已实现功能
 
 - **基础配置框架**
-  - Spring Boot 自动配置
-  - 配置属性绑定
-  - 多环境配置支持
+    - Spring Boot 自动配置
+    - 配置属性绑定
+    - 多环境配置支持
 
 - **安全配置**
-  - Spring Security 基础配置
-  - CORS 跨域配置
-  - 密码编码器配置
-  - 无状态会话管理
+    - Spring Security 基础配置
+    - CORS 跨域配置
+    - 密码编码器配置
+    - 无状态会话管理
 
 - **配置属性**
-  - JWT 配置
-  - OAuth2 客户端配置
-  - 安全策略配置
-  - 缓存配置
-  - CORS 配置
+    - JWT 配置
+    - OAuth2 客户端配置
+    - 安全策略配置
+    - 缓存配置
+    - CORS 配置
 
 ### 🚧 待实现功能
 
 - **JWT 认证**
-  - JWT Token 生成和验证
-  - 认证过滤器
-  - Token 刷新机制
-  - Token 黑名单管理
+    - JWT Token 生成和验证
+    - 认证过滤器
+    - Token 刷新机制
+    - Token 黑名单管理
 
 - **OAuth2 客户端**
-  - 第三方登录集成
-  - 用户信息映射
-  - 登录成功处理
+    - 第三方登录集成
+    - 用户信息映射
+    - 登录成功处理
 
 - **权限控制**
-  - RBAC 权限模型
-  - 方法级权限注解
-  - 动态权限加载
+    - RBAC 权限模型
+    - 方法级权限注解
+    - 动态权限加载
 
 - **安全防护**
-  - 登录失败限制
-  - 请求频率限制
-  - 设备管理
+    - 登录失败限制
+    - 请求频率限制
+    - 设备管理
 
 ## 🔧 配置说明
 
@@ -161,7 +162,7 @@ rose:
       lockout-duration: PT15M              # 账户锁定时间
       lockout-strategy: IP_AND_USER        # 锁定策略
       enable-device-tracking: true         # 是否启用设备跟踪
-      
+
       password:
         min-length: 8                      # 密码最小长度
         require-uppercase: true            # 是否需要大写字母

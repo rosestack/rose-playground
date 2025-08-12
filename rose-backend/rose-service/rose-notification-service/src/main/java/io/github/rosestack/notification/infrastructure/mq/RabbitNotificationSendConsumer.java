@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-/** 通知发送消息消费者 */
+/**
+ * 通知发送消息消费者
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor

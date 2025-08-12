@@ -2,7 +2,9 @@ package io.github.rosestack.notification.domain.entity;
 
 import lombok.Data;
 
-/** 通知模板聚合根 */
+/**
+ * 通知模板聚合根
+ */
 @Data
 public class NotificationTemplate {
     private String id;

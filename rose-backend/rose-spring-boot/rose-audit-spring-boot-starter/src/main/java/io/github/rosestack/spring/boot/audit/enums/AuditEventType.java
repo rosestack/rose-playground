@@ -47,10 +47,14 @@ public enum AuditEventType {
     SEC_ATTACK_DETECTION("安全", "攻击检测"),
     SEC_ABNORMAL_BEHAVIOR("安全", "异常行为");
 
-    /** 事件类型 */
+    /**
+     * 事件类型
+     */
     private final String eventType;
 
-    /** 事件子类型 */
+    /**
+     * 事件子类型
+     */
     private final String eventSubType;
 
     AuditEventType(String eventType, String eventSubType) {

@@ -1070,11 +1070,11 @@ curl -X GET "http://localhost:9090/api/plugins/telemetry/DEVICE/{deviceId}/value
 #### 8.3.1 MQTT.fx配置
 
 1. **连接配置**
-   - Broker: `localhost`
-   - Port: `1883`
-   - Client ID: `test_device_001`
-   - Username: `{deviceToken}` (设备Token)
-   - Password: 留空
+    - Broker: `localhost`
+    - Port: `1883`
+    - Client ID: `test_device_001`
+    - Username: `{deviceToken}` (设备Token)
+    - Password: 留空
 
 2. **测试脚本**
 

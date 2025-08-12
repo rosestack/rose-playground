@@ -25,7 +25,9 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
     private boolean cacheEnabled = true;
     private boolean available = false;
 
-    /** 默认构造函数 */
+    /**
+     * 默认构造函数
+     */
     public JakartaElExpressionEvaluator() {
         ExpressionFactory factory = null;
         try {
@@ -104,7 +106,9 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         return true;
     }
 
-    /** 评估缓存的表达式 */
+    /**
+     * 评估缓存的表达式
+     */
     private Object evaluateCachedExpression(ValueExpression expression, Map<String, Object> variables, Locale locale) {
         try {
             Map<String, Object> mutableArgs = new HashMap<>(variables);
@@ -119,18 +123,24 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    /** 创建EL上下文 */
+    /**
+     * 创建EL上下文
+     */
     private ELContext createELContext(Map<String, Object> variables) {
         return new OptimizedELContext(expressionFactory, variables, customFunctions);
     }
 
-    /** 获取值表达式 */
+    /**
+     * 获取值表达式
+     */
     private ValueExpression getValueExpression(String expression, ELContext elContext) {
         String fullExpression = "${" + expression + "}";
         return expressionFactory.createValueExpression(elContext, fullExpression, Object.class);
     }
 
-    /** 优化的EL上下文实现 */
+    /**
+     * 优化的EL上下文实现
+     */
     private static class OptimizedELContext extends ELContext {
         private final ExpressionFactory expressionFactory;
         private final VariableMapper variableMapper;
@@ -176,7 +186,9 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    /** 优化的变量映射器 */
+    /**
+     * 优化的变量映射器
+     */
     private static class OptimizedVariableMapper extends VariableMapper {
         private final Map<String, ValueExpression> variables = new HashMap<>();
 
@@ -198,7 +210,9 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    /** 自定义函数映射器 */
+    /**
+     * 自定义函数映射器
+     */
     private static class CustomFunctionMapper extends FunctionMapper {
         private final Map<String, Function<Object[], Object>> customFunctions;
 

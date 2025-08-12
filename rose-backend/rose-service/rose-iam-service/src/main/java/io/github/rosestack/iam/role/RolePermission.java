@@ -1,7 +1,8 @@
 package io.github.rosestack.iam.role;
 
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class RolePermission {
@@ -14,6 +15,8 @@ public class RolePermission {
 
     private String targetId;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

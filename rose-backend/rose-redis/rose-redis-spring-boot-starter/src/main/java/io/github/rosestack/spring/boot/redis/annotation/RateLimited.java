@@ -1,6 +1,7 @@
 package io.github.rosestack.spring.boot.redis.annotation;
 
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
+
 import java.lang.annotation.*;
 
 /**
@@ -109,21 +110,33 @@ public @interface RateLimited {
      */
     boolean enabled() default true;
 
-    /** 超出限流时的处理策略枚举 */
+    /**
+     * 超出限流时的处理策略枚举
+     */
     enum FailStrategy {
-        /** 抛出异常（默认） */
+        /**
+         * 抛出异常（默认）
+         */
         EXCEPTION,
 
-        /** 返回 null */
+        /**
+         * 返回 null
+         */
         RETURN_NULL,
 
-        /** 跳过方法执行，返回默认值 */
+        /**
+         * 跳过方法执行，返回默认值
+         */
         SKIP,
 
-        /** 抛出自定义异常 */
+        /**
+         * 抛出自定义异常
+         */
         CUSTOM_EXCEPTION,
 
-        /** 记录日志并继续执行 */
+        /**
+         * 记录日志并继续执行
+         */
         LOG_AND_CONTINUE
     }
 }

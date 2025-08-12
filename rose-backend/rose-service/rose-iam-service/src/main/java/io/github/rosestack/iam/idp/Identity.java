@@ -1,16 +1,23 @@
 package io.github.rosestack.iam.idp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
 import lombok.Data;
 
-/** 身份源 */
+import java.util.List;
+
+/**
+ * 身份源
+ */
 @Data
 public class Identity {
-    /** 身份源 ID */
+    /**
+     * 身份源 ID
+     */
     private String id;
 
-    /** 身份源连接 ID */
+    /**
+     * 身份源连接 ID
+     */
     private String identityProviderId;
 
     /**
@@ -23,22 +30,34 @@ public class Identity {
      */
     private Provider provider;
 
-    /** Identity 类型，如 unionid, openid, primary */
+    /**
+     * Identity 类型，如 unionid, openid, primary
+     */
     private String type;
 
-    /** 在外部身份源中的 ID */
+    /**
+     * 在外部身份源中的 ID
+     */
     private String userId;
 
-    /** 用户在 idp 中的身份信息 */
+    /**
+     * 用户在 idp 中的身份信息
+     */
     private Object userInfoInIdp;
 
-    /** 在外部身份源中的 Access Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。 */
+    /**
+     * 在外部身份源中的 Access Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。
+     */
     private String accessToken;
 
-    /** 在外部身份源中的 Refresh Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。 */
+    /**
+     * 在外部身份源中的 Refresh Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。
+     */
     private String refreshToken;
 
-    /** 身份来自的身份源连接 ID 列表 */
+    /**
+     * 身份来自的身份源连接 ID 列表
+     */
     private List<String> originConnIds;
 
     /**

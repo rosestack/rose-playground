@@ -13,15 +13,16 @@ import io.github.rosestack.spring.boot.audit.listener.AuditEvent;
 import io.github.rosestack.spring.desensitization.MaskUtils;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.time.LocalDateTime;
-import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * 审计日志构建器
@@ -55,7 +56,9 @@ public class AuditEventBuilder {
         this.fieldEncryptor = fieldEncryptor;
     }
 
-    /** 记录审计日志 */
+    /**
+     * 记录审计日志
+     */
     public AuditEvent buildAuditEvent(
             ProceedingJoinPoint joinPoint,
             Audit audit,
@@ -69,7 +72,9 @@ public class AuditEventBuilder {
         return new AuditEvent(auditLog, auditLogDetails);
     }
 
-    /** 构建审计日志对象 */
+    /**
+     * 构建审计日志对象
+     */
     private AuditLog buildAuditLog(
             ProceedingJoinPoint joinPoint,
             Audit audit,
@@ -97,7 +102,9 @@ public class AuditEventBuilder {
         return auditLog;
     }
 
-    /** 构建审计详情列表 */
+    /**
+     * 构建审计详情列表
+     */
     private List<AuditLogDetail> buildAuditDetails(
             ProceedingJoinPoint joinPoint, Audit audit, Long auditLogId, Object result, Throwable exception) {
         List<AuditLogDetail> details = new ArrayList<>();
@@ -127,7 +134,9 @@ public class AuditEventBuilder {
         return details;
     }
 
-    /** 构建参数详情 */
+    /**
+     * 构建参数详情
+     */
     private AuditLogDetail buildParameterDetail(Long auditLogId, ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Parameter[] parameters = signature.getMethod().getParameters();
@@ -150,7 +159,9 @@ public class AuditEventBuilder {
         return createDetail(auditLogId, AuditDetailKey.REQUEST_PARAMS, newArgs);
     }
 
-    /** 判断是否为特殊类型（不需要序列化的类型） */
+    /**
+     * 判断是否为特殊类型（不需要序列化的类型）
+     */
     private boolean isSpecialType(Class<?> type) {
         return HttpServletRequest.class.isAssignableFrom(type)
                 || type.getName().startsWith("org.springframework.")
@@ -158,7 +169,9 @@ public class AuditEventBuilder {
                 || type.getName().startsWith("jakarta.servlet.");
     }
 
-    /** 构建HTTP详情 */
+    /**
+     * 构建HTTP详情
+     */
     private List<AuditLogDetail> buildHttpDetails(Long auditLogId) {
         List<AuditLogDetail> details = new ArrayList<>();
 
@@ -181,7 +194,9 @@ public class AuditEventBuilder {
         return details;
     }
 
-    /** 构建异常详情 */
+    /**
+     * 构建异常详情
+     */
     private List<AuditLogDetail> buildExceptionDetails(Long auditLogId, Throwable exception) {
         List<AuditLogDetail> details = new ArrayList<>();
 
@@ -199,7 +214,9 @@ public class AuditEventBuilder {
         return details;
     }
 
-    /** 获取操作名称 */
+    /**
+     * 获取操作名称
+     */
     private String getOperationName(Audit audit, Method method) {
         if (StringUtils.isNoneBlank(audit.value())) {
             return audit.value();
@@ -210,7 +227,9 @@ public class AuditEventBuilder {
         return method.getDeclaringClass().getSimpleName() + "." + method.getName();
     }
 
-    /** 获取事件类型 */
+    /**
+     * 获取事件类型
+     */
     private AuditEventType getEventType(Audit audit, Method method) {
         if (audit.eventType() != AuditEventType.DATA_OTHER) {
             return audit.eventType();
@@ -236,7 +255,9 @@ public class AuditEventBuilder {
         return AuditEventType.DATA_OTHER;
     }
 
-    /** 获取风险等级 */
+    /**
+     * 获取风险等级
+     */
     private AuditRiskLevel getRiskLevel(Audit audit, AuditEventType eventType) {
         if (audit.riskLevel() != AuditRiskLevel.LOW) {
             return audit.riskLevel();
@@ -244,7 +265,9 @@ public class AuditEventBuilder {
         return AuditRiskLevel.fromEventType(eventType);
     }
 
-    /** 设置HTTP信息 */
+    /**
+     * 设置HTTP信息
+     */
     private void setHttpInfo(AuditLog auditLog) {
         HttpServletRequest request = ServletUtils.getCurrentRequest();
         if (request != null) {
@@ -266,7 +289,7 @@ public class AuditEventBuilder {
 
         if (detailKey.isSensitive()) {
             auditLogDetail.setDetailValue(JsonUtils.toString(
-                    MaskUtils.maskSensitiveFields(detailValue, maskFields.toArray(new String[] {}))));
+                    MaskUtils.maskSensitiveFields(detailValue, maskFields.toArray(new String[]{}))));
             auditLogDetail.setIsSensitive(auditLogDetail.getDetailValue().contains(MaskUtils.MASKED));
         } else {
             auditLogDetail.setIsSensitive(false);

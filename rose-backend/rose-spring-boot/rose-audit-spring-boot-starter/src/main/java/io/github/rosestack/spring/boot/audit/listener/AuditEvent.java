@@ -2,8 +2,9 @@ package io.github.rosestack.spring.boot.audit.listener;
 
 import io.github.rosestack.spring.boot.audit.entity.AuditLog;
 import io.github.rosestack.spring.boot.audit.entity.AuditLogDetail;
-import java.util.List;
 import lombok.Getter;
+
+import java.util.List;
 
 /**
  * 审计事件
@@ -16,16 +17,20 @@ import lombok.Getter;
 @Getter
 public class AuditEvent {
 
-    /** 审计日志主记录 */
+    /**
+     * 审计日志主记录
+     */
     private final AuditLog auditLog;
 
-    /** 审计日志详细记录列表 */
+    /**
+     * 审计日志详细记录列表
+     */
     private final List<AuditLogDetail> auditLogDetails;
 
     /**
      * 构造函数
      *
-     * @param auditLog 审计日志主记录
+     * @param auditLog        审计日志主记录
      * @param auditLogDetails 审计日志详细记录列表
      */
     public AuditEvent(AuditLog auditLog, List<AuditLogDetail> auditLogDetails) {

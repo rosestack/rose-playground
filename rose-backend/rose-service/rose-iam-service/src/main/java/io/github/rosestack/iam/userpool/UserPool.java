@@ -15,7 +15,9 @@ public class UserPool {
 
     private Boolean deleted;
 
-    /** 状态 */
+    /**
+     * 状态
+     */
     private Boolean status;
 
     //    private Boolean isRoot;

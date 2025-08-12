@@ -163,7 +163,9 @@ public class MaskUtils {
         return address.substring(0, 3) + generateMask(maskLength, MASK) + address.substring(address.length() - 1);
     }
 
-    /** 车牌号脱敏 规则：保留前2位和后2位，中间用***替换 例如：京A12345 -> 京A***45 */
+    /**
+     * 车牌号脱敏 规则：保留前2位和后2位，中间用***替换 例如：京A12345 -> 京A***45
+     */
     public static String maskLicensePlate(String licensePlate) {
         if (!StringUtils.hasText(licensePlate)) {
             return licensePlate;
@@ -184,7 +186,9 @@ public class MaskUtils {
                 + licensePlate.substring(licensePlate.length() - 2);
     }
 
-    /** IPv4地址脱敏 规则：保留前两段，后两段用***替换 例如：192.168.1.100 -> 192.168.***.*** */
+    /**
+     * IPv4地址脱敏 规则：保留前两段，后两段用***替换 例如：192.168.1.100 -> 192.168.***.***
+     */
     public static String maskIpAddress(String ipv4) {
         if (!StringUtils.hasText(ipv4)) {
             return ipv4;
@@ -207,7 +211,9 @@ public class MaskUtils {
         return MASKED;
     }
 
-    /** Token脱敏 */
+    /**
+     * Token脱敏
+     */
     public static String maskToken(String token) {
         if (!StringUtils.hasText(token)) {
             return token;
@@ -242,7 +248,9 @@ public class MaskUtils {
         return prefix + generateMask(maskLen, maskChar) + suffix;
     }
 
-    /** 根据模式进行脱敏 */
+    /**
+     * 根据模式进行脱敏
+     */
     public static String maskByPattern(String data) {
         // 手机号检测
         if (PHONE_PATTERN.matcher(data).matches()) {
@@ -276,9 +284,9 @@ public class MaskUtils {
     /**
      * 对对象中的敏感字段进行脱敏处理 递归遍历对象的每个属性，如果属性为字符串类型且属性名称在脱敏数组内，则对该属性的值进行脱敏
      *
-     * @param object 需要脱敏的对象
+     * @param object          需要脱敏的对象
      * @param sensitiveFields 敏感字段名称数组
-     * @param <T> 对象类型
+     * @param <T>             对象类型
      * @return 脱敏后的对象
      */
     public static <T> T maskSensitiveFields(T object, String... sensitiveFields) {
@@ -295,7 +303,7 @@ public class MaskUtils {
      *
      * <p>核心优化：限制脱敏符号的最大长度，避免过长的脱敏符号影响显示效果 同时减少信息泄露（过多的*号可能暴露原始数据长度）
      *
-     * @param length 需要脱敏的长度
+     * @param length   需要脱敏的长度
      * @param charMask 脱敏字符
      * @return 智能生成的脱敏符号
      */

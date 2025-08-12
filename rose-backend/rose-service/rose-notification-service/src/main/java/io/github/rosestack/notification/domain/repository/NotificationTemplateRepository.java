@@ -1,6 +1,7 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.NotificationTemplate;
+
 import java.util.Optional;
 
 /**
@@ -45,7 +46,7 @@ public interface NotificationTemplateRepository {
     /**
      * 根据ID和语言查找通知模板
      *
-     * @param id 模板ID
+     * @param id   模板ID
      * @param lang 语言
      * @return 通知模板
      */

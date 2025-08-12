@@ -5,9 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.enums.OutboxStatus;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
-import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

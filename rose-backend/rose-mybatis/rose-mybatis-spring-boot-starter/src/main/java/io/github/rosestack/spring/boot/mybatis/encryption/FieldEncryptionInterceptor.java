@@ -4,8 +4,6 @@ import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.annotation.EncryptField;
 import io.github.rosestack.encryption.hash.HashService;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.sql.Statement;
-import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -16,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
+
+import java.sql.Statement;
+import java.util.Collection;
 
 /**
  * 字段加密拦截器
@@ -28,14 +29,14 @@ import org.springframework.util.ReflectionUtils;
  */
 @Slf4j
 @Intercepts({
-    @Signature(
-            type = Executor.class,
-            method = "update",
-            args = {MappedStatement.class, Object.class}),
-    @Signature(
-            type = ResultSetHandler.class,
-            method = "handleResultSets",
-            args = {Statement.class})
+        @Signature(
+                type = Executor.class,
+                method = "update",
+                args = {MappedStatement.class, Object.class}),
+        @Signature(
+                type = ResultSetHandler.class,
+                method = "handleResultSets",
+                args = {Statement.class})
 })
 public class FieldEncryptionInterceptor implements Interceptor {
 
@@ -65,7 +66,9 @@ public class FieldEncryptionInterceptor implements Interceptor {
         return invocation.proceed();
     }
 
-    /** 处理插入和更新操作，加密敏感字段 */
+    /**
+     * 处理插入和更新操作，加密敏感字段
+     */
     private Object handleExecutorUpdate(Invocation invocation) throws Throwable {
         Object[] args = invocation.getArgs();
         MappedStatement mappedStatement = (MappedStatement) args[0];
@@ -80,7 +83,9 @@ public class FieldEncryptionInterceptor implements Interceptor {
         return invocation.proceed();
     }
 
-    /** 处理查询结果，解密敏感字段 */
+    /**
+     * 处理查询结果，解密敏感字段
+     */
     private Object handleResultSetQuery(Invocation invocation) throws Throwable {
         Object result = invocation.proceed();
 
@@ -91,7 +96,9 @@ public class FieldEncryptionInterceptor implements Interceptor {
         return result;
     }
 
-    /** 加密字段 */
+    /**
+     * 加密字段
+     */
     private void encryptFields(Object obj) {
         if (obj == null) {
             return;
@@ -143,7 +150,9 @@ public class FieldEncryptionInterceptor implements Interceptor {
         });
     }
 
-    /** 解密字段 */
+    /**
+     * 解密字段
+     */
     private void decryptFields(Object obj) {
         if (obj == null) {
             return;
@@ -190,7 +199,9 @@ public class FieldEncryptionInterceptor implements Interceptor {
         });
     }
 
-    /** 生成哈希字段 */
+    /**
+     * 生成哈希字段
+     */
     private void generateHashField(
             Object obj, java.lang.reflect.Field originalField, String plainText, EncryptField encryptField) {
         try {
@@ -216,5 +227,6 @@ public class FieldEncryptionInterceptor implements Interceptor {
     }
 
     @Override
-    public void setProperties(java.util.Properties properties) {}
+    public void setProperties(java.util.Properties properties) {
+    }
 }

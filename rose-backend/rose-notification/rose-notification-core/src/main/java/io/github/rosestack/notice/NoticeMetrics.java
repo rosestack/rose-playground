@@ -3,9 +3,12 @@ package io.github.rosestack.notice;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+
 import java.util.concurrent.TimeUnit;
 
-/** 发送指标封装（可选 Micrometer）。 */
+/**
+ * 发送指标封装（可选 Micrometer）。
+ */
 public final class NoticeMetrics {
     private final MeterRegistry registry;
     private final Counter sendSuccess;

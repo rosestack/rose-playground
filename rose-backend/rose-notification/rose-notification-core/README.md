@@ -9,7 +9,7 @@
 - **多渠道支持**：内置 Email、短信（阿里云、腾讯云）、语音（可扩展）等发送渠道
 - **模板渲染**：支持变量替换、Groovy 模板等多种模板渲染方式
 - **限流/黑名单/幂等**：内置内存实现，支持自定义 SPI 扩展
-  - 幂等支持 Caffeine/Redis；黑名单支持内存/Redis
+    - 幂等支持 Caffeine/Redis；黑名单支持内存/Redis
 - **拦截器机制**：支持发送前、后、异常时自定义处理
 - **批量/异步发送**：支持批量、异步发送
 - **SPI 插件式扩展**：所有核心能力均可通过 SPI 插件扩展
@@ -35,7 +35,9 @@
 ```java
 NoticeService noticeService = new NoticeService();
 // 可选：替换为具备 TTL/容量的内存幂等实现
-noticeService.setIdempotencyStore(new CaffeineIdempotencyStore(20000, java.time.Duration.ofMinutes(30)));
+noticeService.
+
+setIdempotencyStore(new CaffeineIdempotencyStore(20000, java.time.Duration.ofMinutes(30)));
 // 可选：基于 Redis 的幂等/黑名单（需引入 spring-data-redis & lettuce）
 // StringRedisTemplate redisTemplate = ...
 // noticeService.setIdempotencyStore(new RedisIdempotencyStore(redisTemplate, "rose:notification:idemp:", java.time.Duration.ofHours(1)));
@@ -89,13 +91,13 @@ CompletableFuture<List<SendResult>> batchAsync = noticeService.sendBatchAsync(Li
 ```
 
 ## 配置说明
+
 ### 工厂缓存参数（JVM 级）
 
 - `-Drose.notification.sender.cache.maxSize=1000`
 - `-Drose.notification.sender.cache.expireAfterAccessSeconds=1800`
 - `-Drose.notification.smsProvider.cache.maxSize=1000`
 - `-Drose.notification.smsProvider.cache.expireAfterAccessSeconds=1800`
-
 
 ### 邮件渠道
 
@@ -129,11 +131,12 @@ CompletableFuture<List<SendResult>> batchAsync = noticeService.sendBatchAsync(Li
 ### 依赖
 
 ```xml
+
 <dependency>
-  <groupId>io.github.rosestack</groupId>
-  <artifactId>rose-notification-spring-boot-starter</artifactId>
-  <version>${project.version}</version>
-  <scope>compile</scope>
+    <groupId>io.github.rosestack</groupId>
+    <artifactId>rose-notification-spring-boot-starter</artifactId>
+    <version>${project.version}</version>
+    <scope>compile</scope>
 </dependency>
 ```
 
@@ -155,32 +158,33 @@ rose:
 ### 代码示例
 
 ```java
+
 @Autowired
 private NoticeService noticeService;
 
 public void sendEmail() {
-  SendRequest request = SendRequest.builder()
-      .requestId(UUID.randomUUID().toString())
-      .target("user@example.com")
-      .templateContent("您的验证码是：${code}")
-      .build();
+    SendRequest request = SendRequest.builder()
+            .requestId(UUID.randomUUID().toString())
+            .target("user@example.com")
+            .templateContent("您的验证码是：${code}")
+            .build();
 
-  SenderConfiguration config = SenderConfiguration.builder()
-      .channelType("email")
-      .templateType("SimpleVariableTemplateContentRender")
-      .config(Map.of(
-          "mail.smtp.host", "smtp.example.com",
-          "mail.smtp.username", "user",
-          "mail.smtp.password", "pass",
-          "mail.smtp.port", 465,
-          "mail.smtp.from", "noreply@example.com",
-          "retry.maxAttempts", 3,
-          "retry.initialDelayMillis", 200,
-          "retry.jitterMillis", 100
-      ))
-      .build();
+    SenderConfiguration config = SenderConfiguration.builder()
+            .channelType("email")
+            .templateType("SimpleVariableTemplateContentRender")
+            .config(Map.of(
+                    "mail.smtp.host", "smtp.example.com",
+                    "mail.smtp.username", "user",
+                    "mail.smtp.password", "pass",
+                    "mail.smtp.port", 465,
+                    "mail.smtp.from", "noreply@example.com",
+                    "retry.maxAttempts", 3,
+                    "retry.initialDelayMillis", 200,
+                    "retry.jitterMillis", 100
+            ))
+            .build();
 
-  SendResult result = noticeService.send(request, config);
+    SendResult result = noticeService.send(request, config);
 }
 ```
 
@@ -208,6 +212,7 @@ src/main/java/io/github/rose/notice/
 ## 开源项目
 
 实现了通知功能的一些开源项目：
+
 - thingsboard
 
 ## 贡献

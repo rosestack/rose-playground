@@ -24,38 +24,52 @@ public final class Option<T> {
         this.isPresent = isPresent;
     }
 
-    /** 创建包含值的 Option */
+    /**
+     * 创建包含值的 Option
+     */
     public static <T> Option<T> some(T value) {
         return new Option<>(Objects.requireNonNull(value), true);
     }
 
-    /** 创建空的 Option */
+    /**
+     * 创建空的 Option
+     */
     @SuppressWarnings("unchecked")
     public static <T> Option<T> none() {
         return (Option<T>) NONE;
     }
 
-    /** 从值创建 Option（null 值会创建 none） */
+    /**
+     * 从值创建 Option（null 值会创建 none）
+     */
     public static <T> Option<T> of(T value) {
         return value == null ? none() : some(value);
     }
 
-    /** 从 JDK Option 创建 Option */
+    /**
+     * 从 JDK Option 创建 Option
+     */
     public static <T> Option<T> from(java.util.Optional<T> optional) {
         return optional.map(Option::some).orElse(none());
     }
 
-    /** 检查是否包含值 */
+    /**
+     * 检查是否包含值
+     */
     public boolean isPresent() {
         return isPresent;
     }
 
-    /** 检查是否为空 */
+    /**
+     * 检查是否为空
+     */
     public boolean isEmpty() {
         return !isPresent;
     }
 
-    /** 获取值，如果为空则抛出异常 */
+    /**
+     * 获取值，如果为空则抛出异常
+     */
     public T get() {
         if (isPresent) {
             return value;
@@ -64,18 +78,24 @@ public final class Option<T> {
         }
     }
 
-    /** 获取值，如果为空则返回默认值 */
+    /**
+     * 获取值，如果为空则返回默认值
+     */
     public T getOrElse(T defaultValue) {
         return isPresent ? value : defaultValue;
     }
 
-    /** 获取值，如果为空则使用 Supplier 提供默认值 */
+    /**
+     * 获取值，如果为空则使用 Supplier 提供默认值
+     */
     public T getOrElseGet(Supplier<T> supplier) {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         return isPresent ? value : supplier.get();
     }
 
-    /** 获取值，如果为空则抛出指定异常 */
+    /**
+     * 获取值，如果为空则抛出指定异常
+     */
     public T getOrElseThrow(Supplier<? extends RuntimeException> exceptionSupplier) {
         Objects.requireNonNull(exceptionSupplier, "exceptionSupplier cannot be null");
         if (isPresent) {
@@ -85,7 +105,9 @@ public final class Option<T> {
         }
     }
 
-    /** 如果包含值则执行操作 */
+    /**
+     * 如果包含值则执行操作
+     */
     public Option<T> onPresent(Consumer<T> consumer) {
         Objects.requireNonNull(consumer, "consumer cannot be null");
         if (isPresent) {
@@ -94,7 +116,9 @@ public final class Option<T> {
         return this;
     }
 
-    /** 如果为空则执行操作 */
+    /**
+     * 如果为空则执行操作
+     */
     public Option<T> onEmpty(Runnable runnable) {
         Objects.requireNonNull(runnable, "runnable cannot be null");
         if (isEmpty()) {
@@ -103,7 +127,9 @@ public final class Option<T> {
         return this;
     }
 
-    /** 转换值 */
+    /**
+     * 转换值
+     */
     public <R> Option<R> map(Function<T, R> mapper) {
         Objects.requireNonNull(mapper, "mapper cannot be null");
         if (isPresent) {
@@ -118,7 +144,9 @@ public final class Option<T> {
         }
     }
 
-    /** 转换值（可能抛出异常）（重载） */
+    /**
+     * 转换值（可能抛出异常）（重载）
+     */
     public <R> Option<R> mapChecked(CheckedFunction<T, R> mapper) {
         Objects.requireNonNull(mapper, "mapper cannot be null");
         if (isPresent) {
@@ -133,7 +161,9 @@ public final class Option<T> {
         }
     }
 
-    /** 扁平化转换 */
+    /**
+     * 扁平化转换
+     */
     public <R> Option<R> flatMap(Function<T, Option<R>> mapper) {
         Objects.requireNonNull(mapper, "mapper cannot be null");
         if (isPresent) {
@@ -147,7 +177,9 @@ public final class Option<T> {
         }
     }
 
-    /** 过滤值 */
+    /**
+     * 过滤值
+     */
     public Option<T> filter(Predicate<T> predicate) {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         if (isPresent && predicate.test(value)) {
@@ -157,31 +189,41 @@ public final class Option<T> {
         }
     }
 
-    /** 如果为空则使用默认值 */
+    /**
+     * 如果为空则使用默认值
+     */
     public Option<T> orElse(Option<T> other) {
         Objects.requireNonNull(other, "other cannot be null");
         return isPresent ? this : other;
     }
 
-    /** 如果为空则使用 Supplier 提供默认值 */
+    /**
+     * 如果为空则使用 Supplier 提供默认值
+     */
     public Option<T> orElseGet(Supplier<Option<T>> supplier) {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         return isPresent ? this : supplier.get();
     }
 
-    /** 转换为 Try */
+    /**
+     * 转换为 Try
+     */
     public Try<T> toTry() {
         return isPresent ? Try.success(value) : Try.failure(new IllegalStateException("Option is empty"));
     }
 
-    /** 匹配操作 */
+    /**
+     * 匹配操作
+     */
     public <R> R match(Function<T, R> presentMapper, Supplier<R> emptySupplier) {
         Objects.requireNonNull(presentMapper, "presentMapper cannot be null");
         Objects.requireNonNull(emptySupplier, "emptySupplier cannot be null");
         return isPresent ? presentMapper.apply(value) : emptySupplier.get();
     }
 
-    /** 执行匹配操作 */
+    /**
+     * 执行匹配操作
+     */
     public void match(Consumer<T> presentConsumer, Runnable emptyRunnable) {
         Objects.requireNonNull(presentConsumer, "presentConsumer cannot be null");
         Objects.requireNonNull(emptyRunnable, "emptyRunnable cannot be null");

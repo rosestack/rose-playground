@@ -8,7 +8,9 @@ import io.github.rosestack.notification.domain.value.TimeWindow;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.NotificationChannelTypeHandler;
 import lombok.Data;
 
-/** NotificationPreference 持久化对象 */
+/**
+ * NotificationPreference 持久化对象
+ */
 @Data
 @TableName("notification_preference")
 public class NotificationPreferenceEntity {

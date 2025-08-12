@@ -1,6 +1,8 @@
 package io.github.rosestack.billing.enums;
 
-/** 订阅状态枚举 */
+/**
+ * 订阅状态枚举
+ */
 public enum SubscriptionStatus {
     TRIAL("试用中"),
     ACTIVE("活跃"),

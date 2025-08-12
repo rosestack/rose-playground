@@ -1,6 +1,5 @@
 package io.github.rosestack.spring.boot.auth.config;
 
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -17,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 /**
  * Spring Security 配置类
@@ -35,7 +36,9 @@ public class SecurityConfiguration {
 
     private final AuthProperties authProperties;
 
-    /** 配置安全过滤器链 */
+    /**
+     * 配置安全过滤器链
+     */
     @Bean
     @ConditionalOnMissingBean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -75,14 +78,18 @@ public class SecurityConfiguration {
                 .build();
     }
 
-    /** 配置密码编码器 */
+    /**
+     * 配置密码编码器
+     */
     @Bean
     @ConditionalOnMissingBean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
-    /** 配置 CORS */
+    /**
+     * 配置 CORS
+     */
     @Bean
     @ConditionalOnMissingBean
     public CorsConfigurationSource corsConfigurationSource() {

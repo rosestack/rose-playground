@@ -76,7 +76,9 @@ public class DefaultMessageRenderer implements MessageRenderer {
         return message;
     }
 
-    /** 处理 ${expression} 表达式 */
+    /**
+     * 处理 ${expression} 表达式
+     */
     private String processExpressions(String message, Map<String, Object> arg, Locale locale) {
         Matcher matcher = EXPRESSION_PATTERN.matcher(message);
         StringBuffer result = new StringBuffer();

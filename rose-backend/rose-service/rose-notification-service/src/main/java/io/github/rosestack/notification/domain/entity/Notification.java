@@ -3,10 +3,13 @@ package io.github.rosestack.notification.domain.entity;
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.domain.value.NotificationStatus;
 import io.github.rosestack.notification.domain.value.TargetType;
-import java.time.LocalDateTime;
 import lombok.Data;
 
-/** 通知聚合根 */
+import java.time.LocalDateTime;
+
+/**
+ * 通知聚合根
+ */
 @Data
 public class Notification {
     private String id;

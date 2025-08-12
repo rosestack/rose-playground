@@ -1,19 +1,22 @@
 package io.github.rosestack.core.util;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.*;
-import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** LocaleFormatUtils测试类 验证使用Jackson ObjectMapper进行日期时间格式化的功能 */
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.time.*;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * LocaleFormatUtils测试类 验证使用Jackson ObjectMapper进行日期时间格式化的功能
+ */
 class LocaleFormatUtilsTest {
     private static final Logger log = LoggerFactory.getLogger(LocaleFormatUtilsTest.class);
 

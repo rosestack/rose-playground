@@ -3,15 +3,16 @@ package io.github.rosestack.billing.service;
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.enums.BillingType;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 /**
  * 定价计算器
@@ -29,10 +30,10 @@ public class PricingCalculator {
     /**
      * 计算使用量费用
      *
-     * @param tenantId 租户ID
+     * @param tenantId    租户ID
      * @param periodStart 计费周期开始时间
-     * @param periodEnd 计费周期结束时间
-     * @param plan 订阅计划
+     * @param periodEnd   计费周期结束时间
+     * @param plan        订阅计划
      * @return 使用量费用总额
      */
     public BigDecimal calculateUsageAmount(
@@ -77,7 +78,9 @@ public class PricingCalculator {
         return totalAmount;
     }
 
-    /** 检查使用量限制 */
+    /**
+     * 检查使用量限制
+     */
     public boolean checkLimit(SubscriptionPlan plan, String metricType, BigDecimal currentUsage) {
         Map<String, Object> features = plan.getFeatures();
         if (features == null) {
@@ -98,7 +101,9 @@ public class PricingCalculator {
         }
     }
 
-    /** 计算阶梯定价 */
+    /**
+     * 计算阶梯定价
+     */
     public BigDecimal calculateTieredPricing(BigDecimal usage, Map<String, BigDecimal> tiers) {
         BigDecimal totalAmount = BigDecimal.ZERO;
         BigDecimal remainingUsage = usage;
@@ -127,7 +132,9 @@ public class PricingCalculator {
         return totalAmount.setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** 计算折扣 */
+    /**
+     * 计算折扣
+     */
     public BigDecimal calculateDiscount(String tenantId, BigDecimal amount, String discountCode) {
         // 实现促销码、长期订阅折扣等逻辑
         if ("WELCOME10".equals(discountCode)) {
@@ -136,7 +143,9 @@ public class PricingCalculator {
         return BigDecimal.ZERO;
     }
 
-    /** 计算基础订阅费用 */
+    /**
+     * 计算基础订阅费用
+     */
     public BigDecimal calculateBasePrice(SubscriptionPlan plan, LocalDateTime periodStart, LocalDateTime periodEnd) {
         if (plan.getBillingType() == BillingType.USAGE_BASED) {
             return BigDecimal.ZERO;
@@ -157,12 +166,16 @@ public class PricingCalculator {
         return basePrice.setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** 计算税费 */
+    /**
+     * 计算税费
+     */
     public BigDecimal calculateTax(BigDecimal amount) {
         return amount.multiply(defaultTaxRate).setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** 计算总费用 */
+    /**
+     * 计算总费用
+     */
     public BigDecimal calculateTotalAmount(
             String tenantId,
             SubscriptionPlan plan,
@@ -199,7 +212,9 @@ public class PricingCalculator {
         return totalAmount;
     }
 
-    /** 验证使用量是否超限 */
+    /**
+     * 验证使用量是否超限
+     */
     public boolean isUsageExceeded(String tenantId, SubscriptionPlan plan, String metricType) {
         // 获取当前计费周期的使用量
         LocalDateTime now = LocalDateTime.now();

@@ -13,28 +13,44 @@ import lombok.Getter;
 @Getter
 public enum AuditStatus {
 
-    /** 成功 */
+    /**
+     * 成功
+     */
     SUCCESS("SUCCESS", "成功"),
 
-    /** 失败 */
+    /**
+     * 失败
+     */
     FAILURE("FAILURE", "失败"),
 
-    /** 进行中 */
+    /**
+     * 进行中
+     */
     PENDING("PENDING", "进行中"),
 
-    /** 超时 */
+    /**
+     * 超时
+     */
     TIMEOUT("TIMEOUT", "超时"),
 
-    /** 取消 */
+    /**
+     * 取消
+     */
     CANCELLED("CANCELLED", "取消"),
 
-    /** 拒绝 */
+    /**
+     * 拒绝
+     */
     DENIED("DENIED", "拒绝");
 
-    /** 状态代码 */
+    /**
+     * 状态代码
+     */
     private final String code;
 
-    /** 状态描述 */
+    /**
+     * 状态描述
+     */
     private final String description;
 
     AuditStatus(String code, String description) {

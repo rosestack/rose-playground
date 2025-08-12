@@ -11,7 +11,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
-/** Try 测试类 基于实际代码的全面测试覆盖 */
+/**
+ * Try 测试类 基于实际代码的全面测试覆盖
+ */
 class TryTest {
 
     // ========== 基本构造和状态测试 ==========

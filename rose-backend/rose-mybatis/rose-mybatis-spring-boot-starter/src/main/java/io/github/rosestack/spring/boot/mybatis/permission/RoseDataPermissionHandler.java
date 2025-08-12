@@ -7,13 +7,6 @@ import io.github.rosestack.mybatis.provider.CurrentUserProvider;
 import io.github.rosestack.spring.boot.mybatis.permission.provider.DataPermissionProviderManager;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import java.lang.reflect.Method;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -27,7 +20,17 @@ import net.sf.jsqlparser.schema.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
-/** MyBatis Plus 数据权限处理器适配器 */
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+/**
+ * MyBatis Plus 数据权限处理器适配器
+ */
 @Slf4j
 public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     // 注解缓存 - 缓存 mappedStatementId 对应的注解信息
@@ -84,7 +87,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         }
     }
 
-    /** 获取数据权限注解（带缓存） */
+    /**
+     * 获取数据权限注解（带缓存）
+     */
     private DataPermission getDataPermissionAnnotationCached(String mappedStatementId) {
         DataPermission cached = annotationCache.get(mappedStatementId);
         if (cached != null) {
@@ -98,7 +103,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         return annotation;
     }
 
-    /** 获取权限值（带缓存） */
+    /**
+     * 获取权限值（带缓存）
+     */
     private List<String> getPermissionValuesCached(DataPermission dataPermission) {
         String currentUserId = currentUserProvider.getCurrentUserId();
         if (currentUserId == null) {
@@ -131,12 +138,16 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         return permissionValues;
     }
 
-    /** 构建权限缓存键 */
+    /**
+     * 构建权限缓存键
+     */
     protected String buildPermissionCacheKey(String userId, DataPermission dataPermission) {
         return String.format("%s:%s:%s", userId, dataPermission.field(), dataPermission.fieldType());
     }
 
-    /** 构建权限过滤表达式 */
+    /**
+     * 构建权限过滤表达式
+     */
     private Expression buildPermissionExpression(
             Table table, DataPermission dataPermission, List<String> permissionValues) {
         String fieldName = dataPermission.field();
@@ -166,7 +177,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         }
     }
 
-    /** 根据字段类型创建对应的值表达式 */
+    /**
+     * 根据字段类型创建对应的值表达式
+     */
     private Expression createValueExpression(String value, DataPermission.FieldType fieldType) {
         if (value == null) {
             return new NullValue();
@@ -185,7 +198,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         }
     }
 
-    /** 获取数据权限注解 */
+    /**
+     * 获取数据权限注解
+     */
     private DataPermission getDataPermissionAnnotation(String mappedStatementId) {
         try {
             // 解析 mappedStatementId 获取类名和方法名
@@ -226,7 +241,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         return providerManager.getPermissionValues(dataPermission.field());
     }
 
-    /** 清空所有缓存 */
+    /**
+     * 清空所有缓存
+     */
     public void clearAllCache() {
         annotationCache.clear();
         if (permissionCache != null) {
@@ -235,7 +252,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         log.info("所有数据权限缓存已清空");
     }
 
-    /** 清空指定用户的权限缓存 */
+    /**
+     * 清空指定用户的权限缓存
+     */
     public void clearUserPermissionCache(String userId) {
         if (userId == null) {
             return;
@@ -248,7 +267,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         log.info("用户 {} 的权限缓存已清空", userId);
     }
 
-    /** 获取缓存统计信息 */
+    /**
+     * 获取缓存统计信息
+     */
     public Map<String, Object> getCacheStats() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("annotationCacheSize", annotationCache.size());

@@ -1,9 +1,12 @@
 package io.github.rosestack.billing.dto;
 
-import java.time.LocalDateTime;
 import lombok.Data;
 
-/** 综合财务报表数据模型 */
+import java.time.LocalDateTime;
+
+/**
+ * 综合财务报表数据模型
+ */
 @Data
 public class ComprehensiveFinancialReport {
     private LocalDateTime startTime;

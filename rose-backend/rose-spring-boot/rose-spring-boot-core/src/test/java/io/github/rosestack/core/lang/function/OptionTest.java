@@ -1,19 +1,30 @@
 package io.github.rosestack.core.lang.function;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** Option 测试类 测试可选值容器的所有功能 */
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Option 测试类 测试可选值容器的所有功能
+ */
 class OptionTest {
 
     // ========== 基本构造和状态测试 ==========
+
+    static Stream<Arguments> provideSomeTestCases() {
+        return Stream.of(
+                Arguments.of("string", "string"),
+                Arguments.of(42, 42),
+                Arguments.of(true, true),
+                Arguments.of(3.14, 3.14));
+    }
 
     @Test
     void testSomeCreation() {
@@ -63,6 +74,8 @@ class OptionTest {
         assertEquals("value", option.get());
     }
 
+    // ========== 值获取方法测试 ==========
+
     @Test
     void testFromOptionalEmpty() {
         Optional<String> javaOptional = Optional.empty();
@@ -70,8 +83,6 @@ class OptionTest {
 
         assertFalse(option.isPresent());
     }
-
-    // ========== 值获取方法测试 ==========
 
     @Test
     void testGetOrElsePresent() {
@@ -118,13 +129,13 @@ class OptionTest {
         assertEquals(exception, thrown);
     }
 
+    // ========== 回调方法测试 ==========
+
     @Test
     void testGetOrElseThrowWithNullSupplier() {
         Option<String> option = Option.none();
         assertThrows(NullPointerException.class, () -> option.getOrElseThrow(null));
     }
-
-    // ========== 回调方法测试 ==========
 
     @Test
     void testOnPresentWithValue() {
@@ -174,13 +185,13 @@ class OptionTest {
         assertSame(option, returned);
     }
 
+    // ========== 转换方法测试 ==========
+
     @Test
     void testOnEmptyWithNullRunnable() {
         Option<String> option = Option.none();
         assertThrows(NullPointerException.class, () -> option.onEmpty(null));
     }
-
-    // ========== 转换方法测试 ==========
 
     @Test
     void testMapPresent() {
@@ -308,13 +319,13 @@ class OptionTest {
         assertFalse(filtered.isPresent());
     }
 
+    // ========== orElse 方法测试 ==========
+
     @Test
     void testFilterWithNullPredicate() {
         Option<String> option = Option.some("value");
         assertThrows(NullPointerException.class, () -> option.filter(null));
     }
-
-    // ========== orElse 方法测试 ==========
 
     @Test
     void testOrElsePresent() {
@@ -365,13 +376,13 @@ class OptionTest {
         assertEquals("other", result.get());
     }
 
+    // ========== 转换方法测试 ==========
+
     @Test
     void testOrElseGetWithNullSupplier() {
         Option<String> option = Option.none();
         assertThrows(NullPointerException.class, () -> option.orElseGet(null));
     }
-
-    // ========== 转换方法测试 ==========
 
     @Test
     void testToTryPresent() {
@@ -382,6 +393,8 @@ class OptionTest {
         assertEquals("value", tryResult.get());
     }
 
+    // ========== 匹配方法测试 ==========
+
     @Test
     void testToTryEmpty() {
         Option<String> option = Option.none();
@@ -390,8 +403,6 @@ class OptionTest {
         assertTrue(tryResult.isFailure());
         assertTrue(tryResult.getCause() instanceof IllegalStateException);
     }
-
-    // ========== 匹配方法测试 ==========
 
     @Test
     void testMatchPresent() {
@@ -435,6 +446,8 @@ class OptionTest {
         assertFalse(emptyCalled.get());
     }
 
+    // ========== equals 和 hashCode 测试 ==========
+
     @Test
     void testMatchConsumerEmpty() {
         AtomicBoolean presentCalled = new AtomicBoolean(false);
@@ -446,8 +459,6 @@ class OptionTest {
         assertFalse(presentCalled.get());
         assertTrue(emptyCalled.get());
     }
-
-    // ========== equals 和 hashCode 测试 ==========
 
     @Test
     void testEqualsAndHashCodeSome() {
@@ -485,6 +496,8 @@ class OptionTest {
         assertNotEquals(option, null);
     }
 
+    // ========== toString 测试 ==========
+
     @Test
     void testEqualsWithDifferentType() {
         Option<String> option = Option.some("value");
@@ -492,8 +505,6 @@ class OptionTest {
         assertNotEquals(option, "value");
         assertNotEquals(option, Optional.of("value"));
     }
-
-    // ========== toString 测试 ==========
 
     @Test
     void testToStringSome() {
@@ -505,6 +516,8 @@ class OptionTest {
         assertTrue(toString.contains("value"));
     }
 
+    // ========== 参数化测试 ==========
+
     @Test
     void testToStringNone() {
         Option<String> option = Option.none();
@@ -514,8 +527,6 @@ class OptionTest {
         assertEquals("None", toString);
     }
 
-    // ========== 参数化测试 ==========
-
     @ParameterizedTest
     @MethodSource("provideSomeTestCases")
     void testVariousSomeCases(Object input, Object expected) {
@@ -523,14 +534,6 @@ class OptionTest {
 
         assertTrue(option.isPresent());
         assertEquals(expected, option.get());
-    }
-
-    static Stream<Arguments> provideSomeTestCases() {
-        return Stream.of(
-                Arguments.of("string", "string"),
-                Arguments.of(42, 42),
-                Arguments.of(true, true),
-                Arguments.of(3.14, 3.14));
     }
 
     // ========== 链式调用测试 ==========

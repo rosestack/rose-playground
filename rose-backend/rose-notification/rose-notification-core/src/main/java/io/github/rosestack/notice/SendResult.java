@@ -6,7 +6,9 @@ public class SendResult {
     private String requestId;
     private String receiptId; // 服务商返回的消息ID
 
-    /** 构造方法，requestId 不能为空，否则抛出异常。 */
+    /**
+     * 构造方法，requestId 不能为空，否则抛出异常。
+     */
     public SendResult(boolean success, String message, String requestId, String receiptId) {
         this.receiptId = receiptId;
         if (requestId == null || requestId.trim().isEmpty()) {
@@ -17,12 +19,16 @@ public class SendResult {
         this.requestId = requestId;
     }
 
-    /** 成功工厂方法，requestId 必填 */
+    /**
+     * 成功工厂方法，requestId 必填
+     */
     public static SendResult success(String requestId, String receiptId) {
         return new SendResult(true, null, requestId, receiptId);
     }
 
-    /** 失败工厂方法，requestId 必填 */
+    /**
+     * 失败工厂方法，requestId 必填
+     */
     public static SendResult fail(String message, String requestId, String receiptId) {
         return new SendResult(false, message, requestId, receiptId);
     }

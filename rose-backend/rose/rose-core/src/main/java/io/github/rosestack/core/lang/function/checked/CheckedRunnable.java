@@ -11,13 +11,23 @@ import java.util.Objects;
 public interface CheckedRunnable {
 
     /**
+     * 从 JDK Runnable 创建 CheckedRunnable
+     */
+    static CheckedRunnable from(Runnable runnable) {
+        Objects.requireNonNull(runnable);
+        return runnable::run;
+    }
+
+    /**
      * 执行任务
      *
      * @throws Exception 可能抛出的异常
      */
     void run() throws Exception;
 
-    /** 转换为 JDK Runnable（异常会被包装为 RuntimeException） */
+    /**
+     * 转换为 JDK Runnable（异常会被包装为 RuntimeException）
+     */
     default Runnable unchecked() {
         return () -> {
             try {
@@ -45,13 +55,9 @@ public interface CheckedRunnable {
         };
     }
 
-    /** 从 JDK Runnable 创建 CheckedRunnable */
-    static CheckedRunnable from(Runnable runnable) {
-        Objects.requireNonNull(runnable);
-        return runnable::run;
-    }
-
-    /** 组合多个 CheckedRunnable */
+    /**
+     * 组合多个 CheckedRunnable
+     */
     default CheckedRunnable andThen(CheckedRunnable after) {
         Objects.requireNonNull(after);
         return () -> {
@@ -60,7 +66,9 @@ public interface CheckedRunnable {
         };
     }
 
-    /** 组合多个 CheckedRunnable */
+    /**
+     * 组合多个 CheckedRunnable
+     */
     default CheckedRunnable andThen(Runnable after) {
         Objects.requireNonNull(after);
         return () -> {

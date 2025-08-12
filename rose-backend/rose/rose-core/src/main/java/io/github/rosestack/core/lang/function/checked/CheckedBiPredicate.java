@@ -14,6 +14,41 @@ import java.util.function.BiPredicate;
 public interface CheckedBiPredicate<T, U> {
 
     /**
+     * 从标准 BiPredicate 创建 CheckedBiPredicate
+     *
+     * @param predicate 标准双参数断言
+     * @param <T>       第一个参数类型
+     * @param <U>       第二个参数类型
+     * @return CheckedBiPredicate
+     */
+    static <T, U> CheckedBiPredicate<T, U> from(BiPredicate<T, U> predicate) {
+        Objects.requireNonNull(predicate, "predicate cannot be null");
+        return predicate::test;
+    }
+
+    /**
+     * 返回一个总是返回 true 的双参数断言
+     *
+     * @param <T> 第一个参数类型
+     * @param <U> 第二个参数类型
+     * @return 断言
+     */
+    static <T, U> CheckedBiPredicate<T, U> alwaysTrue() {
+        return (t, u) -> true;
+    }
+
+    /**
+     * 返回一个总是返回 false 的双参数断言
+     *
+     * @param <T> 第一个参数类型
+     * @param <U> 第二个参数类型
+     * @return 断言
+     */
+    static <T, U> CheckedBiPredicate<T, U> alwaysFalse() {
+        return (t, u) -> false;
+    }
+
+    /**
      * 对给定的两个参数进行断言测试
      *
      * @param t 第一个输入参数
@@ -59,7 +94,7 @@ public interface CheckedBiPredicate<T, U> {
     /**
      * 转换为标准 BiPredicate，使用自定义异常处理器和默认值 当发生异常时，调用异常处理器并返回默认值
      *
-     * @param handler 异常处理器，接收捕获的异常
+     * @param handler      异常处理器，接收捕获的异常
      * @param defaultValue 异常时返回的默认值
      * @return 标准 BiPredicate
      */
@@ -73,19 +108,6 @@ public interface CheckedBiPredicate<T, U> {
                 return defaultValue;
             }
         };
-    }
-
-    /**
-     * 从标准 BiPredicate 创建 CheckedBiPredicate
-     *
-     * @param predicate 标准双参数断言
-     * @param <T> 第一个参数类型
-     * @param <U> 第二个参数类型
-     * @return CheckedBiPredicate
-     */
-    static <T, U> CheckedBiPredicate<T, U> from(BiPredicate<T, U> predicate) {
-        Objects.requireNonNull(predicate, "predicate cannot be null");
-        return predicate::test;
     }
 
     /**
@@ -117,27 +139,5 @@ public interface CheckedBiPredicate<T, U> {
     default CheckedBiPredicate<T, U> or(CheckedBiPredicate<? super T, ? super U> other) {
         Objects.requireNonNull(other, "other cannot be null");
         return (t, u) -> test(t, u) || other.test(t, u);
-    }
-
-    /**
-     * 返回一个总是返回 true 的双参数断言
-     *
-     * @param <T> 第一个参数类型
-     * @param <U> 第二个参数类型
-     * @return 断言
-     */
-    static <T, U> CheckedBiPredicate<T, U> alwaysTrue() {
-        return (t, u) -> true;
-    }
-
-    /**
-     * 返回一个总是返回 false 的双参数断言
-     *
-     * @param <T> 第一个参数类型
-     * @param <U> 第二个参数类型
-     * @return 断言
-     */
-    static <T, U> CheckedBiPredicate<T, U> alwaysFalse() {
-        return (t, u) -> false;
     }
 }

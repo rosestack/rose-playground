@@ -215,7 +215,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
      * 实际的批量缓存获取实现
      *
      * @param cacheKeys 已组装的缓存键列表
-     * @param codes 原始消息代码列表（用于构建结果映射）
+     * @param codes     原始消息代码列表（用于构建结果映射）
      * @return 缓存的消息映射
      */
     protected abstract Map<String, String> doGetFromCache(String[] cacheKeys, String[] codes);
@@ -224,7 +224,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
      * 实际的缓存写入实现
      *
      * @param cacheKey 已组装的缓存键
-     * @param message 消息内容
+     * @param message  消息内容
      */
     protected abstract void doPutToCache(String cacheKey, String message);
 
@@ -289,7 +289,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 构建缓存键
      *
-     * @param code 消息代码
+     * @param code   消息代码
      * @param locale 语言环境
      * @return 缓存键
      */
@@ -300,7 +300,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 构建缓存键（支持前缀）
      *
-     * @param code 消息代码
+     * @param code   消息代码
      * @param locale 语言环境
      * @param prefix 可选的键前缀
      * @return 缓存键
@@ -313,7 +313,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 批量构建缓存键
      *
-     * @param codes 消息代码列表
+     * @param codes  消息代码列表
      * @param locale 语言环境
      * @return 缓存键列表
      */
@@ -324,7 +324,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 批量构建缓存键（支持前缀）
      *
-     * @param codes 消息代码列表
+     * @param codes  消息代码列表
      * @param locale 语言环境
      * @param prefix 可选的键前缀
      * @return 缓存键列表

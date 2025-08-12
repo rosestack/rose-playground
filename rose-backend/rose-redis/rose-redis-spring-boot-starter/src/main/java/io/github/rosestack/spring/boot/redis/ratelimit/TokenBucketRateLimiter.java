@@ -1,10 +1,11 @@
 package io.github.rosestack.spring.boot.redis.ratelimit;
 
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+
+import java.util.Collections;
 
 /**
  * 令牌桶限流器
@@ -17,11 +18,6 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenBucketRateLimiter implements RateLimiter {
-
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final int rate; // 令牌生成速率（每秒）
-    private final int capacity; // 桶容量
-    private final String keyPrefix;
 
     // Lua 脚本：令牌桶算法
     private static final String TOKEN_BUCKET_SCRIPT = "local key = KEYS[1] "
@@ -45,6 +41,10 @@ public class TokenBucketRateLimiter implements RateLimiter {
             + "redis.call('HMSET', key, 'tokens', tokens, 'last_refill', now) "
             + "redis.call('EXPIRE', key, 3600) "
             + "return {allowed, tokens}";
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final int rate; // 令牌生成速率（每秒）
+    private final int capacity; // 桶容量
+    private final String keyPrefix;
 
     @Override
     public boolean tryAcquire(String key) {
@@ -136,7 +136,9 @@ public class TokenBucketRateLimiter implements RateLimiter {
         }
     }
 
-    /** 构建完整的 Redis 键名 */
+    /**
+     * 构建完整的 Redis 键名
+     */
     private String buildKey(String key) {
         return keyPrefix + "token_bucket:" + key;
     }

@@ -13,6 +13,14 @@ import java.util.function.Consumer;
 public interface CheckedConsumer<T> {
 
     /**
+     * 从 JDK Consumer 创建 CheckedConsumer
+     */
+    static <T> CheckedConsumer<T> from(Consumer<T> consumer) {
+        Objects.requireNonNull(consumer);
+        return consumer::accept;
+    }
+
+    /**
      * 消费值
      *
      * @param t 输入参数
@@ -20,7 +28,9 @@ public interface CheckedConsumer<T> {
      */
     void accept(T t) throws Exception;
 
-    /** 组合消费者 */
+    /**
+     * 组合消费者
+     */
     default CheckedConsumer<T> andThen(CheckedConsumer<? super T> after) {
         Objects.requireNonNull(after);
         return (T t) -> {
@@ -29,7 +39,9 @@ public interface CheckedConsumer<T> {
         };
     }
 
-    /** 组合消费者 */
+    /**
+     * 组合消费者
+     */
     default CheckedConsumer<T> andThen(Consumer<? super T> after) {
         Objects.requireNonNull(after);
         return (T t) -> {
@@ -38,7 +50,9 @@ public interface CheckedConsumer<T> {
         };
     }
 
-    /** 转换为 JDK Consumer（异常会被包装为 RuntimeException） */
+    /**
+     * 转换为 JDK Consumer（异常会被包装为 RuntimeException）
+     */
     default Consumer<T> unchecked() {
         return (T t) -> {
             try {
@@ -64,11 +78,5 @@ public interface CheckedConsumer<T> {
                 handler.accept(e);
             }
         };
-    }
-
-    /** 从 JDK Consumer 创建 CheckedConsumer */
-    static <T> CheckedConsumer<T> from(Consumer<T> consumer) {
-        Objects.requireNonNull(consumer);
-        return consumer::accept;
     }
 }

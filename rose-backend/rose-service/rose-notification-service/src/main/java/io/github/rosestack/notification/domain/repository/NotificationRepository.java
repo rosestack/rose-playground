@@ -1,6 +1,7 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.Notification;
+
 import java.util.List;
 import java.util.Optional;
 

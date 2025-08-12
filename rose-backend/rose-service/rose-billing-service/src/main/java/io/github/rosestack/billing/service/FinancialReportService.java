@@ -5,12 +5,13 @@ import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * 财务报表服务
@@ -26,7 +27,9 @@ public class FinancialReportService {
     private final TenantSubscriptionRepository subscriptionRepository;
     private final UsageRecordRepository usageRepository;
 
-    /** 生成收入报表 */
+    /**
+     * 生成收入报表
+     */
     public RevenueReport generateRevenueReport(LocalDateTime startTime, LocalDateTime endTime, String reportType) {
         log.info("生成收入报表：{} - {}，类型：{}", startTime, endTime, reportType);
 
@@ -60,7 +63,9 @@ public class FinancialReportService {
         return report;
     }
 
-    /** 生成订阅报表 */
+    /**
+     * 生成订阅报表
+     */
     public SubscriptionReport generateSubscriptionReport(LocalDateTime startTime, LocalDateTime endTime) {
         log.info("生成订阅报表：{} - {}", startTime, endTime);
 
@@ -98,7 +103,9 @@ public class FinancialReportService {
         return report;
     }
 
-    /** 生成使用量报表 */
+    /**
+     * 生成使用量报表
+     */
     public UsageReport generateUsageReport(LocalDateTime startTime, LocalDateTime endTime) {
         log.info("生成使用量报表：{} - {}", startTime, endTime);
 
@@ -120,7 +127,9 @@ public class FinancialReportService {
         return report;
     }
 
-    /** 生成综合财务报表 */
+    /**
+     * 生成综合财务报表
+     */
     public ComprehensiveFinancialReport generateComprehensiveReport(LocalDateTime startTime, LocalDateTime endTime) {
         log.info("生成综合财务报表：{} - {}", startTime, endTime);
 
@@ -145,7 +154,9 @@ public class FinancialReportService {
         return report;
     }
 
-    /** 生成实时仪表板数据 */
+    /**
+     * 生成实时仪表板数据
+     */
     public DashboardData generateDashboardData() {
         DashboardData dashboard = new DashboardData();
         dashboard.setGeneratedTime(LocalDateTime.now());

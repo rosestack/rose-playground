@@ -2,34 +2,14 @@ package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.sender.SenderFactory;
 import io.github.rosestack.notice.spi.Sender;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.Map;
+
 class BatchSendTest {
-    static class FailOnceSender implements Sender {
-        int called;
-
-        @Override
-        public String getChannelType() {
-            return "batch";
-        }
-
-        @Override
-        public String send(SendRequest sendRequest) {
-            if (++called == 2) throw new RuntimeException("boom");
-            return sendRequest.getRequestId();
-        }
-
-        @Override
-        public void destroy() {}
-
-        @Override
-        public void configure(SenderConfiguration config) {}
-    }
-
     @AfterEach
     void tearDown() {
         SenderFactory.destroy();
@@ -68,5 +48,28 @@ class BatchSendTest {
         long failure = res.size() - success;
         Assertions.assertEquals(2, success);
         Assertions.assertEquals(1, failure);
+    }
+
+    static class FailOnceSender implements Sender {
+        int called;
+
+        @Override
+        public String getChannelType() {
+            return "batch";
+        }
+
+        @Override
+        public String send(SendRequest sendRequest) {
+            if (++called == 2) throw new RuntimeException("boom");
+            return sendRequest.getRequestId();
+        }
+
+        @Override
+        public void destroy() {
+        }
+
+        @Override
+        public void configure(SenderConfiguration config) {
+        }
     }
 }

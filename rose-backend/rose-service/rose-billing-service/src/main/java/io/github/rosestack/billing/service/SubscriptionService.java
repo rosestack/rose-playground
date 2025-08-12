@@ -8,15 +8,16 @@ import io.github.rosestack.billing.exception.PlanNotFoundException;
 import io.github.rosestack.billing.exception.SubscriptionNotFoundException;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * 订阅管理服务
@@ -50,12 +51,16 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         }
     }
 
-    /** 检查租户是否有活跃订阅 */
+    /**
+     * 检查租户是否有活跃订阅
+     */
     public boolean hasActiveSubscription(String tenantId) {
         return getActiveSubscription(tenantId).isPresent();
     }
 
-    /** 获取租户的订阅历史 */
+    /**
+     * 获取租户的订阅历史
+     */
     public List<TenantSubscription> getSubscriptionHistory(String tenantId) {
         // 使用 LambdaQueryWrapper 查询租户的所有订阅
         return subscriptionRepository.selectList(
@@ -65,7 +70,9 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
                         .orderByDesc(TenantSubscription::getCreatedTime));
     }
 
-    /** 暂停订阅 */
+    /**
+     * 暂停订阅
+     */
     @Transactional
     @CacheEvict(value = "activeSubscriptions", key = "#subscription.tenantId")
     public void pauseSubscription(String subscriptionId, String reason) {
@@ -82,7 +89,9 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         log.info("订阅已暂停: {}, 原因: {}", subscriptionId, reason);
     }
 
-    /** 恢复订阅 */
+    /**
+     * 恢复订阅
+     */
     @Transactional
     public void resumeSubscription(String subscriptionId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -98,7 +107,9 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         log.info("订阅已恢复: {}", subscriptionId);
     }
 
-    /** 升级订阅计划 */
+    /**
+     * 升级订阅计划
+     */
     @Transactional
     public void upgradeSubscription(String subscriptionId, String newPlanId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -124,14 +135,18 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         log.info("订阅已升级: {} -> {}", subscription.getPlanId(), newPlanId);
     }
 
-    /** 检查试用期是否即将到期 */
+    /**
+     * 检查试用期是否即将到期
+     */
     public List<TenantSubscription> getTrialExpiringSoon(int days) {
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime endDate = startDate.plusDays(days);
         return subscriptionRepository.findTrialExpiringSoon(startDate, endDate);
     }
 
-    /** 获取需要计费的订阅 */
+    /**
+     * 获取需要计费的订阅
+     */
     public List<TenantSubscription> getSubscriptionsForBilling() {
         List<SubscriptionStatus> activeStatuses = List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL);
         return subscriptionRepository.findByNextBillingDateBeforeAndStatusIn(LocalDateTime.now(), activeStatuses);
@@ -140,7 +155,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
     /**
      * 验证使用量限制
      *
-     * @param tenantId 租户ID
+     * @param tenantId   租户ID
      * @param metricType 计量类型
      * @return true 如果在限制范围内，false 如果超出限制或无有效订阅
      */

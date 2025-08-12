@@ -1,9 +1,12 @@
 package io.github.rosestack.notification.domain.value;
 
-import java.time.LocalTime;
 import lombok.Data;
 
-/** 时间窗口值对象 */
+import java.time.LocalTime;
+
+/**
+ * 时间窗口值对象
+ */
 @Data
 public class TimeWindow {
     private LocalTime start;

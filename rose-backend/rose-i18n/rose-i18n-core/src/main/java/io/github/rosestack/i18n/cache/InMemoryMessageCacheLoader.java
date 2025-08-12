@@ -36,10 +36,14 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
 
     private static final Logger logger = LoggerFactory.getLogger(InMemoryMessageCacheLoader.class);
 
-    /** 缓存数据存储 */
+    /**
+     * 缓存数据存储
+     */
     private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
-    /** 定时清理任务执行器 */
+    /**
+     * 定时清理任务执行器
+     */
     private final ScheduledExecutorService cleanupExecutor;
 
     /**
@@ -55,7 +59,7 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
      * 构造函数
      *
      * @param cacheProperties 缓存配置属性
-     * @param meterRegistry Micrometer 指标注册表
+     * @param meterRegistry   Micrometer 指标注册表
      */
     public InMemoryMessageCacheLoader(CacheProperties cacheProperties, MeterRegistry meterRegistry) {
         super(cacheProperties, meterRegistry);
@@ -205,7 +209,9 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
         return cache.size();
     }
 
-    /** 销毁缓存加载器，释放资源 */
+    /**
+     * 销毁缓存加载器，释放资源
+     */
     public void destroy() {
         cleanupExecutor.shutdown();
         try {
@@ -243,7 +249,9 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
         return entry.getCreateTime().plus(cacheProperties.getExpireAfterWrite()).isBefore(LocalDateTime.now());
     }
 
-    /** 淘汰最近最少使用的缓存条目 */
+    /**
+     * 淘汰最近最少使用的缓存条目
+     */
     private void evictLeastRecentlyUsed() {
         if (cache.isEmpty()) {
             return;
@@ -267,7 +275,9 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
         }
     }
 
-    /** 清理过期的缓存条目 */
+    /**
+     * 清理过期的缓存条目
+     */
     private void cleanupExpiredEntries() {
         if (!cacheEnabled() || cacheProperties.getExpireAfterWrite() == null) {
             return;

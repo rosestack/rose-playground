@@ -2,9 +2,10 @@ package io.github.rosestack.billing.controller;
 
 import io.github.rosestack.billing.aspect.annotation.*;
 import io.github.rosestack.core.model.ApiResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 使用量监控示例控制器 演示如何使用AOP注解自动监控使用量
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UsageTrackingExampleController {
 
-    /** API调用监控示例 */
+    /**
+     * API调用监控示例
+     */
     @GetMapping("/users")
     @TrackApiUsage("/api/example/users") // 自动记录API调用次数
     public ApiResponse<List<String>> getUsers() {
@@ -24,7 +27,9 @@ public class UsageTrackingExampleController {
         return ApiResponse.success(List.of("user1", "user2", "user3"));
     }
 
-    /** 文件上传监控示例 */
+    /**
+     * 文件上传监控示例
+     */
     @PostMapping("/upload")
     @TrackStorageUsage(resourceType = "DOCUMENT") // 自动记录存储使用量
     public ApiResponse<Long> uploadFile(@RequestParam("file") Object file) {
@@ -33,7 +38,9 @@ public class UsageTrackingExampleController {
         return ApiResponse.success(fileSize);
     }
 
-    /** 用户创建监控示例 */
+    /**
+     * 用户创建监控示例
+     */
     @PostMapping("/users")
     @TrackUserChange(operation = "CREATE") // 自动记录用户数变化
     public ApiResponse<String> createUser(@RequestBody Object userRequest) {
@@ -41,7 +48,9 @@ public class UsageTrackingExampleController {
         return ApiResponse.success("用户创建成功");
     }
 
-    /** 邮件发送监控示例 */
+    /**
+     * 邮件发送监控示例
+     */
     @PostMapping("/send-email")
     @TrackEmailUsage(emailType = "MARKETING") // 自动记录邮件发送次数
     public ApiResponse<String> sendEmail(@RequestBody Object emailRequest) {
@@ -49,7 +58,9 @@ public class UsageTrackingExampleController {
         return ApiResponse.success("邮件发送成功");
     }
 
-    /** 短信发送监控示例 */
+    /**
+     * 短信发送监控示例
+     */
     @PostMapping("/send-sms")
     @TrackSmsUsage(smsType = "VERIFICATION") // 自动记录短信发送次数
     public ApiResponse<String> sendSms(@RequestBody Object smsRequest) {

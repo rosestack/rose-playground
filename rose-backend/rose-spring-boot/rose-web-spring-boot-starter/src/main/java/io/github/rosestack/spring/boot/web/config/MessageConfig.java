@@ -25,7 +25,9 @@ public class MessageConfig {
         log.info("启用 MessageSource 资源国际化: {}", messageSource);
     }
 
-    /** 配置 LocaleChangeInterceptor */
+    /**
+     * 配置 LocaleChangeInterceptor
+     */
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
         LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();

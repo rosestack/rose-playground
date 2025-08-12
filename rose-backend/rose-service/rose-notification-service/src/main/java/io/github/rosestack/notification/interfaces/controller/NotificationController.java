@@ -23,10 +23,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class NotificationController {
 
-    /** 通知应用服务 */
+    /**
+     * 通知应用服务
+     */
     private final NotificationApplicationService notificationApplicationService;
 
-    /** 通知装配器 */
+    /**
+     * 通知装配器
+     */
     private final NotificationAssembler notificationAssembler;
 
     /**

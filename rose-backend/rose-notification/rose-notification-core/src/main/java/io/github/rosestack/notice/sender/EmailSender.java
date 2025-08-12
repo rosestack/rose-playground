@@ -6,23 +6,46 @@ import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.notice.SenderConfiguration;
 import io.github.rosestack.notice.spi.AbstractConfigure;
 import io.github.rosestack.notice.spi.Sender;
-import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
+import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-/** 邮件发送渠道实现，支持 HTML、抄送、附件。 channelConfig 需包含 mail.smtp.host/username/password/port/from。 */
+/**
+ * 邮件发送渠道实现，支持 HTML、抄送、附件。 channelConfig 需包含 mail.smtp.host/username/password/port/from。
+ */
 public class EmailSender extends AbstractConfigure implements Sender {
     private volatile Session session;
+
+    private static void doSend(SendRequest request, Session session, Map<String, Object> config)
+            throws MessagingException {
+        MimeMessage message = new MimeMessage(session);
+        Object fromObj = config.get("mail.smtp.from");
+        if (fromObj != null) {
+            String from = fromObj.toString();
+            message.setFrom(new InternetAddress(from));
+        }
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(request.getTarget()));
+        List<String> ccList = request.getCc();
+        if (ccList != null && !ccList.isEmpty()) {
+            message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(String.join(",", ccList)));
+        }
+        Object subjObj = config.get("mail.smtp.subject");
+        String subject = subjObj != null ? subjObj.toString() : "通知";
+        message.setSubject(subject);
+
+        MimeMultipart multipart = new MimeMultipart();
+        MimeBodyPart textPart = new MimeBodyPart();
+        textPart.setContent(request.getTemplateContent(), "text/html; charset=utf-8");
+        multipart.addBodyPart(textPart);
+        message.setContent(multipart);
+        Transport.send(message);
+    }
 
     @Override
     public String getChannelType() {
@@ -71,30 +94,6 @@ public class EmailSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {}
-
-    private static void doSend(SendRequest request, Session session, Map<String, Object> config)
-            throws MessagingException {
-        MimeMessage message = new MimeMessage(session);
-        Object fromObj = config.get("mail.smtp.from");
-        if (fromObj != null) {
-            String from = fromObj.toString();
-            message.setFrom(new InternetAddress(from));
-        }
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(request.getTarget()));
-        List<String> ccList = request.getCc();
-        if (ccList != null && !ccList.isEmpty()) {
-            message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(String.join(",", ccList)));
-        }
-        Object subjObj = config.get("mail.smtp.subject");
-        String subject = subjObj != null ? subjObj.toString() : "通知";
-        message.setSubject(subject);
-
-        MimeMultipart multipart = new MimeMultipart();
-        MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setContent(request.getTemplateContent(), "text/html; charset=utf-8");
-        multipart.addBodyPart(textPart);
-        message.setContent(multipart);
-        Transport.send(message);
+    public void destroy() {
     }
 }

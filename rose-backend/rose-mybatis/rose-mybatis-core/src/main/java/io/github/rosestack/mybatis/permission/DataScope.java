@@ -1,6 +1,8 @@
 package io.github.rosestack.mybatis.permission;
 
-/** 数据权限范围枚举（核心层）。 */
+/**
+ * 数据权限范围枚举（核心层）。
+ */
 public enum DataScope {
     SELF,
     PARENT,

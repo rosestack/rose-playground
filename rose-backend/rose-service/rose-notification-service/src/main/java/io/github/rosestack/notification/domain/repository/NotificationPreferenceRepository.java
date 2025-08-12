@@ -1,6 +1,7 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.NotificationPreference;
+
 import java.util.Optional;
 
 public interface NotificationPreferenceRepository {

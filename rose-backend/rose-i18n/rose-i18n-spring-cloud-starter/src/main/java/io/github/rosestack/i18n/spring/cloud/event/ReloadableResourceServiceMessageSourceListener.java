@@ -21,13 +21,14 @@ import io.github.rosestack.i18n.ReloadedResourceMessageSource;
 import io.github.rosestack.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource;
-import java.util.Set;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
+
+import java.util.Set;
 
 /**
  * * An {@link ApplicationListener} of {@link EnvironmentChangeEvent} to reload {@link

@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** LocaleFormatUtils测试类 验证使用Jackson ObjectMapper进行日期时间格式化的功能 */
+/**
+ * LocaleFormatUtils测试类 验证使用Jackson ObjectMapper进行日期时间格式化的功能
+ */
 class LocaleFormatUtilsTest {
     private static final Logger log = LoggerFactory.getLogger(LocaleFormatUtilsTest.class);
 

@@ -18,25 +18,39 @@ public class PageResponse<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** 数据列表 */
+    /**
+     * 数据列表
+     */
     private List<T> records;
 
-    /** 总记录数 */
+    /**
+     * 总记录数
+     */
     private long total;
 
-    /** 当前页码 */
+    /**
+     * 当前页码
+     */
     private long page;
 
-    /** 页大小 */
+    /**
+     * 页大小
+     */
     private long size;
 
-    /** 总页数 */
+    /**
+     * 总页数
+     */
     private long pages;
 
-    /** 是否有下一页 */
+    /**
+     * 是否有下一页
+     */
     private boolean hasNext;
 
-    /** 是否有上一页 */
+    /**
+     * 是否有上一页
+     */
     private boolean hasPrevious;
 
     public PageResponse() {}
@@ -55,10 +69,10 @@ public class PageResponse<T> implements Serializable {
      * 创建分页响应
      *
      * @param records 数据列表
-     * @param total 总记录数
-     * @param page 当前页码
-     * @param size 页大小
-     * @param <T> 数据类型
+     * @param total   总记录数
+     * @param page    当前页码
+     * @param size    页大小
+     * @param <T>     数据类型
      * @return 分页响应对象
      */
     public static <T> PageResponse<T> of(List<T> records, long total, long page, long size) {
@@ -70,7 +84,7 @@ public class PageResponse<T> implements Serializable {
      *
      * @param page 当前页码
      * @param size 页大小
-     * @param <T> 数据类型
+     * @param <T>  数据类型
      * @return 空的分页响应对象
      */
     public static <T> PageResponse<T> empty(long page, long size) {

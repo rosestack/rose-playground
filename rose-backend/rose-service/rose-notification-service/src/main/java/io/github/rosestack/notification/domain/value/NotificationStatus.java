@@ -1,6 +1,8 @@
 package io.github.rosestack.notification.domain.value;
 
-/** 通知状态枚举 */
+/**
+ * 通知状态枚举
+ */
 public enum NotificationStatus {
     PENDING, // 待发送
     MQ_DELIVERED, // 投递到 MQ 成功

@@ -25,14 +25,31 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         this.source = source;
     }
 
-    @Override
-    public void setParentMessageSource(@Nullable I18nMessageSource parent) {
-        this.parentMessageSource = parent;
+    protected static List<Locale> resolveLocales(List<Locale> supportedLocales) {
+        List<Locale> resolvedLocales = new ArrayList<>();
+        for (Locale supportedLocale : supportedLocales) {
+            addLocale(resolvedLocales, supportedLocale);
+            for (Locale derivedLocale : I18nUtils.getFallbackLocales(supportedLocale)) {
+                addLocale(resolvedLocales, derivedLocale);
+            }
+        }
+        return Collections.unmodifiableList(resolvedLocales);
+    }
+
+    protected static void addLocale(List<Locale> locales, Locale locale) {
+        if (!locales.contains(locale)) {
+            locales.add(locale);
+        }
     }
 
     @Nullable @Override
     public I18nMessageSource getParentMessageSource() {
         return this.parentMessageSource;
+    }
+
+    @Override
+    public void setParentMessageSource(@Nullable I18nMessageSource parent) {
+        this.parentMessageSource = parent;
     }
 
     @Override
@@ -142,6 +159,11 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         return HierarchicalMessageSource.super.getDefaultLocale();
     }
 
+    public void setDefaultLocale(Locale defaultLocale) {
+        this.defaultLocale = defaultLocale;
+        logger.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
+    }
+
     @Override
     public List<Locale> getSupportedLocales() {
         if (supportedLocales != null) {
@@ -150,31 +172,9 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         return HierarchicalMessageSource.super.getSupportedLocales();
     }
 
-    public void setDefaultLocale(Locale defaultLocale) {
-        this.defaultLocale = defaultLocale;
-        logger.debug("Source '{}' sets the default Locale : '{}'", source, defaultLocale);
-    }
-
     public void setSupportedLocales(List<Locale> supportedLocales) {
         this.supportedLocales = resolveLocales(supportedLocales);
         logger.debug("Source '{}' sets the supported Locales : {}", source, supportedLocales);
-    }
-
-    protected static List<Locale> resolveLocales(List<Locale> supportedLocales) {
-        List<Locale> resolvedLocales = new ArrayList<>();
-        for (Locale supportedLocale : supportedLocales) {
-            addLocale(resolvedLocales, supportedLocale);
-            for (Locale derivedLocale : I18nUtils.getFallbackLocales(supportedLocale)) {
-                addLocale(resolvedLocales, derivedLocale);
-            }
-        }
-        return Collections.unmodifiableList(resolvedLocales);
-    }
-
-    protected static void addLocale(List<Locale> locales, Locale locale) {
-        if (!locales.contains(locale)) {
-            locales.add(locale);
-        }
     }
 
     @Override

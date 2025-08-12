@@ -1,9 +1,10 @@
 package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.render.SimpleVariableTemplateContentRender;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 class TemplateRenderTest {
     @Test

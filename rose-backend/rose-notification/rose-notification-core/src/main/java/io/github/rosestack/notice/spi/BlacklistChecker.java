@@ -2,8 +2,12 @@ package io.github.rosestack.notice.spi;
 
 import io.github.rosestack.notice.SendRequest;
 
-/** 通用黑名单 SPI，可按需实现目标、渠道等黑名单。 */
+/**
+ * 通用黑名单 SPI，可按需实现目标、渠道等黑名单。
+ */
 public interface BlacklistChecker {
-    /** 是否在黑名单中 */
+    /**
+     * 是否在黑名单中
+     */
     boolean isBlacklisted(SendRequest request);
 }

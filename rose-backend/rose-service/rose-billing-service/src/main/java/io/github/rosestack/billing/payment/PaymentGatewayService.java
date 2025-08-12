@@ -6,14 +6,15 @@ import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.entity.PaymentRecord;
 import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
  * 支付网关服务 集成多种支付方式
@@ -35,7 +36,9 @@ public class PaymentGatewayService {
         paymentProcessors.forEach(processor -> this.paymentProcessorMap.put(processor.getPaymentMethod(), processor));
     }
 
-    /** 处理支付 */
+    /**
+     * 处理支付
+     */
     public PaymentResult processPayment(PaymentRequest request) {
         try {
             PaymentProcessor processor = getPaymentProcessor(request.getPaymentMethod());
@@ -52,7 +55,9 @@ public class PaymentGatewayService {
         }
     }
 
-    /** 创建支付链接 */
+    /**
+     * 创建支付链接
+     */
     public String createPaymentLink(String invoiceId, BigDecimal amount, String paymentMethod, String tenantId) {
         try {
             PaymentProcessor processor = getPaymentProcessor(paymentMethod);
@@ -71,7 +76,9 @@ public class PaymentGatewayService {
         return createPaymentLink(invoiceId, amount, method == null ? null : method.name(), tenantId);
     }
 
-    /** 验证支付回调 */
+    /**
+     * 验证支付回调
+     */
     public boolean verifyPaymentCallback(String paymentMethod, Map<String, Object> callbackData) {
         try {
             PaymentProcessor processor = getPaymentProcessor(paymentMethod);
@@ -94,7 +101,9 @@ public class PaymentGatewayService {
         return verifyPaymentCallback(method == null ? null : method.name(), callbackData);
     }
 
-    /** 验证退款回调 */
+    /**
+     * 验证退款回调
+     */
     public boolean verifyRefundCallback(String paymentMethod, Map<String, Object> callbackData) {
         try {
             PaymentProcessor processor = getPaymentProcessor(paymentMethod);
@@ -111,7 +120,9 @@ public class PaymentGatewayService {
         return verifyRefundCallback(method == null ? null : method.name(), callbackData);
     }
 
-    /** 解析退款金额（回调） */
+    /**
+     * 解析退款金额（回调）
+     */
     public BigDecimal parseRefundAmount(String paymentMethod, Map<String, Object> data) {
         PaymentProcessor processor = getPaymentProcessor(paymentMethod);
         if (processor != null) {
@@ -134,7 +145,9 @@ public class PaymentGatewayService {
         return null;
     }
 
-    /** 判断退款是否成功（回调） */
+    /**
+     * 判断退款是否成功（回调）
+     */
     public boolean isRefundSuccess(String paymentMethod, Map<String, Object> data) {
         PaymentProcessor processor = getPaymentProcessor(paymentMethod);
         if (processor != null) {
@@ -158,7 +171,9 @@ public class PaymentGatewayService {
         }
     }
 
-    /** 处理退款 */
+    /**
+     * 处理退款
+     */
     public RefundResult processRefund(String transactionId, BigDecimal amount, String reason, String tenantId) {
         try {
             // 根据交易ID查找支付方式
@@ -176,7 +191,9 @@ public class PaymentGatewayService {
         }
     }
 
-    /** 查询支付状态 */
+    /**
+     * 查询支付状态
+     */
     public PaymentStatus queryPaymentStatus(String transactionId) {
         try {
             String paymentMethod = getPaymentMethodByTransactionId(transactionId);
@@ -213,8 +230,8 @@ public class PaymentGatewayService {
                     request.getPaymentMethod() == null
                             ? null
                             : (request.getPaymentMethod() instanceof PaymentMethod
-                                    ? ((PaymentMethod) request.getPaymentMethod()).name()
-                                    : request.getPaymentMethod().toString()));
+                            ? ((PaymentMethod) request.getPaymentMethod()).name()
+                            : request.getPaymentMethod().toString()));
             record.setTransactionId(result.getTransactionId());
             record.setStatus(result.isSuccess() ? PaymentRecordStatus.SUCCESS : PaymentRecordStatus.PENDING);
             record.setGatewayResponse(result.getGatewayResponse());

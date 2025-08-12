@@ -106,7 +106,9 @@ public class I18nImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
         }
     }
 
-    /** 解析默认 Locale */
+    /**
+     * 解析默认 Locale
+     */
     private Locale resolveDefaultLocale(AnnotationAttributes attributes) {
         String defaultLocaleStr = attributes.getString("defaultLocale");
         if (defaultLocaleStr != null && !defaultLocaleStr.trim().isEmpty()) {
@@ -116,7 +118,9 @@ public class I18nImportBeanDefinitionRegistrar implements ImportBeanDefinitionRe
         return null;
     }
 
-    /** 解析支持的 Locales */
+    /**
+     * 解析支持的 Locales
+     */
     private Set<Locale> resolveSupportedLocales(AnnotationAttributes attributes) {
         String[] locales = attributes.getStringArray("supportedLocales");
 

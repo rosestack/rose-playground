@@ -7,13 +7,9 @@ package io.github.rosestack.core.model;
  */
 public interface BaseEnum {
 
-    /** 获取枚举代码 */
-    String getCode();
-
-    /** 获取枚举名称 */
-    String getName();
-
-    /** 根据代码查找枚举 */
+    /**
+     * 根据代码查找枚举
+     */
     static <E extends Enum<E> & BaseEnum> E fromCode(Class<E> enumClass, String code) {
         if (code == null) {
             return null;
@@ -27,4 +23,14 @@ public interface BaseEnum {
 
         throw new IllegalArgumentException("No enum constant " + enumClass.getSimpleName() + " with code: " + code);
     }
+
+    /**
+     * 获取枚举代码
+     */
+    String getCode();
+
+    /**
+     * 获取枚举名称
+     */
+    String getName();
 }

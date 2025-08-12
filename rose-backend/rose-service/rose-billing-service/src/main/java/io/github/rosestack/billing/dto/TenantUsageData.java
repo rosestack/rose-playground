@@ -1,10 +1,13 @@
 package io.github.rosestack.billing.dto;
 
-import java.math.BigDecimal;
-import java.util.Map;
 import lombok.Data;
 
-/** 租户使用量数据 */
+import java.math.BigDecimal;
+import java.util.Map;
+
+/**
+ * 租户使用量数据
+ */
 @Data
 public class TenantUsageData {
     private String tenantId;

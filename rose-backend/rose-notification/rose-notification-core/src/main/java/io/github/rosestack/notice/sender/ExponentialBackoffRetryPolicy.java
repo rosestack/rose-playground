@@ -1,9 +1,12 @@
 package io.github.rosestack.notice.sender;
 
 import io.github.rosestack.notice.NoticeRetryableException;
+
 import java.util.concurrent.ThreadLocalRandom;
 
-/** 指数退避 + 抖动的重试策略。 */
+/**
+ * 指数退避 + 抖动的重试策略。
+ */
 public class ExponentialBackoffRetryPolicy implements RetryPolicy {
     private final int maxAttempts;
     private final long initialDelayMillis;

@@ -40,7 +40,9 @@ public class XssFilter extends AbstractBaseFilter {
         filterChain.doFilter(wrappedRequest, response);
     }
 
-    /** XSS 请求包装器 */
+    /**
+     * XSS 请求包装器
+     */
     private static class XssHttpServletRequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
 
         public XssHttpServletRequestWrapper(HttpServletRequest request) {

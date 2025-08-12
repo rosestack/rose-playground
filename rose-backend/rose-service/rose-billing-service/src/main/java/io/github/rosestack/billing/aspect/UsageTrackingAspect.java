@@ -9,7 +9,6 @@ import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.SubscriptionService;
 import io.github.rosestack.billing.service.UserMetricsService;
 import io.github.rosestack.mybatis.tenant.TenantContextHolder;
-import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -17,6 +16,8 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 /**
  * 使用量自动监控切面 通过AOP自动记录API调用、存储使用等
@@ -34,7 +35,9 @@ public class UsageTrackingAspect {
     private final UserMetricsService userMetricsService;
     private final SubscriptionService subscriptionService;
 
-    /** 监控API调用 */
+    /**
+     * 监控API调用
+     */
     @AfterReturning("@annotation(trackApiUsage)")
     public void trackApiCall(
             JoinPoint joinPoint, io.github.rosestack.billing.aspect.annotation.TrackApiUsage trackApiUsage) {
@@ -70,7 +73,9 @@ public class UsageTrackingAspect {
         }
     }
 
-    /** 监控存储使用 */
+    /**
+     * 监控存储使用
+     */
     @AfterReturning(value = "@annotation(trackStorageUsage)", returning = "result")
     public void trackStorageUsage(JoinPoint joinPoint, TrackStorageUsage trackStorageUsage, Object result) {
         try {
@@ -106,7 +111,9 @@ public class UsageTrackingAspect {
         }
     }
 
-    /** 监控用户数变化 */
+    /**
+     * 监控用户数变化
+     */
     @AfterReturning("@annotation(trackUserChange)")
     public void trackUserChange(JoinPoint joinPoint, TrackUserChange trackUserChange) {
         try {
@@ -143,7 +150,9 @@ public class UsageTrackingAspect {
         }
     }
 
-    /** 监控邮件发送 */
+    /**
+     * 监控邮件发送
+     */
     @AfterReturning("@annotation(trackEmailUsage)")
     public void trackEmailSent(JoinPoint joinPoint, TrackEmailUsage trackEmailUsage) {
         try {
@@ -177,7 +186,9 @@ public class UsageTrackingAspect {
         }
     }
 
-    /** 监控短信发送 */
+    /**
+     * 监控短信发送
+     */
     @AfterReturning("@annotation(trackSmsUsage)")
     public void trackSmsSent(JoinPoint joinPoint, TrackSmsUsage trackSmsUsage) {
         try {

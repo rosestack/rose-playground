@@ -16,7 +16,7 @@ public interface MessageCacheLoader {
     /**
      * 从缓存中获取消息
      *
-     * @param code 消息代码
+     * @param code   消息代码
      * @param locale 语言环境
      * @return 缓存的消息，如果不存在则返回 null
      */
@@ -25,8 +25,8 @@ public interface MessageCacheLoader {
     /**
      * 将消息放入缓存
      *
-     * @param code 消息代码
-     * @param locale 语言环境
+     * @param code    消息代码
+     * @param locale  语言环境
      * @param message 消息内容
      */
     void putToCache(String code, Locale locale, String message);
@@ -34,7 +34,7 @@ public interface MessageCacheLoader {
     /**
      * 批量从缓存中获取消息
      *
-     * @param codes 消息代码列表
+     * @param codes  消息代码列表
      * @param locale 语言环境
      * @return 缓存的消息映射，key为消息代码，value为消息内容
      */
@@ -44,7 +44,7 @@ public interface MessageCacheLoader {
      * 批量将消息放入缓存
      *
      * @param messages 消息映射，key为消息代码，value为消息内容
-     * @param locale 语言环境
+     * @param locale   语言环境
      */
     void putToCache(Map<String, String> messages, Locale locale);
 
@@ -62,7 +62,9 @@ public interface MessageCacheLoader {
         evictCache(I18nUtils.resolveLocale(resource));
     }
 
-    /** 清除所有缓存 */
+    /**
+     * 清除所有缓存
+     */
     void clearCache();
 
     /**

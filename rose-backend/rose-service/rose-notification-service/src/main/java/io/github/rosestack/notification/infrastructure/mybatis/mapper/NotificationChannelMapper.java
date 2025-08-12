@@ -6,11 +6,12 @@ import io.github.rosestack.notification.domain.repository.NotificationChannelRep
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.infrastructure.mybatis.convert.NotificationChannelConvert;
 import io.github.rosestack.notification.infrastructure.mybatis.entity.NotificationChannelEntity;
-import java.util.List;
-import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface NotificationChannelMapper

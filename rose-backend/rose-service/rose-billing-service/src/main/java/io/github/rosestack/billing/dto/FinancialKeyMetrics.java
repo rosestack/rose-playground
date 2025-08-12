@@ -1,9 +1,12 @@
 package io.github.rosestack.billing.dto;
 
-import java.math.BigDecimal;
 import lombok.Data;
 
-/** 财务关键指标 */
+import java.math.BigDecimal;
+
+/**
+ * 财务关键指标
+ */
 @Data
 public class FinancialKeyMetrics {
     private BigDecimal customerAcquisitionCost; // CAC

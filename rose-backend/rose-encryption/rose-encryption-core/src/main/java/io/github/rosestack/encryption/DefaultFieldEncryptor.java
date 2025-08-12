@@ -1,10 +1,11 @@
 package io.github.rosestack.encryption;
 
 import io.github.rosestack.encryption.enums.EncryptType;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
 
 /**
  * 优化的字段加密器实现
@@ -17,56 +18,64 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class DefaultFieldEncryptor implements FieldEncryptor {
-  private final String secretKey;
-  private final Boolean failOnError;
+    private final String secretKey;
+    private final Boolean failOnError;
 
-  @Override
-  public String encrypt(String plainText, EncryptType encryptType) {
-    try {
-      String secretKey = getEncryptionKey();
-      return EncryptionUtils.encrypt(plainText, encryptType, secretKey);
-    } catch (Exception e) {
-      if (!failOnError) {
-        return plainText;
-      }
-      throw new RuntimeException(e);
+    /**
+     * 获取性能统计
+     */
+    public static Map<String, Long> getPerformanceStats() {
+        return EncryptionUtils.getPerformanceStats();
     }
-  }
 
-  @Override
-  public String decrypt(String cipherText, EncryptType encryptType) {
-    try {
-      String secretKey = getEncryptionKey();
-      return EncryptionUtils.decrypt(cipherText, encryptType, secretKey);
-    } catch (Exception e) {
-      if (!failOnError) {
-        return cipherText;
-      }
-      throw new RuntimeException(e);
+    /**
+     * 获取缓存统计信息
+     */
+    public static String getCacheStats() {
+        return EncryptionUtils.getCacheStats();
     }
-  }
 
-  /** 获取加密密钥 */
-  private String getEncryptionKey() {
-    if (StringUtils.isBlank(secretKey)) {
-      throw new IllegalStateException("未配置加密密钥");
+    /**
+     * 清空缓存
+     */
+    public static void clearCache() {
+        EncryptionUtils.clearCache();
+        log.info("已清空字段加密器缓存");
     }
-    return secretKey;
-  }
 
-  /** 获取性能统计 */
-  public static Map<String, Long> getPerformanceStats() {
-    return EncryptionUtils.getPerformanceStats();
-  }
+    @Override
+    public String encrypt(String plainText, EncryptType encryptType) {
+        try {
+            String secretKey = getEncryptionKey();
+            return EncryptionUtils.encrypt(plainText, encryptType, secretKey);
+        } catch (Exception e) {
+            if (!failOnError) {
+                return plainText;
+            }
+            throw new RuntimeException(e);
+        }
+    }
 
-  /** 获取缓存统计信息 */
-  public static String getCacheStats() {
-    return EncryptionUtils.getCacheStats();
-  }
+    @Override
+    public String decrypt(String cipherText, EncryptType encryptType) {
+        try {
+            String secretKey = getEncryptionKey();
+            return EncryptionUtils.decrypt(cipherText, encryptType, secretKey);
+        } catch (Exception e) {
+            if (!failOnError) {
+                return cipherText;
+            }
+            throw new RuntimeException(e);
+        }
+    }
 
-  /** 清空缓存 */
-  public static void clearCache() {
-    EncryptionUtils.clearCache();
-    log.info("已清空字段加密器缓存");
-  }
+    /**
+     * 获取加密密钥
+     */
+    private String getEncryptionKey() {
+        if (StringUtils.isBlank(secretKey)) {
+            throw new IllegalStateException("未配置加密密钥");
+        }
+        return secretKey;
+    }
 }

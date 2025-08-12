@@ -13,17 +13,18 @@ import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 计费核心服务
@@ -55,11 +56,11 @@ public class BillingService {
     /**
      * 创建租户订阅
      *
-     * @param tenantId 租户ID，不能为空
-     * @param planId 订阅计划ID，不能为空
+     * @param tenantId   租户ID，不能为空
+     * @param planId     订阅计划ID，不能为空
      * @param startTrial 是否开启试用期，可以为null（默认false）
      * @return 创建的订阅信息
-     * @throws PlanNotFoundException 当订阅计划不存在时抛出
+     * @throws PlanNotFoundException    当订阅计划不存在时抛出
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
@@ -102,14 +103,18 @@ public class BillingService {
         return subscription;
     }
 
-    /** 获取租户订阅信息 */
+    /**
+     * 获取租户订阅信息
+     */
     public TenantSubscription getTenantSubscription(String tenantId) {
         return subscriptionRepository
                 .findByTenantId(tenantId)
                 .orElseThrow(() -> new SubscriptionNotFoundException("tenant:" + tenantId));
     }
 
-    /** 更改订阅计划 */
+    /**
+     * 更改订阅计划
+     */
     @Transactional
     public TenantSubscription changePlan(String subscriptionId, String newPlanId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -129,7 +134,9 @@ public class BillingService {
         return subscription;
     }
 
-    /** 取消订阅 */
+    /**
+     * 取消订阅
+     */
     @Transactional
     public void cancelSubscription(String subscriptionId, String reason) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -146,7 +153,9 @@ public class BillingService {
         log.info("取消订阅成功，订阅ID: {}, 原因: {}", subscriptionId, reason);
     }
 
-    /** 生成账单 */
+    /**
+     * 生成账单
+     */
     @Transactional
     public Invoice generateInvoice(String subscriptionId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -223,12 +232,16 @@ public class BillingService {
         return invoice;
     }
 
-    /** 获取租户账单列表 */
+    /**
+     * 获取租户账单列表
+     */
     public List<Invoice> getTenantInvoices(String tenantId) {
         return invoiceRepository.findByTenantIdOrderByCreateTimeDesc(tenantId);
     }
 
-    /** 记录使用量 */
+    /**
+     * 记录使用量
+     */
     public void recordUsage(
             String tenantId, String metricType, BigDecimal quantity, String resourceId, String metadata) {
         // 先检查使用量限制
@@ -245,7 +258,9 @@ public class BillingService {
         log.debug("记录使用量，租户: {}, 类型: {}, 数量: {}", tenantId, metricType, quantity);
     }
 
-    /** 记录使用量（带订阅ID） */
+    /**
+     * 记录使用量（带订阅ID）
+     */
     public void recordUsage(
             String tenantId,
             String subscriptionId,
@@ -261,7 +276,9 @@ public class BillingService {
         log.debug("记录使用量(含订阅)，租户: {}, 订阅: {}, 类型: {}, 数量: {}", tenantId, subscriptionId, metricType, quantity);
     }
 
-    /** 获取使用量统计 */
+    /**
+     * 获取使用量统计
+     */
     public List<Map<String, Object>> getUsageStats(String tenantId, String period) {
         // 根据period参数实现不同时间范围的查询
         LocalDateTime endTime = LocalDateTime.now();
@@ -277,7 +294,9 @@ public class BillingService {
         return usageService.getUsageTrend(tenantId, startTime, endTime);
     }
 
-    /** 处理支付 */
+    /**
+     * 处理支付
+     */
     // Overload using enum for type safety at call sites
     public void processPayment(
             String invoiceId, io.github.rosestack.billing.payment.PaymentMethod method, String transactionId) {
@@ -323,7 +342,9 @@ public class BillingService {
         log.info("处理支付成功，账单: {}, 金额: {}", invoiceId, invoice.getTotalAmount());
     }
 
-    /** 检查使用量限制 */
+    /**
+     * 检查使用量限制
+     */
     public boolean checkUsageLimit(String tenantId, String metricType) {
         TenantSubscription subscription =
                 subscriptionRepository.findActiveByTenantId(tenantId).orElse(null);
@@ -347,35 +368,47 @@ public class BillingService {
         return pricingCalculator.checkLimit(plan, metricType, currentUsage);
     }
 
-    /** 获取可用订阅计划 */
+    /**
+     * 获取可用订阅计划
+     */
     public List<SubscriptionPlan> getAvailablePlans() {
         return planRepository.findValidPlans(LocalDateTime.now());
     }
 
-    /** 汇总日使用量 */
+    /**
+     * 汇总日使用量
+     */
     public void aggregateDailyUsage(LocalDateTime startOfDay, LocalDateTime endOfDay) {
         // 实现使用量数据汇总逻辑
         log.info("汇总使用量数据：{} - {}", startOfDay, endOfDay);
     }
 
-    /** 检查使用量限制并发送通知 */
+    /**
+     * 检查使用量限制并发送通知
+     */
     public void checkUsageLimitsAndNotify() {
         // 实现使用量限制检查和通知逻辑
         log.info("检查使用量限制并发送通知");
     }
 
-    /** 生成财务报告 */
+    /**
+     * 生成财务报告
+     */
     public void generateFinancialReport(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
         // 实现财务报告生成逻辑
         log.info("生成财务报告：{} - {}，类型：{}", startDate, endDate, reportType);
     }
 
-    /** 清理过期使用量记录 */
+    /**
+     * 清理过期使用量记录
+     */
     public int cleanupOldUsageRecords(LocalDateTime cutoffDate) {
         return usageRepository.deleteOldBilledRecords(cutoffDate);
     }
 
-    /** 清理已取消的订阅 */
+    /**
+     * 清理已取消的订阅
+     */
     public int cleanupCancelledSubscriptions(LocalDateTime cutoffDate) {
         // 实现清理已取消订阅的逻辑
         log.info("清理已取消的订阅，截止时间：{}", cutoffDate);

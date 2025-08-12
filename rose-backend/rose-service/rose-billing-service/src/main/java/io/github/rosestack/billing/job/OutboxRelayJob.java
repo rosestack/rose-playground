@@ -13,11 +13,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OutboxRelayJob {
 
-    @Value("${rose.billing.outbox.limit:100}")
-    private int defaultOutboxLimit;
-
     private final OutboxService outboxService;
     private final TenantBillingConfigService configService;
+    @Value("${rose.billing.outbox.limit:100}")
+    private int defaultOutboxLimit;
 
     @Scheduled(
             fixedDelayString = "${rose.billing.outbox.fixedDelay:5000}",

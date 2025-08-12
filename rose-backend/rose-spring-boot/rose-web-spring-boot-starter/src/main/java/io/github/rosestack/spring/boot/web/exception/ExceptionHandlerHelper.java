@@ -4,13 +4,14 @@ import io.github.rosestack.core.exception.BusinessException;
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.util.Locale;
 
 /**
  * 异常处理助手类
@@ -30,13 +31,13 @@ public class ExceptionHandlerHelper {
     /**
      * 处理异常并返回统一的响应格式
      *
-     * @param exception 异常实例
-     * @param request HTTP 请求
-     * @param locale 语言环境
-     * @param statusCode HTTP 状态码
-     * @param messageKey 消息键
+     * @param exception   异常实例
+     * @param request     HTTP 请求
+     * @param locale      语言环境
+     * @param statusCode  HTTP 状态码
+     * @param messageKey  消息键
      * @param messageArgs 消息参数
-     * @param <T> 异常类型
+     * @param <T>         异常类型
      * @return 统一的异常响应
      */
     public <T extends Exception> ResponseEntity<ApiResponse<Void>> handleException(
@@ -66,8 +67,8 @@ public class ExceptionHandlerHelper {
      * 处理业务异常
      *
      * @param exception 业务异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(
@@ -79,8 +80,8 @@ public class ExceptionHandlerHelper {
      * 处理验证异常
      *
      * @param exception 验证异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleValidationException(
@@ -92,8 +93,8 @@ public class ExceptionHandlerHelper {
      * 处理认证异常
      *
      * @param exception 认证异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(
@@ -105,8 +106,8 @@ public class ExceptionHandlerHelper {
      * 处理授权异常
      *
      * @param exception 授权异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleAuthorizationException(
@@ -118,8 +119,8 @@ public class ExceptionHandlerHelper {
      * 处理资源未找到异常
      *
      * @param exception 异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleNotFoundException(
@@ -131,8 +132,8 @@ public class ExceptionHandlerHelper {
      * 处理限流异常
      *
      * @param exception 限流异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleRateLimitException(
@@ -144,8 +145,8 @@ public class ExceptionHandlerHelper {
      * 处理服务器内部错误
      *
      * @param exception 异常
-     * @param request HTTP 请求
-     * @param locale 语言环境
+     * @param request   HTTP 请求
+     * @param locale    语言环境
      * @return 异常响应
      */
     public ResponseEntity<ApiResponse<Void>> handleInternalServerError(
@@ -156,9 +157,9 @@ public class ExceptionHandlerHelper {
     /**
      * 获取本地化消息
      *
-     * @param messageKey 消息键
+     * @param messageKey  消息键
      * @param messageArgs 消息参数
-     * @param locale 语言环境
+     * @param locale      语言环境
      * @return 本地化消息
      */
     private String getLocalizedMessage(String messageKey, Object[] messageArgs, Locale locale) {
@@ -181,10 +182,10 @@ public class ExceptionHandlerHelper {
     /**
      * 记录异常日志
      *
-     * @param exception 异常
-     * @param request HTTP 请求
+     * @param exception        异常
+     * @param request          HTTP 请求
      * @param localizedMessage 本地化消息
-     * @param statusCode 状态码
+     * @param statusCode       状态码
      */
     private void logException(
             Exception exception, HttpServletRequest request, String localizedMessage, int statusCode) {

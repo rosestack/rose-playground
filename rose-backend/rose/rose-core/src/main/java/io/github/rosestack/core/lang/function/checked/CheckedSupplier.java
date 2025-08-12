@@ -13,6 +13,21 @@ import java.util.function.Supplier;
 public interface CheckedSupplier<T> {
 
     /**
+     * 从 JDK Supplier 创建 CheckedSupplier
+     */
+    static <T> CheckedSupplier<T> from(Supplier<T> supplier) {
+        Objects.requireNonNull(supplier);
+        return supplier::get;
+    }
+
+    /**
+     * 创建常量供应者
+     */
+    static <T> CheckedSupplier<T> constant(T value) {
+        return () -> value;
+    }
+
+    /**
      * 获取值
      *
      * @return 供应的值
@@ -20,7 +35,9 @@ public interface CheckedSupplier<T> {
      */
     T get() throws Exception;
 
-    /** 转换为 JDK Supplier（异常会被包装为 RuntimeException） */
+    /**
+     * 转换为 JDK Supplier（异常会被包装为 RuntimeException）
+     */
     default Supplier<T> unchecked() {
         return () -> {
             try {
@@ -52,7 +69,7 @@ public interface CheckedSupplier<T> {
     /**
      * 转换为 JDK Supplier，使用自定义异常处理器和默认值 当发生异常时，调用异常处理器并返回默认值
      *
-     * @param handler 异常处理器，接收捕获的异常
+     * @param handler      异常处理器，接收捕获的异常
      * @param defaultValue 异常时返回的默认值
      * @return 标准 Supplier
      */
@@ -66,16 +83,5 @@ public interface CheckedSupplier<T> {
                 return defaultValue;
             }
         };
-    }
-
-    /** 从 JDK Supplier 创建 CheckedSupplier */
-    static <T> CheckedSupplier<T> from(Supplier<T> supplier) {
-        Objects.requireNonNull(supplier);
-        return supplier::get;
-    }
-
-    /** 创建常量供应者 */
-    static <T> CheckedSupplier<T> constant(T value) {
-        return () -> value;
     }
 }

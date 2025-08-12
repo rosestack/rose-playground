@@ -20,7 +20,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @Slf4j
 public abstract class AbstractBaseFilter extends OncePerRequestFilter {
-    /** 默认排除路径 */
+    /**
+     * 默认排除路径
+     */
     public static final String[] DEFAULT_EXCLUDE_PATHS = {
         "/actuator/**",
         "/swagger-ui/**",
@@ -39,7 +41,28 @@ public abstract class AbstractBaseFilter extends OncePerRequestFilter {
         initializeExcludePaths(excludePaths);
     }
 
-    /** 初始化排除路径缓存 */
+    /**
+     * 检查请求路径是否匹配排除路径模式
+     *
+     * @param requestPath  请求路径
+     * @param excludePaths 排除路径集合
+     * @return true 如果匹配排除路径，false 否则
+     */
+    public static boolean shouldExcludePath(String requestPath, Set<String> excludePaths) {
+        if (ObjectUtils.isEmpty(excludePaths) || ObjectUtils.isEmpty(requestPath)) {
+            return false;
+        }
+
+        return excludePaths.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, requestPath));
+    }
+
+    public static boolean shouldExcludePath(String requestPath) {
+        return shouldExcludePath(requestPath, excludePathsCache);
+    }
+
+    /**
+     * 初始化排除路径缓存
+     */
     private void initializeExcludePaths(String[] excludePaths) {
         // 添加默认排除路径
         excludePathsCache.addAll(Arrays.asList(DEFAULT_EXCLUDE_PATHS));
@@ -92,24 +115,5 @@ public abstract class AbstractBaseFilter extends OncePerRequestFilter {
      */
     protected Set<String> getExcludePaths() {
         return new HashSet<>(excludePathsCache);
-    }
-
-    /**
-     * 检查请求路径是否匹配排除路径模式
-     *
-     * @param requestPath 请求路径
-     * @param excludePaths 排除路径集合
-     * @return true 如果匹配排除路径，false 否则
-     */
-    public static boolean shouldExcludePath(String requestPath, Set<String> excludePaths) {
-        if (ObjectUtils.isEmpty(excludePaths) || ObjectUtils.isEmpty(requestPath)) {
-            return false;
-        }
-
-        return excludePaths.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, requestPath));
-    }
-
-    public static boolean shouldExcludePath(String requestPath) {
-        return shouldExcludePath(requestPath, excludePathsCache);
     }
 }

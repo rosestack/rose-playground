@@ -38,16 +38,17 @@ alwaysApply: true
 在子模块中，如果是 Spring Boot3 项目，则引入 mybatis-plus-spring-boot3-starter 依赖：
 
 ```xml
-    <dependency>
-        <groupId>com.baomidou</groupId>
-        <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-    </dependency>
-            
-    <!--分页插件-->
-    <dependency>
-        <groupId>com.baomidou</groupId>
-        <artifactId>mybatis-plus-jsqlparser</artifactId>
-    </dependency>
+
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+</dependency>
+
+        <!--分页插件-->
+<dependency>
+<groupId>com.baomidou</groupId>
+<artifactId>mybatis-plus-jsqlparser</artifactId>
+</dependency>
 ```
 
 如果是 Spring Boot2 项目，则引入 mybatis-plus-boot-starter 依赖：
@@ -204,6 +205,7 @@ public abstract class BaseTenantEntity extends BaseEntity {
 ```
 
 ### 实体继承体系
+
 ```java
 // 基础实体类 - 所有实体的父类
 public abstract class BaseEntity {
@@ -222,6 +224,7 @@ public class User extends BaseTenantEntity {
 ```
 
 实体分类:
+
 - **系统级实体**：继承BaseEntity，不包含租户ID，用于系统配置等
 - **租户级实体**：继承BaseTenantEntity，包含租户ID，用于业务数据
 
@@ -348,7 +351,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 ```
 
 ## 对象映射规范
-
 
 ## 性能优化规范
 

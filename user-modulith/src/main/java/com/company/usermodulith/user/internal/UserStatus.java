@@ -8,16 +8,24 @@ package com.company.usermodulith.user.internal;
  */
 public enum UserStatus {
 
-    /** 激活状态 */
+    /**
+     * 激活状态
+     */
     ACTIVE("ACTIVE", "激活"),
 
-    /** 未激活状态 */
+    /**
+     * 未激活状态
+     */
     INACTIVE("INACTIVE", "未激活"),
 
-    /** 锁定状态 */
+    /**
+     * 锁定状态
+     */
     LOCKED("LOCKED", "锁定"),
 
-    /** 禁用状态 */
+    /**
+     * 禁用状态
+     */
     DISABLED("DISABLED", "禁用");
 
     private final String code;
@@ -26,14 +34,6 @@ public enum UserStatus {
     UserStatus(String code, String description) {
         this.code = code;
         this.description = description;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     /**
@@ -62,5 +62,13 @@ public enum UserStatus {
      */
     public static boolean isValid(String code) {
         return fromCode(code) != null;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
     }
 } 

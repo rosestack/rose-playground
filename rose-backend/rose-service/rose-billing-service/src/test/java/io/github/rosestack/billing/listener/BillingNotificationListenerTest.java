@@ -1,14 +1,15 @@
 package io.github.rosestack.billing.listener;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
 import io.github.rosestack.billing.event.PaymentSucceededEvent;
 import io.github.rosestack.billing.service.BillingNotificationService;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 class BillingNotificationListenerTest {
 

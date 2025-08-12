@@ -15,6 +15,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface ResponseIgnore {
 
-    /** 忽略原因 */
+    /**
+     * 忽略原因
+     */
     String reason() default "";
 }

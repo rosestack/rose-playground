@@ -14,8 +14,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** FormatUtils 测试类 测试字符串格式化和占位符替换功能 */
+/**
+ * FormatUtils 测试类 测试字符串格式化和占位符替换功能
+ */
 class FormatUtilsTest {
+
+    static Stream<Arguments> providePlaceholderTestCases() {
+        return Stream.of(
+                Arguments.of("简单测试: {}", new Object[] {"成功"}, "简单测试: 成功"),
+                Arguments.of("多参数: {} + {} = {}", new Object[] {1, 2, 3}, "多参数: 1 + 2 = 3"),
+                Arguments.of("无占位符", new Object[] {"忽略"}, "无占位符"),
+                Arguments.of("空参数: {}", new Object[] {""}, "空参数: "),
+                Arguments.of("特殊字符: {} & {}", new Object[] {"<test>", "\"quote\""}, "特殊字符: <test> & \"quote\""));
+    }
 
     @Test
     void testReplacePlaceholdersBasic() {
@@ -123,15 +134,6 @@ class FormatUtilsTest {
     void testPlaceholderReplacement(String template, Object[] args, String expected) {
         String result = FormatUtils.replacePlaceholders(template, args);
         assertEquals(expected, result);
-    }
-
-    static Stream<Arguments> providePlaceholderTestCases() {
-        return Stream.of(
-                Arguments.of("简单测试: {}", new Object[] {"成功"}, "简单测试: 成功"),
-                Arguments.of("多参数: {} + {} = {}", new Object[] {1, 2, 3}, "多参数: 1 + 2 = 3"),
-                Arguments.of("无占位符", new Object[] {"忽略"}, "无占位符"),
-                Arguments.of("空参数: {}", new Object[] {""}, "空参数: "),
-                Arguments.of("特殊字符: {} & {}", new Object[] {"<test>", "\"quote\""}, "特殊字符: <test> & \"quote\""));
     }
 
     @Test

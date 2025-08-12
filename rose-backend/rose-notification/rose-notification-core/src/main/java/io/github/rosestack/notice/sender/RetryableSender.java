@@ -4,10 +4,13 @@ import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.notice.SenderConfiguration;
 import io.github.rosestack.notice.spi.AbstractConfigure;
 import io.github.rosestack.notice.spi.Sender;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-/** Sender 委托类，内置可配置重试策略。 */
+/**
+ * Sender 委托类，内置可配置重试策略。
+ */
 public class RetryableSender extends AbstractConfigure implements Sender {
     private final Sender delegate;
     private volatile RetryPolicy retryPolicy;
@@ -40,7 +43,8 @@ public class RetryableSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 
     @Override
     public void doConfigure(SenderConfiguration config) throws Exception {

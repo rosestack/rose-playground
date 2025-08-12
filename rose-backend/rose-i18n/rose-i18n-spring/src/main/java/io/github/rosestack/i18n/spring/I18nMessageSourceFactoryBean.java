@@ -128,6 +128,10 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource
         return order;
     }
 
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     private List<AbstractMessageSource> initMessageSources() {
         List<String> factoryNames = loadFactoryNames(AbstractMessageSource.class, classLoader);
 
@@ -235,10 +239,6 @@ public final class I18nMessageSourceFactoryBean extends CompositeMessageSource
 
     public List<I18nMessageSource> getAllI18nMessageSources() {
         return findAllMessageSources(this);
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
     }
 
     public void setDefaultLocale(Locale defaultLocale) {

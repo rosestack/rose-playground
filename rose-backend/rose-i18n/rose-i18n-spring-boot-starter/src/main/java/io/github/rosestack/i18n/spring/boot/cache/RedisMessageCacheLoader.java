@@ -38,17 +38,19 @@ import org.springframework.util.StringUtils;
 public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisMessageCacheLoader.class);
-
-    /** Redis 操作模板 */
-    private final RedisTemplate<String, Object> redisTemplate;
-
-    /** Lua 脚本：批量删除匹配模式的键 */
+    /**
+     * Lua 脚本：批量删除匹配模式的键
+     */
     private static final String DELETE_PATTERN_SCRIPT = "local keys = redis.call('keys', ARGV[1]) "
             + "if #keys > 0 then "
             + "  return redis.call('del', unpack(keys)) "
             + "else "
             + "  return 0 "
             + "end";
+    /**
+     * Redis 操作模板
+     */
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private final DefaultRedisScript<Long> deletePatternScript;
 
@@ -56,7 +58,7 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
      * 构造函数（使用默认的 SimpleMeterRegistry）
      *
      * @param cacheProperties 缓存配置属性
-     * @param redisTemplate Redis 操作模板
+     * @param redisTemplate   Redis 操作模板
      */
     public RedisMessageCacheLoader(CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate) {
         this(cacheProperties, redisTemplate, new SimpleMeterRegistry());
@@ -66,8 +68,8 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
      * 构造函数
      *
      * @param cacheProperties 缓存配置属性
-     * @param redisTemplate Redis 操作模板
-     * @param meterRegistry Micrometer 指标注册表
+     * @param redisTemplate   Redis 操作模板
+     * @param meterRegistry   Micrometer 指标注册表
      */
     public RedisMessageCacheLoader(
             CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate, MeterRegistry meterRegistry) {

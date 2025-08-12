@@ -4,14 +4,15 @@ import io.github.rosestack.notice.NoticeMetrics;
 import io.github.rosestack.notice.NoticeService;
 import io.github.rosestack.notice.support.CaffeineIdempotencyStore;
 import io.micrometer.core.instrument.MeterRegistry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @AutoConfiguration
 @EnableConfigurationProperties(NotificationProperties.class)

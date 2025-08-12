@@ -5,13 +5,16 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/** 支付记录实体 */
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
+
+/**
+ * 支付记录实体
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("payment_record")

@@ -1,13 +1,14 @@
 package io.github.rosestack.spring.boot.mybatis.permission.controller;
 
 import io.github.rosestack.spring.boot.mybatis.permission.service.DataPermissionService;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 数据权限缓存管理控制器
@@ -31,7 +32,9 @@ public class DataPermissionController {
 
     private final DataPermissionService cacheService;
 
-    /** 获取缓存统计信息 */
+    /**
+     * 获取缓存统计信息
+     */
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getCacheStats() {
         try {
@@ -43,7 +46,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 获取缓存健康状态 */
+    /**
+     * 获取缓存健康状态
+     */
     @GetMapping("/health")
     public ResponseEntity<DataPermissionService.CacheHealthStatus> getCacheHealth() {
         try {
@@ -55,7 +60,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 获取缓存使用建议 */
+    /**
+     * 获取缓存使用建议
+     */
     @GetMapping("/advice")
     public ResponseEntity<String> getCacheAdvice() {
         try {
@@ -67,7 +74,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 清空所有缓存 */
+    /**
+     * 清空所有缓存
+     */
     @DeleteMapping("/all")
     public ResponseEntity<String> clearAllCache() {
         try {
@@ -80,7 +89,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 清空指定用户的缓存 */
+    /**
+     * 清空指定用户的缓存
+     */
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<String> clearUserCache(@PathVariable String userId) {
         try {
@@ -93,7 +104,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 批量清空多个用户的缓存 */
+    /**
+     * 批量清空多个用户的缓存
+     */
     @DeleteMapping("/users")
     public ResponseEntity<String> clearUsersCache(@RequestBody String[] userIds) {
         try {
@@ -110,7 +123,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 获取缓存配置信息 */
+    /**
+     * 获取缓存配置信息
+     */
     @GetMapping("/config")
     public ResponseEntity<Map<String, Object>> getCacheConfig() {
         try {
@@ -130,7 +145,9 @@ public class DataPermissionController {
         }
     }
 
-    /** 缓存性能测试 */
+    /**
+     * 缓存性能测试
+     */
     @PostMapping("/performance-test")
     public ResponseEntity<Map<String, Object>> performanceTest() {
         try {

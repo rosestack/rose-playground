@@ -4,13 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.github.rosestack.billing.entity.OutboxRecord;
 import io.github.rosestack.billing.enums.OutboxStatus;
 import io.github.rosestack.billing.repository.OutboxRepository;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -34,7 +35,9 @@ public class OutboxService {
         outboxRepository.insert(rec);
     }
 
-    /** 拉取可投递事件并投递（最小实现） */
+    /**
+     * 拉取可投递事件并投递（最小实现）
+     */
     @Transactional
     public int relayPending(int limit) {
         LocalDateTime now = LocalDateTime.now();

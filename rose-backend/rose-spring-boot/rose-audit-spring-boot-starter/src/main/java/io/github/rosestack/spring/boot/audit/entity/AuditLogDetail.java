@@ -7,11 +7,12 @@ import io.github.rosestack.spring.boot.audit.enums.AuditDetailType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 /**
  * 审计日志详情表实体类
@@ -29,46 +30,65 @@ import lombok.NoArgsConstructor;
 @TableName("audit_log_detail")
 public class AuditLogDetail {
 
-    /** 主键ID */
+    /**
+     * 主键ID
+     */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
-    /** 审计日志ID（外键） */
-    @NotNull(message = "审计日志ID不能为空") @TableField("audit_log_id")
+    /**
+     * 审计日志ID（外键）
+     */
+    @NotNull(message = "审计日志ID不能为空")
+    @TableField("audit_log_id")
     private Long auditLogId;
 
-    /** 详情类型 */
+    /**
+     * 详情类型
+     */
     @NotBlank(message = "详情类型不能为空")
     @Size(max = 50, message = "详情类型长度不能超过50个字符")
     @TableField("detail_type")
     private String detailType;
 
-    /** 详情键 */
+    /**
+     * 详情键
+     */
     @NotBlank(message = "详情键不能为空")
     @Size(max = 50, message = "详情键长度不能超过50个字符")
     @TableField("detail_key")
     private String detailKey;
 
-    /** 详情值（JSON格式，可能加密脱敏） */
+    /**
+     * 详情值（JSON格式，可能加密脱敏）
+     */
     @TableField(value = "detail_value")
     private String detailValue;
 
-    /** 是否包含敏感数据 */
+    /**
+     * 是否包含敏感数据
+     */
     @TableField("is_sensitive")
     private Boolean isSensitive;
 
-    /** 是否加密存储 */
+    /**
+     * 是否加密存储
+     */
     @TableField("is_encrypted")
     private Boolean isEncrypted;
 
     private EncryptType encryptType;
 
-    /** 租户ID（多租户支持） */
+    /**
+     * 租户ID（多租户支持）
+     */
     @Size(max = 50, message = "租户ID长度不能超过50个字符")
     @TableField(value = "tenant_id", fill = FieldFill.INSERT)
     private String tenantId;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     @TableField(value = "created_time", fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 

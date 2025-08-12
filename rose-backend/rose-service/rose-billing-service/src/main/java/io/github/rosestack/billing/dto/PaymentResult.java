@@ -1,9 +1,12 @@
 package io.github.rosestack.billing.dto;
 
-import java.util.Map;
 import lombok.Data;
 
-/** 支付结果对象 */
+import java.util.Map;
+
+/**
+ * 支付结果对象
+ */
 @Data
 public class PaymentResult {
     private boolean success;

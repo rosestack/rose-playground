@@ -21,14 +21,14 @@ class ModulithDependencyTest {
     void verifyModuleDependencies() {
         // 创建应用模块分析器
         ApplicationModules modules = ApplicationModules.of(UserModulithApplication.class);
-        
+
         // 验证模块依赖
         modules.verify();
-        
+
         // 输出模块信息
         System.out.println("=== 模块依赖验证通过 ===");
         System.out.println("模块数量: " + modules.stream().count());
-        
+
         modules.stream().forEach(module -> {
             System.out.println("模块: " + module.getDisplayName());
             System.out.println("  包: " + module.getBasePackage());

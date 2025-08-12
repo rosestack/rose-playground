@@ -1,11 +1,12 @@
 package io.github.rosestack.spring.boot.redis.ratelimit;
 
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 限流管理器
@@ -41,7 +42,7 @@ public class RateLimitManager {
     /**
      * 获取指定算法的限流器
      *
-     * @param key 限流键
+     * @param key       限流键
      * @param algorithm 限流算法
      * @return 限流器实例
      */
@@ -53,9 +54,9 @@ public class RateLimitManager {
     /**
      * 获取指定配置的限流器
      *
-     * @param key 限流键
-     * @param algorithm 限流算法
-     * @param rate 限流速率
+     * @param key        限流键
+     * @param algorithm  限流算法
+     * @param rate       限流速率
      * @param timeWindow 时间窗口
      * @return 限流器实例
      */
@@ -86,7 +87,7 @@ public class RateLimitManager {
     /**
      * 尝试获取指定数量的许可
      *
-     * @param key 限流键
+     * @param key     限流键
      * @param permits 许可数量
      * @return 是否获取成功
      */
@@ -97,7 +98,7 @@ public class RateLimitManager {
     /**
      * 尝试获取许可（指定算法）
      *
-     * @param key 限流键
+     * @param key       限流键
      * @param algorithm 限流算法
      * @return 是否获取成功
      */
@@ -108,9 +109,9 @@ public class RateLimitManager {
     /**
      * 尝试获取许可（完整配置）
      *
-     * @param key 限流键
-     * @param algorithm 限流算法
-     * @param rate 限流速率
+     * @param key        限流键
+     * @param algorithm  限流算法
+     * @param rate       限流速率
      * @param timeWindow 时间窗口
      * @return 是否获取成功
      */
@@ -146,13 +147,17 @@ public class RateLimitManager {
         return rateLimiterCache.size();
     }
 
-    /** 清理所有限流器实例 */
+    /**
+     * 清理所有限流器实例
+     */
     public void clearAllRateLimiters() {
         rateLimiterCache.clear();
         log.info("清理所有限流器实例");
     }
 
-    /** 创建限流器实例 */
+    /**
+     * 创建限流器实例
+     */
     private RateLimiter createRateLimiter(RoseRedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
         String keyPrefix = properties.getRateLimit().getKeyPrefix();
 
@@ -173,7 +178,9 @@ public class RateLimitManager {
         }
     }
 
-    /** 构建缓存键 */
+    /**
+     * 构建缓存键
+     */
     private String buildCacheKey(
             String key, RoseRedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
         return String.format("%s:%s:%d:%d", key, algorithm, rate, timeWindow);

@@ -21,14 +21,14 @@ public abstract class AbstractSpringTest {
         Locale.setDefault(Locale.SIMPLIFIED_CHINESE);
     }
 
-    @BeforeEach
-    public void before() {
-        LocaleContextHolder.resetLocaleContext();
-    }
-
     @AfterAll
     public static void afterClass() {
         I18nUtils.destroyMessageSource();
+        LocaleContextHolder.resetLocaleContext();
+    }
+
+    @BeforeEach
+    public void before() {
         LocaleContextHolder.resetLocaleContext();
     }
 }

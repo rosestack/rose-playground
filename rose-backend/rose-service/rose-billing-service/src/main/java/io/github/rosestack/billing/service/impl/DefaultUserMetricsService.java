@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 
-/** 默认用户指标服务实现（占位实现）。 若项目提供了真实实现（例如依赖 IAM 模块），可通过定义同名 Bean 覆盖本实现。 */
+/**
+ * 默认用户指标服务实现（占位实现）。 若项目提供了真实实现（例如依赖 IAM 模块），可通过定义同名 Bean 覆盖本实现。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

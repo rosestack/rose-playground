@@ -27,6 +27,10 @@ public class TraceIdFilter extends AbstractBaseFilter {
         super(excludePaths);
     }
 
+    protected static String generateRequestId() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -43,9 +47,5 @@ public class TraceIdFilter extends AbstractBaseFilter {
         } finally {
             MDC.remove(MDC_REQUEST_ID);
         }
-    }
-
-    protected static String generateRequestId() {
-        return UUID.randomUUID().toString().replace("-", "");
     }
 }

@@ -22,7 +22,7 @@ public interface DistributedLock {
     /**
      * 尝试获取锁（非阻塞，指定超时时间）
      *
-     * @param timeout 锁的超时时间
+     * @param timeout  锁的超时时间
      * @param timeUnit 时间单位
      * @return 是否成功获取锁
      */
@@ -31,9 +31,9 @@ public interface DistributedLock {
     /**
      * 尝试获取锁（阻塞，指定等待时间和锁超时时间）
      *
-     * @param waitTime 等待获取锁的时间
+     * @param waitTime  等待获取锁的时间
      * @param leaseTime 锁的超时时间
-     * @param timeUnit 时间单位
+     * @param timeUnit  时间单位
      * @return 是否成功获取锁
      * @throws InterruptedException 等待过程中被中断
      */
@@ -52,7 +52,7 @@ public interface DistributedLock {
      * 获取锁（阻塞，指定锁超时时间）
      *
      * @param leaseTime 锁的超时时间
-     * @param timeUnit 时间单位
+     * @param timeUnit  时间单位
      * @throws InterruptedException 等待过程中被中断
      */
     void lock(long leaseTime, TimeUnit timeUnit) throws InterruptedException;
@@ -105,7 +105,7 @@ public interface DistributedLock {
      * 续期锁
      *
      * @param leaseTime 续期时间
-     * @param timeUnit 时间单位
+     * @param timeUnit  时间单位
      * @return 是否续期成功
      */
     boolean renewLease(long leaseTime, TimeUnit timeUnit);

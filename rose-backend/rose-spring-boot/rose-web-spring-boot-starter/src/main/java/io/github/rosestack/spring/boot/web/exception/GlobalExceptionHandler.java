@@ -5,7 +5,6 @@ import io.github.rosestack.core.exception.RateLimitException;
 import io.github.rosestack.core.model.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.Locale;
 
 /**
  * 优化的全局异常处理器
@@ -31,21 +32,27 @@ public class GlobalExceptionHandler {
 
     private final ExceptionHandlerHelper exceptionHelper;
 
-    /** 处理业务异常 */
+    /**
+     * 处理业务异常
+     */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(
             BusinessException e, HttpServletRequest request, Locale locale) {
         return exceptionHelper.handleBusinessException(e, request, locale);
     }
 
-    /** 处理限流异常 */
+    /**
+     * 处理限流异常
+     */
     @ExceptionHandler(RateLimitException.class)
     public ResponseEntity<ApiResponse<Void>> handleRateLimitException(
             RateLimitException e, HttpServletRequest request, Locale locale) {
         return exceptionHelper.handleRateLimitException(e, request, locale);
     }
 
-    /** 处理参数验证异常 */
+    /**
+     * 处理参数验证异常
+     */
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class, ConstraintViolationException.class})
     public ResponseEntity<ApiResponse<Void>> handleValidationException(
             Exception e, HttpServletRequest request, Locale locale) {
@@ -59,14 +66,18 @@ public class GlobalExceptionHandler {
     //     return exceptionHelper.handleAuthenticationException(e, request, locale);
     // }
 
-    /** 处理资源未找到异常 */
+    /**
+     * 处理资源未找到异常
+     */
     @ExceptionHandler({NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
     public ResponseEntity<ApiResponse<Void>> handleNotFoundException(
             Exception e, HttpServletRequest request, Locale locale) {
         return exceptionHelper.handleNotFoundException(e, request, locale);
     }
 
-    /** 处理其他未捕获的异常 */
+    /**
+     * 处理其他未捕获的异常
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(
             Exception e, HttpServletRequest request, Locale locale) {

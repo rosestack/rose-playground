@@ -1,9 +1,10 @@
 package io.github.rosestack.iam.app;
 
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 @Data
 public class App {
@@ -19,13 +20,19 @@ public class App {
 
     private String userPoolId;
 
-    /** 状态 */
+    /**
+     * 状态
+     */
     private Boolean status;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 
-    /** 修改时间 */
+    /**
+     * 修改时间
+     */
     private LocalDateTime updatedAt;
 
     //    // 是否为集成应用

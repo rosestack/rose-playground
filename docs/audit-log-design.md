@@ -9,6 +9,7 @@
 ### 2.1 用户行为日志（User Behavior Logs）
 
 #### 2.1.1 认证相关
+
 - **用户登录**：成功/失败登录记录，包含IP、时间、设备信息
 - **用户登出**：主动登出、超时登出、强制登出
 - **密码操作**：密码修改、重置、过期提醒
@@ -16,6 +17,7 @@
 - **会话管理**：会话创建、销毁、超时、并发控制
 
 #### 2.1.2 权限管理相关
+
 - **角色操作**：角色分配、撤销、权限变更
 - **权限检查**：访问控制检查结果（允许/拒绝）
 - **用户组管理**：用户组创建、修改、删除、成员变更
@@ -24,12 +26,14 @@
 ### 2.2 数据操作日志（Data Operation Logs）
 
 #### 2.2.1 数据库操作
+
 - **CRUD操作**：增删改查操作，记录SQL语句、参数、执行时间
 - **批量操作**：批量导入、导出、更新、删除
 - **敏感数据访问**：个人信息、财务数据、机密信息访问
 - **数据变更**：字段级别的数据变更前后对比
 
 #### 2.2.2 业务数据操作
+
 - **订单管理**：订单创建、修改、取消、退款
 - **用户信息**：用户资料修改、状态变更
 - **财务操作**：支付、退款、账户余额变更
@@ -38,12 +42,14 @@
 ### 2.3 系统操作日志（System Operation Logs）
 
 #### 2.3.1 系统管理
+
 - **服务管理**：服务启动、停止、重启、健康检查
 - **配置变更**：系统配置、应用配置、环境变量修改
 - **定时任务**：定时任务执行、失败、重试
 - **系统维护**：数据库维护、缓存清理、日志清理
 
 #### 2.3.2 文件操作
+
 - **文件管理**：文件上传、下载、删除、移动
 - **权限变更**：文件访问权限修改
 - **敏感文件**：配置文件、证书文件、密钥文件操作
@@ -51,12 +57,14 @@
 ### 2.4 网络活动日志（Network Activity Logs）
 
 #### 2.4.1 API调用
+
 - **REST API**：HTTP请求/响应、状态码、耗时
 - **内部服务**：微服务间调用、RPC调用
 - **外部集成**：第三方API调用、回调处理
 - **WebSocket**：连接建立、消息传输、连接断开
 
 #### 2.4.2 网络安全
+
 - **异常访问**：异常IP、异常时间、异常频率
 - **跨域访问**：CORS请求、跨域资源访问
 - **防火墙**：防火墙规则触发、阻断记录
@@ -65,12 +73,14 @@
 ### 2.5 安全事件日志（Security Event Logs）
 
 #### 2.5.1 攻击检测
+
 - **注入攻击**：SQL注入、NoSQL注入、命令注入
 - **跨站攻击**：XSS攻击、CSRF攻击
 - **暴力破解**：密码暴力破解、验证码暴力破解
 - **恶意扫描**：端口扫描、漏洞扫描
 
 #### 2.5.2 异常行为
+
 - **异常登录**：异地登录、异常时间登录、多设备登录
 - **权限异常**：权限提升尝试、越权访问
 - **数据异常**：大量数据下载、敏感数据批量访问
@@ -137,6 +147,7 @@ PARTITION BY RANGE (YEAR(event_time) * 100 + MONTH(event_time)) (
 ### 3.2 审计日志详情表（audit_log_detail）
 
 #### 3.2.1 设计目的
+
 审计日志详情表专门用于存储**大文本数据**和**复杂结构信息**，实现主表瘦身和性能优化：
 
 - **主表瘦身**：主表只存储核心审计信息和高频查询字段
@@ -146,6 +157,7 @@ PARTITION BY RANGE (YEAR(event_time) * 100 + MONTH(event_time)) (
 #### 3.2.2 字段分配原则
 
 **主表字段（高频查询 + 小数据量）**：
+
 - 核心审计信息：event_type, event_subtype, operation_name, status
 - HTTP基础信息：request_uri, http_method, http_status
 - 会话网络信息：session_id, client_ip, geo_location
@@ -153,6 +165,7 @@ PARTITION BY RANGE (YEAR(event_time) * 100 + MONTH(event_time)) (
 - 系统信息：app_name, tenant_id, trace_id
 
 **详情表字段（大文本 + 复杂结构）**：
+
 - HTTP详细信息：REQUEST_PARAMS, REQUEST_BODY, REQUEST_HEADERS
 - 完整用户代理：REQUEST_HEADERS中包含完整User-Agent字符串
 - 响应详情：RESPONSE_RESULT, RESPONSE_HEADERS
@@ -190,6 +203,7 @@ ROW_FORMAT=COMPRESSED;  -- 启用压缩存储
 #### 3.2.3 枚举定义
 
 **详情类型枚举（AuditDetailType）**：
+
 ```java
 @Getter
 public enum AuditDetailType {
@@ -208,6 +222,7 @@ public enum AuditDetailType {
 ```
 
 **详情键枚举（AuditDetailKey）**：
+
 ```java
 @Getter
 public enum AuditDetailKey {
@@ -257,14 +272,17 @@ public enum AuditDetailKey {
 #### 3.2.4 错误信息存储优化
 
 **问题分析**：
+
 - 主表的 `error_message` 与详情表的 `RESPONSE_RESULT` 存在重复
 - 错误信息可能很长，不适合放在主表
 
 **优化方案**：
+
 - **主表**：只保留 `error_code`（如"INVALID_PARAMETER"、"NETWORK_TIMEOUT"）
 - **详情表**：使用 `ERROR_DETAIL` 存储完整错误信息
 
 **存储策略**：
+
 ```java
 // 主表：简洁的错误代码
 audit_log.error_code = "VALIDATION_FAILED";
@@ -285,6 +303,7 @@ audit_log.error_code = "VALIDATION_FAILED";
 ```
 
 **与 RESPONSE_RESULT 的区别**：
+
 - **RESPONSE_RESULT**：HTTP响应的完整结果（包含业务数据）
 - **ERROR_DETAIL**：专门的错误详情（仅在出错时记录）
 
@@ -316,12 +335,14 @@ audit_log.error_code = "VALIDATION_FAILED";
 #### 3.2.4 存储格式说明
 
 **JSON格式存储优势**：
+
 - **结构化数据**：复杂对象以JSON格式存储，便于查询和解析
 - **扩展性强**：可以灵活添加新字段，无需修改表结构
 - **查询便利**：MySQL 5.7+ 支持JSON字段的高效查询
 - **数据完整**：保持原始数据的完整结构
 
 **存储示例对比**：
+
 ```sql
 -- 旧方式：多行存储
 (1, 1001, 'REQUEST_PARAMS', 'userId', '12345', 'STRING'),
@@ -337,6 +358,7 @@ audit_log.error_code = "VALIDATION_FAILED";
 ```
 
 **查询示例**：
+
 ```sql
 -- 查询特定参数
 SELECT detail_value->'$.userId' as user_id
@@ -352,11 +374,13 @@ WHERE detail_key = 'REQUEST_PARAMS'
 #### 3.2.4 加密和脱敏处理
 
 **敏感数据识别**：
+
 - 包含个人信息、密码、Token等敏感字段
 - 设置 `is_sensitive = TRUE`
 - 自动进行脱敏和加密处理
 
 **脱敏规则**：
+
 ```java
 // 常见敏感字段脱敏
 private static final Map<String, String> MASK_PATTERNS = Map.of(
@@ -370,6 +394,7 @@ private static final Map<String, String> MASK_PATTERNS = Map.of(
 ```
 
 **加密存储**：
+
 ```java
 // 敏感数据加密存储
 public void saveAuditDetail(AuditDetailRequest request) {
@@ -397,6 +422,7 @@ public void saveAuditDetail(AuditDetailRequest request) {
 ```
 
 **查询解密**：
+
 ```java
 // 查询时解密处理
 public String getDetailValue(AuditLogDetail detail) {
@@ -512,6 +538,7 @@ public enum AuditOperationResult {
 ### 4.2 混合模式设计说明
 
 #### 4.2.1 设计原理
+
 采用 **技术分类 + 业务操作** 的混合模式：
 
 - **event_type + event_subtype**：使用枚举，保持技术层面的标准化分类
@@ -520,28 +547,34 @@ public enum AuditOperationResult {
 #### 4.2.2 事件分类原则
 
 **认证类**：
+
 - 用户身份验证相关操作
 - 成功/失败由 status 字段决定，不单独设置失败类型
 
 **授权类**：
+
 - `权限拒绝`：安全事件，记录访问被拒绝的情况
 - `授权变更`：用户角色分配、权限授予等授权关系变更
 
 **数据类**：
+
 - 角色/权限的增删改操作归类为数据操作：
-  - 新增角色 → `数据创建` + operation_name="创建管理员角色"
-  - 删除权限 → `数据删除` + operation_name="删除用户查看权限"
-  - 修改角色 → `数据更新` + operation_name="修改角色权限范围"
+    - 新增角色 → `数据创建` + operation_name="创建管理员角色"
+    - 删除权限 → `数据删除` + operation_name="删除用户查看权限"
+    - 修改角色 → `数据更新` + operation_name="修改角色权限范围"
 
 **系统类**：
+
 - 系统级别的配置和维护操作
 
 **安全类**：
+
 - 安全威胁检测和异常行为
 
 #### 4.2.3 优化说明
 
 **权限拒绝的覆盖范围**：
+
 ```sql
 -- 权限不足
 ('授权', '权限拒绝', '访问管理页面权限不足')
@@ -559,11 +592,13 @@ public enum AuditOperationResult {
 #### 4.2.2 优势分析
 
 **技术分类标准化**：
+
 - 便于系统监控和统计分析
 - 支持按技术维度进行查询过滤
 - 保持审计日志的规范性
 
 **业务操作灵活化**：
+
 - 支持任意业务操作的扩展
 - 不需要修改枚举即可添加新操作
 - 业务人员可以直观理解操作含义
@@ -621,6 +656,7 @@ WHERE event_type = '数据'
 ### 5.1 认证事件详情
 
 #### AUTH_LOGIN - 用户登录
+
 ```sql
 -- 主表记录
 INSERT INTO audit_log VALUES (
@@ -651,6 +687,7 @@ INSERT INTO audit_log_detail VALUES
 ```
 
 #### AUTH_LOGIN_FAILED - 登录失败
+
 ```sql
 -- 主表记录（移除error_message，只保留error_code）
 INSERT INTO audit_log VALUES (
@@ -689,6 +726,7 @@ INSERT INTO audit_log_detail VALUES
 ### 5.2 数据事件详情
 
 #### DATA_UPDATE - 数据更新（业务示例）
+
 ```sql
 -- 订单状态修改
 INSERT INTO audit_log VALUES (
@@ -747,6 +785,7 @@ INSERT INTO audit_log_detail VALUES
 ```
 
 #### DATA_SENSITIVE_ACCESS - 敏感数据访问
+
 ```sql
 -- 主表记录
 INSERT INTO audit_log VALUES (
@@ -769,6 +808,7 @@ INSERT INTO audit_log_detail VALUES
 ### 5.3 系统事件详情
 
 #### SYS_CONFIG_CHANGE - 系统配置变更
+
 ```sql
 -- 主表记录
 INSERT INTO audit_log VALUES (
@@ -791,6 +831,7 @@ INSERT INTO audit_log_detail VALUES
 ### 5.4 网络事件详情
 
 #### NET_API_CALL - API调用
+
 ```sql
 -- 主表记录
 INSERT INTO audit_log VALUES (
@@ -846,6 +887,7 @@ INSERT INTO audit_log_detail VALUES
 ### 5.5 安全事件详情
 
 #### SEC_SQL_INJECTION - SQL注入检测
+
 ```sql
 -- 主表记录
 INSERT INTO audit_log VALUES (

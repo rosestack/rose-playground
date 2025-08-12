@@ -5,12 +5,13 @@ import io.github.rosestack.encryption.rotation.KeyRotationManager;
 import io.github.rosestack.encryption.rotation.KeySpec;
 import io.github.rosestack.spring.boot.encryption.AutoKeyRotationScheduler;
 import io.github.rosestack.spring.boot.encryption.config.RoseEncryptionProperties;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 密钥轮换管理接口
@@ -31,7 +32,9 @@ public class KeyRotationController {
     private final RoseEncryptionProperties properties;
     private final AutoKeyRotationScheduler autoRotationScheduler;
 
-    /** 获取所有密钥版本信息 */
+    /**
+     * 获取所有密钥版本信息
+     */
     @GetMapping("/keys")
     public Map<String, Object> getAllKeys() {
         Map<String, Object> result = new HashMap<>();
@@ -40,13 +43,17 @@ public class KeyRotationController {
         return result;
     }
 
-    /** 获取当前活跃密钥信息 */
+    /**
+     * 获取当前活跃密钥信息
+     */
     @GetMapping("/current")
     public KeySpec getCurrentKey() {
         return keyRotationManager.getCurrentKeySpec();
     }
 
-    /** 手动轮换密钥 */
+    /**
+     * 手动轮换密钥
+     */
     @PostMapping("/rotate")
     public Map<String, Object> rotateKey(@RequestBody RotateKeyRequest request) {
         try {
@@ -71,7 +78,9 @@ public class KeyRotationController {
         }
     }
 
-    /** 切换到指定版本 */
+    /**
+     * 切换到指定版本
+     */
     @PostMapping("/switch/{version}")
     public Map<String, Object> switchToVersion(@PathVariable String version) {
         try {
@@ -96,7 +105,9 @@ public class KeyRotationController {
         }
     }
 
-    /** 废弃指定版本 */
+    /**
+     * 废弃指定版本
+     */
     @PostMapping("/deprecate/{version}")
     public Map<String, Object> deprecateVersion(@PathVariable String version) {
         try {
@@ -118,7 +129,9 @@ public class KeyRotationController {
         }
     }
 
-    /** 清理过期密钥 */
+    /**
+     * 清理过期密钥
+     */
     @PostMapping("/cleanup")
     public Map<String, Object> cleanupExpiredKeys() {
         try {
@@ -140,13 +153,17 @@ public class KeyRotationController {
         }
     }
 
-    /** 获取自动轮换状态 */
+    /**
+     * 获取自动轮换状态
+     */
     @GetMapping("/auto-rotation/status")
     public AutoKeyRotationScheduler.RotationStatus getAutoRotationStatus() {
         return autoRotationScheduler.getRotationStatus();
     }
 
-    /** 手动触发轮换检查 */
+    /**
+     * 手动触发轮换检查
+     */
     @PostMapping("/auto-rotation/check")
     public Map<String, Object> triggerRotationCheck() {
         try {
@@ -167,7 +184,9 @@ public class KeyRotationController {
         }
     }
 
-    /** 获取下次轮换时间 */
+    /**
+     * 获取下次轮换时间
+     */
     @GetMapping("/auto-rotation/next-time")
     public Map<String, Object> getNextRotationTime() {
         Map<String, Object> result = new HashMap<>();
@@ -186,7 +205,9 @@ public class KeyRotationController {
         return result;
     }
 
-    /** 密钥轮换请求 */
+    /**
+     * 密钥轮换请求
+     */
     public static class RotateKeyRequest {
         private EncryptType encryptType = EncryptType.AES;
 

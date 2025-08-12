@@ -17,12 +17,10 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
         implements ResourceMessageSource, ReloadedResourceMessageSource {
     public static final String DEFAULT_RESOURCE_LOCATION = "i18n";
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
-
-    private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
-
     protected String location;
     protected String basename;
     protected MessageRenderer messageRenderer;
+    private volatile Map<String, Map<String, String>> localizedResourceMessages = new ConcurrentHashMap<>();
 
     public AbstractResourceMessageSource(String source) {
         super(source);

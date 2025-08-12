@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
-/** 基础指标埋点：Outbox backlog、失败数；未入账支付数 */
+/**
+ * 基础指标埋点：Outbox backlog、失败数；未入账支付数
+ */
 @Component
 @RequiredArgsConstructor
 @ConditionalOnClass(MeterRegistry.class)

@@ -8,12 +8,13 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+
+import java.util.List;
 
 /**
  * Swagger 3 配置
@@ -30,7 +31,9 @@ public class SwaggerConfig {
 
     private final RoseWebProperties roseWebProperties;
 
-    /** 配置 OpenAPI 文档 */
+    /**
+     * 配置 OpenAPI 文档
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         RoseWebProperties.Swagger swaggerConfig = roseWebProperties.getSwagger();
@@ -47,7 +50,9 @@ public class SwaggerConfig {
         return openAPI;
     }
 
-    /** 构建 API 信息 */
+    /**
+     * 构建 API 信息
+     */
     private Info buildInfo(RoseWebProperties.Swagger swaggerConfig) {
         return new Info()
                 .title(swaggerConfig.getTitle())
@@ -62,14 +67,18 @@ public class SwaggerConfig {
                         .url(swaggerConfig.getLicense().getUrl()));
     }
 
-    /** 构建服务器列表 */
+    /**
+     * 构建服务器列表
+     */
     private List<Server> buildServers(RoseWebProperties.Swagger swaggerConfig) {
         return swaggerConfig.getServers().stream()
                 .map(serverConfig -> new Server().url(serverConfig.getUrl()).description(serverConfig.getDescription()))
                 .toList();
     }
 
-    /** 构建安全组件 */
+    /**
+     * 构建安全组件
+     */
     private Components buildComponents(RoseWebProperties.Swagger swaggerConfig) {
         Components components = new Components();
         RoseWebProperties.Swagger.Security security = swaggerConfig.getSecurity();
@@ -128,7 +137,9 @@ public class SwaggerConfig {
         return components;
     }
 
-    /** 构建安全要求 */
+    /**
+     * 构建安全要求
+     */
     private List<SecurityRequirement> buildSecurityRequirements(RoseWebProperties.Swagger swaggerConfig) {
         RoseWebProperties.Swagger.Security security = swaggerConfig.getSecurity();
         List<SecurityRequirement> requirements = new java.util.ArrayList<>();
@@ -148,7 +159,9 @@ public class SwaggerConfig {
         return requirements;
     }
 
-    /** 系统管理 API 分组 */
+    /**
+     * 系统管理 API 分组
+     */
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.swagger.groups.system", name = "enabled", havingValue = "true")
     public GroupedOpenApi systemApi() {
@@ -159,7 +172,9 @@ public class SwaggerConfig {
                 .build();
     }
 
-    /** 业务 API 分组 */
+    /**
+     * 业务 API 分组
+     */
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.swagger.groups.business", name = "enabled", havingValue = "true")
     public GroupedOpenApi businessApi() {
@@ -170,7 +185,9 @@ public class SwaggerConfig {
                 .build();
     }
 
-    /** 公共 API 分组 */
+    /**
+     * 公共 API 分组
+     */
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.swagger.groups.public", name = "enabled", havingValue = "true")
     public GroupedOpenApi publicApi() {
@@ -181,7 +198,9 @@ public class SwaggerConfig {
                 .build();
     }
 
-    /** 内部 API 分组 */
+    /**
+     * 内部 API 分组
+     */
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.swagger.groups.internal", name = "enabled", havingValue = "true")
     public GroupedOpenApi internalApi() {
@@ -192,7 +211,9 @@ public class SwaggerConfig {
                 .build();
     }
 
-    /** 监控 API 分组 */
+    /**
+     * 监控 API 分组
+     */
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.swagger.groups.actuator", name = "enabled", havingValue = "true")
     public GroupedOpenApi actuatorApi() {

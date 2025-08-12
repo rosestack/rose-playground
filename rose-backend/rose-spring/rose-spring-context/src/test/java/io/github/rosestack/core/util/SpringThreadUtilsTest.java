@@ -9,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-/** SpringThreadUtils 测试类 展示基于 Spring 框架的线程工具类的各种使用场景 */
+/**
+ * SpringThreadUtils 测试类 展示基于 Spring 框架的线程工具类的各种使用场景
+ */
 @Slf4j
 class SpringThreadUtilsTest {
 

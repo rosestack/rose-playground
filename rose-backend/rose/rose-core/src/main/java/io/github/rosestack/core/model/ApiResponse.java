@@ -56,22 +56,34 @@ import lombok.Data;
 @Data
 public class ApiResponse<T> {
 
-    /** 成功状态码，表示操作成功。 */
+    /**
+     * 成功状态码，表示操作成功。
+     */
     public static final int SUCCESS = 200;
 
-    /** 失败状态码，表示操作失败。 */
+    /**
+     * 失败状态码，表示操作失败。
+     */
     public static final int ERROR = 500;
 
-    /** 此结果的状态码（SUCCESS或FAIL）。 */
+    /**
+     * 此结果的状态码（SUCCESS或FAIL）。
+     */
     private Integer code;
 
-    /** 与此结果关联的消息（成功消息或错误描述）。 */
+    /**
+     * 与此结果关联的消息（成功消息或错误描述）。
+     */
     private String message;
 
-    /** 此结果的数据负载（可以为null）。 */
+    /**
+     * 此结果的数据负载（可以为null）。
+     */
     private T data;
 
-    /** 响应时间戳 - 使用 LocalDateTime 更易读 格式化为 ISO 8601 标准格式 */
+    /**
+     * 响应时间戳 - 使用 LocalDateTime 更易读 格式化为 ISO 8601 标准格式
+     */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private LocalDateTime timestamp;
 
@@ -92,7 +104,7 @@ public class ApiResponse<T> {
     /**
      * Creates a successful result with data.
      *
-     * @param <T> The type parameter for the result
+     * @param <T>  The type parameter for the result
      * @param data The data to include in the successful result
      * @return A successful ApiResponse instance containing the provided data
      */
@@ -107,8 +119,8 @@ public class ApiResponse<T> {
     /**
      * Creates a failure result with custom code and message.
      *
-     * @param <T> The type parameter for the result
-     * @param code The custom error code
+     * @param <T>     The type parameter for the result
+     * @param code    The custom error code
      * @param message The error message
      * @return A failure ApiResponse instance with the specified code and message
      */
@@ -122,7 +134,7 @@ public class ApiResponse<T> {
     /**
      * Creates a failure result with custom message and default failure code.
      *
-     * @param <T> The type parameter for the result
+     * @param <T>     The type parameter for the result
      * @param message The error message
      * @return A failure ApiResponse instance with the specified message
      */
@@ -142,16 +154,6 @@ public class ApiResponse<T> {
     }
 
     /**
-     * Checks if this result represents a failed operation.
-     *
-     * @return true if this result is a failure, false otherwise
-     */
-    @JsonIgnore
-    public boolean isError() {
-        return !isSuccess();
-    }
-
-    /**
      * Checks if the given result represents a success.
      *
      * @param <T> The type parameter for the result
@@ -160,6 +162,16 @@ public class ApiResponse<T> {
      */
     public static <T> Boolean isSuccess(ApiResponse<T> ret) {
         return ApiResponse.SUCCESS == ret.getCode();
+    }
+
+    /**
+     * Checks if this result represents a failed operation.
+     *
+     * @return true if this result is a failure, false otherwise
+     */
+    @JsonIgnore
+    public boolean isError() {
+        return !isSuccess();
     }
 
     /**
@@ -179,7 +191,7 @@ public class ApiResponse<T> {
      * successful result with the transformed data. If this result is a failure, returns a new failure
      * result with the same error message.
      *
-     * @param <R> The type of the transformed data
+     * @param <R>    The type of the transformed data
      * @param mapper The function to transform the data
      * @return A new ApiResponse containing the transformed data or the original error
      */
@@ -203,7 +215,7 @@ public class ApiResponse<T> {
      * directly (flattening nested Results). If this result is a failure, returns a new failure result
      * with the same error message.
      *
-     * @param <R> The type of the data in the returned ApiResponse
+     * @param <R>    The type of the data in the returned ApiResponse
      * @param mapper The function that transforms data to another ApiResponse
      * @return The ApiResponse returned by the mapper function or the original error
      */
@@ -225,7 +237,7 @@ public class ApiResponse<T> {
      * <p>If this result is successful and the data satisfies the predicate, returns this result
      * unchanged. If the predicate fails, returns a failure result with the provided error message.
      *
-     * @param predicate The condition to test the data against
+     * @param predicate    The condition to test the data against
      * @param errorMessage The error message to use if the predicate fails
      * @return This result if the predicate passes, or a failure result if it fails
      */

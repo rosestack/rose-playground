@@ -4,7 +4,9 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
-/** 字段加解密指标埋点。 */
+/**
+ * 字段加解密指标埋点。
+ */
 public class FieldEncryptionMetrics {
     private final Timer encryptTimer;
     private final Timer decryptTimer;

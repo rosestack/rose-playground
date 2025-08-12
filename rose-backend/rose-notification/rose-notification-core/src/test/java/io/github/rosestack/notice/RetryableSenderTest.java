@@ -2,35 +2,13 @@ package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.sender.RetryableSender;
 import io.github.rosestack.notice.spi.Sender;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class RetryableSenderTest {
-    static class FlakySender implements Sender {
-        int count;
-
-        @Override
-        public String getChannelType() {
-            return "test";
-        }
-
-        @Override
-        public String send(SendRequest sendRequest) {
-            if (++count < 3) {
-                throw new NoticeRetryableException("temporary");
-            }
-            return "ok";
-        }
-
-        @Override
-        public void destroy() {}
-
-        @Override
-        public void configure(SenderConfiguration config) {}
-    }
-
     @Test
     void retryShouldSucceedAfterTemporaryFailures() {
         FlakySender flaky = new FlakySender();
@@ -49,5 +27,30 @@ class RetryableSenderTest {
                 .build();
         String id = retry.send(req);
         Assertions.assertEquals("ok", id);
+    }
+
+    static class FlakySender implements Sender {
+        int count;
+
+        @Override
+        public String getChannelType() {
+            return "test";
+        }
+
+        @Override
+        public String send(SendRequest sendRequest) {
+            if (++count < 3) {
+                throw new NoticeRetryableException("temporary");
+            }
+            return "ok";
+        }
+
+        @Override
+        public void destroy() {
+        }
+
+        @Override
+        public void configure(SenderConfiguration config) {
+        }
     }
 }

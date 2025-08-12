@@ -1,10 +1,11 @@
 package io.github.rosestack.spring.boot.redis.ratelimit;
 
-import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+
+import java.util.Collections;
 
 /**
  * 滑动窗口限流器
@@ -17,11 +18,6 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 @Slf4j
 @RequiredArgsConstructor
 public class SlidingWindowRateLimiter implements RateLimiter {
-
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final int rate; // 限流速率（时间窗口内最大请求数）
-    private final int timeWindow; // 时间窗口大小（秒）
-    private final String keyPrefix;
 
     // Lua 脚本：滑动窗口算法
     private static final String SLIDING_WINDOW_SCRIPT = "local key = KEYS[1] "
@@ -46,6 +42,10 @@ public class SlidingWindowRateLimiter implements RateLimiter {
             + "-- 设置过期时间 "
             + "redis.call('EXPIRE', key, math.ceil(window / 1000) + 1) "
             + "return {allowed, current, limit - current}";
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final int rate; // 限流速率（时间窗口内最大请求数）
+    private final int timeWindow; // 时间窗口大小（秒）
+    private final String keyPrefix;
 
     @Override
     public boolean tryAcquire(String key) {
@@ -153,7 +153,9 @@ public class SlidingWindowRateLimiter implements RateLimiter {
         }
     }
 
-    /** 构建完整的 Redis 键名 */
+    /**
+     * 构建完整的 Redis 键名
+     */
     private String buildKey(String key) {
         return keyPrefix + "sliding_window:" + key;
     }

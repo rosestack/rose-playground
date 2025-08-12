@@ -3,19 +3,25 @@ package io.github.rosestack.billing.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.github.rosestack.billing.entity.BillingConfig;
 import io.github.rosestack.billing.repository.BillingConfigRepository;
-import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/** 租户计费配置读取 */
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * 租户计费配置读取
+ */
 @Service
 @RequiredArgsConstructor
 public class TenantBillingConfigService {
 
+    private static final Map<String, String> DEFAULTS = Map.of("currency", "CNY");
     private final BillingConfigRepository billingConfigRepository;
 
-    /** 获取租户默认币种，先读租户级配置，找不到再回退全局配置，最后回退默认 */
+    /**
+     * 获取租户默认币种，先读租户级配置，找不到再回退全局配置，最后回退默认
+     */
     public String getCurrency(String tenantId) {
         return getEffective(tenantId, "billing.currency").orElse(DEFAULTS.getOrDefault("currency", "CNY"));
     }
@@ -55,7 +61,9 @@ public class TenantBillingConfigService {
                 .orElse(defaultVal);
     }
 
-    /** 读取租户级配置；若不存在，回退读取全局配置（tenant_id IS NULL） */
+    /**
+     * 读取租户级配置；若不存在，回退读取全局配置（tenant_id IS NULL）
+     */
     public Optional<String> getEffective(String tenantId, String key) {
         if (tenantId != null) {
             Optional<String> t = get(tenantId, key);
@@ -68,7 +76,9 @@ public class TenantBillingConfigService {
         return Optional.ofNullable(global == null ? null : global.getConfigValue());
     }
 
-    /** 严格按 (tenantId, key) 读取，不做全局回退 */
+    /**
+     * 严格按 (tenantId, key) 读取，不做全局回退
+     */
     public Optional<String> get(String tenantId, String key) {
         BillingConfig cfg = billingConfigRepository.selectOne(new LambdaQueryWrapper<BillingConfig>()
                 .eq(BillingConfig::getTenantId, tenantId)
@@ -76,6 +86,4 @@ public class TenantBillingConfigService {
                 .last("limit 1"));
         return Optional.ofNullable(cfg == null ? null : cfg.getConfigValue());
     }
-
-    private static final Map<String, String> DEFAULTS = Map.of("currency", "CNY");
 }

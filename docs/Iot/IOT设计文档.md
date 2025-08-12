@@ -1,6 +1,7 @@
 # IOT物联网平台技术设计文档
 
 ## 文档信息
+
 - **文档版本**: v1.0.0
 - **创建日期**: 2024-01-01
 - **最后更新**: 2024-01-01
@@ -8,6 +9,7 @@
 - **文档状态**: 设计阶段
 
 ## 目录
+
 1. [系统概述](#1-系统概述)
 2. [技术架构设计](#2-技术架构设计)
 3. [详细设计](#3-详细设计)
@@ -22,18 +24,21 @@
 IOT物联网平台旨在构建一个综合性的云端系统，为物联网设备提供统一的管理、监控和数据服务能力。平台设计目标包括：
 
 #### 1.1.1 核心目标
+
 - **设备统一管理**：支持多种协议设备接入，提供统一的设备生命周期管理
 - **数据高效处理**：实现设备数据的实时采集、存储、分析和转发
 - **平台开放能力**：提供丰富的API接口和SDK，支持第三方系统集成
 - **安全可靠运行**：确保设备接入安全、数据传输加密、系统稳定运行
 
 #### 1.1.2 业务目标
+
 - **降低开发门槛**：提供标准化的设备接入方案和开发工具
 - **提升运维效率**：实现设备远程监控、告警和运维管理
 - **支持业务创新**：通过数据分析和规则引擎支持业务场景创新
 - **保障数据安全**：满足数据合规要求，保护用户隐私
 
 #### 1.1.3 技术目标
+
 - **高并发处理**：支持大规模设备并发接入和数据处理
 - **高可用设计**：确保系统7×24小时稳定运行
 - **可扩展架构**：支持水平扩展，满足业务增长需求
@@ -42,18 +47,21 @@ IOT物联网平台旨在构建一个综合性的云端系统，为物联网设�
 ### 1.2 架构原则
 
 #### 1.2.1 整体架构原则
+
 - **模块化设计**：基于Maven多模块实现模块化架构，模块间松耦合
 - **分层架构**：采用经典的三层架构，清晰分离关注点
 - **单一职责**：每个模块和组件只负责特定的业务功能
 - **开闭原则**：对扩展开放，对修改封闭，支持功能扩展
 
 #### 1.2.2 技术架构原则
+
 - **技术栈统一**：统一使用Spring Boot生态，降低技术复杂度
 - **数据一致性**：确保数据在分布式环境下的最终一致性
 - **性能优先**：在满足功能需求的前提下，优先考虑系统性能
 - **安全第一**：将安全设计贯穿整个系统架构
 
 #### 1.2.3 业务架构原则
+
 - **业务驱动**：以业务需求为导向，设计系统功能
 - **用户中心**：以用户体验为中心，优化操作流程
 - **数据驱动**：基于数据分析支持业务决策和优化
@@ -62,12 +70,14 @@ IOT物联网平台旨在构建一个综合性的云端系统，为物联网设�
 ### 1.3 系统边界
 
 #### 1.3.1 系统范围
+
 - **设备接入层**：支持MQTT、HTTP、CoAP等协议设备接入
 - **平台服务层**：提供设备管理、数据存储、规则引擎等核心服务
 - **应用接口层**：提供RESTful API和SDK供第三方系统调用
 - **管理界面层**：提供Web管理界面和移动端应用
 
 #### 1.3.2 系统约束
+
 - **技术约束**：基于Spring Boot单体架构，使用MyBatis Plus作为ORM框架
 - **性能约束**：支持万级设备并发接入，毫秒级数据处理响应
 - **安全约束**：满足等保2.0要求，支持数据加密和访问控制
@@ -167,18 +177,21 @@ graph TB
 #### 2.1.1 架构层次说明
 
 **接入层**
+
 - **MQTT Transport**：处理MQTT协议设备接入，支持QoS级别和消息持久化，适用于直连设备、网关设备、LoRa设备等多种设备类型
 - **HTTP Transport**：处理HTTP/HTTPS协议设备接入，支持RESTful API调用，适用于私有协议设备接入
 - **CoAP Transport**：处理CoAP协议设备接入，适用于资源受限设备，支持轻量级通信
 - **WebSocket Transport**：处理WebSocket协议，支持实时双向通信，适用于需要实时数据推送的场景
 
 **网关层**
+
 - **协议适配器**：统一协议处理，支持多种协议格式转换，包括泛化协议适配和云网关协议适配
 - **设备认证**：设备身份验证和授权，支持"一机一密"、ID²认证、证书、Token等多种认证方式
 - **消息路由**：消息分发和路由，支持Topic订阅和发布，实现就近接入和全球毫秒级接入
 - **负载均衡**：设备接入负载均衡，确保系统高可用，支持跨地域、跨实例、跨账号设备分发
 
 **核心服务层**
+
 - **设备接入模块**：设备注册、认证、连接管理、状态监控，支持设备生命周期管理、设备分发、设备影子、设备拓扑、物模型管理
 - **消息通信模块**：消息路由、订阅管理、场景联动、广播通信，支持服务端订阅、云产品流转、RRPC通信、规则引擎和数据转发
 - **设备管理模块**：设备生命周期、状态管理、物模型、拓扑关系，支持设备影子同步、设备拓扑管理、物模型数字化管理
@@ -187,6 +200,7 @@ graph TB
 - **安全认证模块**：身份认证、权限控制、数据加密、安全审计，支持安全认证和权限策略管理
 
 **数据层**
+
 - **MySQL主库**：存储设备信息、用户数据、配置信息等核心业务数据，支持高可用读写
 - **MySQL从库**：读写分离，提高查询性能，支持数据备份和恢复
 - **Redis缓存**：会话管理、实时数据缓存、分布式锁，支持热数据缓存
@@ -194,53 +208,58 @@ graph TB
 - **消息队列**：异步消息处理，支持削峰填谷，集成多种云产品数据流转
 
 **接口层**
+
 - **RESTful API**：提供标准的REST接口，支持设备管理和数据查询，支持API调用和消息发送
 - **WebSocket API**：实时数据推送，支持设备状态实时更新，实现服务端订阅
 - **SDK接口**：提供多语言SDK，便于第三方系统集成，支持6种语言版本
 - **第三方集成**：支持与ERP、MES等业务系统对接，支持云产品流转和场景联动
 
 **应用层**
+
 - **Web管理界面**：设备管理、数据监控、系统配置、用户管理，支持可视化配置和实时监控
 - **移动端应用**：移动设备管理和控制，支持iOS和Android，提供设备远程控制和状态查看
 - **大屏展示**：数据可视化大屏，支持实时监控和数据分析，支持自定义大屏布局和组件
 - **第三方应用**：开放API，支持第三方应用开发和集成，支持云产品流转和生态集成
 
-
 ### 2.2 技术栈选型
 
 #### 2.2.1 核心技术栈
 
-| 技术领域 | 技术选型 | 版本 | 选型理由 |
-|---------|---------|------|---------|
-| **应用框架** | Spring Boot | 3.5+ | 成熟稳定的企业级框架，生态完善 |
-| **模块化架构** | Maven多模块 | 3.9 | 支持模块化设计，便于后续微服务拆分 |
-| **数据访问** | MyBatis Plus | 3.5+ | 功能强大，支持代码生成，性能优秀 |
-| **数据库** | MySQL | 8.0+ | 成熟稳定，支持事务，适合业务数据存储 |
-| **缓存** | Redis | 7.0+ | 高性能内存数据库，支持多种数据结构 |
-| **消息队列** | RabbitMQ | 3.12+ | 功能完善，支持多种消息模式 |
-| **MQTT Broker** | EMQ X | 5.0+ | 高性能MQTT消息代理，支持集群部署 |
-| **时序数据库** | InfluxDB | 2.7+ | 专为时序数据设计，查询性能优秀 |
+| 技术领域            | 技术选型         | 版本    | 选型理由               |
+|-----------------|--------------|-------|--------------------|
+| **应用框架**        | Spring Boot  | 3.5+  | 成熟稳定的企业级框架，生态完善    |
+| **模块化架构**       | Maven多模块     | 3.9   | 支持模块化设计，便于后续微服务拆分  |
+| **数据访问**        | MyBatis Plus | 3.5+  | 功能强大，支持代码生成，性能优秀   |
+| **数据库**         | MySQL        | 8.0+  | 成熟稳定，支持事务，适合业务数据存储 |
+| **缓存**          | Redis        | 7.0+  | 高性能内存数据库，支持多种数据结构  |
+| **消息队列**        | RabbitMQ     | 3.12+ | 功能完善，支持多种消息模式      |
+| **MQTT Broker** | EMQ X        | 5.0+  | 高性能MQTT消息代理，支持集群部署 |
+| **时序数据库**       | InfluxDB     | 2.7+  | 专为时序数据设计，查询性能优秀    |
 
 #### 2.2.2 技术选型理由
 
 **Spring Boot + Maven多模块**
+
 - **成熟稳定**：Spring Boot是业界最成熟的Java应用框架
 - **模块化支持**：Maven多模块提供模块化架构支持，便于系统演进
 - **生态完善**：拥有丰富的中间件集成和工具支持
 - **团队熟悉**：团队对Spring技术栈熟悉，降低学习成本
 
 **MyBatis Plus**
+
 - **功能强大**：提供丰富的CRUD操作和查询功能
 - **代码生成**：支持自动代码生成，提高开发效率
 - **性能优秀**：相比JPA，MyBatis Plus在复杂查询场景下性能更优
 - **灵活配置**：支持灵活的SQL配置和动态查询
 
 **MySQL + Redis**
+
 - **数据分层**：MySQL存储业务数据，Redis提供缓存和会话存储
 - **性能优化**：通过缓存减少数据库访问，提升系统性能
 - **高可用**：支持主从复制和集群部署，确保数据安全
 
 **EMQ X**
+
 - **专业MQTT**：专为IoT场景设计的MQTT消息代理
 - **高性能**：支持百万级设备并发连接
 - **集群支持**：支持水平扩展，满足大规模部署需求
@@ -252,11 +271,11 @@ graph TB
 
 ```mermaid
 graph TB
-            subgraph "IOT物联网平台Maven模块架构"
+    subgraph "IOT物联网平台Maven模块架构"
         subgraph "父模块"
             PARENT[iot]
         end
-        
+
         subgraph "服务模块"
             SERVICE1[iot-device-service]
             SERVICE2[iot-message-service]
@@ -265,62 +284,53 @@ graph TB
             SERVICE5[iot-auth-service]
             SERVICE6[iot-system-service]
         end
-        
+
         subgraph "协议模块"
             TRANSPORT1[iot-transport-mqtt]
             TRANSPORT2[iot-transport-http]
             TRANSPORT3[iot-transport-coap]
             TRANSPORT4[iot-transport-websocket]
         end
-        
+
         subgraph "共享模块"
             SHARED1[iot-common]
             SHARED2[iot-security]
             SHARED3[iot-utils]
         end
-        
+
         subgraph "启动模块"
             STARTUP[iot-starter]
         end
     end
-    
+
     PARENT --> SERVICE1
     PARENT --> SERVICE2
     PARENT --> SERVICE3
     PARENT --> SERVICE4
     PARENT --> SERVICE5
     PARENT --> SERVICE6
-    
     PARENT --> TRANSPORT1
     PARENT --> TRANSPORT2
     PARENT --> TRANSPORT3
     PARENT --> TRANSPORT4
-    
     PARENT --> SHARED1
     PARENT --> SHARED2
     PARENT --> SHARED3
-    
     PARENT --> STARTUP
-    
-
-    
     SERVICE1 --> SHARED1
     SERVICE2 --> SHARED1
     SERVICE3 --> SHARED1
     SERVICE4 --> SHARED1
     SERVICE5 --> SHARED1
-    
     SERVICE1 --> SHARED2
     SERVICE2 --> SHARED2
     SERVICE3 --> SHARED2
     SERVICE4 --> SHARED2
     SERVICE5 --> SHARED2
-    
     TRANSPORT1 --> SERVICE1
     TRANSPORT2 --> SERVICE1
     TRANSPORT3 --> SERVICE1
     TRANSPORT4 --> SERVICE1
-    
     STARTUP --> SERVICE1
     STARTUP --> SERVICE2
     STARTUP --> SERVICE3
@@ -336,9 +346,8 @@ graph TB
 - **主要功能**：依赖版本管理、插件配置、公共属性定义
 - **包含内容**：pom.xml父配置、依赖管理、构建插件
 
-
-
 **服务模块组**
+
 - **iot-device-service**：设备接入和管理服务实现，支持设备生命周期管理、设备分发、设备影子、设备拓扑、物模型管理
 - **iot-message-service**：消息通信和路由服务实现，支持服务端订阅、云产品流转、RRPC通信、规则引擎和数据转发
 - **iot-data-service**：数据存储和分析服务实现，支持数据接入、数据解析、数据存储、分析洞察、数据应用
@@ -347,17 +356,20 @@ graph TB
 - **iot-system-service**：系统管理服务实现，支持系统参数配置、功能开关管理、字典数据管理、国际化配置、主题与UI配置、数据备份与恢复
 
 **协议模块组**
+
 - **iot-transport-mqtt**：MQTT协议传输实现，支持直连设备、网关设备、LoRa设备等多种设备类型接入
 - **iot-transport-http**：HTTP协议传输实现，支持私有协议设备接入和RESTful API调用
 - **iot-transport-coap**：CoAP协议传输实现，适用于资源受限设备，支持轻量级通信
 - **iot-transport-websocket**：WebSocket协议传输实现，支持实时双向通信，适用于需要实时数据推送的场景
 
 **共享模块组**
+
 - **iot-common**：公共组件、工具类、常量定义
 - **iot-security**：安全相关组件、加密工具、认证框架
 - **iot-utils**：通用工具类、异常处理、日志工具
 
 **启动模块 (iot-starter)**
+
 - **核心职责**：应用启动入口、配置加载、模块集成
 - **主要功能**：Spring Boot启动类、配置管理、模块自动装配
 - **包含内容**：主启动类、配置文件、模块集成配置
@@ -369,7 +381,7 @@ graph LR
     subgraph "父模块"
         PARENT[iot]
     end
-    
+
     subgraph "服务模块"
         DEVICE_SERVICE[iot-device-service]
         MESSAGE_SERVICE[iot-message-service]
@@ -378,25 +390,23 @@ graph LR
         AUTH_SERVICE[iot-auth-service]
         SYSTEM_SERVICE[iot-system-service]
     end
-    
+
     subgraph "协议模块"
         MQTT_TRANSPORT[iot-transport-mqtt]
         HTTP_TRANSPORT[iot-transport-http]
         COAP_TRANSPORT[iot-transport-coap]
         WEBSOCKET_TRANSPORT[iot-transport-websocket]
     end
-    
+
     subgraph "共享模块"
         COMMON[iot-common]
         SECURITY[iot-security]
         UTILS[iot-utils]
     end
-    
+
     subgraph "启动模块"
         STARTER[iot-starter]
     end
-    
-
 
     PARENT --> DEVICE_SERVICE
     PARENT --> MESSAGE_SERVICE
@@ -404,39 +414,30 @@ graph LR
     PARENT --> MONITOR_SERVICE
     PARENT --> AUTH_SERVICE
     PARENT --> SYSTEM_SERVICE
-    
     PARENT --> MQTT_TRANSPORT
     PARENT --> HTTP_TRANSPORT
     PARENT --> COAP_TRANSPORT
     PARENT --> WEBSOCKET_TRANSPORT
-    
     PARENT --> COMMON
     PARENT --> SECURITY
     PARENT --> UTILS
-    
     PARENT --> STARTER
-    
-
-    
     DEVICE_SERVICE --> COMMON
     MESSAGE_SERVICE --> COMMON
     DATA_SERVICE --> COMMON
     MONITOR_SERVICE --> COMMON
     AUTH_SERVICE --> COMMON
     SYSTEM_SERVICE --> COMMON
-    
     DEVICE_SERVICE --> SECURITY
     MESSAGE_SERVICE --> SECURITY
     DATA_SERVICE --> SECURITY
     MONITOR_SERVICE --> SECURITY
     AUTH_SERVICE --> SECURITY
     SYSTEM_SERVICE --> SECURITY
-    
     MQTT_TRANSPORT --> MESSAGE_SERVICE
     HTTP_TRANSPORT --> MESSAGE_SERVICE
     COAP_TRANSPORT --> MESSAGE_SERVICE
     WEBSOCKET_TRANSPORT --> MESSAGE_SERVICE
-    
     STARTER --> DEVICE_SERVICE
     STARTER --> MESSAGE_SERVICE
     STARTER --> DATA_SERVICE
@@ -475,14 +476,17 @@ iot/
 #### 3.1.1 数据库选型
 
 **主数据库：MySQL 8.0**
+
 - **选型理由**：成熟稳定的关系型数据库，支持事务、外键约束，适合存储设备信息、用户数据、配置信息等核心业务数据
 - **应用场景**：设备管理、用户管理、系统配置、权限管理等业务数据存储
 
 **缓存数据库：Redis 7.0**
+
 - **选型理由**：高性能内存数据库，支持多种数据结构，适合缓存和会话存储
 - **应用场景**：设备会话管理、实时数据缓存、分布式锁、热点数据缓存
 
 **时序数据库：InfluxDB 2.7**
+
 - **选型理由**：专为时序数据设计，查询性能优秀，支持数据压缩和高效的时间序列查询
 - **应用场景**：设备历史数据存储、监控数据、告警历史、性能指标数据
 
@@ -1264,11 +1268,13 @@ CREATE TABLE iot_data_forward_record (
 #### 3.1.3 数据存储策略
 
 **分层存储策略**
+
 - **热数据**：存储在Redis中，包括设备会话、实时数据、热点配置等
 - **温数据**：存储在MySQL中，包括设备信息、用户数据、业务配置等
 - **冷数据**：存储在InfluxDB中，包括历史数据、监控数据、日志数据等
 
 **数据备份策略**
+
 - **实时备份**：MySQL主从复制，确保数据实时同步
 - **定时备份**：每日全量备份，每小时增量备份
 - **异地备份**：重要数据异地存储，确保数据安全
@@ -1278,11 +1284,13 @@ CREATE TABLE iot_data_forward_record (
 #### 3.2.1 接口分层架构
 
 **接口分类**
+
 - **管理端接口（Admin API）**：面向管理员的Web管理界面
 - **设备端API接口（Device API）**：面向设备的通信接口，按协议划分
 - **开发者API接口（Developer API）**：面向开发者的RESTful API
 
 **接口架构图**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    物联网平台接口层                            │
@@ -1305,12 +1313,14 @@ CREATE TABLE iot_data_forward_record (
 #### 3.2.2 管理端接口（Admin API）
 
 **接口特点**
+
 - **认证方式**：JWT Token认证
 - **权限控制**：基于RBAC的细粒度权限控制
 - **响应格式**：统一的JSON响应格式
 - **文档规范**：OpenAPI 3.0规范
 
 **通用响应格式**
+
 ```json
 {
     "code": 200,
@@ -1322,6 +1332,7 @@ CREATE TABLE iot_data_forward_record (
 ```
 
 **错误码规范**
+
 - **200**：操作成功
 - **400**：请求参数错误
 - **401**：未授权访问
@@ -1419,6 +1430,7 @@ GET    /api/permissions?pageNo={pageNo}&pageSize={pageSize}
 #### 3.2.3 设备端API接口（Device API）
 
 **接口特点**
+
 - **多协议支持**：MQTT、HTTP/HTTPS、WebSocket、CoAP
 - **设备认证**：基于设备密钥或证书的认证
 - **消息格式**：JSON格式，支持二进制数据
@@ -1427,6 +1439,7 @@ GET    /api/permissions?pageNo={pageNo}&pageSize={pageSize}
 **1. MQTT协议接口**
 
 **系统主题（$sys开头）**
+
 ```
 # 设备属性上报
 Topic: $sys/{productKey}/{deviceName}/thing/event/property/post
@@ -1505,6 +1518,7 @@ Payload: {
 ```
 
 **自定义主题**
+
 ```
 # 用户自定义主题格式
 Topic: /{productKey}/{deviceName}/user/{topic}
@@ -1519,6 +1533,7 @@ Payload: {"level": "info", "message": "device started", "timestamp": 16409952000
 ```
 
 **主题权限控制**
+
 ```
 # 设备发布权限
 - $sys/{productKey}/{deviceName}/thing/event/property/post
@@ -1535,6 +1550,7 @@ Payload: {"level": "info", "message": "device started", "timestamp": 16409952000
 ```
 
 **主题设计原则**
+
 - **层次化结构**：使用/分隔符构建层次化主题结构
 - **产品隔离**：通过productKey实现产品级别的主题隔离
 - **设备隔离**：通过deviceName实现设备级别的主题隔离
@@ -1544,6 +1560,7 @@ Payload: {"level": "info", "message": "device started", "timestamp": 16409952000
 **2. HTTP/HTTPS协议接口**
 
 **设备数据接口**
+
 ```
 # 设备属性上报
 POST /api/device/{deviceName}/properties
@@ -1581,6 +1598,7 @@ GET /api/device/{deviceName}/events
 ```
 
 **设备影子接口**
+
 ```
 # 获取设备影子
 GET /api/device/{deviceName}/shadow
@@ -1603,12 +1621,14 @@ Payload: {
 **3. WebSocket协议接口**
 
 **连接URL**
+
 ```
 # 设备连接
 ws://iot-platform.com/ws/device/{deviceId}
 ```
 
 **消息格式**
+
 ```json
 {
   "type": "property_report",
@@ -1622,6 +1642,7 @@ ws://iot-platform.com/ws/device/{deviceId}
 ```
 
 **支持的消息类型**
+
 - **property_report**: 设备属性上报
 - **event_report**: 设备事件上报
 - **command_response**: 命令响应

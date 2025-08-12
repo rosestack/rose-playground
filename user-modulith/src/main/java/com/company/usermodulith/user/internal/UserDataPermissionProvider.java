@@ -1,7 +1,7 @@
 package com.company.usermodulith.user.internal;
 
-import io.github.rosestack.spring.boot.mybatis.permission.provider.AbstractDataPermissionProvider;
 import io.github.rosestack.mybatis.permission.DataScope;
+import io.github.rosestack.spring.boot.mybatis.permission.provider.AbstractDataPermissionProvider;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

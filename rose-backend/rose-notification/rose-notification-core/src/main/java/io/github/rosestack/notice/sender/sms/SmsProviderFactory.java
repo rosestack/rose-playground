@@ -5,11 +5,14 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
 import io.github.rosestack.notice.NoticeException;
 import io.github.rosestack.notice.SenderConfiguration;
+
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** SPI 自动发现所有 SmsProvider 实现，按 providerName 注册。 扩展新服务商只需实现 SmsProvider 并配置 SPI 文件。 */
+/**
+ * SPI 自动发现所有 SmsProvider 实现，按 providerName 注册。 扩展新服务商只需实现 SmsProvider 并配置 SPI 文件。
+ */
 public class SmsProviderFactory {
     private static final Map<String, Class<? extends SmsProvider>> PROVIDER_CLASSES = new ConcurrentHashMap<>();
     private static final Cache<String, SmsProvider> PROVIDER_CACHE = Caffeine.newBuilder()

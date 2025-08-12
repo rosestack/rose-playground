@@ -2,12 +2,13 @@ package io.github.rosestack.spring.boot.mybatis.permission.service;
 
 import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.spring.boot.mybatis.permission.RoseDataPermissionHandler;
-import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * 数据权限缓存管理服务
@@ -29,13 +30,17 @@ public class DataPermissionService {
     private final RoseMybatisProperties properties;
     private final RoseDataPermissionHandler dataPermissionHandler;
 
-    /** 手动清空所有缓存 */
+    /**
+     * 手动清空所有缓存
+     */
     public void clearAllCache() {
         log.info("手动清空所有数据权限缓存");
         dataPermissionHandler.clearAllCache();
     }
 
-    /** 清空指定用户的权限缓存 */
+    /**
+     * 清空指定用户的权限缓存
+     */
     public void clearUserCache(String userId) {
         if (userId == null || userId.trim().isEmpty()) {
             log.warn("用户ID为空，无法清空用户缓存");
@@ -46,7 +51,9 @@ public class DataPermissionService {
         dataPermissionHandler.clearUserPermissionCache(userId);
     }
 
-    /** 批量清空多个用户的权限缓存 */
+    /**
+     * 批量清空多个用户的权限缓存
+     */
     public void clearUsersCache(String... userIds) {
         if (userIds == null || userIds.length == 0) {
             log.warn("用户ID列表为空，无法清空用户缓存");
@@ -60,12 +67,16 @@ public class DataPermissionService {
         log.info("批量清空 {} 个用户的数据权限缓存完成", userIds.length);
     }
 
-    /** 获取缓存统计信息 */
+    /**
+     * 获取缓存统计信息
+     */
     public Map<String, Object> getCacheStatistics() {
         return dataPermissionHandler.getCacheStats();
     }
 
-    /** 检查缓存健康状态 */
+    /**
+     * 检查缓存健康状态
+     */
     public CacheHealthStatus checkCacheHealth() {
         try {
             Map<String, Object> stats = getCacheStatistics();
@@ -110,29 +121,9 @@ public class DataPermissionService {
         }
     }
 
-    /** 缓存健康状态 */
-    @Data
-    public static class CacheHealthStatus {
-        private boolean healthy = true;
-        private int annotationCacheSize;
-        private int permissionCacheSize;
-        private long expiredCacheCount;
-        private double expiredRate;
-        private java.util.List<String> warnings = new java.util.ArrayList<>();
-
-        public void addWarning(String warning) {
-            this.warnings.add(warning);
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "CacheHealthStatus{healthy=%s, annotationCache=%d, permissionCache=%d, expired=%d(%.2f%%), warnings=%s}",
-                    healthy, annotationCacheSize, permissionCacheSize, expiredCacheCount, expiredRate * 100, warnings);
-        }
-    }
-
-    /** 获取缓存使用建议 */
+    /**
+     * 获取缓存使用建议
+     */
     public String getCacheUsageAdvice() {
         CacheHealthStatus health = checkCacheHealth();
         StringBuilder advice = new StringBuilder();
@@ -158,5 +149,29 @@ public class DataPermissionService {
         advice.append("   - 监控缓存命中率和过期率\n");
 
         return advice.toString();
+    }
+
+    /**
+     * 缓存健康状态
+     */
+    @Data
+    public static class CacheHealthStatus {
+        private boolean healthy = true;
+        private int annotationCacheSize;
+        private int permissionCacheSize;
+        private long expiredCacheCount;
+        private double expiredRate;
+        private java.util.List<String> warnings = new java.util.ArrayList<>();
+
+        public void addWarning(String warning) {
+            this.warnings.add(warning);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "CacheHealthStatus{healthy=%s, annotationCache=%d, permissionCache=%d, expired=%d(%.2f%%), warnings=%s}",
+                    healthy, annotationCacheSize, permissionCacheSize, expiredCacheCount, expiredRate * 100, warnings);
+        }
     }
 }

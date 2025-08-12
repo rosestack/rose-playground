@@ -2,7 +2,9 @@ package io.github.rosestack.iam.tenant;
 
 import lombok.Data;
 
-/** 租户协助者：只有本地用户才可以添加到多租户管理员。租户的创建者自动成为多租户管理员。 */
+/**
+ * 租户协助者：只有本地用户才可以添加到多租户管理员。租户的创建者自动成为多租户管理员。
+ */
 @Data
 public class TenantCooperator {
     private Long id;

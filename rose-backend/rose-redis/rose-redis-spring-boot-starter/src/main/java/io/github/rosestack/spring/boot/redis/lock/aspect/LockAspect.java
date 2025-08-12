@@ -5,8 +5,6 @@ import io.github.rosestack.spring.boot.redis.exception.LockAcquisitionException;
 import io.github.rosestack.spring.boot.redis.exception.LockTimeoutException;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLock;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLockManager;
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -21,6 +19,9 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 分布式锁切面
@@ -82,7 +83,9 @@ public class LockAspect {
         }
     }
 
-    /** 解析锁名称 */
+    /**
+     * 解析锁名称
+     */
     private String parseLockName(Lock distributedLock, ProceedingJoinPoint joinPoint) {
         String lockName =
                 StringUtils.hasText(distributedLock.name()) ? distributedLock.name() : distributedLock.value();
@@ -99,7 +102,9 @@ public class LockAspect {
         return lockName;
     }
 
-    /** 解析 SpEL 表达式 */
+    /**
+     * 解析 SpEL 表达式
+     */
     private String parseSpelExpression(String expression, ProceedingJoinPoint joinPoint) {
         try {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -130,7 +135,9 @@ public class LockAspect {
         }
     }
 
-    /** 构建完整的锁名称 */
+    /**
+     * 构建完整的锁名称
+     */
     private String buildFullLockName(Lock distributedLock, String lockName) {
         String scope = distributedLock.scope();
         if (StringUtils.hasText(scope)) {
@@ -139,7 +146,9 @@ public class LockAspect {
         return lockName;
     }
 
-    /** 获取锁 */
+    /**
+     * 获取锁
+     */
     private boolean acquireLock(DistributedLock lock, Lock distributedLock) throws InterruptedException {
         long waitTime = distributedLock.waitTime();
         long leaseTime = distributedLock.leaseTime();
@@ -161,7 +170,9 @@ public class LockAspect {
         }
     }
 
-    /** 处理获取锁失败的情况 */
+    /**
+     * 处理获取锁失败的情况
+     */
     private Object handleLockFailure(Lock distributedLock, String lockName, ProceedingJoinPoint joinPoint)
             throws Throwable {
         String failMessage = distributedLock.failMessage();
@@ -195,7 +206,9 @@ public class LockAspect {
         }
     }
 
-    /** 获取方法的默认返回值 */
+    /**
+     * 获取方法的默认返回值
+     */
     private Object getDefaultReturnValue(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Class<?> returnType = signature.getReturnType();

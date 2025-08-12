@@ -33,7 +33,7 @@ public abstract class BeanRegistrar {
     /**
      * 创建通用BeanDefinition，带构造参数
      *
-     * @param beanType Bean类型
+     * @param beanType             Bean类型
      * @param constructorArguments 构造参数
      * @return BeanDefinition
      */
@@ -45,7 +45,7 @@ public abstract class BeanRegistrar {
      * 创建通用BeanDefinition，指定角色
      *
      * @param beanType Bean类型
-     * @param role Bean角色
+     * @param role     Bean角色
      * @return BeanDefinition
      */
     public static AbstractBeanDefinition genericBeanDefinition(Class<?> beanType, int role) {
@@ -55,8 +55,8 @@ public abstract class BeanRegistrar {
     /**
      * 创建通用BeanDefinition，完整参数
      *
-     * @param beanType Bean类型
-     * @param role Bean角色
+     * @param beanType             Bean类型
+     * @param role                 Bean角色
      * @param constructorArguments 构造参数
      * @return BeanDefinition
      */
@@ -88,7 +88,7 @@ public abstract class BeanRegistrar {
      * 解析Bean类型，指定类加载器
      *
      * @param beanDefinition Bean定义
-     * @param classLoader 类加载器
+     * @param classLoader    类加载器
      * @return Bean类型
      */
     public static Class<?> resolveBeanType(RootBeanDefinition beanDefinition, @Nullable ClassLoader classLoader) {
@@ -180,9 +180,9 @@ public abstract class BeanRegistrar {
     /**
      * 注册BeanDefinition，带构造参数
      *
-     * @param registry Bean注册表
-     * @param beanName Bean名称
-     * @param beanType Bean类型
+     * @param registry             Bean注册表
+     * @param beanName             Bean名称
+     * @param beanType             Bean类型
      * @param constructorArguments 构造参数
      * @return 是否注册成功
      */
@@ -198,7 +198,7 @@ public abstract class BeanRegistrar {
      * @param registry Bean注册表
      * @param beanName Bean名称
      * @param beanType Bean类型
-     * @param role Bean角色
+     * @param role     Bean角色
      * @return 是否注册成功
      */
     public static boolean registerBeanDefinition(
@@ -291,7 +291,7 @@ public abstract class BeanRegistrar {
      *
      * @param registry Bean注册表
      * @param beanName Bean名称
-     * @param bean Bean实例
+     * @param bean     Bean实例
      */
     public static final void registerFactoryBean(BeanDefinitionRegistry registry, String beanName, Object bean) {
         AbstractBeanDefinition beanDefinition = genericBeanDefinition(DelegatingFactoryBean.class, new Object[] {bean});
@@ -304,7 +304,7 @@ public abstract class BeanRegistrar {
      *
      * @param registry Bean注册表
      * @param beanName Bean名称
-     * @param bean Bean实例
+     * @param bean     Bean实例
      */
     public static void registerBean(BeanDefinitionRegistry registry, String beanName, Object bean) {
         registerBean(registry, beanName, bean, false);
@@ -315,8 +315,8 @@ public abstract class BeanRegistrar {
      *
      * @param registry Bean注册表
      * @param beanName Bean名称
-     * @param bean Bean实例
-     * @param primary 是否为主要Bean
+     * @param bean     Bean实例
+     * @param primary  是否为主要Bean
      */
     public static void registerBean(BeanDefinitionRegistry registry, String beanName, Object bean, boolean primary) {
         Class<?> beanClass = AopUtils.getTargetClass(bean);

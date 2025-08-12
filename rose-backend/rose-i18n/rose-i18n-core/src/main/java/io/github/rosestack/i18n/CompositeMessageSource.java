@@ -11,7 +11,9 @@ import org.springframework.core.OrderComparator;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-/** Composite I18nMessageSource that can aggregate multiple message sources and search in order. */
+/**
+ * Composite I18nMessageSource that can aggregate multiple message sources and search in order.
+ */
 public class CompositeMessageSource implements I18nMessageSource, ReloadedResourceMessageSource {
     private static final Logger logger = LoggerFactory.getLogger(CompositeMessageSource.class);
 
@@ -102,26 +104,6 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         return ReloadedResourceMessageSource.super.getSource();
     }
 
-    public void setMessageSources(List<? extends I18nMessageSource> messageSources) {
-        List<? extends I18nMessageSource> oldMessageSources = this.i18nMessageSources;
-
-        if (messageSources == null) {
-            this.i18nMessageSources = Collections.emptyList();
-        } else {
-            List<I18nMessageSource> newMessageSources =
-                    messageSources.stream().filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
-            OrderComparator.sort(newMessageSources);
-            this.i18nMessageSources = newMessageSources;
-        }
-
-        if (oldMessageSources != null && oldMessageSources instanceof ArrayList) {
-            ((ArrayList<?>) oldMessageSources).clear();
-        }
-
-        logger.debug(
-                "Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, this.i18nMessageSources);
-    }
-
     @Override
     public void reload(Iterable<String> changedResources) {
         iterate(ReloadedResourceMessageSource.class, reloadableResourceServiceMessageSource -> {
@@ -169,6 +151,26 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
      */
     @NonNull public List<I18nMessageSource> getMessageSources() {
         return Collections.unmodifiableList(i18nMessageSources);
+    }
+
+    public void setMessageSources(List<? extends I18nMessageSource> messageSources) {
+        List<? extends I18nMessageSource> oldMessageSources = this.i18nMessageSources;
+
+        if (messageSources == null) {
+            this.i18nMessageSources = Collections.emptyList();
+        } else {
+            List<I18nMessageSource> newMessageSources =
+                    messageSources.stream().filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
+            OrderComparator.sort(newMessageSources);
+            this.i18nMessageSources = newMessageSources;
+        }
+
+        if (oldMessageSources != null && oldMessageSources instanceof ArrayList) {
+            ((ArrayList<?>) oldMessageSources).clear();
+        }
+
+        logger.debug(
+                "Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, this.i18nMessageSources);
     }
 
     @Override

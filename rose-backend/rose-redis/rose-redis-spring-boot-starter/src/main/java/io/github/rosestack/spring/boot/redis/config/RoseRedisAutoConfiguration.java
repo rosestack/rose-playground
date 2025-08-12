@@ -51,7 +51,9 @@ public class RoseRedisAutoConfiguration {
         log.info("Rose Redis 自动配置已启用");
     }
 
-    /** 分布式锁配置 */
+    /**
+     * 分布式锁配置
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.lock", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisLockConfiguration {
@@ -75,7 +77,9 @@ public class RoseRedisAutoConfiguration {
         }
     }
 
-    /** 缓存增强配置 */
+    /**
+     * 缓存增强配置
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisCacheConfiguration {
@@ -106,7 +110,9 @@ public class RoseRedisAutoConfiguration {
         }
     }
 
-    /** 限流配置 */
+    /**
+     * 限流配置
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(
             prefix = "rose.redis.rate-limit",
@@ -157,21 +163,27 @@ public class RoseRedisAutoConfiguration {
         }
     }
 
-    /** 消息队列配置 */
+    /**
+     * 消息队列配置
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.message", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisMessageConfiguration {
         // TODO: 实现消息队列配置
     }
 
-    /** 会话管理配置 */
+    /**
+     * 会话管理配置
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.session", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisSessionConfiguration {
         // TODO: 实现会话管理配置
     }
 
-    /** 数据结构操作配置 */
+    /**
+     * 数据结构操作配置
+     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(
             prefix = "rose.redis.data-structure",

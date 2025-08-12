@@ -2,18 +2,28 @@ package io.github.rosestack.i18n.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-/** 缓存统计信息类 */
+/**
+ * 缓存统计信息类
+ */
 public class CacheStatistics {
-    /** 缓存命中次数 */
+    /**
+     * 缓存命中次数
+     */
     private final AtomicLong hitCount = new AtomicLong(0);
 
-    /** 缓存未命中次数 */
+    /**
+     * 缓存未命中次数
+     */
     private final AtomicLong missCount = new AtomicLong(0);
 
-    /** 缓存写入次数 */
+    /**
+     * 缓存写入次数
+     */
     private final AtomicLong putCount = new AtomicLong(0);
 
-    /** 缓存淘汰次数 */
+    /**
+     * 缓存淘汰次数
+     */
     private final AtomicLong evictionCount = new AtomicLong(0);
 
     public void recordHit() {

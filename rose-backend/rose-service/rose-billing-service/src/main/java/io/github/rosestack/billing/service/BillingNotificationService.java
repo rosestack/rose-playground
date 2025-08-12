@@ -2,12 +2,15 @@ package io.github.rosestack.billing.service;
 
 import io.github.rosestack.billing.config.NotificationProperties;
 import io.github.rosestack.billing.notification.BillingNotificationClient;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/** 计费通知服务（对接 notification-service） */
+import java.util.Map;
+
+/**
+ * 计费通知服务（对接 notification-service）
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

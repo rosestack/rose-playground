@@ -1,23 +1,26 @@
 package io.github.rosestack.mybatis.tenant;
 
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** 核心层租户上下文持有者（不依赖 Spring）。 */
+import java.util.function.Supplier;
+
+/**
+ * 核心层租户上下文持有者（不依赖 Spring）。
+ */
 public class TenantContextHolder {
     private static final Logger log = LoggerFactory.getLogger(TenantContextHolder.class);
 
     private static final InheritableThreadLocal<String> TENANT_ID = new InheritableThreadLocal<>();
 
+    public static String getCurrentTenantId() {
+        return TENANT_ID.get();
+    }
+
     public static void setCurrentTenantId(String tenantId) {
         log.info("切换租户为 {}", tenantId);
 
         TENANT_ID.set(tenantId);
-    }
-
-    public static String getCurrentTenantId() {
-        return TENANT_ID.get();
     }
 
     public static boolean hasTenantContext() {

@@ -10,7 +10,9 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.support.DefaultPropertySourceFactory;
 import org.springframework.core.io.support.EncodedResource;
 
-/** yml 配置源工厂 */
+/**
+ * yml 配置源工厂
+ */
 @Slf4j
 public class YmlPropertySourceFactory extends DefaultPropertySourceFactory {
 

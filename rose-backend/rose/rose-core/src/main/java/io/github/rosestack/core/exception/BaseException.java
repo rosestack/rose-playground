@@ -15,10 +15,14 @@ public abstract class BaseException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** 国际化消息键 */
+    /**
+     * 国际化消息键
+     */
     private final String messageKey;
 
-    /** 消息参数 */
+    /**
+     * 消息参数
+     */
     private final Object[] messageArgs;
 
     /**
@@ -36,7 +40,7 @@ public abstract class BaseException extends RuntimeException {
      * 构造基础异常
      *
      * @param messageKey 国际化消息键
-     * @param cause 原始异常
+     * @param cause      原始异常
      */
     protected BaseException(String messageKey, Throwable cause) {
         super(messageKey, cause);
@@ -47,7 +51,7 @@ public abstract class BaseException extends RuntimeException {
     /**
      * 构造基础异常
      *
-     * @param messageKey 国际化消息键
+     * @param messageKey  国际化消息键
      * @param messageArgs 消息参数
      */
     protected BaseException(String messageKey, Object... messageArgs) {
@@ -59,8 +63,8 @@ public abstract class BaseException extends RuntimeException {
     /**
      * 构造基础异常
      *
-     * @param messageKey 国际化消息键
-     * @param cause 原始异常
+     * @param messageKey  国际化消息键
+     * @param cause       原始异常
      * @param messageArgs 消息参数
      */
     protected BaseException(String messageKey, Throwable cause, Object... messageArgs) {

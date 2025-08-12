@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public final class SensitiveDataMasker {
     private static final ObjectMapper M = new ObjectMapper();
 
-    private SensitiveDataMasker() {}
+    private SensitiveDataMasker() {
+    }
 
     public static String mask(String rawJson) {
         if (rawJson == null) return null;

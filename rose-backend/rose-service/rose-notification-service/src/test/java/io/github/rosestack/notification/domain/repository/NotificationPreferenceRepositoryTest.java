@@ -1,18 +1,19 @@
 package io.github.rosestack.notification.domain.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 import io.github.rosestack.notification.domain.entity.NotificationPreference;
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.domain.value.TimeWindow;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class NotificationPreferenceRepositoryTest {

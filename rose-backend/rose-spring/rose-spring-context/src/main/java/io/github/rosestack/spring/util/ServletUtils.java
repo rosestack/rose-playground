@@ -69,7 +69,9 @@ public abstract class ServletUtils {
     private static final Map<String, String> URL_ENCODE_CACHE = new ConcurrentHashMap<>();
     private static final String UNKNOWN = "unknown";
 
-    /** 用于检测客户端真实 IP 的 HTTP 头列表，按优先级排序 */
+    /**
+     * 用于检测客户端真实 IP 的 HTTP 头列表，按优先级排序
+     */
     private static final List<String> DEFAULT_IP_HEADERS = Arrays.asList(
             "X-Forwarded-For",
             "Proxy-Client-IP",
@@ -78,7 +80,9 @@ public abstract class ServletUtils {
             "HTTP_X_FORWARDED_FOR",
             "X-Real-IP");
 
-    /** 私有构造函数，防止实例化 */
+    /**
+     * 私有构造函数，防止实例化
+     */
     private ServletUtils() {}
 
     /**
@@ -242,8 +246,8 @@ public abstract class ServletUtils {
     /**
      * 将字符串渲染到客户端
      *
-     * @param response 响应对象
-     * @param string 待渲染的字符串
+     * @param response    响应对象
+     * @param string      待渲染的字符串
      * @param contentType 内容类型
      */
     public static void renderString(HttpServletResponse response, String string, String contentType) {
@@ -262,7 +266,7 @@ public abstract class ServletUtils {
      * 将JSON字符串渲染到客户端
      *
      * @param response 响应对象
-     * @param json JSON字符串
+     * @param json     JSON字符串
      */
     public static void renderJson(HttpServletResponse response, String json) {
         renderString(response, json, MediaType.APPLICATION_JSON_VALUE);
@@ -489,8 +493,8 @@ public abstract class ServletUtils {
      * 添加Cookie
      *
      * @param response 响应对象
-     * @param name Cookie名称
-     * @param value Cookie值
+     * @param name     Cookie名称
+     * @param value    Cookie值
      */
     public static void addCookie(HttpServletResponse response, String name, String value) {
         addCookie(response, name, value, -1);
@@ -500,9 +504,9 @@ public abstract class ServletUtils {
      * 添加Cookie
      *
      * @param response 响应对象
-     * @param name Cookie名称
-     * @param value Cookie值
-     * @param maxAge 最大存活时间（秒）
+     * @param name     Cookie名称
+     * @param value    Cookie值
+     * @param maxAge   最大存活时间（秒）
      */
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
@@ -511,7 +515,9 @@ public abstract class ServletUtils {
         response.addCookie(cookie);
     }
 
-    /** 清理缓存 */
+    /**
+     * 清理缓存
+     */
     public static void clearCache() {
         URL_DECODE_CACHE.clear();
         URL_ENCODE_CACHE.clear();
@@ -633,7 +639,9 @@ public abstract class ServletUtils {
         return UNKNOWN;
     }
 
-    /** 获取当前用户ID */
+    /**
+     * 获取当前用户ID
+     */
     public static String getCurrentUserId() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {

@@ -101,18 +101,28 @@ public @interface Lock {
      */
     String scope() default "";
 
-    /** 获取锁失败时的处理策略枚举 */
+    /**
+     * 获取锁失败时的处理策略枚举
+     */
     enum FailStrategy {
-        /** 抛出异常（默认） */
+        /**
+         * 抛出异常（默认）
+         */
         EXCEPTION,
 
-        /** 返回 null */
+        /**
+         * 返回 null
+         */
         RETURN_NULL,
 
-        /** 跳过方法执行，返回默认值 */
+        /**
+         * 跳过方法执行，返回默认值
+         */
         SKIP,
 
-        /** 抛出自定义异常 */
+        /**
+         * 抛出自定义异常
+         */
         CUSTOM_EXCEPTION
     }
 }

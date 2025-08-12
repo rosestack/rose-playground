@@ -18,20 +18,20 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class LocaleFormatUtils {
-    private LocaleFormatUtils() {}
-
-    /** 使用Jackson ObjectMapper进行日期时间格式化 这样可以统一使用应用配置的日期格式和时区设置 */
+    /**
+     * NumberFormat缓存，避免重复创建
+     */
+    private static final Map<Locale, NumberFormat> NUMBER_FORMAT_CACHE = new ConcurrentHashMap<>();
+    /**
+     * 常用的null字符串
+     */
+    private static final String NULL_STRING = "null";
+    /**
+     * 使用Jackson ObjectMapper进行日期时间格式化 这样可以统一使用应用配置的日期格式和时区设置
+     */
     private static volatile ObjectMapper objectMapper;
 
-    /** NumberFormat缓存，避免重复创建 */
-    private static final Map<Locale, NumberFormat> NUMBER_FORMAT_CACHE = new ConcurrentHashMap<>();
-
-    /** 常用的null字符串 */
-    private static final String NULL_STRING = "null";
-
-    public static void setObjectMapper(ObjectMapper mapper) {
-        objectMapper = mapper;
-    }
+    private LocaleFormatUtils() {}
 
     /**
      * 获取ObjectMapper实例，如果未设置则使用JacksonUtil的默认实例
@@ -40,6 +40,10 @@ public abstract class LocaleFormatUtils {
      */
     private static ObjectMapper getObjectMapper() {
         return objectMapper != null ? objectMapper : JsonUtils.getObjectMapper();
+    }
+
+    public static void setObjectMapper(ObjectMapper mapper) {
+        objectMapper = mapper;
     }
 
     /**
@@ -55,7 +59,7 @@ public abstract class LocaleFormatUtils {
     /**
      * 格式化单个值（支持本地化）
      *
-     * @param value 要格式化的值
+     * @param value  要格式化的值
      * @param locale 本地化设置
      * @return 格式化后的字符串
      */
@@ -66,8 +70,8 @@ public abstract class LocaleFormatUtils {
     /**
      * 格式化单个值（支持本地化和时区）
      *
-     * @param value 要格式化的值
-     * @param locale 本地化设置
+     * @param value    要格式化的值
+     * @param locale   本地化设置
      * @param timeZone 时区设置
      * @return 格式化后的字符串
      */
@@ -169,8 +173,8 @@ public abstract class LocaleFormatUtils {
     /**
      * 使用Jackson ObjectMapper格式化日期时间类型 这样可以统一使用应用配置的日期格式和时区设置，不需要关心具体的格式化样式
      *
-     * @param value 日期时间对象
-     * @param locale 本地化设置（注意：Jackson主要通过配置文件控制格式，locale在这里影响有限）
+     * @param value    日期时间对象
+     * @param locale   本地化设置（注意：Jackson主要通过配置文件控制格式，locale在这里影响有限）
      * @param timeZone 时区设置，用于日期时间的时区转换
      * @return 格式化后的字符串
      */
@@ -199,7 +203,7 @@ public abstract class LocaleFormatUtils {
      * 格式化Currency（支持本地化）
      *
      * @param currency Currency
-     * @param locale 本地化设置
+     * @param locale   本地化设置
      * @return 格式化后的字符串
      */
     private static String formatCurrency(final Currency currency, final Locale locale) {
@@ -219,8 +223,8 @@ public abstract class LocaleFormatUtils {
      * 格式化Collection（支持本地化和时区） 优化：使用Stream API提高性能和可读性
      *
      * @param collection Collection
-     * @param locale 本地化设置
-     * @param timeZone 时区设置
+     * @param locale     本地化设置
+     * @param timeZone   时区设置
      * @return 格式化后的字符串
      */
     private static String formatCollection(
@@ -243,7 +247,7 @@ public abstract class LocaleFormatUtils {
     /**
      * 格式化Array（支持本地化） 优化：简化数组处理逻辑，使用更高效的方式
      *
-     * @param array 数组
+     * @param array  数组
      * @param locale 本地化设置
      * @return 格式化后的字符串
      */
@@ -318,7 +322,7 @@ public abstract class LocaleFormatUtils {
      * 格式化TimeZone（支持本地化） 改进：添加异常处理
      *
      * @param timeZone TimeZone
-     * @param locale 本地化设置
+     * @param locale   本地化设置
      * @return 格式化后的字符串
      */
     private static String formatTimeZone(final TimeZone timeZone, final Locale locale) {
@@ -334,7 +338,9 @@ public abstract class LocaleFormatUtils {
         }
     }
 
-    /** 清理缓存，主要用于测试或内存管理 */
+    /**
+     * 清理缓存，主要用于测试或内存管理
+     */
     public static void clearCache() {
         NUMBER_FORMAT_CACHE.clear();
     }

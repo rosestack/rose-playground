@@ -65,5 +65,6 @@ public class AliyunSmsProvider extends AbstractConfigure implements SmsProvider 
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 }

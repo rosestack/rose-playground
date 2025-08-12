@@ -6,7 +6,9 @@ import io.github.rosestack.notice.spi.AbstractConfigure;
 import io.github.rosestack.notice.spi.Sender;
 import lombok.extern.slf4j.Slf4j;
 
-/** 控制台打印 Sender，作为兜底实现。 */
+/**
+ * 控制台打印 Sender，作为兜底实现。
+ */
 @Slf4j
 public class ConsoleSender extends AbstractConfigure implements Sender {
     @Override
@@ -21,8 +23,10 @@ public class ConsoleSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 
     @Override
-    public void doConfigure(SenderConfiguration config) throws Exception {}
+    public void doConfigure(SenderConfiguration config) throws Exception {
+    }
 }

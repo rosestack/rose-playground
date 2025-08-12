@@ -2,13 +2,14 @@ package io.github.rosestack.spring.boot.redis.lock;
 
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
 import jakarta.annotation.PreDestroy;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 分布式锁管理器
@@ -50,7 +51,7 @@ public class DistributedLockManager {
     /**
      * 获取分布式锁（指定默认超时时间）
      *
-     * @param lockName 锁名称
+     * @param lockName       锁名称
      * @param defaultTimeout 默认超时时间（毫秒）
      * @return 分布式锁实例
      */
@@ -90,7 +91,9 @@ public class DistributedLockManager {
         return lockCache.size();
     }
 
-    /** 清理所有锁实例 */
+    /**
+     * 清理所有锁实例
+     */
     public void clearAllLocks() {
         lockCache.clear();
         log.info("清理所有分布式锁实例");
@@ -110,7 +113,9 @@ public class DistributedLockManager {
         return prefix + lockName;
     }
 
-    /** 销毁资源 */
+    /**
+     * 销毁资源
+     */
     @PreDestroy
     public void destroy() {
         try {

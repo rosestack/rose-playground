@@ -1,6 +1,7 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.NotificationChannel;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -46,7 +47,7 @@ public interface NotificationChannelRepository {
     /**
      * 根据类型和租户ID查找通知通道列表
      *
-     * @param type 通道类型
+     * @param type     通道类型
      * @param tenantId 租户ID
      * @return 通知通道列表
      */

@@ -18,7 +18,7 @@ public abstract class FormatUtils {
      * 格式化占位符（使用默认占位符 {}）
      *
      * @param template 模板字符串
-     * @param args 参数数组
+     * @param args     参数数组
      * @return 格式化后的字符串
      */
     public static String replacePlaceholders(final String template, final Object... args) {
@@ -33,8 +33,8 @@ public abstract class FormatUtils {
      * 格式化占位符（使用默认占位符 {}，支持本地化）
      *
      * @param template 模板字符串
-     * @param locale 本地化设置
-     * @param args 参数数组
+     * @param locale   本地化设置
+     * @param args     参数数组
      * @return 格式化后的字符串
      */
     public static String replacePlaceholders(
@@ -45,9 +45,9 @@ public abstract class FormatUtils {
     /**
      * 格式化占位符（自定义占位符）
      *
-     * @param template 模板字符串
+     * @param template    模板字符串
      * @param placeholder 占位符字符串
-     * @param args 参数数组
+     * @param args        参数数组
      * @return 格式化后的字符串
      */
     public static String replaceCustomPlaceholder(final String template, String placeholder, final Object... args) {
@@ -57,10 +57,10 @@ public abstract class FormatUtils {
     /**
      * 格式化占位符（自定义占位符，支持本地化）
      *
-     * @param template 模板字符串
+     * @param template    模板字符串
      * @param placeholder 占位符字符串
-     * @param locale 本地化设置
-     * @param args 参数数组
+     * @param locale      本地化设置
+     * @param args        参数数组
      * @return 格式化后的字符串
      */
     public static String replaceCustomPlaceholder(
@@ -90,7 +90,7 @@ public abstract class FormatUtils {
      * 格式化命名参数（使用正则表达式，更高效）
      *
      * @param template 模板字符串
-     * @param map 变量映射
+     * @param map      变量映射
      * @return 格式化后的字符串
      */
     public static String replaceNamedParameters(final String template, final Map<String, ?> map) {
@@ -105,8 +105,8 @@ public abstract class FormatUtils {
      * 格式化命名参数（使用正则表达式，更高效，支持本地化）
      *
      * @param template 模板字符串
-     * @param map 变量映射
-     * @param locale 本地化设置
+     * @param map      变量映射
+     * @param locale   本地化设置
      * @return 格式化后的字符串
      */
     public static String replaceNamedParameters(
@@ -144,7 +144,7 @@ public abstract class FormatUtils {
      * 格式化索引参数（使用正则表达式，更高效）
      *
      * @param template 模板字符串
-     * @param args 参数数组
+     * @param args     参数数组
      * @return 格式化后的字符串
      */
     public static String replaceIndexedParameters(final String template, final Object... args) {
@@ -155,8 +155,8 @@ public abstract class FormatUtils {
      * 格式化索引参数（使用正则表达式，更高效，支持本地化）
      *
      * @param template 模板字符串
-     * @param locale 本地化设置
-     * @param args 参数数组
+     * @param locale   本地化设置
+     * @param args     参数数组
      * @return 格式化后的字符串
      */
     public static String replaceIndexedParameters(
@@ -197,7 +197,7 @@ public abstract class FormatUtils {
      * 智能格式化：自动检测模板类型并选择合适的格式化方法
      *
      * @param template 模板字符串
-     * @param args 参数（可以是Map或Object数组）
+     * @param args     参数（可以是Map或Object数组）
      * @return 格式化后的字符串
      */
     public static String format(final String template, final Object args) {
@@ -208,8 +208,8 @@ public abstract class FormatUtils {
      * 智能格式化：自动检测模板类型并选择合适的格式化方法（支持本地化）
      *
      * @param template 模板字符串
-     * @param args 参数（可以是Map或Object数组）
-     * @param locale 本地化设置
+     * @param args     参数（可以是Map或Object数组）
+     * @param locale   本地化设置
      * @return 格式化后的字符串
      */
     public static String format(final String template, final Locale locale, TimeZone timeZone, final Object args) {

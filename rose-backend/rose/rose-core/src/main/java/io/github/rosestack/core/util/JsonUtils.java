@@ -18,15 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class JsonUtils {
-    private JsonUtils() {}
-
+    public static final ObjectMapper PRETTY_SORTED_JSON_MAPPER = createPrettySortedMapper();
+    public static final ObjectMapper IGNORE_UNKNOWN_PROPERTIES_JSON_MAPPER = createIgnoreUnknownPropertiesMapper();
+    private static final ObjectMapper DEFAULT_MAPPER = createDefaultMapper();
     private static volatile ObjectMapper objectMapper;
 
-    private static final ObjectMapper DEFAULT_MAPPER = createDefaultMapper();
-
-    public static final ObjectMapper PRETTY_SORTED_JSON_MAPPER = createPrettySortedMapper();
-
-    public static final ObjectMapper IGNORE_UNKNOWN_PROPERTIES_JSON_MAPPER = createIgnoreUnknownPropertiesMapper();
+    private JsonUtils() {}
 
     private static ObjectMapper createDefaultMapper() {
         return JsonMapper.builder().findAndAddModules().build();
@@ -52,12 +49,12 @@ public abstract class JsonUtils {
                 .build();
     }
 
-    public static void setObjectMapper(ObjectMapper mapper) {
-        objectMapper = mapper;
-    }
-
     public static ObjectMapper getObjectMapper() {
         return objectMapper != null ? objectMapper : DEFAULT_MAPPER;
+    }
+
+    public static void setObjectMapper(ObjectMapper mapper) {
+        objectMapper = mapper;
     }
 
     public static <T> T fromString(String string, Class<T> clazz) {
@@ -148,9 +145,9 @@ public abstract class JsonUtils {
     /**
      * 通用字段处理方法 递归遍历对象的每个属性，使用提供的处理函数对字段进行处理
      *
-     * @param object 需要处理的对象
+     * @param object         需要处理的对象
      * @param fieldProcessor 字段处理函数，接收字段名和字段值，返回处理后的值
-     * @param <T> 对象类型
+     * @param <T>            对象类型
      * @return 处理后的对象
      */
     public static <T> T processFields(T object, BiFunction<String, JsonNode, JsonNode> fieldProcessor) {
@@ -180,7 +177,7 @@ public abstract class JsonUtils {
     /**
      * 递归处理JsonNode，使用字段处理函数对每个字段进行处理
      *
-     * @param node JSON节点
+     * @param node           JSON节点
      * @param fieldProcessor 字段处理函数
      */
     private static void processJsonNode(JsonNode node, BiFunction<String, JsonNode, JsonNode> fieldProcessor) {
@@ -216,7 +213,7 @@ public abstract class JsonUtils {
     /**
      * 创建自定义脱敏处理器 对指定字段进行脱敏，使用自定义的脱敏值
      *
-     * @param maskValue 脱敏值
+     * @param maskValue       脱敏值
      * @param sensitiveFields 敏感字段名称数组
      * @return 脱敏处理器
      */
@@ -249,7 +246,7 @@ public abstract class JsonUtils {
     /**
      * 创建字段转换处理器 对指定字段的值进行转换
      *
-     * @param fieldName 字段名
+     * @param fieldName   字段名
      * @param transformer 值转换函数
      * @return 转换处理器
      */

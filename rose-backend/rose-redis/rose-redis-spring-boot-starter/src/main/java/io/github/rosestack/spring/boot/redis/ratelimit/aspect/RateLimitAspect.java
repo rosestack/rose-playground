@@ -4,7 +4,6 @@ import io.github.rosestack.spring.boot.redis.annotation.RateLimited;
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
 import io.github.rosestack.spring.boot.redis.exception.RateLimitExceededException;
 import io.github.rosestack.spring.boot.redis.ratelimit.RateLimitManager;
-import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,6 +18,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import java.lang.reflect.Method;
 
 /**
  * 限流切面
@@ -88,7 +89,9 @@ public class RateLimitAspect {
         }
     }
 
-    /** 解析限流键名称 */
+    /**
+     * 解析限流键名称
+     */
     private String parseRateLimitKey(RateLimited rateLimited, ProceedingJoinPoint joinPoint) {
         String rateLimitKey = StringUtils.hasText(rateLimited.key()) ? rateLimited.key() : rateLimited.value();
 
@@ -104,7 +107,9 @@ public class RateLimitAspect {
         return rateLimitKey;
     }
 
-    /** 解析 SpEL 表达式 */
+    /**
+     * 解析 SpEL 表达式
+     */
     private String parseSpelExpression(String expression, ProceedingJoinPoint joinPoint) {
         try {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -135,7 +140,9 @@ public class RateLimitAspect {
         }
     }
 
-    /** 构建完整的限流键名称 */
+    /**
+     * 构建完整的限流键名称
+     */
     private String buildFullRateLimitKey(RateLimited rateLimited, String rateLimitKey) {
         String scope = rateLimited.scope();
         if (StringUtils.hasText(scope)) {
@@ -144,7 +151,9 @@ public class RateLimitAspect {
         return rateLimitKey;
     }
 
-    /** 处理限流超出的情况 */
+    /**
+     * 处理限流超出的情况
+     */
     private Object handleRateLimitExceeded(RateLimited rateLimited, String rateLimitKey, ProceedingJoinPoint joinPoint)
             throws Throwable {
         String failMessage = rateLimited.failMessage();
@@ -182,7 +191,9 @@ public class RateLimitAspect {
         }
     }
 
-    /** 获取方法的默认返回值 */
+    /**
+     * 获取方法的默认返回值
+     */
     private Object getDefaultReturnValue(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Class<?> returnType = signature.getReturnType();
@@ -209,7 +220,9 @@ public class RateLimitAspect {
         return null;
     }
 
-    /** 是否在发生错误时继续执行 */
+    /**
+     * 是否在发生错误时继续执行
+     */
     private boolean shouldContinueOnError() {
         // 可以通过配置控制，这里默认为 true，避免限流功能影响业务
         return true;

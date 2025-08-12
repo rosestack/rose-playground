@@ -5,10 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.UsageRecord;
+import org.apache.ibatis.annotations.Mapper;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 使用量记录数据访问接口
@@ -18,7 +19,9 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
 
-    /** 统计指定时间段内的使用量 */
+    /**
+     * 统计指定时间段内的使用量
+     */
     default BigDecimal sumUsageByTenantAndMetricAndPeriod(
             String tenantId, String metricType, LocalDateTime startTime, LocalDateTime endTime) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
@@ -32,7 +35,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return v == null ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(v.toString());
     }
 
-    /** 查找租户的使用量记录 */
+    /**
+     * 查找租户的使用量记录
+     */
     default List<UsageRecord> findByTenantIdAndMetricTypeOrderByRecordTimeDesc(String tenantId, String metricType) {
         LambdaQueryWrapper<UsageRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UsageRecord::getTenantId, tenantId)
@@ -41,7 +46,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectList(wrapper);
     }
 
-    /** 查找未计费的使用量记录 */
+    /**
+     * 查找未计费的使用量记录
+     */
     default List<UsageRecord> findByTenantIdAndBilledFalseAndRecordTimeBetween(
             String tenantId, LocalDateTime startTime, LocalDateTime endTime) {
         LambdaQueryWrapper<UsageRecord> wrapper = new LambdaQueryWrapper<>();
@@ -51,7 +58,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectList(wrapper);
     }
 
-    /** 标记使用量为已计费 */
+    /**
+     * 标记使用量为已计费
+     */
     default int markAsBilled(
             String tenantId, LocalDateTime startTime, LocalDateTime endTime, String invoiceId, LocalDateTime billedAt) {
         UpdateWrapper<UsageRecord> uw = new UpdateWrapper<>();
@@ -64,14 +73,18 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return update(null, uw);
     }
 
-    /** 删除过期的使用量记录 */
+    /**
+     * 删除过期的使用量记录
+     */
     default int deleteOldBilledRecords(LocalDateTime cutoffDate) {
         UpdateWrapper<UsageRecord> uw = new UpdateWrapper<>();
         uw.set("deleted", 1).lt("record_time", cutoffDate).eq("billed", 1);
         return update(null, uw);
     }
 
-    /** 获取租户当月使用量统计 */
+    /**
+     * 获取租户当月使用量统计
+     */
     default List<java.util.Map<String, Object>> getMonthlyUsageStats(String tenantId, LocalDateTime monthStart) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("metric_type as metricType", "SUM(quantity) as totalQuantity")
@@ -81,7 +94,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectMaps(qw);
     }
 
-    /** 获取租户使用量趋势统计 */
+    /**
+     * 获取租户使用量趋势统计
+     */
     default List<java.util.Map<String, Object>> getUsageTrendStats(
             String tenantId, LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
@@ -93,7 +108,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectMaps(qw);
     }
 
-    /** 获取租户当前使用量汇总 */
+    /**
+     * 获取租户当前使用量汇总
+     */
     default List<java.util.Map<String, Object>> getCurrentPeriodUsageSummary(
             String tenantId, LocalDateTime periodStart) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
@@ -109,7 +126,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectMaps(qw);
     }
 
-    /** 获取时间段内各计量类型的全量使用量汇总 */
+    /**
+     * 获取时间段内各计量类型的全量使用量汇总
+     */
     default List<java.util.Map<String, Object>> sumUsageByType(LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("metric_type as metricType", "COALESCE(SUM(quantity),0) as totalQuantity")
@@ -118,7 +137,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectMaps(qw);
     }
 
-    /** 获取时间段内租户使用量 Top N（按总量） */
+    /**
+     * 获取时间段内租户使用量 Top N（按总量）
+     */
     default List<java.util.Map<String, Object>> getTopTenantsByUsage(
             LocalDateTime startDate, LocalDateTime endDate, int limit) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
@@ -130,7 +151,9 @@ public interface UsageRecordRepository extends BaseMapper<UsageRecord> {
         return selectMaps(qw);
     }
 
-    /** 获取时间段内的全局每日使用量趋势 */
+    /**
+     * 获取时间段内的全局每日使用量趋势
+     */
     default List<java.util.Map<String, Object>> sumDailyUsage(LocalDateTime startDate, LocalDateTime endDate) {
         QueryWrapper<UsageRecord> qw = new QueryWrapper<>();
         qw.select("DATE(record_time) as recordDate", "COALESCE(SUM(quantity),0) as dailyUsage")

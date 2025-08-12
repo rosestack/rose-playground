@@ -1,10 +1,13 @@
 package io.github.rosestack.notice.support;
 
 import io.github.rosestack.notice.spi.IdempotencyStore;
-import java.time.Duration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-/** 基于 Redis 的幂等存储，采用 setIfAbsent + 过期时间。 */
+import java.time.Duration;
+
+/**
+ * 基于 Redis 的幂等存储，采用 setIfAbsent + 过期时间。
+ */
 public class RedisIdempotencyStore implements IdempotencyStore {
     private final StringRedisTemplate redis;
     private final String keyPrefix;

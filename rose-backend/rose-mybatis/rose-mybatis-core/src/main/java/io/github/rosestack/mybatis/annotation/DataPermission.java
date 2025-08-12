@@ -28,11 +28,17 @@ public @interface DataPermission {
      */
     FieldType fieldType() default FieldType.STRING;
 
-    /** 字段数据类型枚举 */
+    /**
+     * 字段数据类型枚举
+     */
     enum FieldType {
-        /** 字符串类型，包括 UUID - 使用单引号包围 */
+        /**
+         * 字符串类型，包括 UUID - 使用单引号包围
+         */
         STRING,
-        /** 数值类型，包括 LONG、INTEGER - 不使用引号 */
+        /**
+         * 数值类型，包括 LONG、INTEGER - 不使用引号
+         */
         NUMBER,
     }
 }

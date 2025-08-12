@@ -4,8 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.iam.domain.User;
 import io.github.rosestack.iam.domain.UserRepository;
-import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.Optional;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User>, UserRepository {

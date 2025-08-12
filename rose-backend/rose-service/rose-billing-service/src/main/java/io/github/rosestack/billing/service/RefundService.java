@@ -7,13 +7,14 @@ import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.RefundStatus;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.repository.RefundRecordRepository;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -33,7 +34,9 @@ public class RefundService {
         return requestRefund(invoiceId, amount, reason, null);
     }
 
-    /** 幂等退款请求（可选 idempotencyKey） */
+    /**
+     * 幂等退款请求（可选 idempotencyKey）
+     */
     @Transactional
     public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason, String idempotencyKey) {
         Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
@@ -112,7 +115,9 @@ public class RefundService {
         return result;
     }
 
-    /** 退款回调处理：更新 RefundRecord 状态与原文，必要时更新发票状态 */
+    /**
+     * 退款回调处理：更新 RefundRecord 状态与原文，必要时更新发票状态
+     */
     @Transactional
     public boolean processRefundCallback(String paymentMethod, Map<String, Object> data) {
         String invoiceId = String.valueOf(data.getOrDefault("invoiceId", data.getOrDefault("invoice_id", "")));
@@ -197,7 +202,7 @@ public class RefundService {
                                     "totalRefunded", refunded,
                                     "currency", invoice.getCurrency(),
                                     "occurredTime",
-                                            java.time.LocalDateTime.now().toString()));
+                                    java.time.LocalDateTime.now().toString()));
                     outboxService.saveEvent(invoice.getTenantId(), "InvoiceRefunded", invoiceId, payload);
                 } catch (Exception ignore) {
                 }

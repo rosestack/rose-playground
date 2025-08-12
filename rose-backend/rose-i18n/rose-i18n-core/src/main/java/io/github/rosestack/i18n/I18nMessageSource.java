@@ -17,7 +17,9 @@ public interface I18nMessageSource extends Lifecycle {
         return getMessage(code, getLocale(), args);
     }
 
-    /** 批量获取消息 */
+    /**
+     * 批量获取消息
+     */
     default Map<String, String> getMessages(Set<String> codes, Locale locale) {
         Map<String, String> result = new HashMap<>();
         for (String code : codes) {
@@ -29,27 +31,37 @@ public interface I18nMessageSource extends Lifecycle {
         return result;
     }
 
-    /** 异步获取消息 */
+    /**
+     * 异步获取消息
+     */
     default CompletableFuture<String> getMessageAsync(String code, Locale locale, Object... args) {
         return CompletableFuture.supplyAsync(() -> getMessage(code, locale, args));
     }
 
-    /** 异步批量获取消息 */
+    /**
+     * 异步批量获取消息
+     */
     default CompletableFuture<Map<String, String>> getMessagesAsync(Set<String> codes, Locale locale) {
         return CompletableFuture.supplyAsync(() -> getMessages(codes, locale));
     }
 
-    /** 批量检查消息是否存在 */
+    /**
+     * 批量检查消息是否存在
+     */
     default Map<String, Boolean> hasMessages(Set<String> codes, Locale locale) {
         return codes.stream().collect(Collectors.toMap(code -> code, code -> hasMessage(code, locale)));
     }
 
-    /** 检查消息是否存在 */
+    /**
+     * 检查消息是否存在
+     */
     default boolean hasMessage(String code, Locale locale) {
         return getMessage(code, locale) != null;
     }
 
-    /** 获取支持的消息代码 */
+    /**
+     * 获取支持的消息代码
+     */
     default Set<String> getMessageCodes(Locale locale) {
         Map<String, String> messages = getMessages(locale);
         return messages != null ? messages.keySet() : Collections.emptySet();

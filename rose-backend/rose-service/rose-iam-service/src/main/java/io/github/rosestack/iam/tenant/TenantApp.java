@@ -2,7 +2,9 @@ package io.github.rosestack.iam.tenant;
 
 import lombok.Data;
 
-/** 租户协助者 */
+/**
+ * 租户协助者
+ */
 @Data
 public class TenantApp {
     private Long id;
@@ -13,6 +15,8 @@ public class TenantApp {
 
     private String userPoolId;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private String createdAt;
 }
