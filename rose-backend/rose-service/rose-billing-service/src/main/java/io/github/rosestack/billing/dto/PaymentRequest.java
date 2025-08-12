@@ -11,6 +11,6 @@ public class PaymentRequest {
     private String invoiceId;
     private String tenantId;
     private BigDecimal amount;
-    private String paymentMethod;
+    private io.github.rosestack.billing.payment.PaymentMethod paymentMethod;
     private Map<String, Object> paymentData;
 }

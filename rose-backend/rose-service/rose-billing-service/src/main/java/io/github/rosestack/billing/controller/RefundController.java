@@ -40,7 +40,13 @@ public class RefundController {
     @PostMapping("/callback/{paymentMethod}")
     public ApiResponse<Void> handleRefundCallback(@PathVariable String paymentMethod,
                                                   @RequestBody Map<String, Object> callbackData) {
-        boolean ok = paymentGatewayService.verifyRefundCallback(paymentMethod, callbackData);
+        io.github.rosestack.billing.payment.PaymentMethod pm;
+        try {
+            pm = io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod);
+        } catch (Exception e) {
+            return ApiResponse.error("invalid payment method: " + paymentMethod);
+        }
+        boolean ok = paymentGatewayService.verifyRefundCallback(pm, callbackData);
         if (!ok)
             return ApiResponse.error(io.github.rosestack.billing.enums.BillingErrorCode.INVALID_REFUND_CALLBACK.getCode(), io.github.rosestack.billing.enums.BillingErrorCode.INVALID_REFUND_CALLBACK.getMessage());
         boolean updated = refundService.processRefundCallback(paymentMethod, callbackData);

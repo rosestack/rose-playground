@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-notification</artifactId>
+            <artifactId>rose-notification-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -1,7 +1,7 @@
 package com.company.usermodulith.user.internal;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.github.rosestack.core.entity.BaseEntity;
+import io.github.rosestack.mybatis.audit.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

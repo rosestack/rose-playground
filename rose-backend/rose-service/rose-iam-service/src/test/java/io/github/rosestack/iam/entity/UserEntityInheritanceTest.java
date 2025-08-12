@@ -1,7 +1,7 @@
 package io.github.rosestack.iam.entity;
 
-import io.github.rosestack.core.entity.BaseEntity;
-import io.github.rosestack.core.entity.BaseTenantEntity;
+import io.github.rosestack.mybatis.audit.BaseEntity;
+import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import io.github.rosestack.iam.infra.mybatis.entity.UserEntity;
 import org.junit.jupiter.api.Test;
 

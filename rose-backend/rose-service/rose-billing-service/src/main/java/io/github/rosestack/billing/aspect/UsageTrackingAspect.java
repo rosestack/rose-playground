@@ -8,7 +8,7 @@ import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.SubscriptionService;
 import io.github.rosestack.billing.service.UserMetricsService;
-import io.github.rosestack.spring.boot.mybatis.support.tenant.TenantContextHolder;
+import io.github.rosestack.mybatis.tenant.TenantContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;

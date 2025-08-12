@@ -1,9 +1,9 @@
 package io.github.rosestack.spring.boot.audit.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.github.rosestack.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.audit.enums.AuditDetailKey;
 import io.github.rosestack.spring.boot.audit.enums.AuditDetailType;
-import io.github.rosestack.spring.boot.common.encryption.enums.EncryptType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

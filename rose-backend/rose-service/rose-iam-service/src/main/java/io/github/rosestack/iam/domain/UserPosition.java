@@ -1,6 +1,6 @@
 package io.github.rosestack.iam.domain;
 
-import io.github.rosestack.core.entity.BaseEntity;
+import io.github.rosestack.mybatis.audit.BaseEntity;
 import lombok.Data;
 
 @Data

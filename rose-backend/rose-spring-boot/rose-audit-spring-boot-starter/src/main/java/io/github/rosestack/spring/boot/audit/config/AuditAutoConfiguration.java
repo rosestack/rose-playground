@@ -1,11 +1,11 @@
 package io.github.rosestack.spring.boot.audit.config;
 
+import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.spring.boot.audit.aspect.AuditAspect;
 import io.github.rosestack.spring.boot.audit.listener.AuditEventListener;
 import io.github.rosestack.spring.boot.audit.mapper.AuditLogDetailMapper;
 import io.github.rosestack.spring.boot.audit.service.impl.AuditLogServiceImpl;
 import io.github.rosestack.spring.boot.audit.support.storage.AuditStorage;
-import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;

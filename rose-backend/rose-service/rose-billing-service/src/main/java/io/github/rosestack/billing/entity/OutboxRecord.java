@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.enums.OutboxStatus;
-import io.github.rosestack.core.entity.BaseTenantEntity;
+import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

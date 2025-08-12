@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.web.config;
 
-import io.github.rosestack.core.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.web.advice.ApiResponseBodyAdvice;
 import io.github.rosestack.spring.boot.web.exception.ExceptionHandlerHelper;
 import io.github.rosestack.spring.boot.web.exception.GlobalExceptionHandler;
@@ -25,7 +25,6 @@ import org.springframework.context.annotation.PropertySource;
 
 @Import({
         CorsConfig.class,
-        JacksonConfig.class,
         AsyncConfig.class,
         MessageConfig.class,
         MetricConfig.class,

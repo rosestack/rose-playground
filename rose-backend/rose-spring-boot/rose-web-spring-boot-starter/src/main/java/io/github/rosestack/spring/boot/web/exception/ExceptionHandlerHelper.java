@@ -2,7 +2,7 @@ package io.github.rosestack.spring.boot.web.exception;
 
 import io.github.rosestack.core.exception.BusinessException;
 import io.github.rosestack.core.model.ApiResponse;
-import io.github.rosestack.core.util.ServletUtils;
+import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

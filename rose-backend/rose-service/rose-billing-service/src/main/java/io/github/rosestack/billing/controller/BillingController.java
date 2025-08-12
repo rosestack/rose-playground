@@ -199,11 +199,12 @@ class GenerateInvoiceRequest {
 @Data
 class ProcessPaymentRequest {
     @NotBlank
+    @io.github.rosestack.billing.validation.PaymentMethodSubset(anyOf = {
+        io.github.rosestack.billing.payment.PaymentMethod.ALIPAY,
+        io.github.rosestack.billing.payment.PaymentMethod.WECHAT,
+        io.github.rosestack.billing.payment.PaymentMethod.STRIPE
+    })
     private String paymentMethod;
     @NotBlank
     private String transactionId;
-
-    public io.github.rosestack.billing.payment.PaymentMethod getPaymentMethodEnum() {
-        try { return io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod); } catch (Exception e) { return null; }
-    }
 }

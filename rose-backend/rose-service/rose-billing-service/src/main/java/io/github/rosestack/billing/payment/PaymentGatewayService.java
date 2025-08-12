@@ -42,6 +42,7 @@ public class PaymentGatewayService {
     public PaymentResult processPayment(PaymentRequest request) {
         try {
             PaymentProcessor processor = getPaymentProcessor(request.getPaymentMethod());
+
             PaymentResult result = processor.processPayment(request);
 
             // 记录支付结果
@@ -70,6 +71,12 @@ public class PaymentGatewayService {
         }
     }
 
+    // Overloads using enum for type safety
+    public String createPaymentLink(String invoiceId, BigDecimal amount, PaymentMethod method, String tenantId) {
+        return createPaymentLink(invoiceId, amount, method == null ? null : method.name(), tenantId);
+    }
+
+
     /**
      * 验证支付回调
      */
@@ -91,6 +98,10 @@ public class PaymentGatewayService {
         }
     }
 
+    public boolean verifyPaymentCallback(PaymentMethod method, Map<String, Object> callbackData) {
+        return verifyPaymentCallback(method == null ? null : method.name(), callbackData);
+    }
+
     /**
      * 验证退款回调
      */
@@ -106,9 +117,14 @@ public class PaymentGatewayService {
         }
     }
 
+    public boolean verifyRefundCallback(PaymentMethod method, Map<String, Object> callbackData) {
+        return verifyRefundCallback(method == null ? null : method.name(), callbackData);
+    }
+
     /**
      * 解析退款金额（回调）
      */
+
     public BigDecimal parseRefundAmount(String paymentMethod, Map<String, Object> data) {
         PaymentProcessor processor = getPaymentProcessor(paymentMethod);
         if (processor != null) {
@@ -185,6 +201,11 @@ public class PaymentGatewayService {
         return paymentProcessorMap.get(paymentMethod);
     }
 
+    private PaymentProcessor getPaymentProcessor(PaymentMethod method) {
+        if (method == null) return null;
+        return getPaymentProcessor(method.name());
+    }
+
     private String getPaymentMethodByTransactionId(String transactionId) {
         // 从数据库查找支付方式
         Optional<PaymentRecord> record = paymentRecordRepository.findByTransactionId(transactionId);
@@ -197,7 +218,11 @@ public class PaymentGatewayService {
             record.setInvoiceId(request.getInvoiceId());
             record.setTenantId(request.getTenantId());
             record.setAmount(request.getAmount());
-            record.setPaymentMethod(request.getPaymentMethod());
+            record.setPaymentMethod(
+                request.getPaymentMethod() == null ? null :
+                    (request.getPaymentMethod() instanceof PaymentMethod ?
+                        ((PaymentMethod) request.getPaymentMethod()).name() : request.getPaymentMethod().toString())
+            );
             record.setTransactionId(result.getTransactionId());
             record.setStatus(result.isSuccess() ? PaymentRecordStatus.SUCCESS : PaymentRecordStatus.PENDING);
             record.setGatewayResponse(result.getGatewayResponse());

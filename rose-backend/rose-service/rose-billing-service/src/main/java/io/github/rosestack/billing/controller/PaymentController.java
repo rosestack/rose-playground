@@ -3,13 +3,9 @@ package io.github.rosestack.billing.controller;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.payment.PaymentStatus;
-import io.github.rosestack.billing.payment.PaymentMethod;
 
 import io.github.rosestack.billing.service.BillingService;
 import jakarta.validation.constraints.NotBlank;
-
-import io.github.rosestack.billing.validation.PaymentMethodSubset;
-
 import io.github.rosestack.billing.service.InvoiceService;
 import io.github.rosestack.core.model.ApiResponse;
 import lombok.Data;
@@ -39,7 +35,7 @@ public class PaymentController {
         Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
         BigDecimal amount = invoice.getTotalAmount();
         String link = paymentGatewayService.createPaymentLink(
-                invoiceId, amount, request.getPaymentMethod(), invoice.getTenantId());
+                invoiceId, amount, request.getPaymentMethodEnum(), invoice.getTenantId());
         return ApiResponse.success(link);
     }
 
@@ -51,7 +47,13 @@ public class PaymentController {
     public ApiResponse<Void> handleCallback(@PathVariable String paymentMethod,
                                             @RequestBody Map<String, Object> callbackData) {
         log.info("收到支付回调：method={}, data={}", paymentMethod, callbackData);
-        boolean ok = paymentGatewayService.verifyPaymentCallback(paymentMethod, callbackData);
+        io.github.rosestack.billing.payment.PaymentMethod pm;
+        try {
+            pm = io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod);
+        } catch (Exception e) {
+            return ApiResponse.error("invalid payment method: " + paymentMethod);
+        }
+        boolean ok = paymentGatewayService.verifyPaymentCallback(pm, callbackData);
         if (!ok) {
             return ApiResponse.error("invalid callback");
         }
@@ -105,6 +107,10 @@ public class PaymentController {
             io.github.rosestack.billing.payment.PaymentMethod.STRIPE
         })
         private String paymentMethod;
+
+        public io.github.rosestack.billing.payment.PaymentMethod getPaymentMethodEnum() {
+            try { return io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod); } catch (Exception e) { return null; }
+        }
     }
 }
 

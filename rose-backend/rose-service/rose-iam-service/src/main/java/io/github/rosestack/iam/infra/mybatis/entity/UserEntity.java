@@ -1,7 +1,7 @@
 package io.github.rosestack.iam.infra.mybatis.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.github.rosestack.core.entity.BaseTenantEntity;
+import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

@@ -1,11 +1,11 @@
 package io.github.rosestack.spring.boot.audit.aspect;
 
+import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.spring.boot.audit.annotation.Audit;
 import io.github.rosestack.spring.boot.audit.enums.AuditStatus;
 import io.github.rosestack.spring.boot.audit.listener.AuditEvent;
 import io.github.rosestack.spring.boot.audit.support.AuditEventBuilder;
 import io.github.rosestack.spring.boot.audit.support.AuditEventConditionEvaluator;
-import io.github.rosestack.spring.boot.common.encryption.FieldEncryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

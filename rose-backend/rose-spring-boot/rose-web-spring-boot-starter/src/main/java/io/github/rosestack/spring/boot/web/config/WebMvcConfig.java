@@ -1,10 +1,10 @@
 package io.github.rosestack.spring.boot.web.config;
 
 import io.github.rosestack.core.Constants;
-import io.github.rosestack.core.spring.SpringContextUtils;
-import io.github.rosestack.spring.boot.web.filter.CachingRequestFilter;
-import io.github.rosestack.spring.boot.web.filter.TraceIdFilter;
-import io.github.rosestack.spring.boot.web.filter.XssFilter;
+import io.github.rosestack.spring.boot.core.util.FilterRegistrationBeanUtils;
+import io.github.rosestack.spring.filter.CachingRequestFilter;
+import io.github.rosestack.spring.filter.TraceIdFilter;
+import io.github.rosestack.spring.filter.XssFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,18 +32,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.filter.request-id", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FilterRegistrationBean<TraceIdFilter> requestIdFilter() {
-        return SpringContextUtils.createFilterBean(new TraceIdFilter(roseWebProperties), Constants.FilterOrder.REQUEST_FILTER_ORDER);
+        return FilterRegistrationBeanUtils.createFilterBean(new TraceIdFilter(roseWebProperties.getFilter().getExcludePaths()), Constants.FilterOrder.REQUEST_FILTER_ORDER);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.filter.caching-request", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FilterRegistrationBean<CachingRequestFilter> cachingRequestFilter() {
-        return SpringContextUtils.createFilterBean(new CachingRequestFilter(roseWebProperties), CACHING_REQUEST_FILTER_ORDER);
+        return FilterRegistrationBeanUtils.createFilterBean(new CachingRequestFilter(roseWebProperties.getFilter().getExcludePaths()), CACHING_REQUEST_FILTER_ORDER);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "rose.web.filter.xss", name = "enabled", havingValue = "true", matchIfMissing = true)
     public FilterRegistrationBean<XssFilter> xxsFilter() {
-        return SpringContextUtils.createFilterBean(new XssFilter(roseWebProperties), XSS_FILTER_ORDER);
+        return FilterRegistrationBeanUtils.createFilterBean(new XssFilter(roseWebProperties.getFilter().getExcludePaths()), XSS_FILTER_ORDER);
     }
 }

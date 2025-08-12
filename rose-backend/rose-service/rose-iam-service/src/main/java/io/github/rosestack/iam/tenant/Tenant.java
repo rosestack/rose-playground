@@ -1,6 +1,6 @@
 package io.github.rosestack.iam.tenant;
 
-import io.github.rosestack.core.entity.BaseEntity;
+import io.github.rosestack.mybatis.audit.BaseEntity;
 import io.github.rosestack.core.model.HasCodeNameDescription;
 import lombok.Data;
 

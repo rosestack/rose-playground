@@ -2,7 +2,7 @@ package io.github.rosestack.iam.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import io.github.rosestack.core.entity.BaseTenantEntity;
+import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import lombok.Data;
 
 import java.io.Serializable;

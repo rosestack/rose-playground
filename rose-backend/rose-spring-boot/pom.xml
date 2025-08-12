@@ -14,13 +14,10 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>rose-common-spring-boot-starter</module>
+        <module>rose-spring-boot-core</module>
         <module>rose-audit-spring-boot-starter</module>
         <module>rose-auth-spring-boot-starter</module>
-        <module>rose-mybatis-spring-boot-starter</module>
-        <module>rose-redis-spring-boot-starter</module>
         <module>rose-web-spring-boot-starter</module>
-        <module>rose-notification-spring-boot-starter</module>
     </modules>
 
 </project>
