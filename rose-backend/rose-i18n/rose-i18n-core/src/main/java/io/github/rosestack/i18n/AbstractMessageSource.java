@@ -1,15 +1,14 @@
 package io.github.rosestack.i18n;
 
+import static java.util.Objects.requireNonNull;
+
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.util.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
-
-import java.util.*;
-
-import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractMessageSource implements HierarchicalMessageSource, I18nMessageSource {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageSource.class);
@@ -31,8 +30,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         this.parentMessageSource = parent;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public I18nMessageSource getParentMessageSource() {
         return this.parentMessageSource;
     }
@@ -66,12 +64,10 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         return msg;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public Map<String, String> getMessages(Locale locale) {
         // 首先尝试从缓存获取所有消息
-        if (messageCacheLoader != null) {
-        }
+        if (messageCacheLoader != null) {}
 
         Map<String, String> messages = this.getMessagesInternal(locale);
         if (ObjectUtils.isEmpty(messages)) {
@@ -88,11 +84,10 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
 
     protected abstract Map<String, String> getMessagesInternal(Locale locale);
 
-    @Nullable
-    protected abstract String getMessageInternal(@Nullable String code, @Nullable Locale locale, @Nullable Object... args);
+    @Nullable protected abstract String getMessageInternal(
+            @Nullable String code, @Nullable Locale locale, @Nullable Object... args);
 
-    @Nullable
-    protected Map<String, String> getMessagesFromParent(Locale locale) {
+    @Nullable protected Map<String, String> getMessagesFromParent(Locale locale) {
         I18nMessageSource parent = this.getParentMessageSource();
         if (parent != null) {
             if (parent instanceof AbstractMessageSource) {
@@ -106,8 +101,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         }
     }
 
-    @Nullable
-    protected String getMessageFromParent(String code, Locale locale, @Nullable Object... args) {
+    @Nullable protected String getMessageFromParent(String code, Locale locale, @Nullable Object... args) {
         if (code == null) {
             return null;
         }
@@ -125,8 +119,7 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
         }
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public final Locale getLocale() {
         Locale locale = getInternalLocale();
         return locale == null ? getDefaultLocale() : locale;
@@ -137,13 +130,11 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
      *
      * @return the internal {@link Locale}
      */
-    @Nullable
-    protected Locale getInternalLocale() {
+    @Nullable protected Locale getInternalLocale() {
         return null;
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public final Locale getDefaultLocale() {
         if (defaultLocale != null) {
             return defaultLocale;
@@ -185,7 +176,6 @@ public abstract class AbstractMessageSource implements HierarchicalMessageSource
             locales.add(locale);
         }
     }
-
 
     @Override
     public String getSource() {

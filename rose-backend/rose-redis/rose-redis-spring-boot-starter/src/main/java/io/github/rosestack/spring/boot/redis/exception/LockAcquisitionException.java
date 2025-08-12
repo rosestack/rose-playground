@@ -2,9 +2,8 @@ package io.github.rosestack.spring.boot.redis.exception;
 
 /**
  * 锁获取异常
- * <p>
- * 当无法获取锁时抛出此异常。
- * </p>
+ *
+ * <p>当无法获取锁时抛出此异常。
  *
  * @author Rose Team
  * @since 1.0.0

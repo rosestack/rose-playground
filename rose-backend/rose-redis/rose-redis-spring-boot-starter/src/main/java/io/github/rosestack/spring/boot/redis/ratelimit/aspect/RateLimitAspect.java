@@ -4,6 +4,7 @@ import io.github.rosestack.spring.boot.redis.annotation.RateLimited;
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
 import io.github.rosestack.spring.boot.redis.exception.RateLimitExceededException;
 import io.github.rosestack.spring.boot.redis.ratelimit.RateLimitManager;
+import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,14 +20,10 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Method;
-
 /**
  * 限流切面
- * <p>
- * 处理 @RateLimited 注解，实现方法级别的限流控制。
- * 支持 SpEL 表达式动态生成限流键名称。
- * </p>
+ *
+ * <p>处理 @RateLimited 注解，实现方法级别的限流控制。 支持 SpEL 表达式动态生成限流键名称。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -63,8 +60,12 @@ public class RateLimitAspect {
         try {
             // 获取限流配置
             RoseRedisProperties.RateLimit.Algorithm algorithm = rateLimited.algorithm();
-            int rate = rateLimited.rate() > 0 ? rateLimited.rate() : properties.getRateLimit().getDefaultRate();
-            int timeWindow = rateLimited.timeWindow() > 0 ? rateLimited.timeWindow() : properties.getRateLimit().getDefaultTimeWindow();
+            int rate = rateLimited.rate() > 0
+                    ? rateLimited.rate()
+                    : properties.getRateLimit().getDefaultRate();
+            int timeWindow = rateLimited.timeWindow() > 0
+                    ? rateLimited.timeWindow()
+                    : properties.getRateLimit().getDefaultTimeWindow();
 
             // 尝试获取许可
             boolean acquired = rateLimitManager.tryAcquire(fullRateLimitKey, algorithm, rate, timeWindow);
@@ -87,12 +88,9 @@ public class RateLimitAspect {
         }
     }
 
-    /**
-     * 解析限流键名称
-     */
+    /** 解析限流键名称 */
     private String parseRateLimitKey(RateLimited rateLimited, ProceedingJoinPoint joinPoint) {
-        String rateLimitKey = StringUtils.hasText(rateLimited.key()) ? 
-                rateLimited.key() : rateLimited.value();
+        String rateLimitKey = StringUtils.hasText(rateLimited.key()) ? rateLimited.key() : rateLimited.value();
 
         if (!StringUtils.hasText(rateLimitKey)) {
             return null;
@@ -106,9 +104,7 @@ public class RateLimitAspect {
         return rateLimitKey;
     }
 
-    /**
-     * 解析 SpEL 表达式
-     */
+    /** 解析 SpEL 表达式 */
     private String parseSpelExpression(String expression, ProceedingJoinPoint joinPoint) {
         try {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -117,7 +113,7 @@ public class RateLimitAspect {
             String[] paramNames = signature.getParameterNames();
 
             EvaluationContext context = new StandardEvaluationContext();
-            
+
             // 设置方法参数
             if (paramNames != null && args != null) {
                 for (int i = 0; i < paramNames.length; i++) {
@@ -131,7 +127,7 @@ public class RateLimitAspect {
 
             Expression expr = parser.parseExpression(expression);
             Object value = expr.getValue(context);
-            
+
             return value != null ? value.toString() : "";
         } catch (Exception e) {
             log.error("解析 SpEL 表达式失败: {}", expression, e);
@@ -139,9 +135,7 @@ public class RateLimitAspect {
         }
     }
 
-    /**
-     * 构建完整的限流键名称
-     */
+    /** 构建完整的限流键名称 */
     private String buildFullRateLimitKey(RateLimited rateLimited, String rateLimitKey) {
         String scope = rateLimited.scope();
         if (StringUtils.hasText(scope)) {
@@ -150,11 +144,9 @@ public class RateLimitAspect {
         return rateLimitKey;
     }
 
-    /**
-     * 处理限流超出的情况
-     */
-    private Object handleRateLimitExceeded(RateLimited rateLimited, String rateLimitKey, 
-                                          ProceedingJoinPoint joinPoint) throws Throwable {
+    /** 处理限流超出的情况 */
+    private Object handleRateLimitExceeded(RateLimited rateLimited, String rateLimitKey, ProceedingJoinPoint joinPoint)
+            throws Throwable {
         String failMessage = rateLimited.failMessage();
         RateLimited.FailStrategy strategy = rateLimited.failStrategy();
 
@@ -163,36 +155,34 @@ public class RateLimitAspect {
         switch (strategy) {
             case EXCEPTION:
                 throw new RateLimitExceededException(failMessage + ": " + rateLimitKey);
-                
+
             case RETURN_NULL:
                 return null;
-                
+
             case SKIP:
                 return getDefaultReturnValue(joinPoint);
-                
+
             case CUSTOM_EXCEPTION:
                 Class<? extends RuntimeException> exceptionClass = rateLimited.customException();
                 try {
-                    RuntimeException exception = exceptionClass.getConstructor(String.class)
-                            .newInstance(failMessage + ": " + rateLimitKey);
+                    RuntimeException exception =
+                            exceptionClass.getConstructor(String.class).newInstance(failMessage + ": " + rateLimitKey);
                     throw exception;
                 } catch (Exception e) {
                     log.error("创建自定义异常失败", e);
                     throw new RateLimitExceededException(failMessage + ": " + rateLimitKey);
                 }
-                
+
             case LOG_AND_CONTINUE:
                 log.warn("限流超出但继续执行: {}", rateLimitKey);
                 return joinPoint.proceed();
-                
+
             default:
                 throw new RateLimitExceededException(failMessage + ": " + rateLimitKey);
         }
     }
 
-    /**
-     * 获取方法的默认返回值
-     */
+    /** 获取方法的默认返回值 */
     private Object getDefaultReturnValue(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Class<?> returnType = signature.getReturnType();
@@ -204,8 +194,10 @@ public class RateLimitAspect {
         if (returnType.isPrimitive()) {
             if (returnType == boolean.class) {
                 return false;
-            } else if (returnType == int.class || returnType == long.class || 
-                      returnType == short.class || returnType == byte.class) {
+            } else if (returnType == int.class
+                    || returnType == long.class
+                    || returnType == short.class
+                    || returnType == byte.class) {
                 return 0;
             } else if (returnType == float.class || returnType == double.class) {
                 return 0.0;
@@ -217,9 +209,7 @@ public class RateLimitAspect {
         return null;
     }
 
-    /**
-     * 是否在发生错误时继续执行
-     */
+    /** 是否在发生错误时继续执行 */
     private boolean shouldContinueOnError() {
         // 可以通过配置控制，这里默认为 true，避免限流功能影响业务
         return true;

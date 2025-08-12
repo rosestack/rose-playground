@@ -1,20 +1,19 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.Notification;
-
 import java.util.List;
 import java.util.Optional;
 
 /**
  * 通知仓储接口
- * <p>
- * 定义通知实体的持久化操作。
+ *
+ * <p>定义通知实体的持久化操作。
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
  */
 public interface NotificationRepository {
-    
+
     /**
      * 根据ID查找通知
      *
@@ -51,7 +50,7 @@ public interface NotificationRepository {
      * @return 通知实体
      */
     Optional<Notification> findByRequestId(String requestId);
-    
+
     /**
      * 根据租户ID查找通知列表
      *
@@ -59,7 +58,7 @@ public interface NotificationRepository {
      * @return 通知列表
      */
     List<Notification> findByTenantId(String tenantId);
-    
+
     /**
      * 根据目标查找通知列表
      *
@@ -67,7 +66,7 @@ public interface NotificationRepository {
      * @return 通知列表
      */
     List<Notification> findByTarget(String target);
-    
+
     /**
      * 根据状态查找通知列表
      *

@@ -1,7 +1,6 @@
 package io.github.rosestack.i18n.evaluator;
 
 import jakarta.el.*;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
@@ -12,8 +11,7 @@ import java.util.function.Function;
 /**
  * 高性能Jakarta EL表达式评估器
  *
- * <p>基于Jakarta EL API的表达式评估器实现，支持完整的EL表达式语法。
- * 包含缓存机制和自定义函数支持。</p>
+ * <p>基于Jakarta EL API的表达式评估器实现，支持完整的EL表达式语法。 包含缓存机制和自定义函数支持。
  *
  * @author chensoul
  * @since 1.0.0
@@ -27,9 +25,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
     private boolean cacheEnabled = true;
     private boolean available = false;
 
-    /**
-     * 默认构造函数
-     */
+    /** 默认构造函数 */
     public JakartaElExpressionEvaluator() {
         ExpressionFactory factory = null;
         try {
@@ -108,9 +104,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         return true;
     }
 
-    /**
-     * 评估缓存的表达式
-     */
+    /** 评估缓存的表达式 */
     private Object evaluateCachedExpression(ValueExpression expression, Map<String, Object> variables, Locale locale) {
         try {
             Map<String, Object> mutableArgs = new HashMap<>(variables);
@@ -125,32 +119,28 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    /**
-     * 创建EL上下文
-     */
+    /** 创建EL上下文 */
     private ELContext createELContext(Map<String, Object> variables) {
         return new OptimizedELContext(expressionFactory, variables, customFunctions);
     }
 
-    /**
-     * 获取值表达式
-     */
+    /** 获取值表达式 */
     private ValueExpression getValueExpression(String expression, ELContext elContext) {
         String fullExpression = "${" + expression + "}";
         return expressionFactory.createValueExpression(elContext, fullExpression, Object.class);
     }
 
-    /**
-     * 优化的EL上下文实现
-     */
+    /** 优化的EL上下文实现 */
     private static class OptimizedELContext extends ELContext {
         private final ExpressionFactory expressionFactory;
         private final VariableMapper variableMapper;
         private final FunctionMapper functionMapper;
         private final ELResolver elResolver;
 
-        public OptimizedELContext(ExpressionFactory expressionFactory, Map<String, Object> variables,
-                                  Map<String, Function<Object[], Object>> customFunctions) {
+        public OptimizedELContext(
+                ExpressionFactory expressionFactory,
+                Map<String, Object> variables,
+                Map<String, Function<Object[], Object>> customFunctions) {
             this.expressionFactory = expressionFactory;
             this.variableMapper = new OptimizedVariableMapper(variables, expressionFactory);
             this.functionMapper = new CustomFunctionMapper(customFunctions);
@@ -186,16 +176,13 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    /**
-     * 优化的变量映射器
-     */
+    /** 优化的变量映射器 */
     private static class OptimizedVariableMapper extends VariableMapper {
         private final Map<String, ValueExpression> variables = new HashMap<>();
 
         public OptimizedVariableMapper(Map<String, Object> variables, ExpressionFactory factory) {
             for (Map.Entry<String, Object> entry : variables.entrySet()) {
-                ValueExpression valueExpression = factory.createValueExpression(
-                        entry.getValue(), Object.class);
+                ValueExpression valueExpression = factory.createValueExpression(entry.getValue(), Object.class);
                 this.variables.put(entry.getKey(), valueExpression);
             }
         }
@@ -211,9 +198,7 @@ public class JakartaElExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    /**
-     * 自定义函数映射器
-     */
+    /** 自定义函数映射器 */
     private static class CustomFunctionMapper extends FunctionMapper {
         private final Map<String, Function<Object[], Object>> customFunctions;
 

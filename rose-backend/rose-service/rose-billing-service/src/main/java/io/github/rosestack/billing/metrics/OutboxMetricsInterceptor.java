@@ -6,16 +6,13 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-
-/**
- * 为 Outbox 投递过程增加指标：成功/失败次数、payload大小分布、投递延迟
- */
+/** 为 Outbox 投递过程增加指标：成功/失败次数、payload大小分布、投递延迟 */
 @Component
 @RequiredArgsConstructor
 @ConditionalOnClass(MeterRegistry.class)
@@ -67,4 +64,3 @@ public class OutboxMetricsInterceptor {
         sendFailure.increment();
     }
 }
-

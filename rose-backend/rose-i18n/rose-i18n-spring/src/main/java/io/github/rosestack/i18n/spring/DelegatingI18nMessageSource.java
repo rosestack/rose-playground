@@ -1,8 +1,12 @@
 package io.github.rosestack.i18n.spring;
 
+import static org.springframework.core.annotation.AnnotationAwareOrderComparator.sort;
+
 import io.github.rosestack.i18n.CompositeMessageSource;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.ReloadedResourceMessageSource;
+import java.nio.charset.Charset;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -11,13 +15,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import java.nio.charset.Charset;
-import java.util.*;
-
-import static org.springframework.core.annotation.AnnotationAwareOrderComparator.sort;
-
-public class DelegatingI18nMessageSource implements ReloadedResourceMessageSource, InitializingBean,
-        DisposableBean {
+public class DelegatingI18nMessageSource implements ReloadedResourceMessageSource, InitializingBean, DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(DelegatingI18nMessageSource.class);
 
@@ -49,26 +47,22 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
         return this.delegate.getMessage(code, locale, args);
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public Map<String, String> getMessages(Locale locale) {
         return delegate.getMessages(locale);
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Locale getLocale() {
         return this.delegate.getLocale();
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Locale getDefaultLocale() {
         return this.delegate.getDefaultLocale();
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public List<Locale> getSupportedLocales() {
         return this.delegate.getSupportedLocales();
     }
@@ -129,5 +123,4 @@ public class DelegatingI18nMessageSource implements ReloadedResourceMessageSourc
         logger.debug("Initializes the I18nMessageSource Bean list : {}", i18nMessageSources);
         return i18nMessageSources;
     }
-
 }

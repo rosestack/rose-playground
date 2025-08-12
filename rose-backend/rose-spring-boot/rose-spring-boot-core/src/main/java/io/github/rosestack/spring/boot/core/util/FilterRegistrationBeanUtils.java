@@ -7,13 +7,12 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 public class FilterRegistrationBeanUtils {
     /**
      * 创建 Filter 注册 Bean
-     * <p>
-     * 为 Servlet Filter 创建 FilterRegistrationBean，用于在 Spring Boot 中注册过滤器
-     * </p>
      *
-     * @param <T>    Filter 类型，必须实现 jakarta.servlet.Filter 接口
+     * <p>为 Servlet Filter 创建 FilterRegistrationBean，用于在 Spring Boot 中注册过滤器
+     *
+     * @param <T> Filter 类型，必须实现 jakarta.servlet.Filter 接口
      * @param filter Filter 实例，不能为 null
-     * @param order  过滤器执行顺序，数值越小优先级越高
+     * @param order 过滤器执行顺序，数值越小优先级越高
      * @return FilterRegistrationBean 实例
      * @throws IllegalArgumentException 如果 filter 为 null
      */

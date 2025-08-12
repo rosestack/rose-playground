@@ -13,25 +13,23 @@ import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 计费核心服务
  *
  * @author rose
  */
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -104,17 +102,14 @@ public class BillingService {
         return subscription;
     }
 
-    /**
-     * 获取租户订阅信息
-     */
+    /** 获取租户订阅信息 */
     public TenantSubscription getTenantSubscription(String tenantId) {
-        return subscriptionRepository.findByTenantId(tenantId)
-            .orElseThrow(() -> new SubscriptionNotFoundException("tenant:" + tenantId));
+        return subscriptionRepository
+                .findByTenantId(tenantId)
+                .orElseThrow(() -> new SubscriptionNotFoundException("tenant:" + tenantId));
     }
 
-    /**
-     * 更改订阅计划
-     */
+    /** 更改订阅计划 */
     @Transactional
     public TenantSubscription changePlan(String subscriptionId, String newPlanId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -134,9 +129,7 @@ public class BillingService {
         return subscription;
     }
 
-    /**
-     * 取消订阅
-     */
+    /** 取消订阅 */
     @Transactional
     public void cancelSubscription(String subscriptionId, String reason) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -153,9 +146,7 @@ public class BillingService {
         log.info("取消订阅成功，订阅ID: {}, 原因: {}", subscriptionId, reason);
     }
 
-    /**
-     * 生成账单
-     */
+    /** 生成账单 */
     @Transactional
     public Invoice generateInvoice(String subscriptionId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -168,7 +159,10 @@ public class BillingService {
             throw new PlanNotFoundException(subscription.getPlanId());
         }
 
-        LocalDate periodStart = subscription.getNextBillingTime().minusDays(plan.getBillingCycle()).toLocalDate();
+        LocalDate periodStart = subscription
+                .getNextBillingTime()
+                .minusDays(plan.getBillingCycle())
+                .toLocalDate();
         LocalDate periodEnd = subscription.getNextBillingTime().toLocalDate().minusDays(1);
 
         Invoice invoice = new Invoice();
@@ -186,8 +180,11 @@ public class BillingService {
         invoice.setBaseAmount(baseAmount);
 
         // 计算使用量费用
-        BigDecimal usageAmount = calculateUsageAmount(subscription.getTenantId(),
-            periodStart.atStartOfDay(), periodEnd.plusDays(1).atStartOfDay(), plan);
+        BigDecimal usageAmount = calculateUsageAmount(
+                subscription.getTenantId(),
+                periodStart.atStartOfDay(),
+                periodEnd.plusDays(1).atStartOfDay(),
+                plan);
         invoice.setUsageAmount(usageAmount);
 
         // 计算折扣
@@ -199,7 +196,8 @@ public class BillingService {
         invoice.setTaxAmount(taxAmount);
 
         // 计算总金额
-        BigDecimal totalAmount = baseAmount.add(usageAmount).subtract(discountAmount).add(taxAmount);
+        BigDecimal totalAmount =
+                baseAmount.add(usageAmount).subtract(discountAmount).add(taxAmount);
         invoice.setTotalAmount(totalAmount);
         String currency = tenantBillingConfigService.getCurrency(subscription.getTenantId());
         invoice.setCurrency(currency);
@@ -225,18 +223,14 @@ public class BillingService {
         return invoice;
     }
 
-    /**
-     * 获取租户账单列表
-     */
+    /** 获取租户账单列表 */
     public List<Invoice> getTenantInvoices(String tenantId) {
         return invoiceRepository.findByTenantIdOrderByCreateTimeDesc(tenantId);
     }
 
-    /**
-     * 记录使用量
-     */
-    public void recordUsage(String tenantId, String metricType, BigDecimal quantity,
-                           String resourceId, String metadata) {
+    /** 记录使用量 */
+    public void recordUsage(
+            String tenantId, String metricType, BigDecimal quantity, String resourceId, String metadata) {
         // 先检查使用量限制
         if (!subscriptionService.validateUsageLimit(tenantId, metricType)) {
             throw new UsageLimitExceededException(metricType, quantity, BigDecimal.ZERO);
@@ -251,11 +245,14 @@ public class BillingService {
         log.debug("记录使用量，租户: {}, 类型: {}, 数量: {}", tenantId, metricType, quantity);
     }
 
-    /**
-     * 记录使用量（带订阅ID）
-     */
-    public void recordUsage(String tenantId, String subscriptionId, String metricType, BigDecimal quantity,
-                            String resourceId, String metadata) {
+    /** 记录使用量（带订阅ID） */
+    public void recordUsage(
+            String tenantId,
+            String subscriptionId,
+            String metricType,
+            BigDecimal quantity,
+            String resourceId,
+            String metadata) {
         if (!subscriptionService.validateUsageLimit(tenantId, metricType)) {
             throw new UsageLimitExceededException(metricType, quantity, BigDecimal.ZERO);
         }
@@ -264,29 +261,26 @@ public class BillingService {
         log.debug("记录使用量(含订阅)，租户: {}, 订阅: {}, 类型: {}, 数量: {}", tenantId, subscriptionId, metricType, quantity);
     }
 
-
-    /**
-     * 获取使用量统计
-     */
+    /** 获取使用量统计 */
     public List<Map<String, Object>> getUsageStats(String tenantId, String period) {
         // 根据period参数实现不同时间范围的查询
         LocalDateTime endTime = LocalDateTime.now();
-        LocalDateTime startTime = switch (period.toUpperCase()) {
-            case "DAY" -> endTime.minusDays(1);
-            case "WEEK" -> endTime.minusWeeks(1);
-            case "MONTH" -> endTime.minusMonths(1);
-            case "YEAR" -> endTime.minusYears(1);
-            default -> endTime.minusDays(30); // 默认30天
-        };
+        LocalDateTime startTime =
+                switch (period.toUpperCase()) {
+                    case "DAY" -> endTime.minusDays(1);
+                    case "WEEK" -> endTime.minusWeeks(1);
+                    case "MONTH" -> endTime.minusMonths(1);
+                    case "YEAR" -> endTime.minusYears(1);
+                    default -> endTime.minusDays(30); // 默认30天
+                };
 
         return usageService.getUsageTrend(tenantId, startTime, endTime);
     }
 
-    /**
-     * 处理支付
-     */
+    /** 处理支付 */
     // Overload using enum for type safety at call sites
-    public void processPayment(String invoiceId, io.github.rosestack.billing.payment.PaymentMethod method, String transactionId) {
+    public void processPayment(
+            String invoiceId, io.github.rosestack.billing.payment.PaymentMethod method, String transactionId) {
         processPayment(invoiceId, method == null ? null : method.name(), transactionId);
     }
 
@@ -309,26 +303,30 @@ public class BillingService {
         }
 
         // 标记使用量为已计费
-        usageService.markUsageAsBilled(invoice.getTenantId(), invoice.getPeriodStart().atStartOfDay(),
-            invoice.getPeriodEnd().plusDays(1).atStartOfDay(), invoiceId);
+        usageService.markUsageAsBilled(
+                invoice.getTenantId(),
+                invoice.getPeriodStart().atStartOfDay(),
+                invoice.getPeriodEnd().plusDays(1).atStartOfDay(),
+                invoiceId);
 
         // 发送支付确认通知（保留同步通知）
         notificationService.sendPaymentConfirmation(subscription.getTenantId(), invoice);
         // 发布领域事件，供异步监听与扩展
         eventPublisher.publishEvent(new PaymentSucceededEvent(
-                subscription.getTenantId(), invoiceId, transactionId, paymentMethod,
-                invoice.getTotalAmount(), LocalDateTime.now()
-        ));
+                subscription.getTenantId(),
+                invoiceId,
+                transactionId,
+                paymentMethod,
+                invoice.getTotalAmount(),
+                LocalDateTime.now()));
 
         log.info("处理支付成功，账单: {}, 金额: {}", invoiceId, invoice.getTotalAmount());
     }
 
-    /**
-     * 检查使用量限制
-     */
+    /** 检查使用量限制 */
     public boolean checkUsageLimit(String tenantId, String metricType) {
-        TenantSubscription subscription = subscriptionRepository.findActiveByTenantId(tenantId)
-            .orElse(null);
+        TenantSubscription subscription =
+                subscriptionRepository.findActiveByTenantId(tenantId).orElse(null);
 
         if (subscription == null) {
             return false; // 无有效订阅
@@ -343,53 +341,41 @@ public class BillingService {
         // 获取当前计费周期的使用量
         LocalDateTime periodStart = subscription.getNextBillingTime().minusDays(plan.getBillingCycle());
         BigDecimal currentUsage = usageRepository.sumUsageByTenantAndMetricAndPeriod(
-            tenantId, metricType, periodStart, LocalDateTime.now());
+                tenantId, metricType, periodStart, LocalDateTime.now());
 
         // 检查限制
         return pricingCalculator.checkLimit(plan, metricType, currentUsage);
     }
 
-    /**
-     * 获取可用订阅计划
-     */
+    /** 获取可用订阅计划 */
     public List<SubscriptionPlan> getAvailablePlans() {
         return planRepository.findValidPlans(LocalDateTime.now());
     }
 
-    /**
-     * 汇总日使用量
-     */
+    /** 汇总日使用量 */
     public void aggregateDailyUsage(LocalDateTime startOfDay, LocalDateTime endOfDay) {
         // 实现使用量数据汇总逻辑
         log.info("汇总使用量数据：{} - {}", startOfDay, endOfDay);
     }
 
-    /**
-     * 检查使用量限制并发送通知
-     */
+    /** 检查使用量限制并发送通知 */
     public void checkUsageLimitsAndNotify() {
         // 实现使用量限制检查和通知逻辑
         log.info("检查使用量限制并发送通知");
     }
 
-    /**
-     * 生成财务报告
-     */
+    /** 生成财务报告 */
     public void generateFinancialReport(LocalDateTime startDate, LocalDateTime endDate, String reportType) {
         // 实现财务报告生成逻辑
         log.info("生成财务报告：{} - {}，类型：{}", startDate, endDate, reportType);
     }
 
-    /**
-     * 清理过期使用量记录
-     */
+    /** 清理过期使用量记录 */
     public int cleanupOldUsageRecords(LocalDateTime cutoffDate) {
         return usageRepository.deleteOldBilledRecords(cutoffDate);
     }
 
-    /**
-     * 清理已取消的订阅
-     */
+    /** 清理已取消的订阅 */
     public int cleanupCancelledSubscriptions(LocalDateTime cutoffDate) {
         // 实现清理已取消订阅的逻辑
         log.info("清理已取消的订阅，截止时间：{}", cutoffDate);
@@ -412,8 +398,8 @@ public class BillingService {
         return plan.getBasePrice();
     }
 
-    private BigDecimal calculateUsageAmount(String tenantId, LocalDateTime periodStart,
-                                          LocalDateTime periodEnd, SubscriptionPlan plan) {
+    private BigDecimal calculateUsageAmount(
+            String tenantId, LocalDateTime periodStart, LocalDateTime periodEnd, SubscriptionPlan plan) {
         return pricingCalculator.calculateUsageAmount(tenantId, periodStart, periodEnd, plan);
     }
 
@@ -441,5 +427,4 @@ public class BillingService {
         // 异步检查使用量限制并发送警告
         log.debug("异步检查使用量限制：租户 {}, 类型 {}", tenantId, metricType);
     }
-
 }

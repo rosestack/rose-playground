@@ -36,7 +36,11 @@ public class RoseEncryptorAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.encryption.hash", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.encryption.hash",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     public HashService hashService() {
         return new HashService(properties.getHashProperties(), properties.isFailOnError());
     }

@@ -1,21 +1,17 @@
 package io.github.rosestack.core.lang.function;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.github.rosestack.core.lang.function.checked.CheckedFunction;
 import io.github.rosestack.core.lang.function.checked.CheckedPredicate;
 import io.github.rosestack.core.lang.function.checked.CheckedRunnable;
-import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * Try 测试类
- * 基于实际代码的全面测试覆盖
- */
+/** Try 测试类 基于实际代码的全面测试覆盖 */
 class TryTest {
 
     // ========== 基本构造和状态测试 ==========
@@ -92,8 +88,7 @@ class TryTest {
 
     @Test
     void testOfFunctionWithNullFunction() {
-        assertThrows(NullPointerException.class, () ->
-                Try.ofFunction("input", null));
+        assertThrows(NullPointerException.class, () -> Try.ofFunction("input", null));
     }
 
     // ========== ofBiFunction 测试 ==========
@@ -109,7 +104,6 @@ class TryTest {
     @Test
     void testOfBiFunctionFailure() {
         Try<String> result = Try.ofBiFunction("hello", (String) null, (s1, s2) -> s1 + s2.toUpperCase());
-
 
         assertTrue(result.isFailure());
         assertTrue(result.getCause() instanceof NullPointerException);

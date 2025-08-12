@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * 通知控制器
- * <p>
- * 提供通知相关的 REST API 接口。
+ *
+ * <p>提供通知相关的 REST API 接口。
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
-    
+
     /** 通知应用服务 */
     private final NotificationApplicationService notificationApplicationService;
-    
+
     /** 通知装配器 */
     private final NotificationAssembler notificationAssembler;
-    
+
     /**
      * 发送通知
      *
@@ -41,7 +41,7 @@ public class NotificationController {
         notificationApplicationService.sendNotification(command);
         return ResponseEntity.ok().build();
     }
-    
+
     /**
      * 根据ID查询通知
      *

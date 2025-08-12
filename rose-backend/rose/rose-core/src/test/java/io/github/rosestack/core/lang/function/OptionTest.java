@@ -1,20 +1,16 @@
 package io.github.rosestack.core.lang.function;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * Option 测试类
- * 测试可选值容器的所有功能
- */
+/** Option 测试类 测试可选值容器的所有功能 */
 class OptionTest {
 
     // ========== 基本构造和状态测试 ==========
@@ -118,8 +114,7 @@ class OptionTest {
         Option<String> option = Option.none();
         RuntimeException exception = new RuntimeException("Custom exception");
 
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> option.getOrElseThrow(() -> exception));
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> option.getOrElseThrow(() -> exception));
         assertEquals(exception, thrown);
     }
 
@@ -402,10 +397,7 @@ class OptionTest {
     void testMatchPresent() {
         Option<String> option = Option.some("hello");
 
-        String result = option.match(
-                value -> value.toUpperCase(),
-                () -> "empty"
-        );
+        String result = option.match(value -> value.toUpperCase(), () -> "empty");
 
         assertEquals("HELLO", result);
     }
@@ -414,10 +406,7 @@ class OptionTest {
     void testMatchEmpty() {
         Option<String> option = Option.none();
 
-        String result = option.match(
-                value -> value.toUpperCase(),
-                () -> "empty"
-        );
+        String result = option.match(value -> value.toUpperCase(), () -> "empty");
 
         assertEquals("empty", result);
     }
@@ -425,15 +414,13 @@ class OptionTest {
     @Test
     void testMatchWithNullPresentMapper() {
         Option<String> option = Option.some("value");
-        assertThrows(NullPointerException.class, () ->
-                option.match(null, () -> "empty"));
+        assertThrows(NullPointerException.class, () -> option.match(null, () -> "empty"));
     }
 
     @Test
     void testMatchWithNullEmptySupplier() {
         Option<String> option = Option.some("value");
-        assertThrows(NullPointerException.class, () ->
-                option.match(value -> value, null));
+        assertThrows(NullPointerException.class, () -> option.match(value -> value, null));
     }
 
     @Test
@@ -442,10 +429,7 @@ class OptionTest {
         AtomicBoolean emptyCalled = new AtomicBoolean(false);
         Option<String> option = Option.some("value");
 
-        option.match(
-                value -> presentCalled.set(true),
-                () -> emptyCalled.set(true)
-        );
+        option.match(value -> presentCalled.set(true), () -> emptyCalled.set(true));
 
         assertTrue(presentCalled.get());
         assertFalse(emptyCalled.get());
@@ -457,10 +441,7 @@ class OptionTest {
         AtomicBoolean emptyCalled = new AtomicBoolean(false);
         Option<String> option = Option.none();
 
-        option.match(
-                value -> presentCalled.set(true),
-                () -> emptyCalled.set(true)
-        );
+        option.match(value -> presentCalled.set(true), () -> emptyCalled.set(true));
 
         assertFalse(presentCalled.get());
         assertTrue(emptyCalled.get());
@@ -549,8 +530,7 @@ class OptionTest {
                 Arguments.of("string", "string"),
                 Arguments.of(42, 42),
                 Arguments.of(true, true),
-                Arguments.of(3.14, 3.14)
-        );
+                Arguments.of(3.14, 3.14));
     }
 
     // ========== 链式调用测试 ==========

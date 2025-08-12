@@ -1,15 +1,13 @@
 package io.github.rosestack.core.lang.function;
 
 import io.github.rosestack.core.lang.function.checked.*;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.*;
 
 /**
- * 简化的异常处理容器
- * 提供比 Vavr Try 更简单、更易用的 API
+ * 简化的异常处理容器 提供比 Vavr Try 更简单、更易用的 API
  *
  * @param <T> 成功时的值类型
  * @author rose
@@ -25,23 +23,17 @@ public final class Try<T> {
         this.isSuccess = isSuccess;
     }
 
-    /**
-     * 检查是否成功
-     */
+    /** 检查是否成功 */
     public boolean isSuccess() {
         return isSuccess;
     }
 
-    /**
-     * 检查是否失败
-     */
+    /** 检查是否失败 */
     public boolean isFailure() {
         return !isSuccess;
     }
 
-    /**
-     * 获取成功值，失败时抛出异常
-     */
+    /** 获取成功值，失败时抛出异常 */
     public T get() {
         if (isSuccess) {
             return value;
@@ -50,23 +42,17 @@ public final class Try<T> {
         }
     }
 
-    /**
-     * 获取成功值，失败时返回默认值
-     */
+    /** 获取成功值，失败时返回默认值 */
     public T getOrElse(T defaultValue) {
         return isSuccess ? value : defaultValue;
     }
 
-    /**
-     * 获取成功值，失败时使用 Supplier 提供默认值
-     */
+    /** 获取成功值，失败时使用 Supplier 提供默认值 */
     public T getOrElseGet(Supplier<T> supplier) {
         return isSuccess ? value : supplier.get();
     }
 
-    /**
-     * 获取错误信息
-     */
+    /** 获取错误信息 */
     public Throwable getCause() {
         if (isSuccess) {
             throw new IllegalStateException("Try is successful, no error available");
@@ -74,9 +60,7 @@ public final class Try<T> {
         return cause;
     }
 
-    /**
-     * 成功时执行操作
-     */
+    /** 成功时执行操作 */
     public Try<T> onSuccess(Consumer<T> consumer) {
         if (isSuccess) {
             consumer.accept(value);
@@ -84,9 +68,7 @@ public final class Try<T> {
         return this;
     }
 
-    /**
-     * 失败时执行操作
-     */
+    /** 失败时执行操作 */
     public Try<T> onFailure(Consumer<Throwable> consumer) {
         if (isFailure()) {
             consumer.accept(cause);
@@ -94,9 +76,7 @@ public final class Try<T> {
         return this;
     }
 
-    /**
-     * 转换成功值（可能抛出异常）
-     */
+    /** 转换成功值（可能抛出异常） */
     public <R> Try<R> map(CheckedFunction<T, R> mapper) {
         if (isSuccess) {
             try {
@@ -109,9 +89,7 @@ public final class Try<T> {
         }
     }
 
-    /**
-     * 扁平化转换
-     */
+    /** 扁平化转换 */
     public <R> Try<R> flatMap(Function<T, Try<R>> mapper) {
         if (isSuccess) {
             try {
@@ -124,10 +102,7 @@ public final class Try<T> {
         }
     }
 
-
-    /**
-     * 恢复失败（可能抛出异常）
-     */
+    /** 恢复失败（可能抛出异常） */
     public Try<T> recover(CheckedFunction<Throwable, T> recovery) {
         if (isSuccess) {
             return this;
@@ -140,9 +115,7 @@ public final class Try<T> {
         }
     }
 
-    /**
-     * 转换为 Option
-     */
+    /** 转换为 Option */
     public Optional<T> toOptional() {
         return isSuccess ? Optional.of(value) : Optional.empty();
     }
@@ -151,16 +124,12 @@ public final class Try<T> {
         return isSuccess ? Option.some(value) : Option.none();
     }
 
-    /**
-     * 创建成功的 Try
-     */
+    /** 创建成功的 Try */
     public static <T> Try<T> success(T value) {
         return new Try<>(value, null, true);
     }
 
-    /**
-     * 创建失败的 Try
-     */
+    /** 创建失败的 Try */
     public static <T> Try<T> failure(Throwable error) {
         return new Try<>(null, Objects.requireNonNull(error), false);
     }
@@ -182,9 +151,7 @@ public final class Try<T> {
         return ofCheckedFunction(input, CheckedFunction.from(function));
     }
 
-    /**
-     * 从 CheckedFunction 创建 Try
-     */
+    /** 从 CheckedFunction 创建 Try */
     public static <T, R> Try<R> ofCheckedFunction(T input, CheckedFunction<T, R> function) {
         Objects.requireNonNull(function, "function cannot be null");
         try {
@@ -198,9 +165,7 @@ public final class Try<T> {
         return ofCheckedBiFunction(t, u, CheckedBiFunction.from(function));
     }
 
-    /**
-     * 从 CheckedBiFunction 创建 Try
-     */
+    /** 从 CheckedBiFunction 创建 Try */
     public static <T, U, R> Try<R> ofCheckedBiFunction(T t, U u, CheckedBiFunction<T, U, R> function) {
         Objects.requireNonNull(function, "function cannot be null");
         try {
@@ -214,9 +179,7 @@ public final class Try<T> {
         return ofCheckedConsumer(input, CheckedConsumer.from(consumer));
     }
 
-    /**
-     * 从 CheckedConsumer 创建 Try<Void>
-     */
+    /** 从 CheckedConsumer 创建 Try<Void> */
     public static <T> Try<Void> ofCheckedConsumer(T input, CheckedConsumer<T> consumer) {
         Objects.requireNonNull(consumer, "consumer cannot be null");
         try {
@@ -231,9 +194,7 @@ public final class Try<T> {
         return ofCheckedBiConsumer(t, u, CheckedBiConsumer.from(consumer));
     }
 
-    /**
-     * 从 CheckedBiConsumer 创建 Try<Void>
-     */
+    /** 从 CheckedBiConsumer 创建 Try<Void> */
     public static <T, U> Try<Void> ofCheckedBiConsumer(T t, U u, CheckedBiConsumer<T, U> consumer) {
         Objects.requireNonNull(consumer, "consumer cannot be null");
         try {
@@ -244,10 +205,7 @@ public final class Try<T> {
         }
     }
 
-
-    /**
-     * 从 CheckedRunnable 创建 Try<Void>
-     */
+    /** 从 CheckedRunnable 创建 Try<Void> */
     public static Try<Void> ofRunnable(CheckedRunnable runnable) {
         Objects.requireNonNull(runnable, "runnable cannot be null");
         try {
@@ -263,9 +221,7 @@ public final class Try<T> {
         return ofCheckedSupplier(callable::call);
     }
 
-    /**
-     * 从 CheckedPredicate 创建 Try
-     */
+    /** 从 CheckedPredicate 创建 Try */
     public static <T> Try<Boolean> ofPredicate(T input, CheckedPredicate<T> predicate) {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         try {
@@ -275,9 +231,7 @@ public final class Try<T> {
         }
     }
 
-    /**
-     * 从 CheckedBiPredicate 创建 Try
-     */
+    /** 从 CheckedBiPredicate 创建 Try */
     public static <T, U> Try<Boolean> ofBiPredicate(T t, U u, CheckedBiPredicate<T, U> predicate) {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         try {
@@ -286,7 +240,6 @@ public final class Try<T> {
             return failure(e);
         }
     }
-
 
     @Override
     public boolean equals(Object obj) {

@@ -2,29 +2,29 @@ package io.github.rosestack.core.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import lombok.Data;
 
 /**
  * 不可变的API响应结果包装器，用于一致的响应处理。
- * <p>
- * 该类提供了一种标准化的方式来包装API响应，包含成功/失败状态、错误消息和数据负载。
- * 它遵循函数式编程模式，采用不可变设计，并提供流畅的API方法进行结果处理。
+ *
+ * <p>该类提供了一种标准化的方式来包装API响应，包含成功/失败状态、错误消息和数据负载。 它遵循函数式编程模式，采用不可变设计，并提供流畅的API方法进行结果处理。
  *
  * <h3>设计原则：</h3>
+ *
  * <ul>
- *   <li><strong>不可变性：</strong> 所有实例在创建后都是不可变的</li>
- *   <li><strong>类型安全：</strong> 泛型类型参数确保类型安全的数据处理</li>
- *   <li><strong>函数式风格：</strong> 提供map、flatMap、filter操作</li>
- *   <li><strong>一致的API：</strong> 所有端点的标准化响应格式</li>
+ *   <li><strong>不可变性：</strong> 所有实例在创建后都是不可变的
+ *   <li><strong>类型安全：</strong> 泛型类型参数确保类型安全的数据处理
+ *   <li><strong>函数式风格：</strong> 提供map、flatMap、filter操作
+ *   <li><strong>一致的API：</strong> 所有端点的标准化响应格式
  * </ul>
  *
  * <h3>使用示例：</h3>
+ *
  * <pre>{@code
  * // 成功响应带数据
  * ApiResponse<User> userResult = ApiResponse.success(user);
@@ -42,10 +42,11 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h3>响应结构：</h3>
+ *
  * <ul>
- *   <li><strong>code:</strong> 类HTTP状态码（200表示成功，500表示失败）</li>
- *   <li><strong>message:</strong> 人类可读的消息或错误描述</li>
- *   <li><strong>data:</strong> 实际的负载数据（可以为null）</li>
+ *   <li><strong>code:</strong> 类HTTP状态码（200表示成功，500表示失败）
+ *   <li><strong>message:</strong> 人类可读的消息或错误描述
+ *   <li><strong>data:</strong> 实际的负载数据（可以为null）
  * </ul>
  *
  * @param <T> 此结果中包含的数据类型
@@ -55,35 +56,22 @@ import java.util.function.Supplier;
 @Data
 public class ApiResponse<T> {
 
-    /**
-     * 成功状态码，表示操作成功。
-     */
+    /** 成功状态码，表示操作成功。 */
     public static final int SUCCESS = 200;
 
-    /**
-     * 失败状态码，表示操作失败。
-     */
+    /** 失败状态码，表示操作失败。 */
     public static final int ERROR = 500;
 
-    /**
-     * 此结果的状态码（SUCCESS或FAIL）。
-     */
+    /** 此结果的状态码（SUCCESS或FAIL）。 */
     private Integer code;
 
-    /**
-     * 与此结果关联的消息（成功消息或错误描述）。
-     */
+    /** 与此结果关联的消息（成功消息或错误描述）。 */
     private String message;
 
-    /**
-     * 此结果的数据负载（可以为null）。
-     */
+    /** 此结果的数据负载（可以为null）。 */
     private T data;
 
-    /**
-     * 响应时间戳 - 使用 LocalDateTime 更易读
-     * 格式化为 ISO 8601 标准格式
-     */
+    /** 响应时间戳 - 使用 LocalDateTime 更易读 格式化为 ISO 8601 标准格式 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private LocalDateTime timestamp;
 
@@ -104,7 +92,7 @@ public class ApiResponse<T> {
     /**
      * Creates a successful result with data.
      *
-     * @param <T>  The type parameter for the result
+     * @param <T> The type parameter for the result
      * @param data The data to include in the successful result
      * @return A successful ApiResponse instance containing the provided data
      */
@@ -119,8 +107,8 @@ public class ApiResponse<T> {
     /**
      * Creates a failure result with custom code and message.
      *
-     * @param <T>     The type parameter for the result
-     * @param code    The custom error code
+     * @param <T> The type parameter for the result
+     * @param code The custom error code
      * @param message The error message
      * @return A failure ApiResponse instance with the specified code and message
      */
@@ -134,7 +122,7 @@ public class ApiResponse<T> {
     /**
      * Creates a failure result with custom message and default failure code.
      *
-     * @param <T>     The type parameter for the result
+     * @param <T> The type parameter for the result
      * @param message The error message
      * @return A failure ApiResponse instance with the specified message
      */
@@ -184,15 +172,14 @@ public class ApiResponse<T> {
         return SUCCESS == this.code;
     }
 
-
     /**
      * Transforms the data in this result using the provided mapper function.
-     * <p>
-     * If this result is successful, applies the mapper function to the data and
-     * returns a new successful result with the transformed data. If this result
-     * is a failure, returns a new failure result with the same error message.
      *
-     * @param <R>    The type of the transformed data
+     * <p>If this result is successful, applies the mapper function to the data and returns a new
+     * successful result with the transformed data. If this result is a failure, returns a new failure
+     * result with the same error message.
+     *
+     * @param <R> The type of the transformed data
      * @param mapper The function to transform the data
      * @return A new ApiResponse containing the transformed data or the original error
      */
@@ -211,12 +198,12 @@ public class ApiResponse<T> {
 
     /**
      * Performs a flat map transformation on this result.
-     * <p>
-     * If this result is successful, applies the mapper function to the data and
-     * returns the result directly (flattening nested Results). If this result
-     * is a failure, returns a new failure result with the same error message.
      *
-     * @param <R>    The type of the data in the returned ApiResponse
+     * <p>If this result is successful, applies the mapper function to the data and returns the result
+     * directly (flattening nested Results). If this result is a failure, returns a new failure result
+     * with the same error message.
+     *
+     * @param <R> The type of the data in the returned ApiResponse
      * @param mapper The function that transforms data to another ApiResponse
      * @return The ApiResponse returned by the mapper function or the original error
      */
@@ -234,12 +221,11 @@ public class ApiResponse<T> {
 
     /**
      * Filters the data in this result using the provided predicate.
-     * <p>
-     * If this result is successful and the data satisfies the predicate,
-     * returns this result unchanged. If the predicate fails, returns a
-     * failure result with the provided error message.
      *
-     * @param predicate    The condition to test the data against
+     * <p>If this result is successful and the data satisfies the predicate, returns this result
+     * unchanged. If the predicate fails, returns a failure result with the provided error message.
+     *
+     * @param predicate The condition to test the data against
      * @param errorMessage The error message to use if the predicate fails
      * @return This result if the predicate passes, or a failure result if it fails
      */
@@ -260,10 +246,10 @@ public class ApiResponse<T> {
 
     /**
      * Executes the provided action if this result is successful.
-     * <p>
-     * This method allows for side effects to be performed on successful results
-     * without changing the result itself. The action is only executed if the
-     * result is successful and contains non-null data.
+     *
+     * <p>This method allows for side effects to be performed on successful results without changing
+     * the result itself. The action is only executed if the result is successful and contains
+     * non-null data.
      *
      * @param action The action to execute with the data if successful
      * @return This result unchanged (for method chaining)
@@ -281,10 +267,9 @@ public class ApiResponse<T> {
 
     /**
      * Executes the provided action if this result is a failure.
-     * <p>
-     * This method allows for side effects to be performed on failed results
-     * without changing the result itself. The action is only executed if the
-     * result represents a failure.
+     *
+     * <p>This method allows for side effects to be performed on failed results without changing the
+     * result itself. The action is only executed if the result represents a failure.
      *
      * @param action The action to execute with the error message if failed
      * @return This result unchanged (for method chaining)
@@ -302,9 +287,9 @@ public class ApiResponse<T> {
 
     /**
      * Returns the data if successful, or the provided default value if failed.
-     * <p>
-     * This method provides a safe way to extract data from a ApiResponse with a
-     * fallback value for failure cases.
+     *
+     * <p>This method provides a safe way to extract data from a ApiResponse with a fallback value for
+     * failure cases.
      *
      * @param defaultValue The value to return if this result is a failure
      * @return The data if successful, or defaultValue if failed
@@ -315,10 +300,9 @@ public class ApiResponse<T> {
 
     /**
      * Returns the data if successful, or computes a default value using the supplier if failed.
-     * <p>
-     * This method provides lazy evaluation of the default value, which is useful
-     * when the default value is expensive to compute or should only be computed
-     * when actually needed.
+     *
+     * <p>This method provides lazy evaluation of the default value, which is useful when the default
+     * value is expensive to compute or should only be computed when actually needed.
      *
      * @param supplier The supplier to compute the default value if this result is a failure
      * @return The data if successful, or the value provided by the supplier if failed

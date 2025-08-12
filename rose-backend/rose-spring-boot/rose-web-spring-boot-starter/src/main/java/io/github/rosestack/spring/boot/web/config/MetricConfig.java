@@ -5,6 +5,9 @@ import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import io.micrometer.core.instrument.search.Search;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +17,6 @@ import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.web.annotation.WebEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
-
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 
 @Slf4j
 @AutoConfigureAfter(MetricsEndpointAutoConfiguration.class)
@@ -51,11 +49,11 @@ public class MetricConfig {
 
         /**
          * GET /actuator/aggmetrics
-         * <p>
-         * Give metrics displayed on Metrics page
          *
-         * @return a Map with a String defining a category of metrics as Key and
-         * another Map containing metrics related to this category as Value
+         * <p>Give metrics displayed on Metrics page
+         *
+         * @return a Map with a String defining a category of metrics as Key and another Map containing
+         *     metrics related to this category as Value
          */
         @ReadOperation
         public Map<String, Map<?, ?>> allMetrics() {
@@ -88,7 +86,8 @@ public class MetricConfig {
 
             Collection<TimeGauge> timeGauges =
                     Search.in(meterRegistry).name(s -> s.contains("process")).timeGauges();
-            timeGauges.forEach(gauge -> resultsProcess.put(gauge.getId().getName(), gauge.value(TimeUnit.MILLISECONDS)));
+            timeGauges.forEach(
+                    gauge -> resultsProcess.put(gauge.getId().getName(), gauge.value(TimeUnit.MILLISECONDS)));
 
             return resultsProcess;
         }
@@ -96,8 +95,9 @@ public class MetricConfig {
         private Map<String, Object> garbageCollectorMetrics() {
             Map<String, Object> resultsGarbageCollector = new HashMap<>();
 
-            Collection<Timer> timers =
-                    Search.in(meterRegistry).name(s -> s.contains("jvm.gc.pause")).timers();
+            Collection<Timer> timers = Search.in(meterRegistry)
+                    .name(s -> s.contains("jvm.gc.pause"))
+                    .timers();
             timers.forEach(timer -> {
                 String key = timer.getId().getName();
 
@@ -109,7 +109,8 @@ public class MetricConfig {
 
                 ValueAtPercentile[] percentiles = timer.takeSnapshot().percentileValues();
                 for (ValueAtPercentile percentile : percentiles) {
-                    gcPauseResults.put(String.valueOf(percentile.percentile()), percentile.value(TimeUnit.MILLISECONDS));
+                    gcPauseResults.put(
+                            String.valueOf(percentile.percentile()), percentile.value(TimeUnit.MILLISECONDS));
                 }
 
                 resultsGarbageCollector.putIfAbsent(key, gcPauseResults);
@@ -123,7 +124,8 @@ public class MetricConfig {
             Collection<Counter> counters = Search.in(meterRegistry)
                     .name(s -> s.contains("jvm.gc") && !s.contains("jvm.gc.pause"))
                     .counters();
-            counters.forEach(counter -> resultsGarbageCollector.put(counter.getId().getName(), counter.count()));
+            counters.forEach(
+                    counter -> resultsGarbageCollector.put(counter.getId().getName(), counter.count()));
 
             gauges = Search.in(meterRegistry)
                     .name(s -> s.contains("jvm.classes.loaded"))
@@ -134,8 +136,9 @@ public class MetricConfig {
             Collection<FunctionCounter> functionCounters = Search.in(meterRegistry)
                     .name(s -> s.contains("jvm.classes.unloaded"))
                     .functionCounters();
-            Double classesUnloaded =
-                    functionCounters.stream().mapToDouble(FunctionCounter::count).sum();
+            Double classesUnloaded = functionCounters.stream()
+                    .mapToDouble(FunctionCounter::count)
+                    .sum();
             resultsGarbageCollector.put("classesUnloaded", classesUnloaded);
 
             return resultsGarbageCollector;
@@ -147,8 +150,9 @@ public class MetricConfig {
             Collection<Timer> timers =
                     Search.in(meterRegistry).name(s -> s.contains("hikari")).timers();
             timers.forEach(timer -> {
-                String key =
-                        timer.getId().getName().substring(timer.getId().getName().lastIndexOf('.') + 1);
+                String key = timer.getId()
+                        .getName()
+                        .substring(timer.getId().getName().lastIndexOf('.') + 1);
 
                 resultsDatabase.putIfAbsent(key, new HashMap<>());
                 resultsDatabase.get(key).put("count", timer.count());
@@ -167,8 +171,9 @@ public class MetricConfig {
             Collection<Gauge> gauges =
                     Search.in(meterRegistry).name(s -> s.contains("hikari")).gauges();
             gauges.forEach(gauge -> {
-                String key =
-                        gauge.getId().getName().substring(gauge.getId().getName().lastIndexOf('.') + 1);
+                String key = gauge.getId()
+                        .getName()
+                        .substring(gauge.getId().getName().lastIndexOf('.') + 1);
                 resultsDatabase.putIfAbsent(key, new HashMap<>());
                 resultsDatabase.get(key).put("value", gauge.value());
             });
@@ -178,7 +183,8 @@ public class MetricConfig {
 
         private Map<String, Map<?, ?>> serviceMetrics() {
             Collection<String> crudOperation = Arrays.asList("GET", "POST", "PUT", "DELETE");
-            Collection<Timer> timers = meterRegistry.find("http.server.requests").timers();
+            Collection<Timer> timers =
+                    meterRegistry.find("http.server.requests").timers();
 
             Set<String> uris =
                     timers.stream().map(timer -> timer.getId().getTag("uri")).collect(Collectors.toSet());
@@ -194,7 +200,8 @@ public class MetricConfig {
                             .find("http.server.requests")
                             .tags("uri", uri, "method", operation)
                             .timers();
-                    long count = httpTimersStream.stream().mapToLong(Timer::count).sum();
+                    long count =
+                            httpTimersStream.stream().mapToLong(Timer::count).sum();
 
                     if (count != 0) {
                         double max = httpTimersStream.stream()
@@ -289,7 +296,8 @@ public class MetricConfig {
 
         private Map<String, Map<?, ?>> httpRequestsMetrics() {
             Set<String> statusCode = new HashSet<>();
-            Collection<Timer> timers = meterRegistry.find("http.server.requests").timers();
+            Collection<Timer> timers =
+                    meterRegistry.find("http.server.requests").timers();
 
             timers.forEach(timer -> statusCode.add(timer.getId().getTag("status")));
 

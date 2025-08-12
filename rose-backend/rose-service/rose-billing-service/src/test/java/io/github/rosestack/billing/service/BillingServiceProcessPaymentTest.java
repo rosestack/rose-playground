@@ -1,5 +1,9 @@
 package io.github.rosestack.billing.service;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
@@ -8,18 +12,13 @@ import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 class BillingServiceProcessPaymentTest {
 
@@ -59,8 +58,7 @@ class BillingServiceProcessPaymentTest {
                 eventPublisher,
                 subscriptionService,
                 usageService,
-                invoiceService
-        );
+                invoiceService);
     }
 
     @Test
@@ -92,7 +90,8 @@ class BillingServiceProcessPaymentTest {
         // 校验账单已支付
         verify(invoiceService).markInvoiceAsPaid(invoiceId, method, txId);
         // 校验使用量标记为已计费
-        verify(usageService).markUsageAsBilled(eq(tenantId), any(LocalDateTime.class), any(LocalDateTime.class), eq(invoiceId));
+        verify(usageService)
+                .markUsageAsBilled(eq(tenantId), any(LocalDateTime.class), any(LocalDateTime.class), eq(invoiceId));
         // 校验同步通知
         verify(notificationService).sendPaymentConfirmation(eq(tenantId), eq(invoice));
         // 校验事件发布
@@ -100,4 +99,3 @@ class BillingServiceProcessPaymentTest {
         verify(eventPublisher).publishEvent(captor.capture());
     }
 }
-

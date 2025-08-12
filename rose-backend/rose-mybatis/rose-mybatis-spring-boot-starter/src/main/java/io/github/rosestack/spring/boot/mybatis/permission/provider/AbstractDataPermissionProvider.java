@@ -1,15 +1,12 @@
 package io.github.rosestack.spring.boot.mybatis.permission.provider;
 
 import io.github.rosestack.mybatis.permission.DataScope;
+import java.util.Collections;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
-
-/**
- * 用户数据权限提供者（核心抽象，无 Spring 依赖）。
- */
+/** 用户数据权限提供者（核心抽象，无 Spring 依赖）。 */
 public abstract class AbstractDataPermissionProvider implements DataPermissionProvider {
     private static final Logger log = LoggerFactory.getLogger(AbstractDataPermissionProvider.class);
 
@@ -56,5 +53,3 @@ public abstract class AbstractDataPermissionProvider implements DataPermissionPr
 
     protected abstract List<String> getCustomPermissionValues();
 }
-
-

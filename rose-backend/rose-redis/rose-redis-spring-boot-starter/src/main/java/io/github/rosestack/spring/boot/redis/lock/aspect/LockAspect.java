@@ -5,6 +5,8 @@ import io.github.rosestack.spring.boot.redis.exception.LockAcquisitionException;
 import io.github.rosestack.spring.boot.redis.exception.LockTimeoutException;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLock;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLockManager;
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,15 +22,10 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
-
 /**
  * 分布式锁切面
- * <p>
- * 处理 @Lock 注解，实现方法级别的分布式锁控制。
- * 支持 SpEL 表达式动态生成锁名称。
- * </p>
+ *
+ * <p>处理 @Lock 注解，实现方法级别的分布式锁控制。 支持 SpEL 表达式动态生成锁名称。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -85,12 +82,10 @@ public class LockAspect {
         }
     }
 
-    /**
-     * 解析锁名称
-     */
+    /** 解析锁名称 */
     private String parseLockName(Lock distributedLock, ProceedingJoinPoint joinPoint) {
-        String lockName = StringUtils.hasText(distributedLock.name()) ? 
-                distributedLock.name() : distributedLock.value();
+        String lockName =
+                StringUtils.hasText(distributedLock.name()) ? distributedLock.name() : distributedLock.value();
 
         if (!StringUtils.hasText(lockName)) {
             return null;
@@ -104,9 +99,7 @@ public class LockAspect {
         return lockName;
     }
 
-    /**
-     * 解析 SpEL 表达式
-     */
+    /** 解析 SpEL 表达式 */
     private String parseSpelExpression(String expression, ProceedingJoinPoint joinPoint) {
         try {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -115,7 +108,7 @@ public class LockAspect {
             String[] paramNames = signature.getParameterNames();
 
             EvaluationContext context = new StandardEvaluationContext();
-            
+
             // 设置方法参数
             if (paramNames != null && args != null) {
                 for (int i = 0; i < paramNames.length; i++) {
@@ -129,7 +122,7 @@ public class LockAspect {
 
             Expression expr = parser.parseExpression(expression);
             Object value = expr.getValue(context);
-            
+
             return value != null ? value.toString() : "";
         } catch (Exception e) {
             log.error("解析 SpEL 表达式失败: {}", expression, e);
@@ -137,9 +130,7 @@ public class LockAspect {
         }
     }
 
-    /**
-     * 构建完整的锁名称
-     */
+    /** 构建完整的锁名称 */
     private String buildFullLockName(Lock distributedLock, String lockName) {
         String scope = distributedLock.scope();
         if (StringUtils.hasText(scope)) {
@@ -148,9 +139,7 @@ public class LockAspect {
         return lockName;
     }
 
-    /**
-     * 获取锁
-     */
+    /** 获取锁 */
     private boolean acquireLock(DistributedLock lock, Lock distributedLock) throws InterruptedException {
         long waitTime = distributedLock.waitTime();
         long leaseTime = distributedLock.leaseTime();
@@ -172,10 +161,9 @@ public class LockAspect {
         }
     }
 
-    /**
-     * 处理获取锁失败的情况
-     */
-    private Object handleLockFailure(Lock distributedLock, String lockName, ProceedingJoinPoint joinPoint) throws Throwable {
+    /** 处理获取锁失败的情况 */
+    private Object handleLockFailure(Lock distributedLock, String lockName, ProceedingJoinPoint joinPoint)
+            throws Throwable {
         String failMessage = distributedLock.failMessage();
         Lock.FailStrategy strategy = distributedLock.failStrategy();
 
@@ -184,32 +172,30 @@ public class LockAspect {
         switch (strategy) {
             case EXCEPTION:
                 throw new LockTimeoutException(failMessage + ": " + lockName);
-                
+
             case RETURN_NULL:
                 return null;
-                
+
             case SKIP:
                 return getDefaultReturnValue(joinPoint);
-                
+
             case CUSTOM_EXCEPTION:
                 Class<? extends RuntimeException> exceptionClass = distributedLock.customException();
                 try {
-                    RuntimeException exception = exceptionClass.getConstructor(String.class)
-                            .newInstance(failMessage + ": " + lockName);
+                    RuntimeException exception =
+                            exceptionClass.getConstructor(String.class).newInstance(failMessage + ": " + lockName);
                     throw exception;
                 } catch (Exception e) {
                     log.error("创建自定义异常失败", e);
                     throw new LockAcquisitionException(failMessage + ": " + lockName);
                 }
-                
+
             default:
                 throw new LockAcquisitionException(failMessage + ": " + lockName);
         }
     }
 
-    /**
-     * 获取方法的默认返回值
-     */
+    /** 获取方法的默认返回值 */
     private Object getDefaultReturnValue(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Class<?> returnType = signature.getReturnType();
@@ -221,8 +207,10 @@ public class LockAspect {
         if (returnType.isPrimitive()) {
             if (returnType == boolean.class) {
                 return false;
-            } else if (returnType == int.class || returnType == long.class || 
-                      returnType == short.class || returnType == byte.class) {
+            } else if (returnType == int.class
+                    || returnType == long.class
+                    || returnType == short.class
+                    || returnType == byte.class) {
                 return 0;
             } else if (returnType == float.class || returnType == double.class) {
                 return 0.0;

@@ -2,20 +2,18 @@ package io.github.rosestack.spring.boot.redis.lock;
 
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
 import jakarta.annotation.PreDestroy;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 /**
  * 分布式锁管理器
- * <p>
- * 负责创建、管理和销毁分布式锁实例。提供锁的生命周期管理和资源清理。
- * </p>
+ *
+ * <p>负责创建、管理和销毁分布式锁实例。提供锁的生命周期管理和资源清理。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -27,19 +25,17 @@ public class DistributedLockManager {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RoseRedisProperties properties;
-    
+
     // 锁实例缓存
     private final ConcurrentHashMap<String, DistributedLock> lockCache = new ConcurrentHashMap<>();
-    
+
     // 续期任务调度器
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(
-            Runtime.getRuntime().availableProcessors(), 
-            r -> {
+    private final ScheduledExecutorService scheduler =
+            Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors(), r -> {
                 Thread thread = new Thread(r, "redis-lock-renewal");
                 thread.setDaemon(true);
                 return thread;
-            }
-    );
+            });
 
     /**
      * 获取分布式锁
@@ -54,8 +50,8 @@ public class DistributedLockManager {
     /**
      * 获取分布式锁（指定默认超时时间）
      *
-     * @param lockName        锁名称
-     * @param defaultTimeout  默认超时时间（毫秒）
+     * @param lockName 锁名称
+     * @param defaultTimeout 默认超时时间（毫秒）
      * @return 分布式锁实例
      */
     public DistributedLock getLock(String lockName, long defaultTimeout) {
@@ -64,15 +60,11 @@ public class DistributedLockManager {
         }
 
         String fullLockName = buildLockKey(lockName);
-        
+
         return lockCache.computeIfAbsent(fullLockName, key -> {
             log.debug("创建新的分布式锁实例: {}", key);
             return new RedisDistributedLock(
-                    redisTemplate, 
-                    key, 
-                    defaultTimeout,
-                    properties.getLock().isAutoRenewal() ? scheduler : null
-            );
+                    redisTemplate, key, defaultTimeout, properties.getLock().isAutoRenewal() ? scheduler : null);
         });
     }
 
@@ -98,9 +90,7 @@ public class DistributedLockManager {
         return lockCache.size();
     }
 
-    /**
-     * 清理所有锁实例
-     */
+    /** 清理所有锁实例 */
     public void clearAllLocks() {
         lockCache.clear();
         log.info("清理所有分布式锁实例");
@@ -120,9 +110,7 @@ public class DistributedLockManager {
         return prefix + lockName;
     }
 
-    /**
-     * 销毁资源
-     */
+    /** 销毁资源 */
     @PreDestroy
     public void destroy() {
         try {

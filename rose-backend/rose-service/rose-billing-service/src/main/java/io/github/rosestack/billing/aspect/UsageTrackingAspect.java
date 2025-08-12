@@ -9,6 +9,7 @@ import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.SubscriptionService;
 import io.github.rosestack.billing.service.UserMetricsService;
 import io.github.rosestack.mybatis.tenant.TenantContextHolder;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -17,11 +18,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 /**
- * 使用量自动监控切面
- * 通过AOP自动记录API调用、存储使用等
+ * 使用量自动监控切面 通过AOP自动记录API调用、存储使用等
  *
  * @author rose
  */
@@ -36,11 +34,10 @@ public class UsageTrackingAspect {
     private final UserMetricsService userMetricsService;
     private final SubscriptionService subscriptionService;
 
-    /**
-     * 监控API调用
-     */
+    /** 监控API调用 */
     @AfterReturning("@annotation(trackApiUsage)")
-    public void trackApiCall(JoinPoint joinPoint, io.github.rosestack.billing.aspect.annotation.TrackApiUsage trackApiUsage) {
+    public void trackApiCall(
+            JoinPoint joinPoint, io.github.rosestack.billing.aspect.annotation.TrackApiUsage trackApiUsage) {
         try {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
@@ -49,15 +46,21 @@ public class UsageTrackingAspect {
                     apiPath = joinPoint.getSignature().getName();
                 }
 
-                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                String subscriptionId = subscriptionService
+                        .getActiveSubscription(tenantId)
                         .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
-                    billingService.recordUsage(tenantId, subscriptionId,
-                            "API_CALLS", BigDecimal.ONE, apiPath, buildApiMetadata(joinPoint));
+                    billingService.recordUsage(
+                            tenantId,
+                            subscriptionId,
+                            "API_CALLS",
+                            BigDecimal.ONE,
+                            apiPath,
+                            buildApiMetadata(joinPoint));
                 } else {
-                    billingService.recordUsage(tenantId,
-                            "API_CALLS", BigDecimal.ONE, apiPath, buildApiMetadata(joinPoint));
+                    billingService.recordUsage(
+                            tenantId, "API_CALLS", BigDecimal.ONE, apiPath, buildApiMetadata(joinPoint));
                 }
 
                 log.debug("记录API调用使用量：{} - {}", tenantId, apiPath);
@@ -67,9 +70,7 @@ public class UsageTrackingAspect {
         }
     }
 
-    /**
-     * 监控存储使用
-     */
+    /** 监控存储使用 */
     @AfterReturning(value = "@annotation(trackStorageUsage)", returning = "result")
     public void trackStorageUsage(JoinPoint joinPoint, TrackStorageUsage trackStorageUsage, Object result) {
         try {
@@ -77,16 +78,24 @@ public class UsageTrackingAspect {
             if (tenantId != null && result instanceof Number) {
                 BigDecimal storageSize = new BigDecimal(result.toString());
 
-                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                String subscriptionId = subscriptionService
+                        .getActiveSubscription(tenantId)
                         .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
-                    billingService.recordUsage(tenantId, subscriptionId,
-                            "STORAGE", storageSize, trackStorageUsage.resourceType(),
+                    billingService.recordUsage(
+                            tenantId,
+                            subscriptionId,
+                            "STORAGE",
+                            storageSize,
+                            trackStorageUsage.resourceType(),
                             buildStorageMetadata(joinPoint, storageSize));
                 } else {
-                    billingService.recordUsage(tenantId,
-                            "STORAGE", storageSize, trackStorageUsage.resourceType(),
+                    billingService.recordUsage(
+                            tenantId,
+                            "STORAGE",
+                            storageSize,
+                            trackStorageUsage.resourceType(),
                             buildStorageMetadata(joinPoint, storageSize));
                 }
 
@@ -97,9 +106,7 @@ public class UsageTrackingAspect {
         }
     }
 
-    /**
-     * 监控用户数变化
-     */
+    /** 监控用户数变化 */
     @AfterReturning("@annotation(trackUserChange)")
     public void trackUserChange(JoinPoint joinPoint, TrackUserChange trackUserChange) {
         try {
@@ -108,16 +115,24 @@ public class UsageTrackingAspect {
                 // 获取当前用户总数
                 int currentUserCount = getUserCount(tenantId);
 
-                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                String subscriptionId = subscriptionService
+                        .getActiveSubscription(tenantId)
                         .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
-                    billingService.recordUsage(tenantId, subscriptionId,
-                            "USERS", new BigDecimal(currentUserCount), "USER_COUNT",
+                    billingService.recordUsage(
+                            tenantId,
+                            subscriptionId,
+                            "USERS",
+                            new BigDecimal(currentUserCount),
+                            "USER_COUNT",
                             "{\"operation\":\"" + trackUserChange.operation() + "\"}");
                 } else {
-                    billingService.recordUsage(tenantId,
-                            "USERS", new BigDecimal(currentUserCount), "USER_COUNT",
+                    billingService.recordUsage(
+                            tenantId,
+                            "USERS",
+                            new BigDecimal(currentUserCount),
+                            "USER_COUNT",
                             "{\"operation\":\"" + trackUserChange.operation() + "\"}");
                 }
 
@@ -128,24 +143,30 @@ public class UsageTrackingAspect {
         }
     }
 
-    /**
-     * 监控邮件发送
-     */
+    /** 监控邮件发送 */
     @AfterReturning("@annotation(trackEmailUsage)")
     public void trackEmailSent(JoinPoint joinPoint, TrackEmailUsage trackEmailUsage) {
         try {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
-                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                String subscriptionId = subscriptionService
+                        .getActiveSubscription(tenantId)
                         .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
-                    billingService.recordUsage(tenantId, subscriptionId,
-                            "EMAIL_SENT", BigDecimal.ONE, trackEmailUsage.emailType(),
+                    billingService.recordUsage(
+                            tenantId,
+                            subscriptionId,
+                            "EMAIL_SENT",
+                            BigDecimal.ONE,
+                            trackEmailUsage.emailType(),
                             buildEmailMetadata(joinPoint));
                 } else {
-                    billingService.recordUsage(tenantId,
-                            "EMAIL_SENT", BigDecimal.ONE, trackEmailUsage.emailType(),
+                    billingService.recordUsage(
+                            tenantId,
+                            "EMAIL_SENT",
+                            BigDecimal.ONE,
+                            trackEmailUsage.emailType(),
                             buildEmailMetadata(joinPoint));
                 }
 
@@ -156,25 +177,27 @@ public class UsageTrackingAspect {
         }
     }
 
-    /**
-     * 监控短信发送
-     */
+    /** 监控短信发送 */
     @AfterReturning("@annotation(trackSmsUsage)")
     public void trackSmsSent(JoinPoint joinPoint, TrackSmsUsage trackSmsUsage) {
         try {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
-                String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
+                String subscriptionId = subscriptionService
+                        .getActiveSubscription(tenantId)
                         .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
-                    billingService.recordUsage(tenantId, subscriptionId,
-                            "SMS_SENT", BigDecimal.ONE, trackSmsUsage.smsType(),
+                    billingService.recordUsage(
+                            tenantId,
+                            subscriptionId,
+                            "SMS_SENT",
+                            BigDecimal.ONE,
+                            trackSmsUsage.smsType(),
                             buildSmsMetadata(joinPoint));
                 } else {
-                    billingService.recordUsage(tenantId,
-                            "SMS_SENT", BigDecimal.ONE, trackSmsUsage.smsType(),
-                            buildSmsMetadata(joinPoint));
+                    billingService.recordUsage(
+                            tenantId, "SMS_SENT", BigDecimal.ONE, trackSmsUsage.smsType(), buildSmsMetadata(joinPoint));
                 }
 
                 log.debug("记录短信发送使用量：{} - {}", tenantId, trackSmsUsage.smsType());
@@ -185,24 +208,26 @@ public class UsageTrackingAspect {
     }
 
     private String buildApiMetadata(JoinPoint joinPoint) {
-        return String.format("{\"method\":\"%s\",\"timestamp\":\"%s\",\"args\":%d}",
-                joinPoint.getSignature().getName(),
-                System.currentTimeMillis(),
-                joinPoint.getArgs().length);
+        return String.format(
+                "{\"method\":\"%s\",\"timestamp\":\"%s\",\"args\":%d}",
+                joinPoint.getSignature().getName(), System.currentTimeMillis(), joinPoint.getArgs().length);
     }
 
     private String buildStorageMetadata(JoinPoint joinPoint, BigDecimal size) {
-        return String.format("{\"operation\":\"%s\",\"size\":%s,\"timestamp\":\"%s\"}",
+        return String.format(
+                "{\"operation\":\"%s\",\"size\":%s,\"timestamp\":\"%s\"}",
                 joinPoint.getSignature().getName(), size, System.currentTimeMillis());
     }
 
     private String buildEmailMetadata(JoinPoint joinPoint) {
-        return String.format("{\"method\":\"%s\",\"timestamp\":\"%s\"}",
+        return String.format(
+                "{\"method\":\"%s\",\"timestamp\":\"%s\"}",
                 joinPoint.getSignature().getName(), System.currentTimeMillis());
     }
 
     private String buildSmsMetadata(JoinPoint joinPoint) {
-        return String.format("{\"method\":\"%s\",\"timestamp\":\"%s\"}",
+        return String.format(
+                "{\"method\":\"%s\",\"timestamp\":\"%s\"}",
                 joinPoint.getSignature().getName(), System.currentTimeMillis());
     }
 
@@ -215,4 +240,3 @@ public class UsageTrackingAspect {
         }
     }
 }
-

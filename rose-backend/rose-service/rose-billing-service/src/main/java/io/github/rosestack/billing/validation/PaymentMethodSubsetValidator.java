@@ -1,9 +1,7 @@
 package io.github.rosestack.billing.validation;
 
-import io.github.rosestack.billing.payment.PaymentMethod;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,4 +20,3 @@ public class PaymentMethodSubsetValidator implements ConstraintValidator<Payment
         return accepted.contains(value);
     }
 }
-

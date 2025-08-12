@@ -106,9 +106,7 @@ public class IdentityProvider {
         }
     }
 
-    /**
-     * 认证类型
-     */
+    /** 认证类型 */
     public static enum AuthType {
         SOCIAL("social"),
         ENTERPRISE("enterprise"),

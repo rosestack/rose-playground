@@ -2,41 +2,31 @@ package io.github.rosestack.core.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * 本地化格式化工具类
- * 使用Jackson ObjectMapper处理日期时间格式化，支持统一的时区和格式配置
+ * 本地化格式化工具类 使用Jackson ObjectMapper处理日期时间格式化，支持统一的时区和格式配置
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since TODO
  */
 @Slf4j
 public abstract class LocaleFormatUtils {
-    private LocaleFormatUtils() {
-    }
+    private LocaleFormatUtils() {}
 
-    /**
-     * 使用Jackson ObjectMapper进行日期时间格式化
-     * 这样可以统一使用应用配置的日期格式和时区设置
-     */
+    /** 使用Jackson ObjectMapper进行日期时间格式化 这样可以统一使用应用配置的日期格式和时区设置 */
     private static volatile ObjectMapper objectMapper;
 
-    /**
-     * NumberFormat缓存，避免重复创建
-     */
+    /** NumberFormat缓存，避免重复创建 */
     private static final Map<Locale, NumberFormat> NUMBER_FORMAT_CACHE = new ConcurrentHashMap<>();
 
-    /**
-     * 常用的null字符串
-     */
+    /** 常用的null字符串 */
     private static final String NULL_STRING = "null";
 
     public static void setObjectMapper(ObjectMapper mapper) {
@@ -65,7 +55,7 @@ public abstract class LocaleFormatUtils {
     /**
      * 格式化单个值（支持本地化）
      *
-     * @param value  要格式化的值
+     * @param value 要格式化的值
      * @param locale 本地化设置
      * @return 格式化后的字符串
      */
@@ -76,8 +66,8 @@ public abstract class LocaleFormatUtils {
     /**
      * 格式化单个值（支持本地化和时区）
      *
-     * @param value    要格式化的值
-     * @param locale   本地化设置
+     * @param value 要格式化的值
+     * @param locale 本地化设置
      * @param timeZone 时区设置
      * @return 格式化后的字符串
      */
@@ -122,8 +112,7 @@ public abstract class LocaleFormatUtils {
     }
 
     /**
-     * 格式化数字（支持本地化）
-     * 统一处理所有数字类型，包括BigDecimal和BigInteger
+     * 格式化数字（支持本地化） 统一处理所有数字类型，包括BigDecimal和BigInteger
      *
      * @param number 数字
      * @param locale 本地化设置
@@ -162,8 +151,7 @@ public abstract class LocaleFormatUtils {
     }
 
     /**
-     * 判断是否为日期时间类型
-     * 使用更高效的类型判断方式
+     * 判断是否为日期时间类型 使用更高效的类型判断方式
      *
      * @param value 要判断的值
      * @return 是否为日期时间类型
@@ -179,11 +167,10 @@ public abstract class LocaleFormatUtils {
     }
 
     /**
-     * 使用Jackson ObjectMapper格式化日期时间类型
-     * 这样可以统一使用应用配置的日期格式和时区设置，不需要关心具体的格式化样式
+     * 使用Jackson ObjectMapper格式化日期时间类型 这样可以统一使用应用配置的日期格式和时区设置，不需要关心具体的格式化样式
      *
-     * @param value    日期时间对象
-     * @param locale   本地化设置（注意：Jackson主要通过配置文件控制格式，locale在这里影响有限）
+     * @param value 日期时间对象
+     * @param locale 本地化设置（注意：Jackson主要通过配置文件控制格式，locale在这里影响有限）
      * @param timeZone 时区设置，用于日期时间的时区转换
      * @return 格式化后的字符串
      */
@@ -212,7 +199,7 @@ public abstract class LocaleFormatUtils {
      * 格式化Currency（支持本地化）
      *
      * @param currency Currency
-     * @param locale   本地化设置
+     * @param locale 本地化设置
      * @return 格式化后的字符串
      */
     private static String formatCurrency(final Currency currency, final Locale locale) {
@@ -229,15 +216,15 @@ public abstract class LocaleFormatUtils {
     }
 
     /**
-     * 格式化Collection（支持本地化和时区）
-     * 优化：使用Stream API提高性能和可读性
+     * 格式化Collection（支持本地化和时区） 优化：使用Stream API提高性能和可读性
      *
      * @param collection Collection
-     * @param locale     本地化设置
-     * @param timeZone   时区设置
+     * @param locale 本地化设置
+     * @param timeZone 时区设置
      * @return 格式化后的字符串
      */
-    private static String formatCollection(final Collection<?> collection, final Locale locale, final TimeZone timeZone) {
+    private static String formatCollection(
+            final Collection<?> collection, final Locale locale, final TimeZone timeZone) {
         if (collection == null) {
             return NULL_STRING;
         }
@@ -254,10 +241,9 @@ public abstract class LocaleFormatUtils {
     }
 
     /**
-     * 格式化Array（支持本地化）
-     * 优化：简化数组处理逻辑，使用更高效的方式
+     * 格式化Array（支持本地化） 优化：简化数组处理逻辑，使用更高效的方式
      *
-     * @param array  数组
+     * @param array 数组
      * @param locale 本地化设置
      * @return 格式化后的字符串
      */
@@ -273,13 +259,16 @@ public abstract class LocaleFormatUtils {
 
         // 基本类型数组 - 使用更简洁的方式
         if (array instanceof int[]) {
-            return formatCollection(Arrays.stream((int[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
+            return formatCollection(
+                    Arrays.stream((int[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
         }
         if (array instanceof long[]) {
-            return formatCollection(Arrays.stream((long[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
+            return formatCollection(
+                    Arrays.stream((long[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
         }
         if (array instanceof double[]) {
-            return formatCollection(Arrays.stream((double[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
+            return formatCollection(
+                    Arrays.stream((double[]) array).boxed().collect(Collectors.toList()), locale, timeZone);
         }
         if (array instanceof float[]) {
             float[] floats = (float[]) array;
@@ -326,11 +315,10 @@ public abstract class LocaleFormatUtils {
     }
 
     /**
-     * 格式化TimeZone（支持本地化）
-     * 改进：添加异常处理
+     * 格式化TimeZone（支持本地化） 改进：添加异常处理
      *
      * @param timeZone TimeZone
-     * @param locale   本地化设置
+     * @param locale 本地化设置
      * @return 格式化后的字符串
      */
     private static String formatTimeZone(final TimeZone timeZone, final Locale locale) {
@@ -346,9 +334,7 @@ public abstract class LocaleFormatUtils {
         }
     }
 
-    /**
-     * 清理缓存，主要用于测试或内存管理
-     */
+    /** 清理缓存，主要用于测试或内存管理 */
     public static void clearCache() {
         NUMBER_FORMAT_CACHE.clear();
     }

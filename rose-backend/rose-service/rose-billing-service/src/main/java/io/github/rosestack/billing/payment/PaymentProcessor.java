@@ -1,16 +1,12 @@
 package io.github.rosestack.billing.payment;
 
-
 import io.github.rosestack.billing.dto.PaymentRequest;
 import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
-
 import java.math.BigDecimal;
 import java.util.Map;
 
-/**
- * 支付处理器接口
- */
+/** 支付处理器接口 */
 public interface PaymentProcessor {
     String getPaymentMethod();
 
@@ -47,7 +43,10 @@ public interface PaymentProcessor {
         if (amt != null) return new BigDecimal(amt.toString());
         Object rf = data.get("refund_fee");
         if (rf != null) {
-            try { return new BigDecimal(rf.toString()).movePointLeft(2); } catch (Exception ignored) {}
+            try {
+                return new BigDecimal(rf.toString()).movePointLeft(2);
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }

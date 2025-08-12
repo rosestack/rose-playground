@@ -4,6 +4,5 @@ public interface HasVersion {
 
     Long getVersion();
 
-    default void setVersion(Long version) {
-    }
+    default void setVersion(Long version) {}
 }

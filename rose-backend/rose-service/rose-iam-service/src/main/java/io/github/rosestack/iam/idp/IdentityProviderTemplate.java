@@ -1,8 +1,7 @@
 package io.github.rosestack.iam.idp;
 
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 @Data
 public class IdentityProviderTemplate {
@@ -21,14 +20,14 @@ public class IdentityProviderTemplate {
 
     private String allowChallengeAssoc;
 
-    private String scenes;//web,app
+    private String scenes; // web,app
 
     @Data
     private static class IdpConnectionTemplateField {
         private String key;
         private String name;
         private String placeholder;
-        private String type;//input
+        private String type; // input
         private Boolean required;
         private String children;
         private String extra;

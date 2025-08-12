@@ -5,6 +5,4 @@ import io.github.rosestack.billing.entity.BillingConfig;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface BillingConfigRepository extends BaseMapper<BillingConfig> {
-}
-
+public interface BillingConfigRepository extends BaseMapper<BillingConfig> {}

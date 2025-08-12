@@ -1,18 +1,17 @@
 package io.github.rosestack.i18n.evaluator;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * SpelExpressionEvaluator 测试类
- * <p>
- * 测试 Spring Expression Language (SpEL) 表达式评估器的各种功能
+ *
+ * <p>测试 Spring Expression Language (SpEL) 表达式评估器的各种功能
  */
 public class SpelExpressionEvaluatorTest {
 
@@ -376,10 +375,7 @@ public class SpelExpressionEvaluatorTest {
         variables.put("isVIP", true);
 
         Object result = evaluator.evaluate(
-                "#isVIP ? 'Welcome VIP ' + #user.name : 'Welcome ' + #user.name",
-                variables,
-                Locale.ENGLISH
-        );
+                "#isVIP ? 'Welcome VIP ' + #user.name : 'Welcome ' + #user.name", variables, Locale.ENGLISH);
         assertEquals("Welcome VIP Alice", result);
     }
 
@@ -465,4 +461,4 @@ public class SpelExpressionEvaluatorTest {
             this.city = city;
         }
     }
-} 
+}

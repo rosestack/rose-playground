@@ -1,24 +1,24 @@
 package io.github.rosestack.billing.service;
 
+import static org.mockito.Mockito.*;
+
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class InvoiceServiceAlreadyPaidTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;
+
     @Mock
     private PaymentRecordRepository paymentRecordRepository;
 
@@ -43,4 +43,3 @@ class InvoiceServiceAlreadyPaidTest {
         verify(paymentRecordRepository, never()).insert(any(io.github.rosestack.billing.entity.PaymentRecord.class));
     }
 }
-

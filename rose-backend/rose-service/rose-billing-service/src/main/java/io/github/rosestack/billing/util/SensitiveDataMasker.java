@@ -82,4 +82,3 @@ public final class SensitiveDataMasker {
         return left + "***" + domain;
     }
 }
-

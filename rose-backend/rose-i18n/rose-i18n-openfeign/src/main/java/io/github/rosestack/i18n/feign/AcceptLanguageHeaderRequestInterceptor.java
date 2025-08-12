@@ -1,5 +1,7 @@
 package io.github.rosestack.i18n.feign;
 
+import static org.springframework.http.HttpHeaders.ACCEPT_LANGUAGE;
+
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,8 +12,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
-
-import static org.springframework.http.HttpHeaders.ACCEPT_LANGUAGE;
 
 /**
  * HTTP Header "Accept-Language" {@link RequestInterceptor}
@@ -27,7 +27,9 @@ public class AcceptLanguageHeaderRequestInterceptor implements RequestIntercepto
     public void apply(RequestTemplate template) {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (!(requestAttributes instanceof ServletRequestAttributes)) {
-            logger.debug("Feign calls in non-Spring WebMVC scenarios, ignoring setting request headers: '{}'", ACCEPT_LANGUAGE);
+            logger.debug(
+                    "Feign calls in non-Spring WebMVC scenarios, ignoring setting request headers: '{}'",
+                    ACCEPT_LANGUAGE);
             return;
         }
 
@@ -39,10 +41,13 @@ public class AcceptLanguageHeaderRequestInterceptor implements RequestIntercepto
 
         if (StringUtils.hasText(acceptLanguage)) {
             template.header(ACCEPT_LANGUAGE, acceptLanguage);
-            logger.debug("Feign has set HTTP request header [name : '{}' , value : '{}']", ACCEPT_LANGUAGE, acceptLanguage);
+            logger.debug(
+                    "Feign has set HTTP request header [name : '{}' , value : '{}']", ACCEPT_LANGUAGE, acceptLanguage);
         } else {
-            logger.debug("Feign could not set HTTP request header [name : '{}'] because the requester did not pass: '{}'", ACCEPT_LANGUAGE, acceptLanguage);
+            logger.debug(
+                    "Feign could not set HTTP request header [name : '{}'] because the requester did not pass: '{}'",
+                    ACCEPT_LANGUAGE,
+                    acceptLanguage);
         }
-
     }
 }

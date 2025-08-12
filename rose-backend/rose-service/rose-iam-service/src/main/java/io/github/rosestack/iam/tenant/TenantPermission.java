@@ -1,8 +1,7 @@
 package io.github.rosestack.iam.tenant;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import lombok.Data;
 
 @Data
 public class TenantPermission {
@@ -12,8 +11,6 @@ public class TenantPermission {
 
     private String tenantId;
 
-    /**
-     * 创建时间
-     */
+    /** 创建时间 */
     private LocalDateTime createdAt;
 }

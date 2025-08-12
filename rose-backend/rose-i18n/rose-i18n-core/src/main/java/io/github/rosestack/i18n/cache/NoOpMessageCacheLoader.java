@@ -1,7 +1,6 @@
 package io.github.rosestack.i18n.cache;
 
 import io.github.rosestack.i18n.MessageCacheLoader;
-
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;

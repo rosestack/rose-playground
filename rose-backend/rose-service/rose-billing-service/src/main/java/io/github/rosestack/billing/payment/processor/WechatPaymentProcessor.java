@@ -5,14 +5,13 @@ import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.payment.PaymentProcessor;
 import io.github.rosestack.billing.payment.PaymentStatus;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 微信支付处理器具体实现
@@ -60,7 +59,8 @@ public class WechatPaymentProcessor implements PaymentProcessor {
             // data.put("out_trade_no", request.getInvoiceId());
             // data.put("device_info", "WEB");
             // data.put("fee_type", "CNY");
-            // data.put("total_fee", String.valueOf(request.getAmount().multiply(new BigDecimal("100")).intValue()));
+            // data.put("total_fee", String.valueOf(request.getAmount().multiply(new
+            // BigDecimal("100")).intValue()));
             // data.put("spbill_create_ip", "127.0.0.1");
             // data.put("notify_url", "http://www.example.com/wxpay/notify");
             // data.put("trade_type", "NATIVE");
@@ -117,9 +117,11 @@ public class WechatPaymentProcessor implements PaymentProcessor {
 
             Object signObj = callbackData.get("sign");
             if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
-                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("transaction_id", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("transaction_id", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("timestamp", ""));
                 String expected = hmacSha256Hex(payload, hmacSecret);
                 if (!expected.equals(signObj.toString())) {
                     log.warn("微信回调HMAC校验失败");
@@ -138,7 +140,8 @@ public class WechatPaymentProcessor implements PaymentProcessor {
     private static String hmacSha256Hex(String data, String key) {
         try {
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            mac.init(new javax.crypto.spec.SecretKeySpec(
+                    key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(result.length * 2);
             for (byte b : result) sb.append(String.format("%02x", b));
@@ -184,9 +187,11 @@ public class WechatPaymentProcessor implements PaymentProcessor {
             }
             Object signObj = callbackData.get("sign");
             if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
-                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("refund_id", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("refund_id", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("timestamp", ""));
                 String expected = hmacSha256Hex(payload, hmacSecret);
                 return expected.equals(signObj.toString());
             }
@@ -199,7 +204,8 @@ public class WechatPaymentProcessor implements PaymentProcessor {
 
     @Override
     public boolean isRefundSuccess(java.util.Map<String, Object> data) {
-        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", ""))).toUpperCase();
+        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", "")))
+                .toUpperCase();
         return "SUCCESS".equals(s);
     }
 
@@ -207,11 +213,13 @@ public class WechatPaymentProcessor implements PaymentProcessor {
     public java.math.BigDecimal parseRefundAmount(java.util.Map<String, Object> data) {
         Object rf = data.get("refund_fee");
         if (rf != null) {
-            try { return new java.math.BigDecimal(rf.toString()).movePointLeft(2); } catch (Exception ignored) {}
+            try {
+                return new java.math.BigDecimal(rf.toString()).movePointLeft(2);
+            } catch (Exception ignored) {
+            }
         }
         return PaymentProcessor.super.parseRefundAmount(data);
     }
-
 
     @Override
     public PaymentStatus queryPaymentStatus(String transactionId) {

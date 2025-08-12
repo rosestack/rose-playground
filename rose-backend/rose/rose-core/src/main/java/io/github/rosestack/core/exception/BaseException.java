@@ -4,9 +4,8 @@ import java.io.Serial;
 
 /**
  * 基础异常类
- * <p>
- * 提供国际化消息支持和异常上下文信息
- * </p>
+ *
+ * <p>提供国际化消息支持和异常上下文信息
  *
  * @author rosestack
  * @since 1.0.0
@@ -87,4 +86,4 @@ public abstract class BaseException extends RuntimeException {
     public Object[] getMessageArgs() {
         return messageArgs;
     }
-} 
+}

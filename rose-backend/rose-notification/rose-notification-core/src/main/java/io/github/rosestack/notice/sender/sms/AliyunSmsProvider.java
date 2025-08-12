@@ -12,8 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 /**
- * 阿里云短信服务商实现。
- * channelConfig 需包含 aliyun.sms.accessKeyId/accessKeySecret/signName/templateCode。
+ * 阿里云短信服务商实现。 channelConfig 需包含 aliyun.sms.accessKeyId/accessKeySecret/signName/templateCode。
  * content 建议为 JSON 字符串。
  */
 public class AliyunSmsProvider extends AbstractConfigure implements SmsProvider {

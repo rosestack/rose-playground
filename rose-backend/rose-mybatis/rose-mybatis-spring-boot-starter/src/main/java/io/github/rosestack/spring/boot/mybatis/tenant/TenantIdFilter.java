@@ -1,5 +1,8 @@
 package io.github.rosestack.spring.boot.mybatis.tenant;
 
+import static io.github.rosestack.mybatis.MybatisConstants.HEADER_TENANT_ID;
+import static io.github.rosestack.mybatis.MybatisConstants.MDC_TENANT_ID;
+
 import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
 import io.github.rosestack.mybatis.tenant.TenantContextHolder;
 import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentTenantProvider;
@@ -8,20 +11,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.MDC;
-
 import java.io.IOException;
 import java.util.List;
-
-import static io.github.rosestack.mybatis.MybatisConstants.HEADER_TENANT_ID;
-import static io.github.rosestack.mybatis.MybatisConstants.MDC_TENANT_ID;
-
+import org.slf4j.MDC;
 
 /**
  * 租户 ID 过滤器
- * <p>
- * 从请求头中提取租户 ID，设置到上下文和 MDC 中
- * </p>
+ *
+ * <p>从请求头中提取租户 ID，设置到上下文和 MDC 中
  *
  * @author rosestack
  * @since 1.0.0

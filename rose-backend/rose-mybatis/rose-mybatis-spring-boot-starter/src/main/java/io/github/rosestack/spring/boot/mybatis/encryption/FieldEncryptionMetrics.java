@@ -4,9 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
-/**
- * 字段加解密指标埋点。
- */
+/** 字段加解密指标埋点。 */
 public class FieldEncryptionMetrics {
     private final Timer encryptTimer;
     private final Timer decryptTimer;
@@ -28,14 +26,27 @@ public class FieldEncryptionMetrics {
                 .register(registry);
     }
 
-    public Timer.Sample startEncrypt() { return Timer.start(); }
-    public void recordEncrypt(Timer.Sample sample) { if (sample != null) sample.stop(encryptTimer); }
+    public Timer.Sample startEncrypt() {
+        return Timer.start();
+    }
 
-    public Timer.Sample startDecrypt() { return Timer.start(); }
-    public void recordDecrypt(Timer.Sample sample) { if (sample != null) sample.stop(decryptTimer); }
+    public void recordEncrypt(Timer.Sample sample) {
+        if (sample != null) sample.stop(encryptTimer);
+    }
 
-    public void incrementEncryptError() { encryptErrorCounter.increment(); }
-    public void incrementDecryptError() { decryptErrorCounter.increment(); }
+    public Timer.Sample startDecrypt() {
+        return Timer.start();
+    }
+
+    public void recordDecrypt(Timer.Sample sample) {
+        if (sample != null) sample.stop(decryptTimer);
+    }
+
+    public void incrementEncryptError() {
+        encryptErrorCounter.increment();
+    }
+
+    public void incrementDecryptError() {
+        decryptErrorCounter.increment();
+    }
 }
-
-

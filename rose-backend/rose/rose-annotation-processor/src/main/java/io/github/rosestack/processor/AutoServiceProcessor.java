@@ -1,5 +1,9 @@
 package io.github.rosestack.processor;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
+import java.util.*;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -12,10 +16,6 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.NoSuchFileException;
-import java.util.*;
 
 /**
  * Processes {@link AutoService} annotations and generates the service provider configuration files
@@ -34,6 +34,8 @@ public class AutoServiceProcessor extends AbstractProcessor {
     }
 
     /**
+     *
+     *
      * <ol>
      *   <li>For each class annotated with {@link AutoService}
      *       <ul>

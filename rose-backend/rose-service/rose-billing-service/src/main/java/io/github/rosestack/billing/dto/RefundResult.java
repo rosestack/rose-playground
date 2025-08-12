@@ -1,8 +1,8 @@
 package io.github.rosestack.billing.dto;
 
-import lombok.Data; /**
- * 退款结果对象
- */
+import lombok.Data;
+
+/** 退款结果对象 */
 @Data
 public class RefundResult {
     private boolean success;

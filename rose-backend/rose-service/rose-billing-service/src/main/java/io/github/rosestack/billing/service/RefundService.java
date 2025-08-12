@@ -7,14 +7,13 @@ import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.RefundStatus;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.repository.RefundRecordRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -25,25 +24,24 @@ public class RefundService {
     private final PaymentGatewayService paymentGatewayService;
     private final RefundRecordRepository refundRecordRepository;
     private final io.github.rosestack.billing.repository.PaymentRecordRepository paymentRecordRepository;
+
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private OutboxService outboxService;
-
 
     @Transactional
     public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason) {
         return requestRefund(invoiceId, amount, reason, null);
     }
 
-    /**
-     * 幂等退款请求（可选 idempotencyKey）
-     */
+    /** 幂等退款请求（可选 idempotencyKey） */
     @Transactional
     public RefundResult requestRefund(String invoiceId, BigDecimal amount, String reason, String idempotencyKey) {
         Invoice invoice = invoiceService.getInvoiceDetails(invoiceId);
         if (invoice.getStatus() != InvoiceStatus.PAID) {
             return RefundResult.failed("仅支持对已支付账单发起退款");
         }
-        if (invoice.getPaymentTransactionId() == null || invoice.getPaymentTransactionId().isBlank()) {
+        if (invoice.getPaymentTransactionId() == null
+                || invoice.getPaymentTransactionId().isBlank()) {
             return RefundResult.failed("账单缺少交易号，无法退款");
         }
         // 幂等：如传入幂等键且已存在成功记录，直接返回成功
@@ -99,25 +97,22 @@ public class RefundService {
         // Outbox: 退款请求同步成功时外发事件
         if (result.isSuccess() && outboxService != null) {
             try {
-                String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
-                        java.util.Map.of(
+                String payload = new com.fasterxml.jackson.databind.ObjectMapper()
+                        .writeValueAsString(java.util.Map.of(
                                 "invoiceId", invoiceId,
                                 "refundId", rr.getRefundId(),
                                 "amount", amount,
                                 "currency", rr.getCurrency(),
-                                "occurredTime", java.time.LocalDateTime.now().toString()
-                        )
-                );
+                                "occurredTime", java.time.LocalDateTime.now().toString()));
                 outboxService.saveEvent(invoice.getTenantId(), "RefundSucceeded", invoiceId, payload);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
 
         return result;
     }
 
-    /**
-     * 退款回调处理：更新 RefundRecord 状态与原文，必要时更新发票状态
-     */
+    /** 退款回调处理：更新 RefundRecord 状态与原文，必要时更新发票状态 */
     @Transactional
     public boolean processRefundCallback(String paymentMethod, Map<String, Object> data) {
         String invoiceId = String.valueOf(data.getOrDefault("invoiceId", data.getOrDefault("invoice_id", "")));
@@ -163,7 +158,10 @@ public class RefundService {
                     fresh.setStatus(rr.getStatus());
                     fresh.setCompletedTime(rr.getCompletedTime());
                     fresh.setRawCallback(rr.getRawCallback());
-                    try { refundRecordRepository.updateById(fresh); } catch (Exception ignore) {}
+                    try {
+                        refundRecordRepository.updateById(fresh);
+                    } catch (Exception ignore) {
+                    }
                 }
             }
         }
@@ -185,25 +183,26 @@ public class RefundService {
         if (isSuccess && callbackAmount != null) {
             refunded = refunded.add(callbackAmount);
         }
-        if (isSuccess && refunded.compareTo(invoice.getTotalAmount()) >= 0 && invoice.getStatus() != InvoiceStatus.REFUNDED) {
+        if (isSuccess
+                && refunded.compareTo(invoice.getTotalAmount()) >= 0
+                && invoice.getStatus() != InvoiceStatus.REFUNDED) {
             invoice.setStatus(InvoiceStatus.REFUNDED);
             invoiceService.updateById(invoice);
             if (outboxService != null) {
                 try {
-                    String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
-                            java.util.Map.of(
+                    String payload = new com.fasterxml.jackson.databind.ObjectMapper()
+                            .writeValueAsString(java.util.Map.of(
                                     "invoiceId", invoiceId,
                                     "refundId", rr.getRefundId(),
                                     "totalRefunded", refunded,
                                     "currency", invoice.getCurrency(),
-                                    "occurredTime", java.time.LocalDateTime.now().toString()
-                            )
-                    );
+                                    "occurredTime",
+                                            java.time.LocalDateTime.now().toString()));
                     outboxService.saveEvent(invoice.getTenantId(), "InvoiceRefunded", invoiceId, payload);
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
         }
         return true;
     }
-
 }

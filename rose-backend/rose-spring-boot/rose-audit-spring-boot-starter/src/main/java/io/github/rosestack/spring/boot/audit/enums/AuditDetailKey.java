@@ -4,10 +4,8 @@ import lombok.Getter;
 
 /**
  * 审计详情键枚举
- * <p>
- * 定义了审计日志详情表中的具体详情键，每个键对应一种特定的详情数据类型。
- * 详情值以 JSON 格式存储，支持复杂的数据结构。
- * </p>
+ *
+ * <p>定义了审计日志详情表中的具体详情键，每个键对应一种特定的详情数据类型。 详情值以 JSON 格式存储，支持复杂的数据结构。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -46,29 +44,22 @@ public enum AuditDetailKey {
     RISK_ASSESSMENT("RISK_ASSESSMENT", "风险评估结果", AuditDetailType.SECURITY, false, false),
     THREAT_INDICATORS("THREAT_INDICATORS", "威胁指标", AuditDetailType.SECURITY, false, true);
 
-    /**
-     * 详情键代码
-     */
+    /** 详情键代码 */
     private final String code;
 
-    /**
-     * 详情键描述
-     */
+    /** 详情键描述 */
     private final String description;
 
-    /**
-     * 所属详情类型
-     */
+    /** 所属详情类型 */
     private final AuditDetailType detailType;
 
     private final boolean isEncrypted;
 
-    /**
-     * 是否包含敏感数据
-     */
+    /** 是否包含敏感数据 */
     private final boolean sensitive;
 
-    AuditDetailKey(String code, String description, AuditDetailType detailType, boolean isEncrypted, boolean sensitive) {
+    AuditDetailKey(
+            String code, String description, AuditDetailType detailType, boolean isEncrypted, boolean sensitive) {
         this.code = code;
         this.description = description;
         this.detailType = detailType;
@@ -104,8 +95,7 @@ public enum AuditDetailKey {
     }
 
     /**
-     * 判断是否需要加密存储
-     * 敏感数据需要加密存储
+     * 判断是否需要加密存储 敏感数据需要加密存储
      *
      * @return 是否需要加密
      */
@@ -114,8 +104,7 @@ public enum AuditDetailKey {
     }
 
     /**
-     * 判断是否需要脱敏处理
-     * 敏感数据在记录时需要脱敏
+     * 判断是否需要脱敏处理 敏感数据在记录时需要脱敏
      *
      * @return 是否需要脱敏
      */

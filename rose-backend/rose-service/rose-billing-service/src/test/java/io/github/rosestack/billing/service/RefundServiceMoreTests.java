@@ -1,17 +1,16 @@
 package io.github.rosestack.billing.service;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
+
 import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.repository.RefundRecordRepository;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
 
 class RefundServiceMoreTests {
 
@@ -26,7 +25,8 @@ class RefundServiceMoreTests {
         invoiceService = mock(InvoiceService.class);
         refundRecordRepository = mock(RefundRecordRepository.class);
         paymentGatewayService = mock(io.github.rosestack.billing.payment.PaymentGatewayService.class);
-        io.github.rosestack.billing.repository.PaymentRecordRepository pr = mock(io.github.rosestack.billing.repository.PaymentRecordRepository.class);
+        io.github.rosestack.billing.repository.PaymentRecordRepository pr =
+                mock(io.github.rosestack.billing.repository.PaymentRecordRepository.class);
         refundService = new RefundService(invoiceService, paymentGatewayService, refundRecordRepository, pr);
     }
 
@@ -71,4 +71,3 @@ class RefundServiceMoreTests {
         verify(paymentGatewayService, never()).processRefund(any(), any(), any(), any());
     }
 }
-

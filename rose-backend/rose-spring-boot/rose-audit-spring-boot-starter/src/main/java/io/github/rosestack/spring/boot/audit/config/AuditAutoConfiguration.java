@@ -19,16 +19,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
-
 /**
  * 审计日志自动配置类
- * <p>
- * 提供审计日志功能的自动配置，包括：
- * - 审计日志服务
- * - 审计切面
- * - 存储实现
- * - 加密脱敏工具
- * </p>
+ *
+ * <p>提供审计日志功能的自动配置，包括： - 审计日志服务 - 审计切面 - 存储实现 - 加密脱敏工具
  *
  * @author Rose Team
  * @since 1.0.0
@@ -57,7 +51,11 @@ public class AuditAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "rose.audit.storage", name = "type", havingValue = "database", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.audit.storage",
+            name = "type",
+            havingValue = "database",
+            matchIfMissing = true)
     public AuditStorage jdbcAuditStorage(Validator validator, AuditLogDetailMapper auditLogDetailMapper) {
         return new AuditLogServiceImpl(validator, auditLogDetailMapper);
     }

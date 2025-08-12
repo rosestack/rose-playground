@@ -1,19 +1,18 @@
 package io.github.rosestack.billing.service;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.entity.RefundRecord;
 import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.repository.RefundRecordRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class RefundCallbackServiceTest {
 
@@ -27,13 +26,14 @@ class RefundCallbackServiceTest {
         invoiceService = mock(InvoiceService.class);
         refundRecordRepository = mock(RefundRecordRepository.class);
         gatewayService = mock(io.github.rosestack.billing.payment.PaymentGatewayService.class);
-        io.github.rosestack.billing.repository.PaymentRecordRepository pr = mock(io.github.rosestack.billing.repository.PaymentRecordRepository.class);
+        io.github.rosestack.billing.repository.PaymentRecordRepository pr =
+                mock(io.github.rosestack.billing.repository.PaymentRecordRepository.class);
         refundService = new RefundService(invoiceService, gatewayService, refundRecordRepository, pr);
     }
 
     @Test
     void processRefundCallback_marksSuccess_andFullRefund() {
-        Map<String,Object> cb = new HashMap<>();
+        Map<String, Object> cb = new HashMap<>();
         cb.put("invoiceId", "inv-9");
         cb.put("refund_id", "rf-9");
         cb.put("refund_amount", "30.00");
@@ -57,7 +57,7 @@ class RefundCallbackServiceTest {
 
     @Test
     void processRefundCallback_failedDoesNotMarkInvoice() {
-        Map<String,Object> cb = new HashMap<>();
+        Map<String, Object> cb = new HashMap<>();
         cb.put("invoice_id", "inv-8");
         cb.put("id", "rf-8");
         cb.put("refund_status", "FAILED");
@@ -76,4 +76,3 @@ class RefundCallbackServiceTest {
         verify(invoiceService, never()).updateById(any());
     }
 }
-

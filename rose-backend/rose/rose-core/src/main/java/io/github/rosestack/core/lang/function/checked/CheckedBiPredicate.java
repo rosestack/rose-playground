@@ -5,14 +5,14 @@ import java.util.function.BiPredicate;
 
 /**
  * 可能抛出受检异常的双参数断言接口
- * 
+ *
  * @param <T> 第一个参数类型
  * @param <U> 第二个参数类型
  * @author rose
  */
 @FunctionalInterface
 public interface CheckedBiPredicate<T, U> {
-    
+
     /**
      * 对给定的两个参数进行断言测试
      *
@@ -22,7 +22,7 @@ public interface CheckedBiPredicate<T, U> {
      * @throws Exception 如果发生异常
      */
     boolean test(T t, U u) throws Exception;
-    
+
     /**
      * 转换为标准 BiPredicate，将受检异常包装为运行时异常
      *
@@ -39,8 +39,7 @@ public interface CheckedBiPredicate<T, U> {
     }
 
     /**
-     * 转换为标准 BiPredicate，使用自定义异常处理器
-     * 当发生异常时，调用异常处理器并返回 false
+     * 转换为标准 BiPredicate，使用自定义异常处理器 当发生异常时，调用异常处理器并返回 false
      *
      * @param handler 异常处理器，接收捕获的异常
      * @return 标准 BiPredicate
@@ -58,8 +57,7 @@ public interface CheckedBiPredicate<T, U> {
     }
 
     /**
-     * 转换为标准 BiPredicate，使用自定义异常处理器和默认值
-     * 当发生异常时，调用异常处理器并返回默认值
+     * 转换为标准 BiPredicate，使用自定义异常处理器和默认值 当发生异常时，调用异常处理器并返回默认值
      *
      * @param handler 异常处理器，接收捕获的异常
      * @param defaultValue 异常时返回的默认值
@@ -76,7 +74,7 @@ public interface CheckedBiPredicate<T, U> {
             }
         };
     }
-    
+
     /**
      * 从标准 BiPredicate 创建 CheckedBiPredicate
      *
@@ -89,7 +87,7 @@ public interface CheckedBiPredicate<T, U> {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         return predicate::test;
     }
-    
+
     /**
      * 返回一个组合断言，表示该断言与另一个断言的逻辑与
      *
@@ -100,7 +98,7 @@ public interface CheckedBiPredicate<T, U> {
         Objects.requireNonNull(other, "other cannot be null");
         return (t, u) -> test(t, u) && other.test(t, u);
     }
-    
+
     /**
      * 返回该断言的逻辑非
      *
@@ -109,7 +107,7 @@ public interface CheckedBiPredicate<T, U> {
     default CheckedBiPredicate<T, U> negate() {
         return (t, u) -> !test(t, u);
     }
-    
+
     /**
      * 返回一个组合断言，表示该断言与另一个断言的逻辑或
      *
@@ -120,7 +118,7 @@ public interface CheckedBiPredicate<T, U> {
         Objects.requireNonNull(other, "other cannot be null");
         return (t, u) -> test(t, u) || other.test(t, u);
     }
-    
+
     /**
      * 返回一个总是返回 true 的双参数断言
      *
@@ -131,7 +129,7 @@ public interface CheckedBiPredicate<T, U> {
     static <T, U> CheckedBiPredicate<T, U> alwaysTrue() {
         return (t, u) -> true;
     }
-    
+
     /**
      * 返回一个总是返回 false 的双参数断言
      *

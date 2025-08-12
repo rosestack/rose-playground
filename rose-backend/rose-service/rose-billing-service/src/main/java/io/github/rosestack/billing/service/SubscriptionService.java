@@ -8,16 +8,15 @@ import io.github.rosestack.billing.exception.PlanNotFoundException;
 import io.github.rosestack.billing.exception.SubscriptionNotFoundException;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 订阅管理服务
@@ -41,7 +40,8 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
      * @throws IllegalArgumentException 如果租户ID为空
      */
     @Cacheable(value = "activeSubscriptions", key = "#tenantId", unless = "#result.isEmpty()")
-    public Optional<TenantSubscription> getActiveSubscription(@jakarta.validation.constraints.NotBlank String tenantId) {
+    public Optional<TenantSubscription> getActiveSubscription(
+            @jakarta.validation.constraints.NotBlank String tenantId) {
         try {
             return subscriptionRepository.findActiveByTenantId(tenantId);
         } catch (Exception e) {
@@ -50,29 +50,22 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         }
     }
 
-    /**
-     * 检查租户是否有活跃订阅
-     */
+    /** 检查租户是否有活跃订阅 */
     public boolean hasActiveSubscription(String tenantId) {
         return getActiveSubscription(tenantId).isPresent();
     }
 
-    /**
-     * 获取租户的订阅历史
-     */
+    /** 获取租户的订阅历史 */
     public List<TenantSubscription> getSubscriptionHistory(String tenantId) {
         // 使用 LambdaQueryWrapper 查询租户的所有订阅
         return subscriptionRepository.selectList(
-            new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<TenantSubscription>()
-                .eq(TenantSubscription::getTenantId, tenantId)
-                .eq(TenantSubscription::getDeleted, false)
-                .orderByDesc(TenantSubscription::getCreatedTime)
-        );
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<TenantSubscription>()
+                        .eq(TenantSubscription::getTenantId, tenantId)
+                        .eq(TenantSubscription::getDeleted, false)
+                        .orderByDesc(TenantSubscription::getCreatedTime));
     }
 
-    /**
-     * 暂停订阅
-     */
+    /** 暂停订阅 */
     @Transactional
     @CacheEvict(value = "activeSubscriptions", key = "#subscription.tenantId")
     public void pauseSubscription(String subscriptionId, String reason) {
@@ -89,9 +82,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         log.info("订阅已暂停: {}, 原因: {}", subscriptionId, reason);
     }
 
-    /**
-     * 恢复订阅
-     */
+    /** 恢复订阅 */
     @Transactional
     public void resumeSubscription(String subscriptionId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -107,9 +98,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         log.info("订阅已恢复: {}", subscriptionId);
     }
 
-    /**
-     * 升级订阅计划
-     */
+    /** 升级订阅计划 */
     @Transactional
     public void upgradeSubscription(String subscriptionId, String newPlanId) {
         TenantSubscription subscription = subscriptionRepository.selectById(subscriptionId);
@@ -135,25 +124,17 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
         log.info("订阅已升级: {} -> {}", subscription.getPlanId(), newPlanId);
     }
 
-    /**
-     * 检查试用期是否即将到期
-     */
+    /** 检查试用期是否即将到期 */
     public List<TenantSubscription> getTrialExpiringSoon(int days) {
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime endDate = startDate.plusDays(days);
         return subscriptionRepository.findTrialExpiringSoon(startDate, endDate);
     }
 
-    /**
-     * 获取需要计费的订阅
-     */
+    /** 获取需要计费的订阅 */
     public List<TenantSubscription> getSubscriptionsForBilling() {
-        List<SubscriptionStatus> activeStatuses = List.of(
-            SubscriptionStatus.ACTIVE,
-            SubscriptionStatus.TRIAL
-        );
-        return subscriptionRepository.findByNextBillingDateBeforeAndStatusIn(
-            LocalDateTime.now(), activeStatuses);
+        List<SubscriptionStatus> activeStatuses = List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL);
+        return subscriptionRepository.findByNextBillingDateBeforeAndStatusIn(LocalDateTime.now(), activeStatuses);
     }
 
     /**
@@ -184,8 +165,7 @@ public class SubscriptionService extends ServiceImpl<TenantSubscriptionRepositor
             }
 
             boolean isValid = !pricingCalculator.isUsageExceeded(tenantId, plan, metricType);
-            log.debug("使用量限制验证结果: tenantId={}, metricType={}, valid={}",
-                     tenantId, metricType, isValid);
+            log.debug("使用量限制验证结果: tenantId={}, metricType={}, valid={}", tenantId, metricType, isValid);
             return isValid;
         } catch (Exception e) {
             log.error("验证使用量限制失败: tenantId={}, metricType={}", tenantId, metricType, e);

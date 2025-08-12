@@ -1,19 +1,18 @@
 package io.github.rosestack.i18n.evaluator;
 
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 /**
  * Spring Expression Language (SpEL) 表达式评估器
- * <p>
- * 基于Spring的SpEL引擎，提供强大的表达式评估能力。
+ *
+ * <p>基于Spring的SpEL引擎，提供强大的表达式评估能力。
  *
  * @author rose
  * @since 1.0.0

@@ -6,13 +6,11 @@ import io.github.rosestack.notification.domain.repository.NotificationRepository
 import io.github.rosestack.notification.domain.value.NotificationStatus;
 import io.github.rosestack.notification.infrastructure.mybatis.convert.NotificationConvert;
 import io.github.rosestack.notification.infrastructure.mybatis.entity.NotificationEntity;
+import java.util.List;
+import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-
-import java.util.List;
-import java.util.Optional;
-
 
 @Mapper
 public interface NotificationMapper extends BaseMapper<NotificationEntity>, NotificationRepository {

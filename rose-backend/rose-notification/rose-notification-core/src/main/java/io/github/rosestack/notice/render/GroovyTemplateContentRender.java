@@ -3,13 +3,9 @@ package io.github.rosestack.notice.render;
 import groovy.text.SimpleTemplateEngine;
 import groovy.text.Template;
 import io.github.rosestack.notice.spi.TemplateContentRender;
-
 import java.util.Map;
 
-/**
- * 基于 Groovy 的动态模板渲染实现，支持复杂表达式。
- * 需引入 groovy 依赖。
- */
+/** 基于 Groovy 的动态模板渲染实现，支持复杂表达式。 需引入 groovy 依赖。 */
 public class GroovyTemplateContentRender extends AbstractTemplateContentRender implements TemplateContentRender {
     private final SimpleTemplateEngine engine = new SimpleTemplateEngine();
 

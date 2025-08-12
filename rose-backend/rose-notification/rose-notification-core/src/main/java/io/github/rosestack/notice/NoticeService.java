@@ -9,9 +9,6 @@ import io.github.rosestack.notice.spi.NoticeSendInterceptor;
 import io.github.rosestack.notice.spi.Sender;
 import io.github.rosestack.notice.support.NoopBlacklistChecker;
 import io.github.rosestack.notice.support.NoopIdempotencyStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,10 +16,10 @@ import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * 通用通知发送服务，支持同步、异步、批量、重试、黑名单、拦截器、幂等。
- */
+/** 通用通知发送服务，支持同步、异步、批量、重试、黑名单、拦截器、幂等。 */
 public class NoticeService {
     private static final Logger log = LoggerFactory.getLogger(NoticeService.class);
 

@@ -3,8 +3,7 @@ package io.github.rosestack.core.lang.function.checked;
 import java.util.Objects;
 
 /**
- * 受检异常的可运行任务接口
- * 对应 JDK 的 Runnable，但可以抛出受检异常
+ * 受检异常的可运行任务接口 对应 JDK 的 Runnable，但可以抛出受检异常
  *
  * @author rose
  */
@@ -18,9 +17,7 @@ public interface CheckedRunnable {
      */
     void run() throws Exception;
 
-    /**
-     * 转换为 JDK Runnable（异常会被包装为 RuntimeException）
-     */
+    /** 转换为 JDK Runnable（异常会被包装为 RuntimeException） */
     default Runnable unchecked() {
         return () -> {
             try {
@@ -48,17 +45,13 @@ public interface CheckedRunnable {
         };
     }
 
-    /**
-     * 从 JDK Runnable 创建 CheckedRunnable
-     */
+    /** 从 JDK Runnable 创建 CheckedRunnable */
     static CheckedRunnable from(Runnable runnable) {
         Objects.requireNonNull(runnable);
         return runnable::run;
     }
 
-    /**
-     * 组合多个 CheckedRunnable
-     */
+    /** 组合多个 CheckedRunnable */
     default CheckedRunnable andThen(CheckedRunnable after) {
         Objects.requireNonNull(after);
         return () -> {
@@ -67,9 +60,7 @@ public interface CheckedRunnable {
         };
     }
 
-    /**
-     * 组合多个 CheckedRunnable
-     */
+    /** 组合多个 CheckedRunnable */
     default CheckedRunnable andThen(Runnable after) {
         Objects.requireNonNull(after);
         return () -> {

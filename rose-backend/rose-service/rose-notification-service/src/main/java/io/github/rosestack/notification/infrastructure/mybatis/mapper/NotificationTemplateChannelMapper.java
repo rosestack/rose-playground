@@ -5,12 +5,12 @@ import io.github.rosestack.notification.domain.entity.NotificationTemplateChanne
 import io.github.rosestack.notification.domain.repository.NotificationTemplateChannelRepository;
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.infrastructure.mybatis.entity.NotificationTemplateChannelEntity;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.List;
-
 @Mapper
-public interface NotificationTemplateChannelMapper extends BaseMapper<NotificationTemplateChannelEntity>, NotificationTemplateChannelRepository {
+public interface NotificationTemplateChannelMapper
+        extends BaseMapper<NotificationTemplateChannelEntity>, NotificationTemplateChannelRepository {
     List<NotificationTemplateChannel> findByTemplateId(String templateId);
 
     List<NotificationTemplateChannel> findByChannelType(NotificationChannelType channelType);

@@ -16,15 +16,11 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * 邮件发送渠道实现，支持 HTML、抄送、附件。
- * channelConfig 需包含 mail.smtp.host/username/password/port/from。
- */
+/** 邮件发送渠道实现，支持 HTML、抄送、附件。 channelConfig 需包含 mail.smtp.host/username/password/port/from。 */
 public class EmailSender extends AbstractConfigure implements Sender {
     private volatile Session session;
 
@@ -49,16 +45,12 @@ public class EmailSender extends AbstractConfigure implements Sender {
         Properties props = new Properties();
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", String.valueOf(port));
-        props.put(
-                "mail.smtp.auth",
-                String.valueOf(config.getConfig().getOrDefault("mail.smtp.auth", true)));
+        props.put("mail.smtp.auth", String.valueOf(config.getConfig().getOrDefault("mail.smtp.auth", true)));
         props.put(
                 "mail.smtp.starttls.enable",
-                String.valueOf(
-                        config.getConfig().getOrDefault("mail.smtp.starttls.enable", true)));
+                String.valueOf(config.getConfig().getOrDefault("mail.smtp.starttls.enable", true)));
         props.put(
-                "mail.smtp.ssl.enable",
-                String.valueOf(config.getConfig().getOrDefault("mail.smtp.ssl.enable", false)));
+                "mail.smtp.ssl.enable", String.valueOf(config.getConfig().getOrDefault("mail.smtp.ssl.enable", false)));
         session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -79,10 +71,10 @@ public class EmailSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 
-    private static void doSend(SendRequest request, Session session, Map<String, Object> config) throws MessagingException {
+    private static void doSend(SendRequest request, Session session, Map<String, Object> config)
+            throws MessagingException {
         MimeMessage message = new MimeMessage(session);
         Object fromObj = config.get("mail.smtp.from");
         if (fromObj != null) {

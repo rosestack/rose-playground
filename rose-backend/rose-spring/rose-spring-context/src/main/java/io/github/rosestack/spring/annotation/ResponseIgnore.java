@@ -4,9 +4,8 @@ import java.lang.annotation.*;
 
 /**
  * 忽略响应包装注解
- * <p>
- * 用于标记不需要统一响应包装的方法
- * </p>
+ *
+ * <p>用于标记不需要统一响应包装的方法
  *
  * @author rosestack
  * @since 1.0.0
@@ -15,9 +14,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ResponseIgnore {
-    
-    /**
-     * 忽略原因
-     */
+
+    /** 忽略原因 */
     String reason() default "";
-} 
+}

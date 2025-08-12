@@ -4,8 +4,8 @@ import java.util.Set;
 
 public interface ReloadedResourceMessageSource extends ResourceMessageSource {
     /**
-     * Reload if {@link #canReload(String)} returns <code>true</code>,
-     * The calling {@link #initializeResource(String)} as default
+     * Reload if {@link #canReload(String)} returns <code>true</code>, The calling {@link
+     * #initializeResource(String)} as default
      *
      * @param changedResource Changes in the resource
      */
@@ -14,8 +14,8 @@ public interface ReloadedResourceMessageSource extends ResourceMessageSource {
     }
 
     /**
-     * Reload if {@link #canReload(Iterable)} returns <code>true</code>,
-     * The calling {@link #initializeResources(Iterable)} as default
+     * Reload if {@link #canReload(Iterable)} returns <code>true</code>, The calling {@link
+     * #initializeResources(Iterable)} as default
      *
      * @param changedResources Changes in the resources
      */

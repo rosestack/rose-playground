@@ -1,24 +1,24 @@
 package io.github.rosestack.notice.sender;
 
-import io.github.rosestack.notice.NoticeException;
-import io.github.rosestack.notice.SenderConfiguration;
-import io.github.rosestack.notice.spi.Sender;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
-
+import io.github.rosestack.notice.NoticeException;
+import io.github.rosestack.notice.SenderConfiguration;
+import io.github.rosestack.notice.spi.Sender;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 通用 Sender 工厂/注册表，支持 SPI 自动发现与运行时动态注册。<br>
+ *
  * <ul>
- *   <li>所有 Sender 实现通过 SPI 自动加载并以 getType() 作为 key 注册。</li>
- *   <li>支持 register() 方法运行时动态注册/替换 sender。</li>
- *   <li>getSender() 按字符串 key 获取对应 sender。</li>
+ *   <li>所有 Sender 实现通过 SPI 自动加载并以 getType() 作为 key 注册。
+ *   <li>支持 register() 方法运行时动态注册/替换 sender。
+ *   <li>getSender() 按字符串 key 获取对应 sender。
  * </ul>
+ *
  * <b>扩展方式：</b> 实现 Sender 并配置 SPI 文件，无需手动注册。
  */
 public class SenderFactory {
@@ -85,18 +85,30 @@ public class SenderFactory {
         if (config != null && config.getConfig() != null) {
             config.getConfig().entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
-                    .forEach(e -> sb.append(e.getKey()).append('=').append(String.valueOf(e.getValue())).append('&'));
+                    .forEach(e -> sb.append(e.getKey())
+                            .append('=')
+                            .append(String.valueOf(e.getValue()))
+                            .append('&'));
         }
         return sb.toString();
     }
 
     private static long getMaxCacheSize() {
         String val = System.getProperty("rose.notification.sender.cache.maxSize", "1000");
-        try { return Math.max(100L, Long.parseLong(val)); } catch (Exception ignored) { return 1000L; }
+        try {
+            return Math.max(100L, Long.parseLong(val));
+        } catch (Exception ignored) {
+            return 1000L;
+        }
     }
 
     private static java.time.Duration getExpireAfterAccessSeconds() {
         String val = System.getProperty("rose.notification.sender.cache.expireAfterAccessSeconds", "1800");
-        try { long sec = Math.max(60L, Long.parseLong(val)); return java.time.Duration.ofSeconds(sec); } catch (Exception ignored) { return java.time.Duration.ofMinutes(30); }
+        try {
+            long sec = Math.max(60L, Long.parseLong(val));
+            return java.time.Duration.ofSeconds(sec);
+        } catch (Exception ignored) {
+            return java.time.Duration.ofMinutes(30);
+        }
     }
 }

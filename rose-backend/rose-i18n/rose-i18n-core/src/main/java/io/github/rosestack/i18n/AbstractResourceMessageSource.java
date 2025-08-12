@@ -1,20 +1,20 @@
 package io.github.rosestack.i18n;
 
+import static java.util.Collections.singleton;
+import static java.util.Objects.requireNonNull;
+
 import io.github.rosestack.i18n.render.DefaultMessageRenderer;
 import io.github.rosestack.i18n.render.MessageRenderer;
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Collections.singleton;
-import static java.util.Objects.requireNonNull;
-
 @Slf4j
-public abstract class AbstractResourceMessageSource extends AbstractMessageSource implements ResourceMessageSource, ReloadedResourceMessageSource {
+public abstract class AbstractResourceMessageSource extends AbstractMessageSource
+        implements ResourceMessageSource, ReloadedResourceMessageSource {
     public static final String DEFAULT_RESOURCE_LOCATION = "i18n";
     public static final String DEFAULT_RESOURCE_NAME = "i18n_messages";
 
@@ -61,18 +61,21 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     protected final void initialize() {
         List<Locale> supportedLocales = getSupportedLocales();
         if (CollectionUtils.isEmpty(supportedLocales)) {
-            throw new IllegalStateException(String.format("{}.getSupportedLocales() Methods cannot return an empty list of locales!", this.getClass()));
+            throw new IllegalStateException(String.format(
+                    "{}.getSupportedLocales() Methods cannot return an empty list of locales!", this.getClass()));
         }
 
         Map<String, Map<String, String>> localizedResourceMessages = new HashMap<>(supportedLocales.size());
         for (Locale resolveLocale : supportedLocales) {
             String resource = getResource(resolveLocale);
             initializeResource(resource, localizedResourceMessages);
-
         }
         // Exchange the field
         this.localizedResourceMessages = localizedResourceMessages;
-        log.debug("Source '{}' Initialization is completed , localizedResourceMessages : {}", source, localizedResourceMessages);
+        log.debug(
+                "Source '{}' Initialization is completed , localizedResourceMessages : {}",
+                source,
+                localizedResourceMessages);
     }
 
     @Override
@@ -144,4 +147,4 @@ public abstract class AbstractResourceMessageSource extends AbstractMessageSourc
     protected abstract String getResourceSuffix();
 
     protected abstract Map<String, String> loadMessages(String resource);
-} 
+}

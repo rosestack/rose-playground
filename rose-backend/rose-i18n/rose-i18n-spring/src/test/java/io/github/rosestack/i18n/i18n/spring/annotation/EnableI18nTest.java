@@ -1,20 +1,18 @@
 package io.github.rosestack.i18n.i18n.spring.annotation;
 
+import static io.github.rosestack.i18n.util.I18nUtils.i18nMessageSource;
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.github.rosestack.i18n.AbstractSpringTest;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.i18n.spring.beans.TestI18nMessageSourceConfiguration;
 import io.github.rosestack.i18n.spring.annotation.EnableI18n;
+import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.Locale;
-
-import static io.github.rosestack.i18n.util.I18nUtils.i18nMessageSource;
-import static org.junit.jupiter.api.Assertions.*;
-
 
 /**
  * {@link EnableI18n} Test
@@ -23,10 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 1.0.0
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-        EnableI18nTest.class,
-        TestI18nMessageSourceConfiguration.class
-})
+@ContextConfiguration(classes = {EnableI18nTest.class, TestI18nMessageSourceConfiguration.class})
 @EnableI18n
 class EnableI18nTest extends AbstractSpringTest {
 

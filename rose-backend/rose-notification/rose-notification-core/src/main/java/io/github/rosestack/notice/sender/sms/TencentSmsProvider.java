@@ -12,10 +12,7 @@ import io.github.rosestack.notice.spi.AbstractConfigure;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-/**
- * 腾讯云短信服务商实现。
- * channelConfig 需包含 tencent.sms.secretId/secretKey/sdkAppId/signName/templateId。
- */
+/** 腾讯云短信服务商实现。 channelConfig 需包含 tencent.sms.secretId/secretKey/sdkAppId/signName/templateId。 */
 public class TencentSmsProvider extends AbstractConfigure implements SmsProvider {
     private volatile SmsClient client;
 

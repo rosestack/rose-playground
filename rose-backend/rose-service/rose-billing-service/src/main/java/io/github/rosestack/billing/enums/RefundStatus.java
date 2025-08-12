@@ -6,4 +6,3 @@ public enum RefundStatus {
     SUCCESS,
     FAILED
 }
-

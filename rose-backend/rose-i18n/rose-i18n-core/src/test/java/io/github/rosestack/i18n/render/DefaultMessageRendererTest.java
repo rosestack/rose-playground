@@ -1,12 +1,9 @@
 package io.github.rosestack.i18n.render;
 
-import io.github.rosestack.i18n.evaluator.ExpressionEvaluator;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+import io.github.rosestack.i18n.evaluator.ExpressionEvaluator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -15,25 +12,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * DefaultMessageRenderer 单元测试
  *
- * <p>测试职责：</p>
+ * <p>测试职责：
+ *
  * <ul>
- *   <li>基础功能：null 处理、空字符串处理</li>
- *   <li>表达式插值：${expression} 格式</li>
- *   <li>命名参数插值：{name} 格式</li>
- *   <li>MessageFormat 插值：{0}, {1} 格式</li>
- *   <li>占位符插值：{} 格式</li>
- *   <li>构造函数：默认构造函数和自定义 ExpressionEvaluator</li>
- *   <li>线程安全：并发访问测试</li>
- *   <li>错误处理：异常情况处理</li>
- *   <li>性能测试：大量数据处理</li>
- *   <li>国际化：不同 Locale 处理</li>
+ *   <li>基础功能：null 处理、空字符串处理
+ *   <li>表达式插值：${expression} 格式
+ *   <li>命名参数插值：{name} 格式
+ *   <li>MessageFormat 插值：{0}, {1} 格式
+ *   <li>占位符插值：{} 格式
+ *   <li>构造函数：默认构造函数和自定义 ExpressionEvaluator
+ *   <li>线程安全：并发访问测试
+ *   <li>错误处理：异常情况处理
+ *   <li>性能测试：大量数据处理
+ *   <li>国际化：不同 Locale 处理
  * </ul>
  */
 @ExtendWith(MockitoExtension.class)
@@ -55,8 +55,8 @@ class DefaultMessageRendererTest {
 
     @Test
     void testNullMessage_ShouldReturnNull() {
-        assertNull(interpolator.render(null, Locale.ENGLISH, new Object[]{"test"}));
-        assertNull(customInterpolator.render(null, Locale.ENGLISH, new Object[]{"test"}));
+        assertNull(interpolator.render(null, Locale.ENGLISH, new Object[] {"test"}));
+        assertNull(customInterpolator.render(null, Locale.ENGLISH, new Object[] {"test"}));
     }
 
     @Test
@@ -71,20 +71,20 @@ class DefaultMessageRendererTest {
 
     @Test
     void testEmptyMessage_ShouldReturnEmpty() {
-        String result = interpolator.render("", Locale.ENGLISH, new Object[]{"test"});
+        String result = interpolator.render("", Locale.ENGLISH, new Object[] {"test"});
         assertEquals("", result);
 
-        result = customInterpolator.render("", Locale.ENGLISH, new Object[]{"test"});
+        result = customInterpolator.render("", Locale.ENGLISH, new Object[] {"test"});
         assertEquals("", result);
     }
 
     @Test
     void testNoPlaceholders_ShouldReturnOriginalMessage() {
         String message = "Hello World";
-        String result = interpolator.render(message, Locale.ENGLISH, new Object[]{"test"});
+        String result = interpolator.render(message, Locale.ENGLISH, new Object[] {"test"});
         assertEquals(message, result);
 
-        result = customInterpolator.render(message, Locale.ENGLISH, new Object[]{"test"});
+        result = customInterpolator.render(message, Locale.ENGLISH, new Object[] {"test"});
         assertEquals(message, result);
     }
 
@@ -289,12 +289,15 @@ class DefaultMessageRendererTest {
     @Test
     void testMessageFormatInterpolation_WithInvalidFormat() {
         String message = "Hello {0}, you have {1} messages";
-        Object[] args = {"John", new Object() {
-            @Override
-            public String toString() {
-                throw new RuntimeException("Test exception");
+        Object[] args = {
+            "John",
+            new Object() {
+                @Override
+                public String toString() {
+                    throw new RuntimeException("Test exception");
+                }
             }
-        }};
+        };
 
         String result = interpolator.render(message, Locale.ENGLISH, args);
         // 应该回退到手动处理或保持原样
@@ -600,12 +603,15 @@ class DefaultMessageRendererTest {
     @Test
     void testErrorHandling_MessageFormatException() {
         String message = "Hello {0}, you have {1} messages";
-        Object[] args = {"John", new Object() {
-            @Override
-            public String toString() {
-                throw new RuntimeException("Test exception");
+        Object[] args = {
+            "John",
+            new Object() {
+                @Override
+                public String toString() {
+                    throw new RuntimeException("Test exception");
+                }
             }
-        }};
+        };
 
         String result = interpolator.render(message, Locale.ENGLISH, args);
         // 应该回退到手动处理

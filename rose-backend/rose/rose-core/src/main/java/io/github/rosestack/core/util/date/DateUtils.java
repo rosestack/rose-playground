@@ -33,37 +33,27 @@ public class DateUtils {
         return localDateTime.format(DateTimeFormatter.ofPattern(datePattern, Locale.CHINA));
     }
 
-    /**
-     * Converts local date to Date.
-     */
+    /** Converts local date to Date. */
     public static Date toDate(final LocalDate localDate) {
         return Date.from(localDate.atStartOfDay(zoneId).toInstant());
     }
 
-    /**
-     * Converts local date to Date.
-     */
+    /** Converts local date to Date. */
     public static Date toDate(final LocalDateTime localDateTime) {
         return Date.from(localDateTime.atZone(zoneId).toInstant());
     }
 
-    /**
-     * Converts local date to Calendar.
-     */
+    /** Converts local date to Calendar. */
     public static Calendar toCalendar(final LocalDateTime localDateTime) {
         return GregorianCalendar.from(ZonedDateTime.of(localDateTime, zoneId));
     }
 
-    /**
-     * Converts local date to Calendar and setting date to midnight.
-     */
+    /** Converts local date to Calendar and setting date to midnight. */
     public static Calendar toCalendar(final LocalDate localDate) {
         return GregorianCalendar.from(ZonedDateTime.of(localDate, LocalTime.MIDNIGHT, zoneId));
     }
 
-    /**
-     * Converts local date to epoh milliseconds.
-     */
+    /** Converts local date to epoh milliseconds. */
     public static long toMilliseconds(final LocalDateTime localDateTime) {
         return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
     }

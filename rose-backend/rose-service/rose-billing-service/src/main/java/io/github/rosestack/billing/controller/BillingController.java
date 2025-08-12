@@ -8,15 +8,14 @@ import io.github.rosestack.core.model.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 计费管理控制器
@@ -28,58 +27,42 @@ import java.util.Map;
 @RequestMapping("/api/billing")
 @RequiredArgsConstructor
 @Validated
-
 public class BillingController {
 
     private final BillingService billingService;
 
-    /**
-     * 创建订阅
-     */
+    /** 创建订阅 */
     @PostMapping("/subscriptions")
     public ApiResponse<TenantSubscription> createSubscription(@Valid @RequestBody CreateSubscriptionRequest request) {
-        TenantSubscription subscription = billingService.createSubscription(
-                request.getTenantId(),
-                request.getPlanId(),
-                request.getStartTrial()
-        );
+        TenantSubscription subscription =
+                billingService.createSubscription(request.getTenantId(), request.getPlanId(), request.getStartTrial());
         return ApiResponse.success(subscription);
     }
 
-    /**
-     * 获取租户订阅信息
-     */
+    /** 获取租户订阅信息 */
     @GetMapping("/subscriptions/tenant/{tenantId}")
     public ApiResponse<TenantSubscription> getTenantSubscription(@PathVariable String tenantId) {
         TenantSubscription subscription = billingService.getTenantSubscription(tenantId);
         return ApiResponse.success(subscription);
     }
 
-    /**
-     * 升级/降级订阅计划
-     */
+    /** 升级/降级订阅计划 */
     @PutMapping("/subscriptions/{subscriptionId}/plan")
     public ApiResponse<TenantSubscription> changePlan(
-            @PathVariable String subscriptionId,
-            @Valid @RequestBody ChangePlanRequest request) {
+            @PathVariable String subscriptionId, @Valid @RequestBody ChangePlanRequest request) {
         TenantSubscription subscription = billingService.changePlan(subscriptionId, request.getNewPlanId());
         return ApiResponse.success(subscription);
     }
 
-    /**
-     * 取消订阅
-     */
+    /** 取消订阅 */
     @PutMapping("/subscriptions/{subscriptionId}/cancel")
     public ApiResponse<Void> cancelSubscription(
-            @PathVariable String subscriptionId,
-            @RequestBody CancelSubscriptionRequest request) {
+            @PathVariable String subscriptionId, @RequestBody CancelSubscriptionRequest request) {
         billingService.cancelSubscription(subscriptionId, request.getReason());
         return ApiResponse.success();
     }
 
-    /**
-     * 记录使用量
-     */
+    /** 记录使用量 */
     @PostMapping("/usage")
     public ApiResponse<Void> recordUsage(@Valid @RequestBody RecordUsageRequest request) {
         billingService.recordUsage(
@@ -87,70 +70,53 @@ public class BillingController {
                 request.getMetricType(),
                 request.getQuantity(),
                 request.getResourceId(),
-                request.getMetadata()
-        );
+                request.getMetadata());
         return ApiResponse.success();
     }
 
-    /**
-     * 获取使用量统计
-     */
+    /** 获取使用量统计 */
     @GetMapping("/usage/tenant/{tenantId}")
     public ApiResponse<List<Map<String, Object>>> getUsageStats(
-            @PathVariable String tenantId,
-            @RequestParam String metricType,
-            @RequestParam String period) {
+            @PathVariable String tenantId, @RequestParam String metricType, @RequestParam String period) {
         List<Map<String, Object>> usage = billingService.getUsageStats(tenantId, period);
         return ApiResponse.success(usage);
     }
 
-    /**
-     * 检查使用量限制
-     */
+    /** 检查使用量限制 */
     @GetMapping("/usage/tenant/{tenantId}/limit-check")
-    public ApiResponse<Boolean> checkUsageLimit(
-            @PathVariable String tenantId,
-            @RequestParam String metricType) {
+    public ApiResponse<Boolean> checkUsageLimit(@PathVariable String tenantId, @RequestParam String metricType) {
         boolean withinLimit = billingService.checkUsageLimit(tenantId, metricType);
         return ApiResponse.success(withinLimit);
     }
 
-    /**
-     * 生成账单
-     */
+    /** 生成账单 */
     @PostMapping("/invoices/generate")
     public ApiResponse<Invoice> generateInvoice(@Valid @RequestBody GenerateInvoiceRequest request) {
         Invoice invoice = billingService.generateInvoice(request.getSubscriptionId());
         return ApiResponse.success(invoice);
     }
 
-    /**
-     * 获取租户账单列表
-     */
+    /** 获取租户账单列表 */
     @GetMapping("/invoices/tenant/{tenantId}")
     public ApiResponse<List<Invoice>> getTenantInvoices(@PathVariable String tenantId) {
         List<Invoice> invoices = billingService.getTenantInvoices(tenantId);
         return ApiResponse.success(invoices);
     }
 
-    /**
-     * 处理支付
-     */
+    /** 处理支付 */
     @PostMapping("/invoices/{invoiceId}/payment")
     public ApiResponse<Void> processPayment(
-            @PathVariable String invoiceId,
-            @Valid @RequestBody ProcessPaymentRequest request) {
+            @PathVariable String invoiceId, @Valid @RequestBody ProcessPaymentRequest request) {
         billingService.processPayment(
                 invoiceId,
-                request.getPaymentMethodEnum() == null ? request.getPaymentMethod() : request.getPaymentMethodEnum().name(),
-                request.getTransactionId()
-        );
+                request.getPaymentMethodEnum() == null
+                        ? request.getPaymentMethod()
+                        : request.getPaymentMethodEnum().name(),
+                request.getTransactionId());
         return ApiResponse.success();
     }
 
-    /**
-     * 获取订阅计划列表
-     */
+    /** 获取订阅计划列表 */
     @GetMapping("/plans")
     public ApiResponse<List<SubscriptionPlan>> getSubscriptionPlans() {
         List<SubscriptionPlan> plans = billingService.getAvailablePlans();
@@ -163,8 +129,10 @@ public class BillingController {
 class CreateSubscriptionRequest {
     @NotBlank
     private String tenantId;
+
     @NotBlank
     private String planId;
+
     private Boolean startTrial = true;
 }
 
@@ -183,10 +151,13 @@ class CancelSubscriptionRequest {
 class RecordUsageRequest {
     @NotBlank
     private String tenantId;
+
     @NotBlank
     private String metricType;
+
     @DecimalMin(value = "0")
     private BigDecimal quantity;
+
     private String resourceId;
     private String metadata;
 }
@@ -200,16 +171,22 @@ class GenerateInvoiceRequest {
 @Data
 class ProcessPaymentRequest {
     @NotBlank
-    @io.github.rosestack.billing.validation.PaymentMethodSubset(anyOf = {
-        io.github.rosestack.billing.payment.PaymentMethod.ALIPAY,
-        io.github.rosestack.billing.payment.PaymentMethod.WECHAT,
-        io.github.rosestack.billing.payment.PaymentMethod.STRIPE
-    })
+    @io.github.rosestack.billing.validation.PaymentMethodSubset(
+            anyOf = {
+                io.github.rosestack.billing.payment.PaymentMethod.ALIPAY,
+                io.github.rosestack.billing.payment.PaymentMethod.WECHAT,
+                io.github.rosestack.billing.payment.PaymentMethod.STRIPE
+            })
     private String paymentMethod;
+
     @NotBlank
     private String transactionId;
 
     public io.github.rosestack.billing.payment.PaymentMethod getPaymentMethodEnum() {
-        try { return io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod); } catch (Exception e) { return null; }
+        try {
+            return io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

@@ -6,9 +6,7 @@ import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Starter 层实现，委托核心抽象进行字段填充。
- */
+/** Starter 层实现，委托核心抽象进行字段填充。 */
 @Slf4j
 @RequiredArgsConstructor
 public class RoseMetaObjectHandler extends AbstractMetaObjectHandler {

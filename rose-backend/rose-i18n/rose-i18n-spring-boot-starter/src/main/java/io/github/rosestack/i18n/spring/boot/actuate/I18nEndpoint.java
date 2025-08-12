@@ -1,11 +1,18 @@
 package io.github.rosestack.i18n.spring.boot.actuate;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static org.springframework.util.StringUtils.hasText;
+
 import io.github.rosestack.i18n.AbstractResourceMessageSource;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource;
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
@@ -18,16 +25,9 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.*;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static org.springframework.util.StringUtils.hasText;
-
 /**
  * I18n Spring Boot Actuator Endpoint
+ *
  * <pre>
  * {
  * "test.i18n_messages_zh.properties": {
@@ -61,14 +61,16 @@ public class I18nEndpoint {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReadyEvent(ApplicationReadyEvent event) {
         ConfigurableApplicationContext context = event.getApplicationContext();
-        I18nMessageSource i18nMessageSource = context.getBean(I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource =
+                context.getBean(I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
         initMessageSources(i18nMessageSource);
     }
 
     private void initMessageSources(I18nMessageSource serviceMessageSource) {
         List<I18nMessageSource> messageSources = emptyList();
         if (serviceMessageSource instanceof DelegatingI18nMessageSource) {
-            DelegatingI18nMessageSource delegatingServiceMessageSource = (DelegatingI18nMessageSource) serviceMessageSource;
+            DelegatingI18nMessageSource delegatingServiceMessageSource =
+                    (DelegatingI18nMessageSource) serviceMessageSource;
             messageSources = delegatingServiceMessageSource.getDelegate().getMessageSources();
         }
 
@@ -81,7 +83,6 @@ public class I18nEndpoint {
         }
 
         this.i18nMessageSources = allMessageSources;
-
     }
 
     @ReadOperation
@@ -93,11 +94,12 @@ public class I18nEndpoint {
             // FIXME
             I18nMessageSource serviceMessageSource = messageSources.get(i);
             if (serviceMessageSource instanceof AbstractResourceMessageSource) {
-                AbstractResourceMessageSource resourceMessageSource = (AbstractResourceMessageSource) serviceMessageSource;
-                Map<String, Map<String, String>> localizedResourceMessages = resourceMessageSource.getLocalizedResourceMessages();
-                localizedResourceMessages.forEach(
-                        (k, v) -> allLocalizedResourceMessages.merge(k, v, (oldValue, value) -> value.isEmpty() ? oldValue : value)
-                );
+                AbstractResourceMessageSource resourceMessageSource =
+                        (AbstractResourceMessageSource) serviceMessageSource;
+                Map<String, Map<String, String>> localizedResourceMessages =
+                        resourceMessageSource.getLocalizedResourceMessages();
+                localizedResourceMessages.forEach((k, v) -> allLocalizedResourceMessages.merge(
+                        k, v, (oldValue, value) -> value.isEmpty() ? oldValue : value));
             }
         }
         return allLocalizedResourceMessages;
@@ -139,7 +141,8 @@ public class I18nEndpoint {
     }
 
     @WriteOperation
-    public Map<String, Object> addMessage(String source, Locale locale, String code, String message) throws IOException {
+    public Map<String, Object> addMessage(String source, Locale locale, String code, String message)
+            throws IOException {
         PropertySourceResourceI18nMessageSource messageSource = getPropertySourcesServiceMessageSource(source);
         Properties properties = loadProperties(messageSource, locale);
         // Add a new code with message
@@ -160,7 +163,8 @@ public class I18nEndpoint {
         return newProperties;
     }
 
-    private Properties loadProperties(PropertySourceResourceI18nMessageSource messageSource, Locale locale) throws IOException {
+    private Properties loadProperties(PropertySourceResourceI18nMessageSource messageSource, Locale locale)
+            throws IOException {
         Properties properties = messageSource.loadAllProperties(locale);
         return properties == null ? new Properties() : properties;
     }
@@ -179,8 +183,7 @@ public class I18nEndpoint {
 
     private PropertySourceResourceI18nMessageSource getPropertySourcesServiceMessageSource(String source) {
         return i18nMessageSources.stream()
-                .filter(messageSource ->
-                        Objects.equals(source, messageSource.getSource()))
+                .filter(messageSource -> Objects.equals(source, messageSource.getSource()))
                 .filter(this::isPropertySourcesMessageSource)
                 .map(PropertySourceResourceI18nMessageSource.class::cast)
                 .findFirst()

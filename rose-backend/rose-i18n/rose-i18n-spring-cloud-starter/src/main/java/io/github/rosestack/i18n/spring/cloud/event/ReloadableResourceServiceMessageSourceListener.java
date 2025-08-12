@@ -21,6 +21,7 @@ import io.github.rosestack.i18n.ReloadedResourceMessageSource;
 import io.github.rosestack.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource;
+import java.util.Set;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -28,11 +29,9 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 
-import java.util.Set;
-
 /**
- * * An {@link ApplicationListener} of {@link EnvironmentChangeEvent} to reload
- * {@link I18nMessageSource} dynamically at the runtime.
+ * * An {@link ApplicationListener} of {@link EnvironmentChangeEvent} to reload {@link
+ * I18nMessageSource} dynamically at the runtime.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see PropertySourceResourceI18nMessageSource
@@ -42,8 +41,8 @@ import java.util.Set;
  * @see EnvironmentChangeEvent
  * @since 1.0.0
  */
-public class ReloadableResourceServiceMessageSourceListener implements SmartInitializingSingleton,
-        ApplicationListener<EnvironmentChangeEvent>, BeanFactoryAware {
+public class ReloadableResourceServiceMessageSourceListener
+        implements SmartInitializingSingleton, ApplicationListener<EnvironmentChangeEvent>, BeanFactoryAware {
 
     private BeanFactory beanFactory;
 
@@ -63,8 +62,8 @@ public class ReloadableResourceServiceMessageSourceListener implements SmartInit
     @Override
     public void afterSingletonsInstantiated() {
         // Lookup the primary bean of PropertySourcesServiceMessageSource
-        this.reloadedResourceMessageSource = this.beanFactory.getBean(I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME,
-                ReloadedResourceMessageSource.class);
+        this.reloadedResourceMessageSource = this.beanFactory.getBean(
+                I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, ReloadedResourceMessageSource.class);
     }
 
     @Override

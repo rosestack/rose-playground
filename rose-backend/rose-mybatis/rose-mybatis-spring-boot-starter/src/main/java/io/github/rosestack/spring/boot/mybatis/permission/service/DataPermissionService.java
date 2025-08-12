@@ -2,23 +2,17 @@ package io.github.rosestack.spring.boot.mybatis.permission.service;
 
 import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.spring.boot.mybatis.permission.RoseDataPermissionHandler;
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 /**
  * 数据权限缓存管理服务
- * <p>
- * 提供数据权限缓存的管理功能，包括：
- * 1. 定时清理过期缓存
- * 2. 手动清理缓存
- * 3. 缓存统计信息
- * 4. 缓存预热
- * </p>
+ *
+ * <p>提供数据权限缓存的管理功能，包括： 1. 定时清理过期缓存 2. 手动清理缓存 3. 缓存统计信息 4. 缓存预热
  *
  * @author Rose Team
  * @since 1.0.0
@@ -26,22 +20,22 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "rose.mybatis.data-permission",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class DataPermissionService {
     private final RoseMybatisProperties properties;
     private final RoseDataPermissionHandler dataPermissionHandler;
 
-    /**
-     * 手动清空所有缓存
-     */
+    /** 手动清空所有缓存 */
     public void clearAllCache() {
         log.info("手动清空所有数据权限缓存");
         dataPermissionHandler.clearAllCache();
     }
 
-    /**
-     * 清空指定用户的权限缓存
-     */
+    /** 清空指定用户的权限缓存 */
     public void clearUserCache(String userId) {
         if (userId == null || userId.trim().isEmpty()) {
             log.warn("用户ID为空，无法清空用户缓存");
@@ -52,9 +46,7 @@ public class DataPermissionService {
         dataPermissionHandler.clearUserPermissionCache(userId);
     }
 
-    /**
-     * 批量清空多个用户的权限缓存
-     */
+    /** 批量清空多个用户的权限缓存 */
     public void clearUsersCache(String... userIds) {
         if (userIds == null || userIds.length == 0) {
             log.warn("用户ID列表为空，无法清空用户缓存");
@@ -68,16 +60,12 @@ public class DataPermissionService {
         log.info("批量清空 {} 个用户的数据权限缓存完成", userIds.length);
     }
 
-    /**
-     * 获取缓存统计信息
-     */
+    /** 获取缓存统计信息 */
     public Map<String, Object> getCacheStatistics() {
         return dataPermissionHandler.getCacheStats();
     }
 
-    /**
-     * 检查缓存健康状态
-     */
+    /** 检查缓存健康状态 */
     public CacheHealthStatus checkCacheHealth() {
         try {
             Map<String, Object> stats = getCacheStatistics();
@@ -122,9 +110,7 @@ public class DataPermissionService {
         }
     }
 
-    /**
-     * 缓存健康状态
-     */
+    /** 缓存健康状态 */
     @Data
     public static class CacheHealthStatus {
         private boolean healthy = true;
@@ -140,14 +126,13 @@ public class DataPermissionService {
 
         @Override
         public String toString() {
-            return String.format("CacheHealthStatus{healthy=%s, annotationCache=%d, permissionCache=%d, expired=%d(%.2f%%), warnings=%s}",
+            return String.format(
+                    "CacheHealthStatus{healthy=%s, annotationCache=%d, permissionCache=%d, expired=%d(%.2f%%), warnings=%s}",
                     healthy, annotationCacheSize, permissionCacheSize, expiredCacheCount, expiredRate * 100, warnings);
         }
     }
 
-    /**
-     * 获取缓存使用建议
-     */
+    /** 获取缓存使用建议 */
     public String getCacheUsageAdvice() {
         CacheHealthStatus health = checkCacheHealth();
         StringBuilder advice = new StringBuilder();
@@ -156,7 +141,9 @@ public class DataPermissionService {
         advice.append("1. 当前缓存状态: ").append(health.isHealthy() ? "健康" : "需要关注").append("\n");
         advice.append("2. 注解缓存数量: ").append(health.getAnnotationCacheSize()).append("\n");
         advice.append("3. 权限缓存数量: ").append(health.getPermissionCacheSize()).append("\n");
-        advice.append("4. 过期缓存比例: ").append(String.format("%.2f%%", health.getExpiredRate() * 100)).append("\n");
+        advice.append("4. 过期缓存比例: ")
+                .append(String.format("%.2f%%", health.getExpiredRate() * 100))
+                .append("\n");
 
         if (!health.getWarnings().isEmpty()) {
             advice.append("5. 注意事项:\n");

@@ -4,6 +4,8 @@ import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.annotation.EncryptField;
 import io.github.rosestack.encryption.hash.HashService;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.sql.Statement;
+import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -15,24 +17,25 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
-import java.sql.Statement;
-import java.util.Collection;
-
 /**
  * 字段加密拦截器
- * <p>
- * 拦截 MyBatis 的执行过程，对标记了 @EncryptField 注解的字段进行自动加密和解密。
- * - 在插入和更新时自动加密敏感字段，并生成对应的哈希字段（如果启用）
- * - 在查询结果返回时自动解密敏感字段
- * </p>
+ *
+ * <p>拦截 MyBatis 的执行过程，对标记了 @EncryptField 注解的字段进行自动加密和解密。 - 在插入和更新时自动加密敏感字段，并生成对应的哈希字段（如果启用） -
+ * 在查询结果返回时自动解密敏感字段
  *
  * @author Rose Team
  * @since 1.0.0
  */
 @Slf4j
 @Intercepts({
-        @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
-        @Signature(type = ResultSetHandler.class, method = "handleResultSets", args = {Statement.class})
+    @Signature(
+            type = Executor.class,
+            method = "update",
+            args = {MappedStatement.class, Object.class}),
+    @Signature(
+            type = ResultSetHandler.class,
+            method = "handleResultSets",
+            args = {Statement.class})
 })
 public class FieldEncryptionInterceptor implements Interceptor {
 
@@ -40,9 +43,10 @@ public class FieldEncryptionInterceptor implements Interceptor {
     private final HashService hashService;
     private final FieldEncryptionMetrics metrics;
 
-    public FieldEncryptionInterceptor(FieldEncryptor fieldEncryptor,
-                                      @Autowired(required = false) HashService hashService,
-                                      @Autowired(required = false) MeterRegistry registry) {
+    public FieldEncryptionInterceptor(
+            FieldEncryptor fieldEncryptor,
+            @Autowired(required = false) HashService hashService,
+            @Autowired(required = false) MeterRegistry registry) {
         this.fieldEncryptor = fieldEncryptor;
         this.hashService = hashService;
         this.metrics = registry != null ? new FieldEncryptionMetrics(registry) : null;
@@ -61,9 +65,7 @@ public class FieldEncryptionInterceptor implements Interceptor {
         return invocation.proceed();
     }
 
-    /**
-     * 处理插入和更新操作，加密敏感字段
-     */
+    /** 处理插入和更新操作，加密敏感字段 */
     private Object handleExecutorUpdate(Invocation invocation) throws Throwable {
         Object[] args = invocation.getArgs();
         MappedStatement mappedStatement = (MappedStatement) args[0];
@@ -78,9 +80,7 @@ public class FieldEncryptionInterceptor implements Interceptor {
         return invocation.proceed();
     }
 
-    /**
-     * 处理查询结果，解密敏感字段
-     */
+    /** 处理查询结果，解密敏感字段 */
     private Object handleResultSetQuery(Invocation invocation) throws Throwable {
         Object result = invocation.proceed();
 
@@ -91,9 +91,7 @@ public class FieldEncryptionInterceptor implements Interceptor {
         return result;
     }
 
-    /**
-     * 加密字段
-     */
+    /** 加密字段 */
     private void encryptFields(Object obj) {
         if (obj == null) {
             return;
@@ -145,9 +143,7 @@ public class FieldEncryptionInterceptor implements Interceptor {
         });
     }
 
-    /**
-     * 解密字段
-     */
+    /** 解密字段 */
     private void decryptFields(Object obj) {
         if (obj == null) {
             return;
@@ -194,10 +190,9 @@ public class FieldEncryptionInterceptor implements Interceptor {
         });
     }
 
-    /**
-     * 生成哈希字段
-     */
-    private void generateHashField(Object obj, java.lang.reflect.Field originalField, String plainText, EncryptField encryptField) {
+    /** 生成哈希字段 */
+    private void generateHashField(
+            Object obj, java.lang.reflect.Field originalField, String plainText, EncryptField encryptField) {
         try {
             String hashFieldName = hashService.generateHashFieldName(originalField.getName(), encryptField.hashField());
             java.lang.reflect.Field hashField = ReflectionUtils.findField(obj.getClass(), hashFieldName);
@@ -221,6 +216,5 @@ public class FieldEncryptionInterceptor implements Interceptor {
     }
 
     @Override
-    public void setProperties(java.util.Properties properties) {
-    }
+    public void setProperties(java.util.Properties properties) {}
 }

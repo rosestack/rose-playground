@@ -5,14 +5,13 @@ import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.payment.PaymentProcessor;
 import io.github.rosestack.billing.payment.PaymentStatus;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Stripe支付处理器具体实现
@@ -134,7 +133,8 @@ public class StripePaymentProcessor implements PaymentProcessor {
             */
 
             // 模拟返回支付链接
-            return String.format("https://checkout.stripe.com/c/pay/cs_test_%s#fidkdWxOYHwnPyd1blpxYHZxWjA0SzF8N2hGbERuNE9rQGJPbHZuZ3I0VTNFMkFyfGhVY0s3YnwySkpRc2J8ZEBxPF9VPWFIa1dEa2NGNGdHT0N%2FMGBHYHdGS2phTGpOYkVrRVp8VnBRNk9hMXVIdjBXdTVMN3Zmcw%3D%3D",
+            return String.format(
+                    "https://checkout.stripe.com/c/pay/cs_test_%s#fidkdWxOYHwnPyd1blpxYHZxWjA0SzF8N2hGbERuNE9rQGJPbHZuZ3I0VTNFMkFyfGhVY0s3YnwySkpRc2J8ZEBxPF9VPWFIa1dEa2NGNGdHT0N%2FMGBHYHdGS2phTGpOYkVrRVp8VnBRNk9hMXVIdjBXdTVMN3Zmcw%3D%3D",
                     System.currentTimeMillis());
 
         } catch (Exception e) {
@@ -159,9 +159,11 @@ public class StripePaymentProcessor implements PaymentProcessor {
 
             Object signObj = callbackData.get("sign");
             if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
-                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("id", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("id", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("timestamp", ""));
                 String expected = hmacSha256Hex(payload, hmacSecret);
                 if (!expected.equals(signObj.toString())) {
                     log.warn("Stripe回调HMAC校验失败");
@@ -169,9 +171,9 @@ public class StripePaymentProcessor implements PaymentProcessor {
                 }
             }
 
-            return callbackData.containsKey("id") &&
-                    callbackData.containsKey("type") &&
-                    "payment_intent.succeeded".equals(callbackData.get("type"));
+            return callbackData.containsKey("id")
+                    && callbackData.containsKey("type")
+                    && "payment_intent.succeeded".equals(callbackData.get("type"));
 
         } catch (Exception e) {
             log.error("验证Stripe回调失败", e);
@@ -182,7 +184,8 @@ public class StripePaymentProcessor implements PaymentProcessor {
     private static String hmacSha256Hex(String data, String key) {
         try {
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            mac.init(new javax.crypto.spec.SecretKeySpec(
+                    key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(result.length * 2);
             for (byte b : result) sb.append(String.format("%02x", b));
@@ -229,9 +232,11 @@ public class StripePaymentProcessor implements PaymentProcessor {
             }
             Object signObj = callbackData.get("sign");
             if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
-                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("refund_id", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("refund_id", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("timestamp", ""));
                 String expected = hmacSha256Hex(payload, hmacSecret);
                 return expected.equals(signObj.toString());
             }
@@ -244,7 +249,8 @@ public class StripePaymentProcessor implements PaymentProcessor {
 
     @Override
     public boolean isRefundSuccess(java.util.Map<String, Object> data) {
-        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", ""))).toUpperCase();
+        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", "")))
+                .toUpperCase();
         return "SUCCEEDED".equals(s) || "SUCCESS".equals(s);
     }
 
@@ -254,7 +260,6 @@ public class StripePaymentProcessor implements PaymentProcessor {
         if (amt != null) return new java.math.BigDecimal(amt.toString());
         return PaymentProcessor.super.parseRefundAmount(data);
     }
-
 
     @Override
     public PaymentStatus queryPaymentStatus(String transactionId) {

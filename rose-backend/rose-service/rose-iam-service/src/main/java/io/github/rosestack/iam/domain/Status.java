@@ -3,14 +3,7 @@ package io.github.rosestack.iam.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 账户当前状态：
- * - Activated: 正常状态
- * - Suspended: 已停用
- * - Deactivated: 已禁用
- * - Resigned: 已离职
- * - Archived: 已归档
- */
+/** 账户当前状态： - Activated: 正常状态 - Suspended: 已停用 - Deactivated: 已禁用 - Resigned: 已离职 - Archived: 已归档 */
 @Getter
 @AllArgsConstructor
 public enum Status {

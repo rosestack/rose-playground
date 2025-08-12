@@ -4,16 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.util.HtmlUtils;
-
 import java.io.IOException;
 import java.util.regex.Pattern;
+import org.springframework.web.util.HtmlUtils;
 
 /**
  * XSS 防护过滤器
- * <p>
- * 防止跨站脚本攻击，过滤恶意脚本
- * </p>
+ *
+ * <p>防止跨站脚本攻击，过滤恶意脚本
  *
  * @author rosestack
  * @since 1.0.0
@@ -22,10 +20,10 @@ public class XssFilter extends AbstractBaseFilter {
 
     // 简化的 XSS 攻击模式，只保留最常见的
     private static final Pattern[] XSS_PATTERNS = {
-            Pattern.compile("<script[^>]*>.*?</script>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL),
-            Pattern.compile("javascript:", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("vbscript:", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("on\\w+\\s*=", Pattern.CASE_INSENSITIVE) // 匹配所有 on 事件
+        Pattern.compile("<script[^>]*>.*?</script>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL),
+        Pattern.compile("javascript:", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("vbscript:", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("on\\w+\\s*=", Pattern.CASE_INSENSITIVE) // 匹配所有 on 事件
     };
 
     public XssFilter(String[] excludePaths) {
@@ -42,9 +40,7 @@ public class XssFilter extends AbstractBaseFilter {
         filterChain.doFilter(wrappedRequest, response);
     }
 
-    /**
-     * XSS 请求包装器
-     */
+    /** XSS 请求包装器 */
     private static class XssHttpServletRequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
 
         public XssHttpServletRequestWrapper(HttpServletRequest request) {
@@ -93,4 +89,4 @@ public class XssFilter extends AbstractBaseFilter {
             return value;
         }
     }
-} 
+}

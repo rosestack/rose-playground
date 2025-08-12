@@ -1,9 +1,6 @@
 package io.github.rosestack.billing.service;
 
-/**
- * 用户指标服务接口
- * 提供与用户相关的计量数据查询，避免计费模块直接依赖 IAM 模块。
- */
+/** 用户指标服务接口 提供与用户相关的计量数据查询，避免计费模块直接依赖 IAM 模块。 */
 public interface UserMetricsService {
 
     /**
@@ -14,4 +11,3 @@ public interface UserMetricsService {
      */
     int countTenantUsers(String tenantId);
 }
-

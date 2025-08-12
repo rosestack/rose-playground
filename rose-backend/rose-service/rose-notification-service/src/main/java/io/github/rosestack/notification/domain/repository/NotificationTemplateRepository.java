@@ -1,19 +1,18 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.NotificationTemplate;
-
 import java.util.Optional;
 
 /**
  * 通知模板仓储接口
- * <p>
- * 定义通知模板实体的持久化操作。
+ *
+ * <p>定义通知模板实体的持久化操作。
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
  */
 public interface NotificationTemplateRepository {
-    
+
     /**
      * 根据ID查找通知模板
      *

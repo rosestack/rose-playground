@@ -11,5 +11,4 @@ public class MybatisConstants {
     public static final String MDC_TENANT_ID = "tenantId";
 
     public static final int TENANT_ID_FILTER_ORDER = Integer.MIN_VALUE + 5;
-
 }

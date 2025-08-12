@@ -4,9 +4,7 @@ import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.notice.spi.BlacklistChecker;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-/**
- * 基于 Redis 的黑名单检查，使用 Set 维护。
- */
+/** 基于 Redis 的黑名单检查，使用 Set 维护。 */
 public class RedisBlacklistChecker implements BlacklistChecker {
     private final StringRedisTemplate redis;
     private final String setKey;
@@ -27,5 +25,3 @@ public class RedisBlacklistChecker implements BlacklistChecker {
         return Boolean.TRUE.equals(member);
     }
 }
-
-

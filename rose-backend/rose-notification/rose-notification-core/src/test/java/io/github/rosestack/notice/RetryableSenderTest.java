@@ -2,24 +2,33 @@ package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.sender.RetryableSender;
 import io.github.rosestack.notice.spi.Sender;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class RetryableSenderTest {
     static class FlakySender implements Sender {
         int count;
-        @Override public String getChannelType() { return "test"; }
-        @Override public String send(SendRequest sendRequest) {
+
+        @Override
+        public String getChannelType() {
+            return "test";
+        }
+
+        @Override
+        public String send(SendRequest sendRequest) {
             if (++count < 3) {
                 throw new NoticeRetryableException("temporary");
             }
             return "ok";
         }
-        @Override public void destroy() {}
-        @Override public void configure(SenderConfiguration config) {}
+
+        @Override
+        public void destroy() {}
+
+        @Override
+        public void configure(SenderConfiguration config) {}
     }
 
     @Test
@@ -30,12 +39,15 @@ class RetryableSenderTest {
         cfg.put("retry.maxAttempts", 5);
         cfg.put("retry.initialDelayMillis", 1);
         cfg.put("retry.jitterMillis", 1);
-        retry.configure(SenderConfiguration.builder().channelType("test").config(cfg).build());
+        retry.configure(
+                SenderConfiguration.builder().channelType("test").config(cfg).build());
 
-        SendRequest req = SendRequest.builder().requestId("r1").target("t").templateContent("c").build();
+        SendRequest req = SendRequest.builder()
+                .requestId("r1")
+                .target("t")
+                .templateContent("c")
+                .build();
         String id = retry.send(req);
         Assertions.assertEquals("ok", id);
     }
 }
-
-

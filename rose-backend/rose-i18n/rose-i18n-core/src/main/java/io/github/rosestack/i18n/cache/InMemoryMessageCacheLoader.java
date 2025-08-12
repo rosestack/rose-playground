@@ -2,9 +2,6 @@ package io.github.rosestack.i18n.cache;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,19 +9,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 基于内存的消息缓存加载器实现
+ *
+ * <p>提供高性能的内存缓存功能，支持 LRU 淘汰策略、过期时间、Micrometer 监控等特性。
+ *
  * <p>
- * 提供高性能的内存缓存功能，支持 LRU 淘汰策略、过期时间、Micrometer 监控等特性。
- * <p>
+ *
  * <h3>核心特性：</h3>
+ *
  * <ul>
- *   <li>支持 LRU 缓存淘汰策略</li>
- *   <li>支持缓存过期时间配置</li>
- *   <li>基于 Micrometer 的监控指标</li>
- *   <li>线程安全的并发访问</li>
- *   <li>支持缓存预热和批量操作</li>
+ *   <li>支持 LRU 缓存淘汰策略
+ *   <li>支持缓存过期时间配置
+ *   <li>基于 Micrometer 的监控指标
+ *   <li>线程安全的并发访问
+ *   <li>支持缓存预热和批量操作
  * </ul>
  *
  * @author chensoul
@@ -34,14 +36,10 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
 
     private static final Logger logger = LoggerFactory.getLogger(InMemoryMessageCacheLoader.class);
 
-    /**
-     * 缓存数据存储
-     */
+    /** 缓存数据存储 */
     private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
-    /**
-     * 定时清理任务执行器
-     */
+    /** 定时清理任务执行器 */
     private final ScheduledExecutorService cleanupExecutor;
 
     /**
@@ -60,7 +58,7 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
      * @param meterRegistry Micrometer 指标注册表
      */
     public InMemoryMessageCacheLoader(CacheProperties cacheProperties, MeterRegistry meterRegistry) {
-        super(cacheProperties,meterRegistry);
+        super(cacheProperties, meterRegistry);
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread thread = new Thread(r, "i18n-cache-cleanup");
             thread.setDaemon(true);
@@ -69,9 +67,10 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
 
         // 启动定时清理过期缓存任务
         if (cacheEnabled() && cacheProperties.getExpireAfterWrite() != null) {
-            long cleanupInterval = Math.max(cacheProperties.getExpireAfterWrite().toMinutes() / 2, 1);
-            cleanupExecutor.scheduleAtFixedRate(this::cleanupExpiredEntries,
-                    cleanupInterval, cleanupInterval, TimeUnit.MINUTES);
+            long cleanupInterval =
+                    Math.max(cacheProperties.getExpireAfterWrite().toMinutes() / 2, 1);
+            cleanupExecutor.scheduleAtFixedRate(
+                    this::cleanupExpiredEntries, cleanupInterval, cleanupInterval, TimeUnit.MINUTES);
         }
 
         // 初始化缓存大小
@@ -113,7 +112,7 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
         for (int i = 0; i < cacheKeys.length && i < codes.length; i++) {
             String cacheKey = cacheKeys[i];
             String code = codes[i];
-            
+
             CacheEntry entry = cache.get(cacheKey);
             if (entry != null && !isExpired(entry)) {
                 result.put(code, entry.getValue());
@@ -206,9 +205,7 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
         return cache.size();
     }
 
-    /**
-     * 销毁缓存加载器，释放资源
-     */
+    /** 销毁缓存加载器，释放资源 */
     public void destroy() {
         cleanupExecutor.shutdown();
         try {
@@ -243,13 +240,10 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
             return false;
         }
 
-        return entry.getCreateTime().plus(cacheProperties.getExpireAfterWrite())
-                .isBefore(LocalDateTime.now());
+        return entry.getCreateTime().plus(cacheProperties.getExpireAfterWrite()).isBefore(LocalDateTime.now());
     }
 
-    /**
-     * 淘汰最近最少使用的缓存条目
-     */
+    /** 淘汰最近最少使用的缓存条目 */
     private void evictLeastRecentlyUsed() {
         if (cache.isEmpty()) {
             return;
@@ -273,9 +267,7 @@ public class InMemoryMessageCacheLoader extends AbstractMetricsMessageCacheLoade
         }
     }
 
-    /**
-     * 清理过期的缓存条目
-     */
+    /** 清理过期的缓存条目 */
     private void cleanupExpiredEntries() {
         if (!cacheEnabled() || cacheProperties.getExpireAfterWrite() == null) {
             return;

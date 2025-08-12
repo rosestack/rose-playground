@@ -1,12 +1,11 @@
 package io.github.rosestack.i18n;
 
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.util.Locale;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.i18n.LocaleContextHolder;
-
-import java.util.Locale;
 
 /**
  * Abstract Spring Test

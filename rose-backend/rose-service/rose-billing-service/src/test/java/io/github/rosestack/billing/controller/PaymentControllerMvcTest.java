@@ -1,23 +1,22 @@
 package io.github.rosestack.billing.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.rosestack.billing.payment.PaymentGatewayService;
-import io.github.rosestack.billing.payment.PaymentStatus;
-import io.github.rosestack.billing.service.BillingService;
-import io.github.rosestack.billing.service.InvoiceService;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.Map;
-
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.rosestack.billing.payment.PaymentGatewayService;
+import io.github.rosestack.billing.payment.PaymentStatus;
+import io.github.rosestack.billing.service.BillingService;
+import io.github.rosestack.billing.service.InvoiceService;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 class PaymentControllerMvcTest {
 
@@ -25,7 +24,8 @@ class PaymentControllerMvcTest {
     private final PaymentGatewayService paymentGatewayService = Mockito.mock(PaymentGatewayService.class);
     private final BillingService billingService = Mockito.mock(BillingService.class);
     private final InvoiceService invoiceService = Mockito.mock(InvoiceService.class);
-    private final PaymentController controller = new PaymentController(paymentGatewayService, billingService, invoiceService);
+    private final PaymentController controller =
+            new PaymentController(paymentGatewayService, billingService, invoiceService);
     private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
     @Test
@@ -37,14 +37,13 @@ class PaymentControllerMvcTest {
 
         // 为了简化，不从 DB 读取发票金额，模拟 InvoiceService 层逻辑在其他测试中覆盖
         // 这里仅校验控制器响应结构
-        Mockito.when(invoiceService.getInvoiceDetails("inv-1"))
-                .thenAnswer(invocation -> {
-                    var invoice = new io.github.rosestack.billing.entity.Invoice();
-                    invoice.setId("inv-1");
-                    invoice.setTenantId("t-1");
-                    invoice.setTotalAmount(new java.math.BigDecimal("10.00"));
-                    return invoice;
-                });
+        Mockito.when(invoiceService.getInvoiceDetails("inv-1")).thenAnswer(invocation -> {
+            var invoice = new io.github.rosestack.billing.entity.Invoice();
+            invoice.setId("inv-1");
+            invoice.setTenantId("t-1");
+            invoice.setTotalAmount(new java.math.BigDecimal("10.00"));
+            return invoice;
+        });
 
         mockMvc.perform(post("/api/billing/payment/invoices/{invoiceId}/link", "inv-1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,8 +74,7 @@ class PaymentControllerMvcTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "invoiceId", "inv-1",
-                                "transactionId", "tx-1"
-                        ))))
+                                "transactionId", "tx-1"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
 
@@ -85,8 +83,7 @@ class PaymentControllerMvcTest {
 
     @Test
     void queryStatus_success() throws Exception {
-        Mockito.when(paymentGatewayService.queryPaymentStatus("tx-1"))
-                .thenReturn(PaymentStatus.SUCCESS);
+        Mockito.when(paymentGatewayService.queryPaymentStatus("tx-1")).thenReturn(PaymentStatus.SUCCESS);
 
         mockMvc.perform(get("/api/billing/payment/status/{tx}", "tx-1"))
                 .andExpect(status().isOk())
@@ -94,4 +91,3 @@ class PaymentControllerMvcTest {
                 .andExpect(jsonPath("$.data").value("SUCCESS"));
     }
 }
-

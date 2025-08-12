@@ -4,9 +4,8 @@ import lombok.Getter;
 
 /**
  * 审计状态枚举
- * <p>
- * 定义了审计日志的操作状态，用于标识操作的执行结果。
- * </p>
+ *
+ * <p>定义了审计日志的操作状态，用于标识操作的执行结果。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -14,44 +13,28 @@ import lombok.Getter;
 @Getter
 public enum AuditStatus {
 
-    /**
-     * 成功
-     */
+    /** 成功 */
     SUCCESS("SUCCESS", "成功"),
 
-    /**
-     * 失败
-     */
+    /** 失败 */
     FAILURE("FAILURE", "失败"),
 
-    /**
-     * 进行中
-     */
+    /** 进行中 */
     PENDING("PENDING", "进行中"),
 
-    /**
-     * 超时
-     */
+    /** 超时 */
     TIMEOUT("TIMEOUT", "超时"),
 
-    /**
-     * 取消
-     */
+    /** 取消 */
     CANCELLED("CANCELLED", "取消"),
 
-    /**
-     * 拒绝
-     */
+    /** 拒绝 */
     DENIED("DENIED", "拒绝");
 
-    /**
-     * 状态代码
-     */
+    /** 状态代码 */
     private final String code;
 
-    /**
-     * 状态描述
-     */
+    /** 状态描述 */
     private final String description;
 
     AuditStatus(String code, String description) {

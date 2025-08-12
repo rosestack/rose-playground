@@ -4,12 +4,9 @@ import lombok.Getter;
 
 /**
  * 审计事件类型枚举
- * <p>
- * 定义了审计日志的事件类型和子类型，采用混合模式设计：
- * - eventType: 技术分类（认证、授权、数据、系统、网络、安全）
- * - eventSubType: 技术子类（用户登录、数据更新等）
- * - operation_name: 具体业务操作（在主表中单独字段存储）
- * </p>
+ *
+ * <p>定义了审计日志的事件类型和子类型，采用混合模式设计： - eventType: 技术分类（认证、授权、数据、系统、网络、安全） - eventSubType:
+ * 技术子类（用户登录、数据更新等） - operation_name: 具体业务操作（在主表中单独字段存储）
  *
  * @author Rose Team
  * @since 1.0.0
@@ -50,14 +47,10 @@ public enum AuditEventType {
     SEC_ATTACK_DETECTION("安全", "攻击检测"),
     SEC_ABNORMAL_BEHAVIOR("安全", "异常行为");
 
-    /**
-     * 事件类型
-     */
+    /** 事件类型 */
     private final String eventType;
 
-    /**
-     * 事件子类型
-     */
+    /** 事件子类型 */
     private final String eventSubType;
 
     AuditEventType(String eventType, String eventSubType) {
@@ -80,11 +73,11 @@ public enum AuditEventType {
      * @return 是否为高风险事件
      */
     public boolean isHighRiskEvent() {
-        return this.isSecurityEvent() ||
-                this == DATA_SENSITIVE_ACCESS ||
-                this == DATA_DELETE ||
-                this == SYS_CONFIG_CHANGE ||
-                this == AUTHZ_CHANGE;
+        return this.isSecurityEvent()
+                || this == DATA_SENSITIVE_ACCESS
+                || this == DATA_DELETE
+                || this == SYS_CONFIG_CHANGE
+                || this == AUTHZ_CHANGE;
     }
 
     /**

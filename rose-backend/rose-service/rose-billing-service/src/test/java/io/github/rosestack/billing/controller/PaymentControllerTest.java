@@ -1,31 +1,32 @@
 package io.github.rosestack.billing.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.payment.PaymentStatus;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.InvoiceService;
 import io.github.rosestack.core.model.ApiResponse;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class PaymentControllerTest {
 
     @Mock
     private PaymentGatewayService paymentGatewayService;
+
     @Mock
     private BillingService billingService;
+
     @Mock
     private InvoiceService invoiceService;
 
@@ -50,7 +51,8 @@ class PaymentControllerTest {
 
         assertTrue(resp.isSuccess());
         assertEquals("https://pay.link", resp.getData());
-        verify(paymentGatewayService).createPaymentLink(eq(invoiceId), eq(invoice.getTotalAmount()), eq("WECHAT"), eq("t-1"));
+        verify(paymentGatewayService)
+                .createPaymentLink(eq(invoiceId), eq(invoice.getTotalAmount()), eq("WECHAT"), eq("t-1"));
     }
 
     @Test
@@ -58,7 +60,8 @@ class PaymentControllerTest {
         Map<String, Object> data = new HashMap<>();
         data.put("invoiceId", "inv-1");
         data.put("transactionId", "tx-1");
-        when(paymentGatewayService.verifyPaymentCallback(eq("ALIPAY"), anyMap())).thenReturn(true);
+        when(paymentGatewayService.verifyPaymentCallback(eq("ALIPAY"), anyMap()))
+                .thenReturn(true);
 
         ApiResponse<Void> resp = controller.handleCallback("ALIPAY", data);
         assertTrue(resp.isSuccess());
@@ -68,7 +71,8 @@ class PaymentControllerTest {
     @Test
     void testHandleCallback_Invalid() {
         Map<String, Object> data = new HashMap<>();
-        when(paymentGatewayService.verifyPaymentCallback(eq("ALIPAY"), anyMap())).thenReturn(false);
+        when(paymentGatewayService.verifyPaymentCallback(eq("ALIPAY"), anyMap()))
+                .thenReturn(false);
         ApiResponse<Void> resp = controller.handleCallback("ALIPAY", data);
         assertFalse(resp.isSuccess());
     }
@@ -81,4 +85,3 @@ class PaymentControllerTest {
         assertEquals(PaymentStatus.SUCCESS, resp.getData());
     }
 }
-

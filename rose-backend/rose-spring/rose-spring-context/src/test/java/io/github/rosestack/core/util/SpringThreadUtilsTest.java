@@ -1,19 +1,15 @@
 package io.github.rosestack.core.util;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.github.rosestack.spring.util.SpringThreadUtils;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * SpringThreadUtils 测试类
- * 展示基于 Spring 框架的线程工具类的各种使用场景
- */
+/** SpringThreadUtils 测试类 展示基于 Spring 框架的线程工具类的各种使用场景 */
 @Slf4j
 class SpringThreadUtilsTest {
 
@@ -61,9 +57,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testCreateThreadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "test-");
 
         assertNotNull(executor);
         assertEquals(2, executor.getCorePoolSize());
@@ -82,9 +76,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testShutdownAndAwaitTermination() {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 2, 5, "shutdown-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 2, 5, "shutdown-test-");
 
         // 提交一些任务
         AtomicInteger counter = new AtomicInteger(0);
@@ -105,30 +97,22 @@ class SpringThreadUtilsTest {
 
     @Test
     void testSubmitCompletable() throws Exception {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "completable-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "completable-test-");
 
         try {
             // 测试正常任务
-            CompletableFuture<Integer> future = SpringThreadUtils.submitCompletable(
-                    executor,
-                    () -> {
-                        SpringThreadUtils.sleep(100);
-                        return 42;
-                    }
-            );
+            CompletableFuture<Integer> future = SpringThreadUtils.submitCompletable(executor, () -> {
+                SpringThreadUtils.sleep(100);
+                return 42;
+            });
 
             Integer result = future.get(1, TimeUnit.SECONDS);
             assertEquals(42, result);
 
             // 测试异常任务
-            CompletableFuture<Void> exceptionFuture = SpringThreadUtils.submitCompletable(
-                    executor,
-                    () -> {
-                        throw new RuntimeException("Test exception");
-                    }
-            );
+            CompletableFuture<Void> exceptionFuture = SpringThreadUtils.submitCompletable(executor, () -> {
+                throw new RuntimeException("Test exception");
+            });
 
             assertThrows(ExecutionException.class, () -> exceptionFuture.get(1, TimeUnit.SECONDS));
         } finally {
@@ -138,9 +122,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testSubmitWithTimeout() throws Exception {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "timeout-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "timeout-test-");
 
         try {
             // 测试正常超时
@@ -151,8 +133,7 @@ class SpringThreadUtilsTest {
                         return 100;
                     },
                     1,
-                    TimeUnit.SECONDS
-            );
+                    TimeUnit.SECONDS);
 
             assertEquals(100, result);
 
@@ -165,8 +146,7 @@ class SpringThreadUtilsTest {
                             return 200;
                         },
                         500,
-                        TimeUnit.MILLISECONDS
-                );
+                        TimeUnit.MILLISECONDS);
             });
         } finally {
             executor.shutdown();
@@ -177,9 +157,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testSubmitBatch() throws Exception {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                4, 8, 20, "batch-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(4, 8, 20, "batch-test-");
 
         try {
             // 创建多个任务
@@ -197,8 +175,7 @@ class SpringThreadUtilsTest {
                     () -> {
                         SpringThreadUtils.sleep(200);
                         return 3;
-                    }
-            );
+                    });
 
             // 等待所有任务完成
             Object[] results = SpringThreadUtils.waitForAll(futures);
@@ -216,9 +193,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testCreateCounterTask() throws Exception {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "counter-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "counter-test-");
 
         try {
             // 创建计数器任务
@@ -234,9 +209,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testCreateExceptionTask() throws Exception {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "exception-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "exception-test-");
 
         try {
             // 创建异常任务
@@ -245,10 +218,8 @@ class SpringThreadUtilsTest {
             CompletableFuture<Void> future = SpringThreadUtils.submitCompletable(executor, exceptionTask);
 
             // 验证异常被正确传播
-            ExecutionException executionException = assertThrows(
-                    ExecutionException.class,
-                    () -> future.get(1, TimeUnit.SECONDS)
-            );
+            ExecutionException executionException =
+                    assertThrows(ExecutionException.class, () -> future.get(1, TimeUnit.SECONDS));
             assertEquals(testException, executionException.getCause());
         } finally {
             executor.shutdown();
@@ -259,9 +230,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testGetThreadPoolStatus() {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "status-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "status-test-");
 
         try {
             String status = SpringThreadUtils.getThreadPoolStatus(executor);
@@ -280,9 +249,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testMonitorThreadPool() {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "monitor-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "monitor-test-");
 
         try {
             // 提交一些任务
@@ -332,9 +299,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testConcurrentTaskExecution() throws Exception {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                4, 8, 50, "concurrent-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(4, 8, 50, "concurrent-test-");
 
         try {
             int taskCount = 20;
@@ -375,9 +340,7 @@ class SpringThreadUtilsTest {
 
     @Test
     void testThreadPoolCacheAndStatus() {
-        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(
-                2, 4, 10, "cache-test-"
-        );
+        ThreadPoolTaskExecutor executor = SpringThreadUtils.createThreadPoolTaskExecutor(2, 4, 10, "cache-test-");
 
         try {
             // 初始状态
@@ -405,4 +368,4 @@ class SpringThreadUtilsTest {
             executor.shutdown();
         }
     }
-} 
+}

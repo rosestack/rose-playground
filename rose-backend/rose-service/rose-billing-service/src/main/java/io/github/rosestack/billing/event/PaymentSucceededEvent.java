@@ -11,8 +11,13 @@ public class PaymentSucceededEvent {
     private final BigDecimal amount;
     private final LocalDateTime occurredTime;
 
-    public PaymentSucceededEvent(String tenantId, String invoiceId, String transactionId,
-                                 String paymentMethod, BigDecimal amount, LocalDateTime occurredTime) {
+    public PaymentSucceededEvent(
+            String tenantId,
+            String invoiceId,
+            String transactionId,
+            String paymentMethod,
+            BigDecimal amount,
+            LocalDateTime occurredTime) {
         this.tenantId = tenantId;
         this.invoiceId = invoiceId;
         this.transactionId = transactionId;
@@ -21,11 +26,27 @@ public class PaymentSucceededEvent {
         this.occurredTime = occurredTime;
     }
 
-    public String getTenantId() { return tenantId; }
-    public String getInvoiceId() { return invoiceId; }
-    public String getTransactionId() { return transactionId; }
-    public String getPaymentMethod() { return paymentMethod; }
-    public BigDecimal getAmount() { return amount; }
-    public LocalDateTime getOccurredTime() { return occurredTime; }
-}
+    public String getTenantId() {
+        return tenantId;
+    }
 
+    public String getInvoiceId() {
+        return invoiceId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public LocalDateTime getOccurredTime() {
+        return occurredTime;
+    }
+}

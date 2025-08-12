@@ -1,18 +1,17 @@
 package io.github.rosestack.i18n.evaluator;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * JakartaElExpressionEvaluator 测试类
- * <p>
- * 测试 Jakarta EL 表达式评估器的各种功能
+ *
+ * <p>测试 Jakarta EL 表达式评估器的各种功能
  */
 public class JakartaElExpressionEvaluatorTest {
 
@@ -329,4 +328,4 @@ public class JakartaElExpressionEvaluatorTest {
             this.city = city;
         }
     }
-} 
+}

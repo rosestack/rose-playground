@@ -4,9 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
-/**
- * 数据权限相关指标埋点。
- */
+/** 数据权限相关指标埋点。 */
 public class DataPermissionMetrics {
     private final Timer getSqlSegmentTimer;
     private final Counter cacheHitCounter;
@@ -50,5 +48,3 @@ public class DataPermissionMetrics {
         errorCounter.increment();
     }
 }
-
-

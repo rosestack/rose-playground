@@ -1,5 +1,7 @@
 package io.github.rosestack.i18n.spring;
 
+import static org.springframework.aop.support.AopUtils.getTargetClass;
+
 import io.github.rosestack.i18n.spring.context.MessageSourceAdapter;
 import io.github.rosestack.spring.util.SpringContextUtils;
 import org.slf4j.Logger;
@@ -11,31 +13,30 @@ import org.springframework.context.MessageSource;
 import org.springframework.util.ClassUtils;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import static org.springframework.aop.support.AopUtils.getTargetClass;
-
-
 /**
  * Internationalization {@link BeanPostProcessor}, Processing：
+ *
  * <ul>
- *     <li>{@link LocalValidatorFactoryBean#setValidationMessageSource(MessageSource)} associates {@link MessageSourceAdapter}</li>
+ *   <li>{@link LocalValidatorFactoryBean#setValidationMessageSource(MessageSource)} associates
+ *       {@link MessageSourceAdapter}
  * </ul>
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul<a/>
  * @since 1.0.0
  */
-
 public class I18nBeanPostProcessor implements BeanPostProcessor {
     private static final Logger logger = LoggerFactory.getLogger(I18nBeanPostProcessor.class);
     private static final ClassLoader classLoader = I18nBeanPostProcessor.class.getClassLoader();
-    private static final Class<?> VALIDATOR_FACTORY_CLASS = ClassUtils.resolveClassName("jakarta.validation.ValidatorFactory", classLoader);
-    private static final Class<?> LOCAL_VALIDATOR_FACTORY_BEAN_CLASS = ClassUtils.resolveClassName("org.springframework.validation.beanvalidation.LocalValidatorFactoryBean", classLoader);
+    private static final Class<?> VALIDATOR_FACTORY_CLASS =
+            ClassUtils.resolveClassName("jakarta.validation.ValidatorFactory", classLoader);
+    private static final Class<?> LOCAL_VALIDATOR_FACTORY_BEAN_CLASS = ClassUtils.resolveClassName(
+            "org.springframework.validation.beanvalidation.LocalValidatorFactoryBean", classLoader);
 
     private final ConfigurableApplicationContext context;
 
     public I18nBeanPostProcessor(ConfigurableApplicationContext context) {
         this.context = context;
     }
-
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -51,7 +52,10 @@ public class I18nBeanPostProcessor implements BeanPostProcessor {
             } else {
                 LocalValidatorFactoryBean localValidatorFactoryBean = (LocalValidatorFactoryBean) bean;
                 localValidatorFactoryBean.setValidationMessageSource(messageSourceAdapter);
-                logger.debug("LocalValidatorFactoryBean[name : '{}'] is associated with MessageSource : {}", beanName, messageSourceAdapter);
+                logger.debug(
+                        "LocalValidatorFactoryBean[name : '{}'] is associated with MessageSource : {}",
+                        beanName,
+                        messageSourceAdapter);
             }
         }
         return bean;

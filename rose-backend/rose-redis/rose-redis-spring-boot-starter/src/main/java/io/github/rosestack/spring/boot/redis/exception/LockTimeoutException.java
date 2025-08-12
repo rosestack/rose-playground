@@ -2,9 +2,8 @@ package io.github.rosestack.spring.boot.redis.exception;
 
 /**
  * 锁超时异常
- * <p>
- * 当等待获取锁超时时抛出此异常。
- * </p>
+ *
+ * <p>当等待获取锁超时时抛出此异常。
  *
  * @author Rose Team
  * @since 1.0.0

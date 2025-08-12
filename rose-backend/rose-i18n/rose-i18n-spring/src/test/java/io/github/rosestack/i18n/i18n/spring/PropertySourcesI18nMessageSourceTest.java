@@ -1,20 +1,18 @@
 package io.github.rosestack.i18n.i18n.spring;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.github.rosestack.i18n.AbstractSpringTest;
 import io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.StreamUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 /**
  * {@link io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource} Test
@@ -38,7 +36,8 @@ class PropertySourcesI18nMessageSourceTest extends AbstractSpringTest {
         String propertiesContent = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
         environment.setProperty("test.i18n_messages_zh_CN.properties", propertiesContent);
 
-        PropertySourceResourceI18nMessageSource serviceMessageSource = new PropertySourceResourceI18nMessageSource("test");
+        PropertySourceResourceI18nMessageSource serviceMessageSource =
+                new PropertySourceResourceI18nMessageSource("test");
         serviceMessageSource.setEnvironment(environment);
         serviceMessageSource.init();
 

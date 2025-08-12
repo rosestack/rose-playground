@@ -1,8 +1,7 @@
 package io.github.rosestack.iam.domain;
 
-import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository {

@@ -9,9 +9,8 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 /**
  * 国际化配置
- * <p>
- * 提供 MessageSource 和 LocaleResolver 支持多语言
- * </p>
+ *
+ * <p>提供 MessageSource 和 LocaleResolver 支持多语言
  *
  * @author rosestack
  * @since 1.0.0
@@ -26,13 +25,11 @@ public class MessageConfig {
         log.info("启用 MessageSource 资源国际化: {}", messageSource);
     }
 
-    /**
-     * 配置 LocaleChangeInterceptor
-     */
+    /** 配置 LocaleChangeInterceptor */
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
         LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
         interceptor.setParamName("lang");
         return interceptor;
     }
-} 
+}

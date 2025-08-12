@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 通知服务配置类
- * <p>
- * 配置通知发送相关的 Bean 组件。
+ *
+ * <p>配置通知发送相关的 Bean 组件。
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0

@@ -2,9 +2,8 @@ package io.github.rosestack.spring.boot.redis.exception;
 
 /**
  * 限流超出异常
- * <p>
- * 当请求超出限流阈值时抛出此异常。
- * </p>
+ *
+ * <p>当请求超出限流阈值时抛出此异常。
  *
  * @author Rose Team
  * @since 1.0.0

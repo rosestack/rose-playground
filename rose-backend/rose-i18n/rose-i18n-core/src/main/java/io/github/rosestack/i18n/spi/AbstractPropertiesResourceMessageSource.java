@@ -1,16 +1,15 @@
 package io.github.rosestack.i18n.spi;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.unmodifiableMap;
+
 import io.github.rosestack.core.util.FormatUtils;
 import io.github.rosestack.i18n.AbstractResourceMessageSource;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
-
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableMap;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 
 @Slf4j
 public abstract class AbstractPropertiesResourceMessageSource extends AbstractResourceMessageSource {
@@ -34,7 +33,10 @@ public abstract class AbstractPropertiesResourceMessageSource extends AbstractRe
                 messages.putAll((Map) properties);
             }
         } catch (IOException e) {
-            throw new RuntimeException(FormatUtils.replacePlaceholders("Source '{}' Messages Properties Resource[name : {}] loading is failed", source, resource), e);
+            throw new RuntimeException(
+                    FormatUtils.replacePlaceholders(
+                            "Source '{}' Messages Properties Resource[name : {}] loading is failed", source, resource),
+                    e);
         }
         return messages == null ? emptyMap() : unmodifiableMap(messages);
     }

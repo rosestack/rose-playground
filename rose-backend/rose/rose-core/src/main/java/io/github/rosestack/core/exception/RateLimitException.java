@@ -2,9 +2,8 @@ package io.github.rosestack.core.exception;
 
 /**
  * 限流异常类
- * <p>
- * 用于表示请求频率超限，触发限流保护
- * </p>
+ *
+ * <p>用于表示请求频率超限，触发限流保护
  *
  * @author rosestack
  * @since 1.0.0
@@ -50,4 +49,4 @@ public class RateLimitException extends BaseException {
     public RateLimitException(String messageKey, Throwable cause, Object... args) {
         super(messageKey, cause, args);
     }
-} 
+}

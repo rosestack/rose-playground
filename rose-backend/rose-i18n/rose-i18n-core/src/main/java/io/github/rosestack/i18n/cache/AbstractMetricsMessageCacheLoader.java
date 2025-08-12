@@ -5,28 +5,30 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 带监控指标的消息缓存加载器抽象基类
+ *
+ * <p>基于 Micrometer 提供标准化的缓存监控指标，包括命中率、响应时间、缓存大小等关键指标。
+ *
  * <p>
- * 基于 Micrometer 提供标准化的缓存监控指标，包括命中率、响应时间、缓存大小等关键指标。
- * <p>
+ *
  * <h3>监控指标：</h3>
+ *
  * <ul>
- *   <li>i18n.cache.hits - 缓存命中次数</li>
- *   <li>i18n.cache.misses - 缓存未命中次数</li>
- *   <li>i18n.cache.puts - 缓存写入次数</li>
- *   <li>i18n.cache.evictions - 缓存淘汰次数</li>
- *   <li>i18n.cache.size - 当前缓存大小</li>
- *   <li>i18n.cache.get.time - 缓存获取耗时</li>
- *   <li>i18n.cache.put.time - 缓存写入耗时</li>
+ *   <li>i18n.cache.hits - 缓存命中次数
+ *   <li>i18n.cache.misses - 缓存未命中次数
+ *   <li>i18n.cache.puts - 缓存写入次数
+ *   <li>i18n.cache.evictions - 缓存淘汰次数
+ *   <li>i18n.cache.size - 当前缓存大小
+ *   <li>i18n.cache.get.time - 缓存获取耗时
+ *   <li>i18n.cache.put.time - 缓存写入耗时
  * </ul>
  *
  * @author chensoul
@@ -213,7 +215,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
      * 实际的批量缓存获取实现
      *
      * @param cacheKeys 已组装的缓存键列表
-     * @param codes     原始消息代码列表（用于构建结果映射）
+     * @param codes 原始消息代码列表（用于构建结果映射）
      * @return 缓存的消息映射
      */
     protected abstract Map<String, String> doGetFromCache(String[] cacheKeys, String[] codes);
@@ -222,7 +224,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
      * 实际的缓存写入实现
      *
      * @param cacheKey 已组装的缓存键
-     * @param message  消息内容
+     * @param message 消息内容
      */
     protected abstract void doPutToCache(String cacheKey, String message);
 
@@ -287,7 +289,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 构建缓存键
      *
-     * @param code   消息代码
+     * @param code 消息代码
      * @param locale 语言环境
      * @return 缓存键
      */
@@ -298,7 +300,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 构建缓存键（支持前缀）
      *
-     * @param code   消息代码
+     * @param code 消息代码
      * @param locale 语言环境
      * @param prefix 可选的键前缀
      * @return 缓存键
@@ -311,7 +313,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 批量构建缓存键
      *
-     * @param codes  消息代码列表
+     * @param codes 消息代码列表
      * @param locale 语言环境
      * @return 缓存键列表
      */
@@ -322,7 +324,7 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
     /**
      * 批量构建缓存键（支持前缀）
      *
-     * @param codes  消息代码列表
+     * @param codes 消息代码列表
      * @param locale 语言环境
      * @param prefix 可选的键前缀
      * @return 缓存键列表
@@ -364,7 +366,6 @@ public abstract class AbstractMetricsMessageCacheLoader implements MessageCacheL
                 putCounter.count(),
                 evictionCounter.count(),
                 cacheSize.get(),
-                getHitRate() * 100
-        );
+                getHitRate() * 100);
     }
 }

@@ -1,11 +1,10 @@
 package io.github.rosestack.billing.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.Data;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime; /**
- * 最近交易记录
- */
+/** 最近交易记录 */
 @Data
 public class RecentTransaction {
     private String invoiceId;

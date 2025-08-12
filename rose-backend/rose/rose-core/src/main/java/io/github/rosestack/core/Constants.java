@@ -2,9 +2,8 @@ package io.github.rosestack.core;
 
 /**
  * Web 常量
- * <p>
- * 复用 Spring 框架的常量，避免重复定义
- * </p>
+ *
+ * <p>复用 Spring 框架的常量，避免重复定义
  *
  * @author rosestack
  * @since 1.0.0
@@ -30,13 +29,12 @@ public final class Constants {
         public static final int CACHING_REQUEST_FILTER_ORDER = CORS_FILTER_ORDER + 1;
         public static final int REQUEST_FILTER_ORDER = CORS_FILTER_ORDER + 2;
         public static final int XSS_FILTER_ORDER = CORS_FILTER_ORDER + 3;
-        // Spring Security Filter 默认为 -100，可见 org.springframework.boot.autoconfigure.security.SecurityProperties
+        // Spring Security Filter 默认为 -100，可见
+        // org.springframework.boot.autoconfigure.security.SecurityProperties
 
     }
 
-    /**
-     * 操作类型
-     */
+    /** 操作类型 */
     public static final class OperationTypes {
         public static final String CREATE = "CREATE";
         public static final String READ = "READ";

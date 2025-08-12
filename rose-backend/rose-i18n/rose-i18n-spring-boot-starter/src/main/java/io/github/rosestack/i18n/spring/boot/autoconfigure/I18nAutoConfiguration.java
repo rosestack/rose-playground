@@ -35,8 +35,7 @@ public class I18nAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "spring.application.name")
     public I18nMessageSourceFactoryBean applicationMessageSource(
-            @Value("${spring.application.name}") String applicationName,
-            MessageCacheLoader messageCacheLoader) {
+            @Value("${spring.application.name}") String applicationName, MessageCacheLoader messageCacheLoader) {
         return new I18nMessageSourceFactoryBean(applicationName, messageCacheLoader);
     }
 
@@ -56,5 +55,4 @@ public class I18nAutoConfiguration {
             return new RedisMessageCacheLoader(i18nProperties.getCache(), redisTemplate);
         }
     }
-
 }

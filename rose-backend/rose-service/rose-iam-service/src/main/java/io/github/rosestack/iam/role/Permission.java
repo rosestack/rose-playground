@@ -17,17 +17,12 @@ public class Permission {
 
     private String appId;
 
-    /**
-     * 状态
-     */
+    /** 状态 */
     private Boolean status;
 
-    /**
-     * 创建时间
-     */
+    /** 创建时间 */
     private String createdAt;
-    /**
-     * 修改时间
-     */
+
+    /** 修改时间 */
     private String updatedAt;
 }

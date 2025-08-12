@@ -1,22 +1,20 @@
 package io.github.rosestack.iam.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import io.github.rosestack.iam.infra.mybatis.entity.UserEntity;
 import io.github.rosestack.mybatis.audit.BaseEntity;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
-import io.github.rosestack.iam.infra.mybatis.entity.UserEntity;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * UserEntity继承关系测试
- * <p>
- * 验证UserEntity是否正确继承了BaseTenantEntity，没有重复定义字段
- * </p>
+ *
+ * <p>验证UserEntity是否正确继承了BaseTenantEntity，没有重复定义字段
  *
  * @author Chen Soul
  * @since 1.0.0
@@ -53,8 +51,7 @@ class UserEntityInheritanceTest {
         inheritedFields.addAll(baseTenantEntityFields);
 
         for (String inheritedField : inheritedFields) {
-            assertFalse(userEntityFields.contains(inheritedField),
-                    "UserEntity不应该重复定义继承的字段: " + inheritedField);
+            assertFalse(userEntityFields.contains(inheritedField), "UserEntity不应该重复定义继承的字段: " + inheritedField);
         }
     }
 
@@ -82,4 +79,4 @@ class UserEntityInheritanceTest {
             assertNotNull(userEntity);
         });
     }
-} 
+}

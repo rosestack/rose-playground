@@ -9,9 +9,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * 跨域配置
- * <p>
- * 提供跨域资源共享（CORS）配置
- * </p>
+ *
+ * <p>提供跨域资源共享（CORS）配置
  *
  * @author rosestack
  * @since 1.0.0
@@ -33,4 +32,4 @@ public class CorsConfig {
         source.registerCorsConfiguration("/**", cors);
         return source;
     }
-} 
+}

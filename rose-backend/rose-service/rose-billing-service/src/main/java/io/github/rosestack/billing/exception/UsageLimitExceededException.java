@@ -14,8 +14,7 @@ public class UsageLimitExceededException extends BillingException {
     private final BigDecimal limit;
 
     public UsageLimitExceededException(String metricType, BigDecimal currentUsage, BigDecimal limit) {
-        super("USAGE_LIMIT_EXCEEDED", 
-              String.format("使用量超限: %s 当前使用量 %s 超过限制 %s", metricType, currentUsage, limit));
+        super("USAGE_LIMIT_EXCEEDED", String.format("使用量超限: %s 当前使用量 %s 超过限制 %s", metricType, currentUsage, limit));
         this.metricType = metricType;
         this.currentUsage = currentUsage;
         this.limit = limit;

@@ -4,30 +4,32 @@ import io.github.rosestack.i18n.cache.AbstractMetricsMessageCacheLoader;
 import io.github.rosestack.i18n.cache.CacheProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 /**
  * 基于 Redis 的消息缓存加载器实现
+ *
+ * <p>使用 RedisTemplate 提供高性能的分布式缓存功能，支持批量操作、过期时间设置、模式匹配删除和 Micrometer 监控。
+ *
  * <p>
- * 使用 RedisTemplate 提供高性能的分布式缓存功能，支持批量操作、过期时间设置、模式匹配删除和 Micrometer 监控。
- * <p>
+ *
  * <h3>核心特性：</h3>
+ *
  * <ul>
- *   <li>支持单条和批量消息的缓存操作</li>
- *   <li>支持按语言环境清除缓存</li>
- *   <li>支持全局缓存清除</li>
- *   <li>支持缓存过期时间设置</li>
- *   <li>基于 Micrometer 的监控指标</li>
- *   <li>提供详细的错误处理和日志记录</li>
+ *   <li>支持单条和批量消息的缓存操作
+ *   <li>支持按语言环境清除缓存
+ *   <li>支持全局缓存清除
+ *   <li>支持缓存过期时间设置
+ *   <li>基于 Micrometer 的监控指标
+ *   <li>提供详细的错误处理和日志记录
  * </ul>
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
@@ -37,21 +39,16 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisMessageCacheLoader.class);
 
-    /**
-     * Redis 操作模板
-     */
+    /** Redis 操作模板 */
     private final RedisTemplate<String, Object> redisTemplate;
 
-    /**
-     * Lua 脚本：批量删除匹配模式的键
-     */
-    private static final String DELETE_PATTERN_SCRIPT =
-            "local keys = redis.call('keys', ARGV[1]) " +
-                    "if #keys > 0 then " +
-                    "  return redis.call('del', unpack(keys)) " +
-                    "else " +
-                    "  return 0 " +
-                    "end";
+    /** Lua 脚本：批量删除匹配模式的键 */
+    private static final String DELETE_PATTERN_SCRIPT = "local keys = redis.call('keys', ARGV[1]) "
+            + "if #keys > 0 then "
+            + "  return redis.call('del', unpack(keys)) "
+            + "else "
+            + "  return 0 "
+            + "end";
 
     private final DefaultRedisScript<Long> deletePatternScript;
 
@@ -59,7 +56,7 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
      * 构造函数（使用默认的 SimpleMeterRegistry）
      *
      * @param cacheProperties 缓存配置属性
-     * @param redisTemplate   Redis 操作模板
+     * @param redisTemplate Redis 操作模板
      */
     public RedisMessageCacheLoader(CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate) {
         this(cacheProperties, redisTemplate, new SimpleMeterRegistry());
@@ -69,10 +66,11 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
      * 构造函数
      *
      * @param cacheProperties 缓存配置属性
-     * @param redisTemplate   Redis 操作模板
-     * @param meterRegistry   Micrometer 指标注册表
+     * @param redisTemplate Redis 操作模板
+     * @param meterRegistry Micrometer 指标注册表
      */
-    public RedisMessageCacheLoader(CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate, MeterRegistry meterRegistry) {
+    public RedisMessageCacheLoader(
+            CacheProperties cacheProperties, RedisTemplate<String, Object> redisTemplate, MeterRegistry meterRegistry) {
         super(cacheProperties, meterRegistry);
         this.redisTemplate = redisTemplate;
 
@@ -113,9 +111,8 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
 
         try {
             // 过滤有效的缓存键
-            List<String> validKeys = Arrays.stream(cacheKeys)
-                    .filter(StringUtils::hasText)
-                    .collect(Collectors.toList());
+            List<String> validKeys =
+                    Arrays.stream(cacheKeys).filter(StringUtils::hasText).collect(Collectors.toList());
 
             if (validKeys.isEmpty()) {
                 return Collections.emptyMap();
@@ -133,8 +130,7 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
                 }
             }
 
-            logger.debug("从 Redis 缓存批量获取消息: 请求数量={}, 命中数量={}",
-                    cacheKeys.length, result.size());
+            logger.debug("从 Redis 缓存批量获取消息: 请求数量={}, 命中数量={}", cacheKeys.length, result.size());
 
             return result;
 
@@ -191,8 +187,7 @@ public class RedisMessageCacheLoader extends AbstractMetricsMessageCacheLoader {
             // 更新缓存大小计数器
             updateCacheSize(cacheMap.size());
 
-            logger.debug("批量消息已存入 Redis 缓存: 数量={}, expireTime={}",
-                    cacheMap.size(), expireTime);
+            logger.debug("批量消息已存入 Redis 缓存: 数量={}, expireTime={}", cacheMap.size(), expireTime);
 
         } catch (Exception e) {
             logger.error("批量存储消息到 Redis 缓存失败: cacheMap={}", cacheMap, e);

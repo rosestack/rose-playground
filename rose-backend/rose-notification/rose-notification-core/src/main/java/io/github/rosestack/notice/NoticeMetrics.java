@@ -3,12 +3,9 @@ package io.github.rosestack.notice;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-
 import java.util.concurrent.TimeUnit;
 
-/**
- * 发送指标封装（可选 Micrometer）。
- */
+/** 发送指标封装（可选 Micrometer）。 */
 public final class NoticeMetrics {
     private final MeterRegistry registry;
     private final Counter sendSuccess;
@@ -17,9 +14,15 @@ public final class NoticeMetrics {
 
     public NoticeMetrics(MeterRegistry registry) {
         this.registry = registry;
-        this.sendSuccess = Counter.builder("notice.send.success").description("notice send success").register(registry);
-        this.sendFailure = Counter.builder("notice.send.failure").description("notice send failure").register(registry);
-        this.sendTimer = Timer.builder("notice.send.duration").description("notice send duration").register(registry);
+        this.sendSuccess = Counter.builder("notice.send.success")
+                .description("notice send success")
+                .register(registry);
+        this.sendFailure = Counter.builder("notice.send.failure")
+                .description("notice send failure")
+                .register(registry);
+        this.sendTimer = Timer.builder("notice.send.duration")
+                .description("notice send duration")
+                .register(registry);
     }
 
     public void recordSuccess(long nanos) {
@@ -32,5 +35,3 @@ public final class NoticeMetrics {
         sendTimer.record(nanos, TimeUnit.NANOSECONDS);
     }
 }
-
-

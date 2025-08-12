@@ -5,9 +5,8 @@ import java.io.Serializable;
 
 /**
  * 分页请求对象
- * <p>
- * 提供标准的分页参数，包括页码、页大小和排序信息
- * </p>
+ *
+ * <p>提供标准的分页参数，包括页码、页大小和排序信息
  *
  * @author rosestack
  * @since 1.0.0
@@ -38,8 +37,7 @@ public class PageRequest implements Serializable {
     /** 排序方向（asc/desc） */
     private String sortDirection = "desc";
 
-    public PageRequest() {
-    }
+    public PageRequest() {}
 
     public PageRequest(int page, int size) {
         this.page = page;
@@ -145,11 +143,17 @@ public class PageRequest implements Serializable {
 
     @Override
     public String toString() {
-        return "PageRequest{" +
-                "page=" + page +
-                ", size=" + size +
-                ", sortBy='" + sortBy + '\'' +
-                ", sortDirection='" + sortDirection + '\'' +
-                '}';
+        return "PageRequest{"
+                + "page="
+                + page
+                + ", size="
+                + size
+                + ", sortBy='"
+                + sortBy
+                + '\''
+                + ", sortDirection='"
+                + sortDirection
+                + '\''
+                + '}';
     }
-} 
+}

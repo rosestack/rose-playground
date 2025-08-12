@@ -1,15 +1,14 @@
 package io.github.rosestack.i18n.util;
 
+import static java.util.Collections.emptyList;
+
 import io.github.rosestack.i18n.CompositeMessageSource;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spi.EmptyMessageSource;
+import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-
-import static java.util.Collections.emptyList;
 
 public abstract class I18nUtils {
 
@@ -41,8 +40,8 @@ public abstract class I18nUtils {
         return Collections.unmodifiableList(alli18nMessageSources);
     }
 
-    public static void initMessageSources(I18nMessageSource i18nMessageSource,
-                                          List<I18nMessageSource> allMessageSources) {
+    public static void initMessageSources(
+            I18nMessageSource i18nMessageSource, List<I18nMessageSource> allMessageSources) {
         if (i18nMessageSource == null || allMessageSources == null) {
             return;
         }
@@ -102,9 +101,7 @@ public abstract class I18nUtils {
         return new Locale(language, region, variant);
     }
 
-    /**
-     * Generate fallback list for locale, e.g. zh_CN → [zh_CN, zh, ROOT]
-     */
+    /** Generate fallback list for locale, e.g. zh_CN → [zh_CN, zh, ROOT] */
     public static Set<Locale> getFallbackLocales(Locale locale) {
         Set<Locale> fallbacks = new LinkedHashSet<>();
         if (locale == null) {

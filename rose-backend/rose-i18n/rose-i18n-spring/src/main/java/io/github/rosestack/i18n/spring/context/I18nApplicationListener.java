@@ -1,8 +1,14 @@
 package io.github.rosestack.i18n.spring.context;
 
+import static org.springframework.util.ObjectUtils.containsElement;
+
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -14,13 +20,6 @@ import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-
-import static org.springframework.util.ObjectUtils.containsElement;
-
 /**
  * Internationalization {@link ApplicationListener}
  *
@@ -31,8 +30,10 @@ import static org.springframework.util.ObjectUtils.containsElement;
 public class I18nApplicationListener implements SmartApplicationListener {
     private static final Logger logger = LoggerFactory.getLogger(I18nApplicationListener.class);
 
-    private static final String ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME = "org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver";
-    private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS = ClassUtils.resolveClassName(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME, ClassUtils.getDefaultClassLoader());
+    private static final String ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME =
+            "org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver";
+    private static final Class<?> ACCEPT_HEADER_LOCALE_RESOLVER_CLASS =
+            ClassUtils.resolveClassName(ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME, ClassUtils.getDefaultClassLoader());
     private static final Class<?>[] SUPPORTED_EVENT_TYPES = {ContextRefreshedEvent.class, ContextClosedEvent.class};
 
     @Override
@@ -58,7 +59,8 @@ public class I18nApplicationListener implements SmartApplicationListener {
     }
 
     private void initializeServiceMessageSource(ApplicationContext context) {
-        I18nMessageSource i18nMessageSource = context.getBean(I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
+        I18nMessageSource i18nMessageSource =
+                context.getBean(I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, I18nMessageSource.class);
         I18nUtils.setI18nMessageSource(i18nMessageSource);
     }
 
@@ -69,8 +71,10 @@ public class I18nApplicationListener implements SmartApplicationListener {
             return;
         }
 
-        Class<AcceptHeaderLocaleResolver> beanClass = (Class<AcceptHeaderLocaleResolver>) ACCEPT_HEADER_LOCALE_RESOLVER_CLASS;
-        Collection<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers = context.getBeansOfType(beanClass).values();
+        Class<AcceptHeaderLocaleResolver> beanClass =
+                (Class<AcceptHeaderLocaleResolver>) ACCEPT_HEADER_LOCALE_RESOLVER_CLASS;
+        Collection<AcceptHeaderLocaleResolver> acceptHeaderLocaleResolvers =
+                context.getBeansOfType(beanClass).values();
 
         if (acceptHeaderLocaleResolvers.isEmpty()) {
             logger.debug("The '{}' Spring Bean was not found!", ACCEPT_HEADER_LOCALE_RESOLVER_CLASS_NAME);
@@ -84,7 +88,10 @@ public class I18nApplicationListener implements SmartApplicationListener {
             List<Locale> supportedLocales = i18nMessageSource.getSupportedLocales();
             acceptHeaderLocaleResolver.setDefaultLocale(defaultLocale);
             acceptHeaderLocaleResolver.setSupportedLocales(new ArrayList<>(supportedLocales));
-            logger.debug("AcceptHeaderLocaleResolver Bean associated with default Locale : '{}' , list of supported Locales : {}", defaultLocale, supportedLocales);
+            logger.debug(
+                    "AcceptHeaderLocaleResolver Bean associated with default Locale : '{}' , list of supported Locales : {}",
+                    defaultLocale,
+                    supportedLocales);
         }
     }
 

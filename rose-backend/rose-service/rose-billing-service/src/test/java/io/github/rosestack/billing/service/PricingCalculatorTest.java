@@ -1,23 +1,22 @@
 package io.github.rosestack.billing.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.enums.BillingType;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 
 /**
  * PricingCalculator 单元测试
@@ -62,7 +61,7 @@ class PricingCalculatorTest {
     void testCalculateBasePrice_Monthly() {
         // 测试按月计费的基础价格计算
         BigDecimal result = pricingCalculator.calculateBasePrice(testPlan, periodStart, periodEnd);
-        
+
         assertEquals(new BigDecimal("99.00"), result);
     }
 
@@ -70,24 +69,21 @@ class PricingCalculatorTest {
     void testCalculateBasePrice_UsageBased() {
         // 测试使用量计费模式
         testPlan.setBillingType(BillingType.USAGE_BASED);
-        
+
         BigDecimal result = pricingCalculator.calculateBasePrice(testPlan, periodStart, periodEnd);
-        
+
         assertEquals(BigDecimal.ZERO, result);
     }
 
     @Test
     void testCalculateUsageAmount() {
         // Mock 使用量查询
-        when(usageRepository.sumUsageByTenantAndMetricAndPeriod(
-                eq(testTenantId), eq("api_calls"), any(), any()))
+        when(usageRepository.sumUsageByTenantAndMetricAndPeriod(eq(testTenantId), eq("api_calls"), any(), any()))
                 .thenReturn(new BigDecimal("1000"));
-        when(usageRepository.sumUsageByTenantAndMetricAndPeriod(
-                eq(testTenantId), eq("storage_gb"), any(), any()))
+        when(usageRepository.sumUsageByTenantAndMetricAndPeriod(eq(testTenantId), eq("storage_gb"), any(), any()))
                 .thenReturn(new BigDecimal("50"));
 
-        BigDecimal result = pricingCalculator.calculateUsageAmount(
-                testTenantId, periodStart, periodEnd, testPlan);
+        BigDecimal result = pricingCalculator.calculateUsageAmount(testTenantId, periodStart, periodEnd, testPlan);
 
         // 1000 * 0.01 + 50 * 0.10 = 10 + 5 = 15
         assertEquals(new BigDecimal("15.00"), result);
@@ -97,21 +93,20 @@ class PricingCalculatorTest {
     void testCalculateUsageAmount_NoPricing() {
         // 测试没有使用量定价的情况
         testPlan.setUsagePricing(null);
-        
-        BigDecimal result = pricingCalculator.calculateUsageAmount(
-                testTenantId, periodStart, periodEnd, testPlan);
-        
+
+        BigDecimal result = pricingCalculator.calculateUsageAmount(testTenantId, periodStart, periodEnd, testPlan);
+
         assertEquals(BigDecimal.ZERO, result);
     }
 
     @Test
     void testCalculateDiscount() {
         BigDecimal amount = new BigDecimal("100.00");
-        
+
         // 测试 WELCOME10 折扣码
         BigDecimal result = pricingCalculator.calculateDiscount(testTenantId, amount, "WELCOME10");
         assertEquals(0, new BigDecimal("10.00").compareTo(result));
-        
+
         // 测试无效折扣码
         BigDecimal noDiscount = pricingCalculator.calculateDiscount(testTenantId, amount, "INVALID");
         assertEquals(BigDecimal.ZERO, noDiscount);
@@ -120,7 +115,7 @@ class PricingCalculatorTest {
     @Test
     void testCalculateTax() {
         BigDecimal amount = new BigDecimal("100.00");
-        
+
         BigDecimal result = pricingCalculator.calculateTax(amount);
 
         assertEquals(new BigDecimal("10.00"), result);
@@ -132,8 +127,8 @@ class PricingCalculatorTest {
         when(usageRepository.sumUsageByTenantAndMetricAndPeriod(anyString(), anyString(), any(), any()))
                 .thenReturn(new BigDecimal("100"));
 
-        BigDecimal result = pricingCalculator.calculateTotalAmount(
-                testTenantId, testPlan, periodStart, periodEnd, "WELCOME10");
+        BigDecimal result =
+                pricingCalculator.calculateTotalAmount(testTenantId, testPlan, periodStart, periodEnd, "WELCOME10");
 
         // 基础费用: 99.00
         // 使用量费用: 100 * 0.01 + 100 * 0.10 = 11.00

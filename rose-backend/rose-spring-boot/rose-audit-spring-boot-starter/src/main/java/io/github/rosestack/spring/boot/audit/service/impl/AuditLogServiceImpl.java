@@ -8,25 +8,21 @@ import io.github.rosestack.spring.boot.audit.mapper.AuditLogMapper;
 import io.github.rosestack.spring.boot.audit.service.AuditLogService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 /**
  * 审计日志服务实现类
- * <p>
- * 提供审计日志的完整业务功能实现，包括记录、查询、统计、分析等。
- * 支持同步和异步处理，确保高性能和可靠性。
- * </p>
+ *
+ * <p>提供审计日志的完整业务功能实现，包括记录、查询、统计、分析等。 支持同步和异步处理，确保高性能和可靠性。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -72,9 +68,7 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         }
     }
 
-    /**
-     * 验证审计日志数据
-     */
+    /** 验证审计日志数据 */
     private void validateAuditLog(AuditLog auditLog) {
         Set<ConstraintViolation<AuditLog>> violations = validator.validate(auditLog);
         if (!violations.isEmpty()) {
@@ -83,9 +77,7 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         }
     }
 
-    /**
-     * 补充审计日志上下文信息
-     */
+    /** 补充审计日志上下文信息 */
     private void enrichAuditLogContext(AuditLog auditLog) {
         // 设置事件时间
         if (auditLog.getEventTime() == null) {
@@ -107,13 +99,12 @@ public class AuditLogServiceImpl extends ServiceImpl<AuditLogMapper, AuditLog> i
         }
     }
 
-    /**
-     * 生成安全哈希值和数字签名
-     */
+    /** 生成安全哈希值和数字签名 */
     private void generateHashValues(AuditLog auditLog) {
         try {
             // 生成简单的哈希值
-            String data = String.format("%s-%s-%s-%s",
+            String data = String.format(
+                    "%s-%s-%s-%s",
                     auditLog.getEventType(),
                     auditLog.getOperationName(),
                     auditLog.getUserId(),

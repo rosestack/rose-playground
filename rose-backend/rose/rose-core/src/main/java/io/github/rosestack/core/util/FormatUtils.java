@@ -1,26 +1,24 @@
 package io.github.rosestack.core.util;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 
 public abstract class FormatUtils {
     public static final String DEFAULT_PLACEHOLDER = "{}";
     private static final Pattern NAMED_PARAMETER_PATTERN = Pattern.compile("\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}");
     private static final Pattern INDEXED_PARAMETER_PATTERN = Pattern.compile("\\{(\\d+)\\}");
 
-    private FormatUtils() {
-    }
+    private FormatUtils() {}
 
     /**
      * 格式化占位符（使用默认占位符 {}）
      *
      * @param template 模板字符串
-     * @param args     参数数组
+     * @param args 参数数组
      * @return 格式化后的字符串
      */
     public static String replacePlaceholders(final String template, final Object... args) {
@@ -35,20 +33,21 @@ public abstract class FormatUtils {
      * 格式化占位符（使用默认占位符 {}，支持本地化）
      *
      * @param template 模板字符串
-     * @param locale   本地化设置
-     * @param args     参数数组
+     * @param locale 本地化设置
+     * @param args 参数数组
      * @return 格式化后的字符串
      */
-    public static String replacePlaceholders(final String template, final Locale locale, final TimeZone timeZone, final Object... args) {
+    public static String replacePlaceholders(
+            final String template, final Locale locale, final TimeZone timeZone, final Object... args) {
         return replaceCustomPlaceholder(template, DEFAULT_PLACEHOLDER, locale, timeZone, args);
     }
 
     /**
      * 格式化占位符（自定义占位符）
      *
-     * @param template    模板字符串
+     * @param template 模板字符串
      * @param placeholder 占位符字符串
-     * @param args        参数数组
+     * @param args 参数数组
      * @return 格式化后的字符串
      */
     public static String replaceCustomPlaceholder(final String template, String placeholder, final Object... args) {
@@ -58,13 +57,14 @@ public abstract class FormatUtils {
     /**
      * 格式化占位符（自定义占位符，支持本地化）
      *
-     * @param template    模板字符串
+     * @param template 模板字符串
      * @param placeholder 占位符字符串
-     * @param locale      本地化设置
-     * @param args        参数数组
+     * @param locale 本地化设置
+     * @param args 参数数组
      * @return 格式化后的字符串
      */
-    public static String replaceCustomPlaceholder(final String template, String placeholder, final Locale locale, TimeZone timeZone, final Object... args) {
+    public static String replaceCustomPlaceholder(
+            final String template, String placeholder, final Locale locale, TimeZone timeZone, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -90,7 +90,7 @@ public abstract class FormatUtils {
      * 格式化命名参数（使用正则表达式，更高效）
      *
      * @param template 模板字符串
-     * @param map      变量映射
+     * @param map 变量映射
      * @return 格式化后的字符串
      */
     public static String replaceNamedParameters(final String template, final Map<String, ?> map) {
@@ -101,16 +101,16 @@ public abstract class FormatUtils {
         return replaceNamedParameters(template, locale, TimeZone.getDefault(), map);
     }
 
-
     /**
      * 格式化命名参数（使用正则表达式，更高效，支持本地化）
      *
      * @param template 模板字符串
-     * @param map      变量映射
-     * @param locale   本地化设置
+     * @param map 变量映射
+     * @param locale 本地化设置
      * @return 格式化后的字符串
      */
-    public static String replaceNamedParameters(final String template, final Locale locale, TimeZone timeZone, final Map<String, ?> map) {
+    public static String replaceNamedParameters(
+            final String template, final Locale locale, TimeZone timeZone, final Map<String, ?> map) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -144,7 +144,7 @@ public abstract class FormatUtils {
      * 格式化索引参数（使用正则表达式，更高效）
      *
      * @param template 模板字符串
-     * @param args     参数数组
+     * @param args 参数数组
      * @return 格式化后的字符串
      */
     public static String replaceIndexedParameters(final String template, final Object... args) {
@@ -155,11 +155,12 @@ public abstract class FormatUtils {
      * 格式化索引参数（使用正则表达式，更高效，支持本地化）
      *
      * @param template 模板字符串
-     * @param locale   本地化设置
-     * @param args     参数数组
+     * @param locale 本地化设置
+     * @param args 参数数组
      * @return 格式化后的字符串
      */
-    public static String replaceIndexedParameters(final String template, final Locale locale, TimeZone timeZone, final Object... args) {
+    public static String replaceIndexedParameters(
+            final String template, final Locale locale, TimeZone timeZone, final Object... args) {
         if (StringUtils.isBlank(template)) {
             return template;
         }
@@ -196,7 +197,7 @@ public abstract class FormatUtils {
      * 智能格式化：自动检测模板类型并选择合适的格式化方法
      *
      * @param template 模板字符串
-     * @param args     参数（可以是Map或Object数组）
+     * @param args 参数（可以是Map或Object数组）
      * @return 格式化后的字符串
      */
     public static String format(final String template, final Object args) {
@@ -207,8 +208,8 @@ public abstract class FormatUtils {
      * 智能格式化：自动检测模板类型并选择合适的格式化方法（支持本地化）
      *
      * @param template 模板字符串
-     * @param args     参数（可以是Map或Object数组）
-     * @param locale   本地化设置
+     * @param args 参数（可以是Map或Object数组）
+     * @param locale 本地化设置
      * @return 格式化后的字符串
      */
     public static String format(final String template, final Locale locale, TimeZone timeZone, final Object args) {
@@ -280,7 +281,8 @@ public abstract class FormatUtils {
      * @return 是否包含命名参数
      */
     public static boolean hasNamedParameters(final String template) {
-        return StringUtils.isNotBlank(template) && NAMED_PARAMETER_PATTERN.matcher(template).find();
+        return StringUtils.isNotBlank(template)
+                && NAMED_PARAMETER_PATTERN.matcher(template).find();
     }
 
     /**
@@ -290,7 +292,8 @@ public abstract class FormatUtils {
      * @return 是否包含索引参数
      */
     public static boolean hasIndexedParameters(final String template) {
-        return StringUtils.isNotBlank(template) && INDEXED_PARAMETER_PATTERN.matcher(template).find();
+        return StringUtils.isNotBlank(template)
+                && INDEXED_PARAMETER_PATTERN.matcher(template).find();
     }
 
     public static int countPlaceholders(final String template) {

@@ -6,13 +6,12 @@ import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 计费定时任务调度器
@@ -29,24 +28,21 @@ public class BillingScheduler {
     private final InvoiceRepository invoiceRepository;
     private final BillingNotificationService notificationService;
 
-    /**
-     * 每小时检查到期订阅并生成账单
-     */
+    /** 每小时检查到期订阅并生成账单 */
     @Scheduled(cron = "0 0 * * * ?") // 每小时执行
     public void generateInvoicesForDueSubscriptions() {
         log.info("开始执行自动账单生成任务");
 
         try {
             LocalDateTime now = LocalDateTime.now();
-            List<TenantSubscription> dueSubscriptions = subscriptionRepository
-                .findByNextBillingDateBeforeAndStatusIn(now,
-                    List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL));
+            List<TenantSubscription> dueSubscriptions = subscriptionRepository.findByNextBillingDateBeforeAndStatusIn(
+                    now, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL));
 
             for (TenantSubscription subscription : dueSubscriptions) {
                 try {
                     // 试用期结束处理
-                    if (subscription.getInTrial() &&
-                        subscription.getTrialEndTime().isBefore(now)) {
+                    if (subscription.getInTrial()
+                            && subscription.getTrialEndTime().isBefore(now)) {
                         handleTrialExpiry(subscription);
                         continue;
                     }
@@ -67,17 +63,15 @@ public class BillingScheduler {
         log.info("自动账单生成任务执行完成");
     }
 
-    /**
-     * 每天检查逾期账单
-     */
+    /** 每天检查逾期账单 */
     @Scheduled(cron = "0 0 9 * * ?") // 每天上午9点执行
     public void handleOverdueInvoices() {
         log.info("开始执行逾期账单处理任务");
 
         try {
             LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
-            List<Invoice> overdueInvoices = invoiceRepository
-                .findByStatusAndDueDateBefore(InvoiceStatus.PENDING, threeDaysAgo.toLocalDate());
+            List<Invoice> overdueInvoices =
+                    invoiceRepository.findByStatusAndDueDateBefore(InvoiceStatus.PENDING, threeDaysAgo.toLocalDate());
 
             for (Invoice invoice : overdueInvoices) {
                 try {
@@ -86,8 +80,7 @@ public class BillingScheduler {
                     invoiceRepository.updateById(invoice);
 
                     // 暂停相关订阅
-                    TenantSubscription subscription = subscriptionRepository
-                        .selectById(invoice.getSubscriptionId());
+                    TenantSubscription subscription = subscriptionRepository.selectById(invoice.getSubscriptionId());
                     if (subscription != null && subscription.getStatus() == SubscriptionStatus.ACTIVE) {
                         subscription.setStatus(SubscriptionStatus.PENDING_PAYMENT);
                         subscription.setPausedTime(LocalDateTime.now());
@@ -112,9 +105,7 @@ public class BillingScheduler {
         log.info("逾期账单处理任务执行完成");
     }
 
-    /**
-     * 每天汇总使用量数据
-     */
+    /** 每天汇总使用量数据 */
     @Scheduled(cron = "0 30 1 * * ?") // 每天凌晨1:30执行
     public void aggregateUsageData() {
         log.info("开始执行使用量数据汇总任务");
@@ -137,9 +128,7 @@ public class BillingScheduler {
         log.info("使用量数据汇总任务执行完成");
     }
 
-    /**
-     * 每周生成财务报告
-     */
+    /** 每周生成财务报告 */
     @Scheduled(cron = "0 0 8 ? * MON") // 每周一上午8点执行
     public void generateWeeklyFinancialReport() {
         log.info("开始生成周财务报告");
@@ -157,9 +146,7 @@ public class BillingScheduler {
         log.info("周财务报告生成完成");
     }
 
-    /**
-     * 清理过期数据
-     */
+    /** 清理过期数据 */
     @Scheduled(cron = "0 0 2 1 * ?") // 每月1号凌晨2点执行
     public void cleanupExpiredData() {
         log.info("开始清理过期数据");
@@ -182,9 +169,7 @@ public class BillingScheduler {
         log.info("过期数据清理完成");
     }
 
-    /**
-     * 处理试用期到期
-     */
+    /** 处理试用期到期 */
     private void handleTrialExpiry(TenantSubscription subscription) {
         try {
             subscription.setInTrial(false);

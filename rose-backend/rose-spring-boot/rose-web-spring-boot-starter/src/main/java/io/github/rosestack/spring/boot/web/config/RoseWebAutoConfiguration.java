@@ -15,25 +15,23 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * Web 自动配置
- * <p>
- * 提供 Web 相关的自动配置功能
- * </p>
+ *
+ * <p>提供 Web 相关的自动配置功能
  *
  * @author rosestack
  * @since 1.0.0
  */
-
 @Import({
-        CorsConfig.class,
-        AsyncConfig.class,
-        MessageConfig.class,
-        MetricConfig.class,
-        WebMvcConfig.class,
-        SwaggerConfig.class,
-        // 精准引入组件（替代包扫描）
-        ApiResponseBodyAdvice.class,
-        GlobalExceptionHandler.class,
-        ExceptionHandlerHelper.class
+    CorsConfig.class,
+    AsyncConfig.class,
+    MessageConfig.class,
+    MetricConfig.class,
+    WebMvcConfig.class,
+    SwaggerConfig.class,
+    // 精准引入组件（替代包扫描）
+    ApiResponseBodyAdvice.class,
+    GlobalExceptionHandler.class,
+    ExceptionHandlerHelper.class
 })
 @Slf4j
 @AutoConfiguration

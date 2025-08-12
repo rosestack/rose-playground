@@ -3,9 +3,7 @@ package io.github.rosestack.notification.infrastructure.mybatis.entity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-/**
- * NotificationTemplate 持久化对象
- */
+/** NotificationTemplate 持久化对象 */
 @Data
 @TableName("notification_template")
 public class NotificationTemplateEntity {

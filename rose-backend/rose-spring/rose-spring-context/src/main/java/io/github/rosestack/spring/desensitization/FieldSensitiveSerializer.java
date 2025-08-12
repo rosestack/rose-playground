@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import io.github.rosestack.spring.annotation.FieldSensitive;
 import io.github.rosestack.spring.el.SpringExpressionResolver;
-
 import java.io.IOException;
 import java.util.Objects;
 
@@ -24,8 +23,7 @@ public class FieldSensitiveSerializer extends JsonSerializer<String> implements 
         this.fieldSensitive = fieldSensitive;
     }
 
-    public FieldSensitiveSerializer() {
-    }
+    public FieldSensitiveSerializer() {}
 
     private String handler(FieldSensitive fieldSensitive, String origin) {
         Object disable = SpringExpressionResolver.getInstance().resolve(fieldSensitive.expression());

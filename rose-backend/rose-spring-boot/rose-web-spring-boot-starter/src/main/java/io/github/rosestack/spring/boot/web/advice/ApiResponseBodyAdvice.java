@@ -1,9 +1,9 @@
 package io.github.rosestack.spring.boot.web.advice;
 
 import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.spring.annotation.ResponseIgnore;
 import io.github.rosestack.spring.filter.AbstractBaseFilter;
 import io.github.rosestack.spring.util.ServletUtils;
-import io.github.rosestack.spring.annotation.ResponseIgnore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
@@ -16,9 +16,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 /**
  * 响应体包装器
- * <p>
- * 自动将控制器返回的数据包装为统一的 ApiResponse 格式，支持基于 URL 的排除路径
- * </p>
+ *
+ * <p>自动将控制器返回的数据包装为统一的 ApiResponse 格式，支持基于 URL 的排除路径
  *
  * @author rosestack
  * @since 1.0.0
@@ -29,15 +28,19 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return !returnType.hasMethodAnnotation(ResponseIgnore.class) &&
-                !returnType.getContainingClass().isAnnotationPresent(ResponseIgnore.class) &&
-                !ApiResponse.class.isAssignableFrom(returnType.getParameterType());
+        return !returnType.hasMethodAnnotation(ResponseIgnore.class)
+                && !returnType.getContainingClass().isAnnotationPresent(ResponseIgnore.class)
+                && !ApiResponse.class.isAssignableFrom(returnType.getParameterType());
     }
 
     @Override
-    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
-                                  Class<? extends HttpMessageConverter<?>> selectedConverterType,
-                                  ServerHttpRequest request, ServerHttpResponse response) {
+    public Object beforeBodyWrite(
+            Object body,
+            MethodParameter returnType,
+            MediaType selectedContentType,
+            Class<? extends HttpMessageConverter<?>> selectedConverterType,
+            ServerHttpRequest request,
+            ServerHttpResponse response) {
         // 检查请求路径是否应该被排除
         String requestPath = ServletUtils.extractPathFromUri(request.getURI().getPath());
         if (AbstractBaseFilter.shouldExcludePath(requestPath)) {

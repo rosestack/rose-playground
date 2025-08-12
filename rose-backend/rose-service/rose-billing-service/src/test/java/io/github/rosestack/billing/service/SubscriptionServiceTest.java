@@ -1,5 +1,9 @@
 package io.github.rosestack.billing.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.rosestack.billing.entity.SubscriptionPlan;
 import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
@@ -7,20 +11,15 @@ import io.github.rosestack.billing.exception.PlanNotFoundException;
 import io.github.rosestack.billing.exception.SubscriptionNotFoundException;
 import io.github.rosestack.billing.repository.SubscriptionPlanRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * SubscriptionService 单元测试
@@ -66,8 +65,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testGetActiveSubscription_Success() {
-        when(subscriptionRepository.findActiveByTenantId(testTenantId))
-                .thenReturn(Optional.of(testSubscription));
+        when(subscriptionRepository.findActiveByTenantId(testTenantId)).thenReturn(Optional.of(testSubscription));
 
         Optional<TenantSubscription> result = subscriptionService.getActiveSubscription(testTenantId);
 
@@ -78,8 +76,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testGetActiveSubscription_NotFound() {
-        when(subscriptionRepository.findActiveByTenantId(testTenantId))
-                .thenReturn(Optional.empty());
+        when(subscriptionRepository.findActiveByTenantId(testTenantId)).thenReturn(Optional.empty());
 
         Optional<TenantSubscription> result = subscriptionService.getActiveSubscription(testTenantId);
 
@@ -99,8 +96,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testHasActiveSubscription() {
-        when(subscriptionRepository.findActiveByTenantId(testTenantId))
-                .thenReturn(Optional.of(testSubscription));
+        when(subscriptionRepository.findActiveByTenantId(testTenantId)).thenReturn(Optional.of(testSubscription));
 
         boolean result = subscriptionService.hasActiveSubscription(testTenantId);
 
@@ -109,8 +105,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testPauseSubscription_Success() {
-        when(subscriptionRepository.selectById(testSubscriptionId))
-                .thenReturn(testSubscription);
+        when(subscriptionRepository.selectById(testSubscriptionId)).thenReturn(testSubscription);
 
         subscriptionService.pauseSubscription(testSubscriptionId, "用户请求暂停");
 
@@ -122,8 +117,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testPauseSubscription_NotFound() {
-        when(subscriptionRepository.selectById(testSubscriptionId))
-                .thenReturn(null);
+        when(subscriptionRepository.selectById(testSubscriptionId)).thenReturn(null);
 
         assertThrows(SubscriptionNotFoundException.class, () -> {
             subscriptionService.pauseSubscription(testSubscriptionId, "测试");
@@ -136,8 +130,7 @@ class SubscriptionServiceTest {
         testSubscription.setPausedTime(LocalDateTime.now());
         testSubscription.setPauseReason("测试暂停");
 
-        when(subscriptionRepository.selectById(testSubscriptionId))
-                .thenReturn(testSubscription);
+        when(subscriptionRepository.selectById(testSubscriptionId)).thenReturn(testSubscription);
 
         subscriptionService.resumeSubscription(testSubscriptionId);
 
@@ -154,12 +147,9 @@ class SubscriptionServiceTest {
         newPlan.setId(newPlanId);
         newPlan.setBasePrice(new BigDecimal("199.00"));
 
-        when(subscriptionRepository.selectById(testSubscriptionId))
-                .thenReturn(testSubscription);
-        when(planRepository.selectById(newPlanId))
-                .thenReturn(newPlan);
-        when(planRepository.selectById(testSubscription.getPlanId()))
-                .thenReturn(testPlan);
+        when(subscriptionRepository.selectById(testSubscriptionId)).thenReturn(testSubscription);
+        when(planRepository.selectById(newPlanId)).thenReturn(newPlan);
+        when(planRepository.selectById(testSubscription.getPlanId())).thenReturn(testPlan);
 
         subscriptionService.upgradeSubscription(testSubscriptionId, newPlanId);
 
@@ -171,10 +161,8 @@ class SubscriptionServiceTest {
 
     @Test
     void testUpgradeSubscription_PlanNotFound() {
-        when(subscriptionRepository.selectById(testSubscriptionId))
-                .thenReturn(testSubscription);
-        when(planRepository.selectById("invalid-plan"))
-                .thenReturn(null);
+        when(subscriptionRepository.selectById(testSubscriptionId)).thenReturn(testSubscription);
+        when(planRepository.selectById("invalid-plan")).thenReturn(null);
 
         assertThrows(PlanNotFoundException.class, () -> {
             subscriptionService.upgradeSubscription(testSubscriptionId, "invalid-plan");
@@ -183,10 +171,8 @@ class SubscriptionServiceTest {
 
     @Test
     void testValidateUsageLimit_Success() {
-        when(subscriptionRepository.findActiveByTenantId(testTenantId))
-                .thenReturn(Optional.of(testSubscription));
-        when(planRepository.selectById(testSubscription.getPlanId()))
-                .thenReturn(testPlan);
+        when(subscriptionRepository.findActiveByTenantId(testTenantId)).thenReturn(Optional.of(testSubscription));
+        when(planRepository.selectById(testSubscription.getPlanId())).thenReturn(testPlan);
         when(pricingCalculator.isUsageExceeded(testTenantId, testPlan, "api_calls"))
                 .thenReturn(false);
 
@@ -197,8 +183,7 @@ class SubscriptionServiceTest {
 
     @Test
     void testValidateUsageLimit_NoActiveSubscription() {
-        when(subscriptionRepository.findActiveByTenantId(testTenantId))
-                .thenReturn(Optional.empty());
+        when(subscriptionRepository.findActiveByTenantId(testTenantId)).thenReturn(Optional.empty());
 
         boolean result = subscriptionService.validateUsageLimit(testTenantId, "api_calls");
 

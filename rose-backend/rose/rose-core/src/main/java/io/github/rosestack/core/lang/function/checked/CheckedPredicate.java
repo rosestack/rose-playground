@@ -5,13 +5,13 @@ import java.util.function.Predicate;
 
 /**
  * 可能抛出受检异常的单参数断言接口
- * 
+ *
  * @param <T> 输入类型
  * @author rose
  */
 @FunctionalInterface
 public interface CheckedPredicate<T> {
-    
+
     /**
      * 对给定参数进行断言测试
      *
@@ -20,7 +20,7 @@ public interface CheckedPredicate<T> {
      * @throws Exception 如果发生异常
      */
     boolean test(T t) throws Exception;
-    
+
     /**
      * 转换为标准 Predicate，将受检异常包装为运行时异常
      *
@@ -37,8 +37,7 @@ public interface CheckedPredicate<T> {
     }
 
     /**
-     * 转换为标准 Predicate，使用自定义异常处理器
-     * 当发生异常时，调用异常处理器并返回 false
+     * 转换为标准 Predicate，使用自定义异常处理器 当发生异常时，调用异常处理器并返回 false
      *
      * @param handler 异常处理器，接收捕获的异常
      * @return 标准 Predicate
@@ -56,8 +55,7 @@ public interface CheckedPredicate<T> {
     }
 
     /**
-     * 转换为标准 Predicate，使用自定义异常处理器和默认值
-     * 当发生异常时，调用异常处理器并返回默认值
+     * 转换为标准 Predicate，使用自定义异常处理器和默认值 当发生异常时，调用异常处理器并返回默认值
      *
      * @param handler 异常处理器，接收捕获的异常
      * @param defaultValue 异常时返回的默认值
@@ -74,7 +72,7 @@ public interface CheckedPredicate<T> {
             }
         };
     }
-    
+
     /**
      * 从标准 Predicate 创建 CheckedPredicate
      *
@@ -86,7 +84,7 @@ public interface CheckedPredicate<T> {
         Objects.requireNonNull(predicate, "predicate cannot be null");
         return predicate::test;
     }
-    
+
     /**
      * 返回一个组合断言，表示该断言与另一个断言的逻辑与
      *
@@ -97,7 +95,7 @@ public interface CheckedPredicate<T> {
         Objects.requireNonNull(other, "other cannot be null");
         return t -> test(t) && other.test(t);
     }
-    
+
     /**
      * 返回该断言的逻辑非
      *
@@ -106,7 +104,7 @@ public interface CheckedPredicate<T> {
     default CheckedPredicate<T> negate() {
         return t -> !test(t);
     }
-    
+
     /**
      * 返回一个组合断言，表示该断言与另一个断言的逻辑或
      *
@@ -117,7 +115,7 @@ public interface CheckedPredicate<T> {
         Objects.requireNonNull(other, "other cannot be null");
         return t -> test(t) || other.test(t);
     }
-    
+
     /**
      * 返回一个断言，用于测试两个参数是否相等
      *
@@ -126,11 +124,9 @@ public interface CheckedPredicate<T> {
      * @return 断言
      */
     static <T> CheckedPredicate<T> isEqual(Object targetRef) {
-        return (null == targetRef)
-                ? Objects::isNull
-                : object -> targetRef.equals(object);
+        return (null == targetRef) ? Objects::isNull : object -> targetRef.equals(object);
     }
-    
+
     /**
      * 返回一个断言，用于测试参数是否为 null
      *
@@ -140,7 +136,7 @@ public interface CheckedPredicate<T> {
     static <T> CheckedPredicate<T> isNull() {
         return Objects::isNull;
     }
-    
+
     /**
      * 返回一个断言，用于测试参数是否不为 null
      *
@@ -150,7 +146,7 @@ public interface CheckedPredicate<T> {
     static <T> CheckedPredicate<T> nonNull() {
         return Objects::nonNull;
     }
-    
+
     /**
      * 返回一个总是返回 true 的断言
      *
@@ -160,7 +156,7 @@ public interface CheckedPredicate<T> {
     static <T> CheckedPredicate<T> alwaysTrue() {
         return t -> true;
     }
-    
+
     /**
      * 返回一个总是返回 false 的断言
      *

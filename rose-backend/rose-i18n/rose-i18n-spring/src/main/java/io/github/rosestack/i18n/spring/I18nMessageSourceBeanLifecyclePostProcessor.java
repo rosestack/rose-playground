@@ -1,13 +1,13 @@
 package io.github.rosestack.i18n.spring;
 
+import static org.springframework.beans.factory.support.AbstractBeanDefinition.INFER_METHOD;
+
 import io.github.rosestack.i18n.I18nMessageSource;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.util.StringUtils;
-
-import static org.springframework.beans.factory.support.AbstractBeanDefinition.INFER_METHOD;
 
 /**
  * The PostProcessor processes the lifecycle of {@link I18nMessageSource} Beans automatically.

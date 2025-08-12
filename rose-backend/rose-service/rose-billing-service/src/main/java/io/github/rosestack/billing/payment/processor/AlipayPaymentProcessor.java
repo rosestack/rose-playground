@@ -5,14 +5,13 @@ import io.github.rosestack.billing.dto.PaymentResult;
 import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.payment.PaymentProcessor;
 import io.github.rosestack.billing.payment.PaymentStatus;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 支付宝支付处理器具体实现
@@ -124,9 +123,11 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
 
             Object signObj = callbackData.get("sign");
             if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
-                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("trade_no", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("trade_no", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("timestamp", ""));
                 String expected = hmacSha256Hex(payload, hmacSecret);
                 if (!expected.equals(signObj.toString())) {
                     log.warn("支付宝回调HMAC校验失败");
@@ -145,7 +146,8 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
     private static String hmacSha256Hex(String data, String key) {
         try {
             javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            mac.init(new javax.crypto.spec.SecretKeySpec(
+                    key.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
             byte[] result = mac.doFinal(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(result.length * 2);
             for (byte b : result) sb.append(String.format("%02x", b));
@@ -193,9 +195,11 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
             }
             Object signObj = callbackData.get("sign");
             if (signObj != null && hmacSecret != null && !hmacSecret.isEmpty()) {
-                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("refund_id", "")) + "|" +
-                        String.valueOf(callbackData.getOrDefault("timestamp", ""));
+                String payload = String.valueOf(callbackData.getOrDefault("invoiceId", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("refund_id", ""))
+                        + "|"
+                        + String.valueOf(callbackData.getOrDefault("timestamp", ""));
                 String expected = hmacSha256Hex(payload, hmacSecret);
                 return expected.equals(signObj.toString());
             }
@@ -208,7 +212,8 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
 
     @Override
     public boolean isRefundSuccess(java.util.Map<String, Object> data) {
-        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", ""))).toUpperCase();
+        String s = String.valueOf(data.getOrDefault("refund_status", data.getOrDefault("status", "")))
+                .toUpperCase();
         return "REFUND_SUCCESS".equals(s) || "SUCCESS".equals(s);
     }
 
@@ -218,7 +223,6 @@ public class AlipayPaymentProcessor implements PaymentProcessor {
         if (ra != null) return new java.math.BigDecimal(ra.toString());
         return PaymentProcessor.super.parseRefundAmount(data);
     }
-
 
     @Override
     public PaymentStatus queryPaymentStatus(String transactionId) {

@@ -2,9 +2,8 @@ package io.github.rosestack.core.exception;
 
 /**
  * 业务异常类
- * <p>
- * 用于表示业务逻辑错误，如参数验证失败、业务规则违反等
- * </p>
+ *
+ * <p>用于表示业务逻辑错误，如参数验证失败、业务规则违反等
  *
  * @author rosestack
  * @since 1.0.0
@@ -50,4 +49,4 @@ public class BusinessException extends BaseException {
     public BusinessException(String messageKey, Throwable cause, Object... args) {
         super(messageKey, cause, args);
     }
-} 
+}

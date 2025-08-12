@@ -1,9 +1,6 @@
 package io.github.rosestack.notice.sender;
 
-/**
- * 短信渠道统一入口，自动通过 SPI 发现并分发到具体 SmsProvider 实现。
- * 扩展新服务商只需实现 SmsProvider 并配置 SPI 文件。
- */
+/** 短信渠道统一入口，自动通过 SPI 发现并分发到具体 SmsProvider 实现。 扩展新服务商只需实现 SmsProvider 并配置 SPI 文件。 */
 import io.github.rosestack.notice.NoticeException;
 import io.github.rosestack.notice.NoticeRetryableException;
 import io.github.rosestack.notice.SendRequest;

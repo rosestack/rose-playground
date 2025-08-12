@@ -1,30 +1,31 @@
 package io.github.rosestack.billing.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class FinancialReportServiceMoreTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;
+
     @Mock
     private TenantSubscriptionRepository subscriptionRepository;
+
     @Mock
     private UsageRecordRepository usageRecordRepository;
 
@@ -40,12 +41,10 @@ class FinancialReportServiceMoreTest {
         when(invoiceRepository.getRevenueByPlan(eq(start), eq(end)))
                 .thenReturn(List.of(
                         Map.of("planId", "plan-basic", "revenue", new BigDecimal("300"), "invoiceCount", 3),
-                        Map.of("planId", "plan-pro", "revenue", new BigDecimal("700"), "invoiceCount", 7)
-                ));
+                        Map.of("planId", "plan-pro", "revenue", new BigDecimal("700"), "invoiceCount", 7)));
 
         // 当前区间与上一周期收入
-        when(invoiceRepository.sumPaidAmountByPeriod(eq(start), eq(end)))
-                .thenReturn(new BigDecimal("1000"));
+        when(invoiceRepository.sumPaidAmountByPeriod(eq(start), eq(end))).thenReturn(new BigDecimal("1000"));
         when(invoiceRepository.sumPaidAmountByPeriod(eq(start.minusDays(30)), eq(start)))
                 .thenReturn(new BigDecimal("800"));
 
@@ -57,4 +56,3 @@ class FinancialReportServiceMoreTest {
         assertEquals(0, new BigDecimal("0.2500").compareTo(report.getGrowthRate()));
     }
 }
-

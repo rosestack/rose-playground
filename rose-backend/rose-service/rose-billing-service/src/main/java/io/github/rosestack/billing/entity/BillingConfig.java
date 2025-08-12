@@ -15,4 +15,3 @@ public class BillingConfig extends BaseTenantEntity {
     private String configValue;
     private String description;
 }
-

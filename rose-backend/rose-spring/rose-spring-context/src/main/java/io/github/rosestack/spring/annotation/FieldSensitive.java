@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.github.rosestack.spring.desensitization.FieldSensitiveSerializer;
 import io.github.rosestack.spring.desensitization.MaskUtils;
 import io.github.rosestack.spring.desensitization.SensitiveType;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

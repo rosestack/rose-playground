@@ -1,5 +1,5 @@
 package io.github.rosestack.core.model;
 
-public interface HasParentId{
+public interface HasParentId {
     String getParentId();
 }

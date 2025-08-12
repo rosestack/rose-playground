@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 
 /**
  * 通知装配器
- * <p>
- * 负责在接口层 DTO 与应用层命令/领域模型之间进行转换。
+ *
+ * <p>负责在接口层 DTO 与应用层命令/领域模型之间进行转换。
  *
  * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
  * @since 1.0.0
  */
 @Component
 public class NotificationAssembler {
-    
+
     /**
      * 将发送通知请求转换为发送通知命令
      *
@@ -33,7 +33,7 @@ public class NotificationAssembler {
                 .variables(request.getVariables())
                 .build();
     }
-    
+
     /**
      * 将通知领域模型转换为通知 DTO
      *
@@ -47,11 +47,18 @@ public class NotificationAssembler {
         dto.setChannelId(notification.getChannelId());
         dto.setTemplateId(notification.getTemplateId());
         dto.setTarget(notification.getTarget());
-        dto.setTargetType(notification.getTargetType() != null ? notification.getTargetType().name() : null);
+        dto.setTargetType(
+                notification.getTargetType() != null
+                        ? notification.getTargetType().name()
+                        : null);
         dto.setContent(notification.getContent());
-        dto.setChannelType(notification.getChannelType() != null ? notification.getChannelType().name() : null);
+        dto.setChannelType(
+                notification.getChannelType() != null
+                        ? notification.getChannelType().name()
+                        : null);
         dto.setRequestId(notification.getRequestId());
-        dto.setStatus(notification.getStatus() != null ? notification.getStatus().name() : null);
+        dto.setStatus(
+                notification.getStatus() != null ? notification.getStatus().name() : null);
         dto.setFailReason(notification.getFailReason());
         dto.setSendTime(notification.getSendTime());
         dto.setReadTime(notification.getReadTime());

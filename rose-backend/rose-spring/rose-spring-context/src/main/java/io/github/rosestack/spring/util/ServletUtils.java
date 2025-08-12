@@ -5,6 +5,14 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
@@ -16,30 +24,26 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
-
 /**
  * Servlet 工具类
+ *
+ * <p>提供 HTTP 请求响应处理的常用工具方法，支持参数提取、客户端信息获取、响应渲染等功能。
+ *
  * <p>
- * 提供 HTTP 请求响应处理的常用工具方法，支持参数提取、客户端信息获取、响应渲染等功能。
- * <p>
+ *
  * <h3>核心特性：</h3>
+ *
  * <ul>
- *   <li>类型安全的参数提取和转换</li>
- *   <li>客户端 IP 地址和 User-Agent 获取</li>
- *   <li>Cookie 操作和会话管理</li>
- *   <li>URL 编码解码缓存优化</li>
+ *   <li>类型安全的参数提取和转换
+ *   <li>客户端 IP 地址和 User-Agent 获取
+ *   <li>Cookie 操作和会话管理
+ *   <li>URL 编码解码缓存优化
  * </ul>
+ *
  * <p>
+ *
  * <h3>使用示例：</h3>
+ *
  * <pre>{@code
  * // 参数提取
  * String name = ServletUtils.getParameter("name", "默认值");
@@ -50,8 +54,8 @@ import java.util.function.Function;
  * // 响应渲染
  * ServletUtils.renderJson(response, "{\"status\":\"success\"}");
  * }</pre>
- * <p>
- * <strong>注意：</strong>所有方法都是线程安全的，支持高并发访问。
+ *
+ * <p><strong>注意：</strong>所有方法都是线程安全的，支持高并发访问。
  *
  * @author chensoul
  * @see HttpServletRequest
@@ -65,23 +69,17 @@ public abstract class ServletUtils {
     private static final Map<String, String> URL_ENCODE_CACHE = new ConcurrentHashMap<>();
     private static final String UNKNOWN = "unknown";
 
-    /**
-     * 用于检测客户端真实 IP 的 HTTP 头列表，按优先级排序
-     */
+    /** 用于检测客户端真实 IP 的 HTTP 头列表，按优先级排序 */
     private static final List<String> DEFAULT_IP_HEADERS = Arrays.asList(
             "X-Forwarded-For",
             "Proxy-Client-IP",
             "WL-Proxy-Client-IP",
             "HTTP_CLIENT_IP",
             "HTTP_X_FORWARDED_FOR",
-            "X-Real-IP"
-    );
+            "X-Real-IP");
 
-    /**
-     * 私有构造函数，防止实例化
-     */
-    private ServletUtils() {
-    }
+    /** 私有构造函数，防止实例化 */
+    private ServletUtils() {}
 
     /**
      * 获取请求参数值
@@ -110,7 +108,6 @@ public abstract class ServletUtils {
         final Map<String, String[]> map = request.getParameterMap();
         return Collections.unmodifiableMap(map);
     }
-
 
     public static Map<String, String> getRequestParams() {
         HttpServletRequest request = getCurrentRequest();
@@ -190,7 +187,6 @@ public abstract class ServletUtils {
             }
         }
         return headers;
-
     }
 
     public static Map<String, String> getResponseHeaders() {
@@ -246,8 +242,8 @@ public abstract class ServletUtils {
     /**
      * 将字符串渲染到客户端
      *
-     * @param response    响应对象
-     * @param string      待渲染的字符串
+     * @param response 响应对象
+     * @param string 待渲染的字符串
      * @param contentType 内容类型
      */
     public static void renderString(HttpServletResponse response, String string, String contentType) {
@@ -266,7 +262,7 @@ public abstract class ServletUtils {
      * 将JSON字符串渲染到客户端
      *
      * @param response 响应对象
-     * @param json     JSON字符串
+     * @param json JSON字符串
      */
     public static void renderJson(HttpServletResponse response, String json) {
         renderString(response, json, MediaType.APPLICATION_JSON_VALUE);
@@ -373,27 +369,28 @@ public abstract class ServletUtils {
 
     /**
      * Processes a potentially comma-separated IP address string from proxy headers.
-     * <p>
-     * When requests pass through multiple proxies or load balancers, the forwarded IP
-     * headers often contain comma-separated lists of IP addresses representing the
-     * chain of proxies. This method extracts the first valid IP address from such lists.
+     *
+     * <p>When requests pass through multiple proxies or load balancers, the forwarded IP headers
+     * often contain comma-separated lists of IP addresses representing the chain of proxies. This
+     * method extracts the first valid IP address from such lists.
      *
      * <p><strong>Processing Logic:</strong>
+     *
      * <ul>
-     *   <li>If IP contains commas, split and check each part</li>
-     *   <li>Return first non-blank, non-"unknown" IP found</li>
-     *   <li>Return original IP if no commas or no valid IPs found</li>
+     *   <li>If IP contains commas, split and check each part
+     *   <li>Return first non-blank, non-"unknown" IP found
+     *   <li>Return original IP if no commas or no valid IPs found
      * </ul>
      *
      * <p><strong>Example Input/Output:</strong>
+     *
      * <pre>
      * "192.168.1.100, 10.0.0.1, unknown" → "192.168.1.100"
      * "unknown, 203.0.113.1" → "203.0.113.1"
      * "192.168.1.100" → "192.168.1.100"
      * </pre>
      *
-     * @param ip The IP address string to process, potentially comma-separated.
-     *           Can be null or empty.
+     * @param ip The IP address string to process, potentially comma-separated. Can be null or empty.
      * @return The first valid IP address found, or the original string if no processing needed
      */
     public static String getReverseProxyIp(String ip) {
@@ -410,10 +407,8 @@ public abstract class ServletUtils {
 
     /**
      * 获取客户端真实 IP 地址
-     * <p>
-     * 可以设置优先使用 IPv4:
      *
-     * <code>System.setProperty("java.net.preferIPv4Stack", "true");</code>
+     * <p>可以设置优先使用 IPv4: <code>System.setProperty("java.net.preferIPv4Stack", "true");</code>
      *
      * @return 客户端 IP 地址，获取失败返回 null
      */
@@ -425,9 +420,8 @@ public abstract class ServletUtils {
 
     /**
      * 标准化 IP 地址，将 IPv6 本地回环地址转换为 IPv4
-     * <p>
-     * 将 IPv6 本地回环地址 "0:0:0:0:0:0:0:1" 或 "::1" 转换为 IPv4 的 "127.0.0.1"
-     * 其他地址保持不变
+     *
+     * <p>将 IPv6 本地回环地址 "0:0:0:0:0:0:0:1" 或 "::1" 转换为 IPv4 的 "127.0.0.1" 其他地址保持不变
      *
      * @param ip 原始 IP 地址
      * @return 标准化后的 IP 地址
@@ -495,8 +489,8 @@ public abstract class ServletUtils {
      * 添加Cookie
      *
      * @param response 响应对象
-     * @param name     Cookie名称
-     * @param value    Cookie值
+     * @param name Cookie名称
+     * @param value Cookie值
      */
     public static void addCookie(HttpServletResponse response, String name, String value) {
         addCookie(response, name, value, -1);
@@ -506,9 +500,9 @@ public abstract class ServletUtils {
      * 添加Cookie
      *
      * @param response 响应对象
-     * @param name     Cookie名称
-     * @param value    Cookie值
-     * @param maxAge   最大存活时间（秒）
+     * @param name Cookie名称
+     * @param value Cookie值
+     * @param maxAge 最大存活时间（秒）
      */
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
@@ -517,9 +511,7 @@ public abstract class ServletUtils {
         response.addCookie(cookie);
     }
 
-    /**
-     * 清理缓存
-     */
+    /** 清理缓存 */
     public static void clearCache() {
         URL_DECODE_CACHE.clear();
         URL_ENCODE_CACHE.clear();
@@ -571,7 +563,11 @@ public abstract class ServletUtils {
         details.append("Method: ").append(request.getMethod()).append("\n");
         details.append("URL: ").append(getFullUrl()).append("\n");
         details.append("Protocol: ").append(request.getScheme()).append("\n");
-        details.append("Server: ").append(request.getServerName()).append(":").append(request.getServerPort()).append("\n");
+        details.append("Server: ")
+                .append(request.getServerName())
+                .append(":")
+                .append(request.getServerPort())
+                .append("\n");
         details.append("Context Path: ").append(request.getContextPath()).append("\n");
         details.append("Servlet Path: ").append(request.getServletPath()).append("\n");
         details.append("Path Info: ").append(request.getPathInfo()).append("\n");
@@ -586,9 +582,8 @@ public abstract class ServletUtils {
 
     /**
      * 获取请求路径
-     * <p>
-     * 优先使用 pathInfo，如果为空则使用 servletPath
-     * </p>
+     *
+     * <p>优先使用 pathInfo，如果为空则使用 servletPath
      *
      * @param request HTTP 请求
      * @return 请求路径
@@ -638,9 +633,7 @@ public abstract class ServletUtils {
         return UNKNOWN;
     }
 
-    /**
-     * 获取当前用户ID
-     */
+    /** 获取当前用户ID */
     public static String getCurrentUserId() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {

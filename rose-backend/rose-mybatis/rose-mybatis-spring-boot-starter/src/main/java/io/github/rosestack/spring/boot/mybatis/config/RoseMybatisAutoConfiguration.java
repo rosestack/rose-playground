@@ -1,5 +1,7 @@
 package io.github.rosestack.spring.boot.mybatis.config;
 
+import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDER;
+
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.core.injector.DefaultSqlInjector;
@@ -34,6 +36,9 @@ import io.github.rosestack.spring.boot.mybatis.tenant.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.tenant.TenantIdFilter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -50,22 +55,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDER;
-
 /**
  * Rose MyBatis Plus 自动配置类
- * <p>
- * 提供 MyBatis Plus 的自动配置和增强功能，包括：
- * - 多租户支持
- * - 分页插件
- * - 乐观锁插件
- * - 字段自动填充
- * - 逻辑删除
- * </p>
+ *
+ * <p>提供 MyBatis Plus 的自动配置和增强功能，包括： - 多租户支持 - 分页插件 - 乐观锁插件 - 字段自动填充 - 逻辑删除
  *
  * @author Rose Team
  * @since 1.0.0
@@ -77,10 +70,7 @@ import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDE
 @EnableConfigurationProperties(RoseMybatisProperties.class)
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
 @AutoConfiguration
-@Import({
-        DataPermissionController.class,
-        DataPermissionService.class
-})
+@Import({DataPermissionController.class, DataPermissionService.class})
 public class RoseMybatisAutoConfiguration {
     private final RoseMybatisProperties properties;
     private final ObjectProvider<DataSource> dataSourceProvider;
@@ -95,8 +85,9 @@ public class RoseMybatisAutoConfiguration {
     }
 
     @Bean
-    public MybatisPlusInterceptor mybatisPlusInterceptor(@Autowired(required = false) RoseTenantLineHandler roseTenantLineHandler,
-                                                         @Autowired(required = false) RoseDataPermissionHandler roseDataPermissionHandler) {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(
+            @Autowired(required = false) RoseTenantLineHandler roseTenantLineHandler,
+            @Autowired(required = false) RoseDataPermissionHandler roseDataPermissionHandler) {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         // 多租户插件（必须放在第一位）
         if (properties.getTenant().isEnabled() && roseTenantLineHandler != null) {
@@ -114,13 +105,18 @@ public class RoseMybatisAutoConfiguration {
             DataPermissionInterceptor dataPermissionInterceptor = new DataPermissionInterceptor();
             dataPermissionInterceptor.setDataPermissionHandler(roseDataPermissionHandler);
             interceptor.addInnerInterceptor(dataPermissionInterceptor);
-            log.info("启用数据权限插件, 缓存时间: {} 分钟", properties.getDataPermission().getCache().getExpireMinutes());
+            log.info(
+                    "启用数据权限插件, 缓存时间: {} 分钟",
+                    properties.getDataPermission().getCache().getExpireMinutes());
         }
 
         if (properties.getPagination().isEnabled()) {
             PaginationInnerInterceptor paginationInterceptor = createPaginationInterceptor();
             interceptor.addInnerInterceptor(paginationInterceptor);
-            log.info("启用 {} 数据库分页插件，分页大小最大限制: {}", paginationInterceptor.getDbType(), properties.getPagination().getMaxLimit());
+            log.info(
+                    "启用 {} 数据库分页插件，分页大小最大限制: {}",
+                    paginationInterceptor.getDbType(),
+                    properties.getPagination().getMaxLimit());
         }
         return interceptor;
     }
@@ -133,39 +129,56 @@ public class RoseMybatisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(MetaObjectHandler.class)
-    @ConditionalOnProperty(prefix = "rose.mybatis.field-fill", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.mybatis.field-fill",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     public MetaObjectHandler roseMetaObjectHandler() {
         log.info("启用元数据处理器");
         return new RoseMetaObjectHandler(properties);
     }
 
-    /**
-     * 字段加密拦截器
-     */
+    /** 字段加密拦截器 */
     @Bean
     @ConditionalOnMissingBean(FieldEncryptionInterceptor.class)
-    @ConditionalOnProperty(prefix = "rose.mybatis.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.mybatis.encryption",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     @ConditionalOnBean(FieldEncryptor.class)
-    public FieldEncryptionInterceptor fieldEncryptionInterceptor(FieldEncryptor fieldEncryptor, HashService hashService,
-                                                                 @Autowired(required = false) MeterRegistry registry) {
+    public FieldEncryptionInterceptor fieldEncryptionInterceptor(
+            FieldEncryptor fieldEncryptor,
+            HashService hashService,
+            @Autowired(required = false) MeterRegistry registry) {
         log.info("启用字段加密解密拦截器，默认算法: AES");
         return new FieldEncryptionInterceptor(fieldEncryptor, hashService, registry);
     }
 
     @Bean
     @ConditionalOnMissingBean(DataPermissionProviderManager.class)
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.mybatis.data-permission",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     public DataPermissionProviderManager dataPermissionProviderManager(ApplicationContext applicationContext) {
         return new DataPermissionProviderManager(applicationContext);
     }
 
     @Bean
     @ConditionalOnMissingBean(DataPermissionHandler.class)
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public DataPermissionHandler roseDataPermissionHandler(DataPermissionProviderManager providerManager,
-                                                           Cache<String, List<String>> dataPermissionCache,
-                                                           CurrentUserProvider currentUserProvider,
-                                                           @Autowired(required = false) MeterRegistry registry) {
+    @ConditionalOnProperty(
+            prefix = "rose.mybatis.data-permission",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
+    public DataPermissionHandler roseDataPermissionHandler(
+            DataPermissionProviderManager providerManager,
+            Cache<String, List<String>> dataPermissionCache,
+            CurrentUserProvider currentUserProvider,
+            @Autowired(required = false) MeterRegistry registry) {
         return new RoseDataPermissionHandler(providerManager, dataPermissionCache, currentUserProvider, registry);
     }
 
@@ -179,7 +192,11 @@ public class RoseMybatisAutoConfiguration {
     // Caffeine 缓存 Bean
     @Bean
     @ConditionalOnMissingBean(name = "dataPermissionCache")
-    @ConditionalOnProperty(prefix = "rose.mybatis.data-permission", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.mybatis.data-permission",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     public Cache<String, java.util.List<String>> dataPermissionCache() {
         return Caffeine.newBuilder()
                 .maximumSize(properties.getDataPermission().getCache().getMaxPermissionCacheSize())
@@ -190,7 +207,8 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
     public FilterRegistrationBean<TenantIdFilter> tenantIdFilter() {
-        return FilterRegistrationBeanUtils.createFilterBean(new TenantIdFilter(properties.getTenant().getIgnoreTablePrefixes()), TENANT_ID_FILTER_ORDER);
+        return FilterRegistrationBeanUtils.createFilterBean(
+                new TenantIdFilter(properties.getTenant().getIgnoreTablePrefixes()), TENANT_ID_FILTER_ORDER);
     }
 
     @Bean
@@ -234,11 +252,8 @@ public class RoseMybatisAutoConfiguration {
 
     /**
      * 自动检测数据库类型
-     * <p>
-     * 根据配置或者数据源自动检测数据库类型。
-     * 如果配置中指定了数据库类型，则使用配置的类型。
-     * 否则尝试从数据源中检测。
-     * </p>
+     *
+     * <p>根据配置或者数据源自动检测数据库类型。 如果配置中指定了数据库类型，则使用配置的类型。 否则尝试从数据源中检测。
      *
      * @return 数据库类型
      */

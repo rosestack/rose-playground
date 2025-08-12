@@ -1,13 +1,12 @@
 package io.github.rosestack.billing.dto;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map; /**
- * 实时仪表板数据模型
- */
+import java.util.Map;
+import lombok.Data;
+
+/** 实时仪表板数据模型 */
 @Data
 public class DashboardData {
     private LocalDateTime generatedTime;

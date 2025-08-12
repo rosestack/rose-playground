@@ -1,30 +1,31 @@
 package io.github.rosestack.billing.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class UsageReportServiceTest {
 
     @Mock
     private InvoiceRepository invoiceRepository;
+
     @Mock
     private TenantSubscriptionRepository subscriptionRepository;
+
     @Mock
     private UsageRecordRepository usageRecordRepository;
 
@@ -39,13 +40,11 @@ class UsageReportServiceTest {
         when(usageRecordRepository.sumUsageByType(eq(start), eq(end)))
                 .thenReturn(List.of(
                         Map.of("metricType", "API_CALLS", "totalQuantity", new BigDecimal("1000")),
-                        Map.of("metricType", "STORAGE", "totalQuantity", new BigDecimal("50"))
-                ));
+                        Map.of("metricType", "STORAGE", "totalQuantity", new BigDecimal("50"))));
         when(usageRecordRepository.getTopTenantsByUsage(eq(start), eq(end), eq(10)))
                 .thenReturn(List.of(
                         Map.of("tenantId", "t1", "totalUsage", new BigDecimal("600")),
-                        Map.of("tenantId", "t2", "totalUsage", new BigDecimal("400"))
-                ));
+                        Map.of("tenantId", "t2", "totalUsage", new BigDecimal("400"))));
 
         var report = service.generateUsageReport(start, end);
         assertEquals(new BigDecimal("1000"), report.getUsageByType().get("API_CALLS"));
@@ -53,4 +52,3 @@ class UsageReportServiceTest {
         assertEquals(new BigDecimal("600"), report.getTopTenantsByUsage().get(0).getTotalUsage());
     }
 }
-

@@ -1,9 +1,15 @@
 package io.github.rosestack.i18n.i18n.spring.beans.factory;
 
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import io.github.rosestack.i18n.AbstractSpringTest;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.i18n.spring.beans.TestI18nMessageSourceConfiguration;
 import io.github.rosestack.i18n.spring.context.ResourceMessageSourceChangedEvent;
+import java.util.Arrays;
+import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +23,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Arrays;
-import java.util.Locale;
-
-import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 /**
  * {@link io.github.rosestack.i18n.spring.I18nMessageSourceFactoryBean} Test
  *
@@ -31,14 +30,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @since 1.0.0
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-        I18nMessageSourceFactoryBeanTest.class,
-        TestI18nMessageSourceConfiguration.class
-})
-@TestPropertySource(properties = {
-        "rose.i18n.default-locale=en",
-        "rose.i18n.supported-locales=en",
-})
+@ContextConfiguration(classes = {I18nMessageSourceFactoryBeanTest.class, TestI18nMessageSourceConfiguration.class})
+@TestPropertySource(
+        properties = {
+            "rose.i18n.default-locale=en",
+            "rose.i18n.supported-locales=en",
+        })
 class I18nMessageSourceFactoryBeanTest extends AbstractSpringTest {
 
     @Autowired
@@ -71,10 +68,11 @@ class I18nMessageSourceFactoryBeanTest extends AbstractSpringTest {
         // Test FRANCE
         assertNull(i18nMessageSource.getMessage("a", Locale.FRANCE));
 
-        ResourceMessageSourceChangedEvent event = new ResourceMessageSourceChangedEvent(context, Arrays.asList("test.i18n_messages_en.properties"));
+        ResourceMessageSourceChangedEvent event =
+                new ResourceMessageSourceChangedEvent(context, Arrays.asList("test.i18n_messages_en.properties"));
         propertySource.setProperty("test.i18n_messages_en.properties", "a=1");
         eventPublisher.publishEvent(event);
-//        assertEquals("1", i18nMessageSource.getMessage("a"));
+        //        assertEquals("1", i18nMessageSource.getMessage("a"));
     }
 
     @Test
@@ -100,5 +98,4 @@ class I18nMessageSourceFactoryBeanTest extends AbstractSpringTest {
     public void testGetSource() {
         assertEquals("test", i18nMessageSource.getSource());
     }
-
 }

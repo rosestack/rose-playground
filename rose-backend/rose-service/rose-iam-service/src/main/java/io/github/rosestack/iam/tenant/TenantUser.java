@@ -1,8 +1,7 @@
 package io.github.rosestack.iam.tenant;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import lombok.Data;
 
 @Data
 public class TenantUser {
@@ -12,30 +11,20 @@ public class TenantUser {
 
     private String userId;
 
-    /**
-     * 用户原始的租户 ID
-     */
+    /** 用户原始的租户 ID */
     private String originTenantId;
 
     private Boolean isTenantAdmin;
 
-    /**
-     * 用户主部门 ID
-     */
+    /** 用户主部门 ID */
     private String mainDepartmentId;
 
-    /**
-     * 状态
-     */
+    /** 状态 */
     private Boolean status;
 
-    /**
-     * 创建时间
-     */
+    /** 创建时间 */
     private LocalDateTime createdAt;
 
-    /**
-     * 更新时间
-     */
+    /** 更新时间 */
     private LocalDateTime updatedAt;
 }

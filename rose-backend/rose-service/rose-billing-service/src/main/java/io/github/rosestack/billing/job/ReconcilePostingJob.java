@@ -19,7 +19,9 @@ public class ReconcilePostingJob {
     @Value("${rose.billing.posting.limit:500}")
     private int defaultPostingLimit;
 
-    @Scheduled(fixedDelayString = "${rose.billing.posting.fixedDelay:300000}", initialDelayString = "${rose.billing.posting.initialDelay:20000}")
+    @Scheduled(
+            fixedDelayString = "${rose.billing.posting.fixedDelay:300000}",
+            initialDelayString = "${rose.billing.posting.initialDelay:20000}")
     public void postSuccessPayments() {
         try {
             // 优先级：DB 全局键 > JVM System property > application.yml 默认
@@ -30,7 +32,8 @@ public class ReconcilePostingJob {
                     int v = Integer.parseInt(db.get().trim());
                     if (v > 0) limit = v;
                 }
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
             if (limit == defaultPostingLimit) {
                 try {
                     String sys = System.getProperty("rose.billing.posting.limit");
@@ -38,7 +41,8 @@ public class ReconcilePostingJob {
                         int v = Integer.parseInt(sys.trim());
                         if (v > 0) limit = v;
                     }
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
 
             int count = paymentPostingService.postSuccessPayments(limit);
@@ -50,4 +54,3 @@ public class ReconcilePostingJob {
         }
     }
 }
-

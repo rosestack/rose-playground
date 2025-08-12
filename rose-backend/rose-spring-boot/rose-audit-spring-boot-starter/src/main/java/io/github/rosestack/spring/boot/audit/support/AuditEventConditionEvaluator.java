@@ -12,7 +12,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 @Slf4j
 public class AuditEventConditionEvaluator {
-    private final static ExpressionParser expressionParser = new SpelExpressionParser();
+    private static final ExpressionParser expressionParser = new SpelExpressionParser();
 
     public static boolean evaluate(ProceedingJoinPoint joinPoint, String condition, Object result) {
         if (StringUtils.isBlank(condition)) {

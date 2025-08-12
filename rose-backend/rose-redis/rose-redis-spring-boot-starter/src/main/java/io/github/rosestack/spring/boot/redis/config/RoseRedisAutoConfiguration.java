@@ -32,10 +32,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Rose Redis 自动配置类
- * <p>
- * 提供 Redis 增强功能的自动配置，包括分布式锁、缓存、限流、消息队列、会话管理等。
- * 基于现有的 Redis 基础设施进行扩展，不替换现有配置。
- * </p>
+ *
+ * <p>提供 Redis 增强功能的自动配置，包括分布式锁、缓存、限流、消息队列、会话管理等。 基于现有的 Redis 基础设施进行扩展，不替换现有配置。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -53,9 +51,7 @@ public class RoseRedisAutoConfiguration {
         log.info("Rose Redis 自动配置已启用");
     }
 
-    /**
-     * 分布式锁配置
-     */
+    /** 分布式锁配置 */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.lock", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisLockConfiguration {
@@ -63,8 +59,8 @@ public class RoseRedisAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
-        public DistributedLockManager distributedLockManager(RedisTemplate<String, Object> redisTemplate,
-                                                             RoseRedisProperties properties) {
+        public DistributedLockManager distributedLockManager(
+                RedisTemplate<String, Object> redisTemplate, RoseRedisProperties properties) {
             log.info("启用 Rose Redis 分布式锁功能");
             return new DistributedLockManager(redisTemplate, properties);
         }
@@ -79,9 +75,7 @@ public class RoseRedisAutoConfiguration {
         }
     }
 
-    /**
-     * 缓存增强配置
-     */
+    /** 缓存增强配置 */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisCacheConfiguration {
@@ -104,23 +98,28 @@ public class RoseRedisAutoConfiguration {
             mapper.findAndRegisterModules();
             mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
             // 将类型序列化到属性json字符串中
-            mapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+            mapper.activateDefaultTyping(
+                    LaissezFaireSubTypeValidator.instance,
+                    ObjectMapper.DefaultTyping.NON_FINAL,
+                    JsonTypeInfo.As.PROPERTY);
             return new GenericJackson2JsonRedisSerializer(mapper);
         }
     }
 
-    /**
-     * 限流配置
-     */
+    /** 限流配置 */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "rose.redis.rate-limit", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.redis.rate-limit",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     static class RoseRedisRateLimitConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
-        public RateLimitManager rateLimitManager(RedisTemplate<String, Object> redisTemplate,
-                                                 RoseRedisProperties properties) {
+        public RateLimitManager rateLimitManager(
+                RedisTemplate<String, Object> redisTemplate, RoseRedisProperties properties) {
             log.info("启用 Rose Redis 限流功能");
             return new RateLimitManager(redisTemplate, properties);
         }
@@ -152,36 +151,33 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
         @ConditionalOnBean(RateLimitManager.class)
-        public RateLimitAspect rateLimitAspect(RateLimitManager rateLimitManager,
-                                               RoseRedisProperties properties) {
+        public RateLimitAspect rateLimitAspect(RateLimitManager rateLimitManager, RoseRedisProperties properties) {
             log.info("启用 Rose Redis 限流切面");
             return new RateLimitAspect(rateLimitManager, properties);
         }
     }
 
-    /**
-     * 消息队列配置
-     */
+    /** 消息队列配置 */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.message", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisMessageConfiguration {
         // TODO: 实现消息队列配置
     }
 
-    /**
-     * 会话管理配置
-     */
+    /** 会话管理配置 */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "rose.redis.session", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class RoseRedisSessionConfiguration {
         // TODO: 实现会话管理配置
     }
 
-    /**
-     * 数据结构操作配置
-     */
+    /** 数据结构操作配置 */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnProperty(prefix = "rose.redis.data-structure", name = "enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(
+            prefix = "rose.redis.data-structure",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     static class RoseRedisDataStructureConfiguration {
         // TODO: 实现数据结构操作配置
     }

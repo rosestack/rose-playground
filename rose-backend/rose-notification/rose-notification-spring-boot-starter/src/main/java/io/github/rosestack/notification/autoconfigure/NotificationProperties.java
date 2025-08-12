@@ -22,19 +22,51 @@ public class NotificationProperties {
     /** 短信服务商缓存访问过期（秒） */
     private long smsProviderCacheExpireAfterAccessSeconds = 1800;
 
-    public boolean isRetryable() { return retryable; }
-    public void setRetryable(boolean retryable) { this.retryable = retryable; }
-    public int getExecutorCoreSize() { return executorCoreSize; }
-    public void setExecutorCoreSize(int executorCoreSize) { this.executorCoreSize = executorCoreSize; }
-    public long getSenderCacheMaxSize() { return senderCacheMaxSize; }
-    public void setSenderCacheMaxSize(long senderCacheMaxSize) { this.senderCacheMaxSize = senderCacheMaxSize; }
-    public long getSenderCacheExpireAfterAccessSeconds() { return senderCacheExpireAfterAccessSeconds; }
-    public void setSenderCacheExpireAfterAccessSeconds(long senderCacheExpireAfterAccessSeconds) { this.senderCacheExpireAfterAccessSeconds = senderCacheExpireAfterAccessSeconds; }
+    public boolean isRetryable() {
+        return retryable;
+    }
 
-    public long getSmsProviderCacheMaxSize() { return smsProviderCacheMaxSize; }
-    public void setSmsProviderCacheMaxSize(long smsProviderCacheMaxSize) { this.smsProviderCacheMaxSize = smsProviderCacheMaxSize; }
-    public long getSmsProviderCacheExpireAfterAccessSeconds() { return smsProviderCacheExpireAfterAccessSeconds; }
-    public void setSmsProviderCacheExpireAfterAccessSeconds(long smsProviderCacheExpireAfterAccessSeconds) { this.smsProviderCacheExpireAfterAccessSeconds = smsProviderCacheExpireAfterAccessSeconds; }
+    public void setRetryable(boolean retryable) {
+        this.retryable = retryable;
+    }
+
+    public int getExecutorCoreSize() {
+        return executorCoreSize;
+    }
+
+    public void setExecutorCoreSize(int executorCoreSize) {
+        this.executorCoreSize = executorCoreSize;
+    }
+
+    public long getSenderCacheMaxSize() {
+        return senderCacheMaxSize;
+    }
+
+    public void setSenderCacheMaxSize(long senderCacheMaxSize) {
+        this.senderCacheMaxSize = senderCacheMaxSize;
+    }
+
+    public long getSenderCacheExpireAfterAccessSeconds() {
+        return senderCacheExpireAfterAccessSeconds;
+    }
+
+    public void setSenderCacheExpireAfterAccessSeconds(long senderCacheExpireAfterAccessSeconds) {
+        this.senderCacheExpireAfterAccessSeconds = senderCacheExpireAfterAccessSeconds;
+    }
+
+    public long getSmsProviderCacheMaxSize() {
+        return smsProviderCacheMaxSize;
+    }
+
+    public void setSmsProviderCacheMaxSize(long smsProviderCacheMaxSize) {
+        this.smsProviderCacheMaxSize = smsProviderCacheMaxSize;
+    }
+
+    public long getSmsProviderCacheExpireAfterAccessSeconds() {
+        return smsProviderCacheExpireAfterAccessSeconds;
+    }
+
+    public void setSmsProviderCacheExpireAfterAccessSeconds(long smsProviderCacheExpireAfterAccessSeconds) {
+        this.smsProviderCacheExpireAfterAccessSeconds = smsProviderCacheExpireAfterAccessSeconds;
+    }
 }
-
-

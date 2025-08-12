@@ -4,9 +4,8 @@ import lombok.Getter;
 
 /**
  * 风险等级枚举
- * <p>
- * 定义了审计事件的风险等级，用于安全分析和告警。
- * </p>
+ *
+ * <p>定义了审计事件的风险等级，用于安全分析和告警。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -14,39 +13,25 @@ import lombok.Getter;
 @Getter
 public enum AuditRiskLevel implements Comparable<AuditRiskLevel> {
 
-    /**
-     * 低风险
-     */
+    /** 低风险 */
     LOW("LOW", "低风险", 1),
 
-    /**
-     * 中等风险
-     */
+    /** 中等风险 */
     MEDIUM("MEDIUM", "中等风险", 2),
 
-    /**
-     * 高风险
-     */
+    /** 高风险 */
     HIGH("HIGH", "高风险", 3),
 
-    /**
-     * 严重风险
-     */
+    /** 严重风险 */
     CRITICAL("CRITICAL", "严重风险", 4);
 
-    /**
-     * 风险等级代码
-     */
+    /** 风险等级代码 */
     private final String code;
 
-    /**
-     * 风险等级描述
-     */
+    /** 风险等级描述 */
     private final String description;
 
-    /**
-     * 风险等级数值（用于比较）
-     */
+    /** 风险等级数值（用于比较） */
     private final int level;
 
     AuditRiskLevel(String code, String description, int level) {
@@ -106,14 +91,14 @@ public enum AuditRiskLevel implements Comparable<AuditRiskLevel> {
         return this.level >= MEDIUM.level;
     }
 
-//    /**
-//     * 比较风险等级
-//     *
-//     * @param other 另一个风险等级
-//     * @return 比较结果：负数表示当前等级较低，0表示相等，正数表示当前等级较高
-//     */
-//    public int compareTo(AuditRiskLevel other) {
-//        return Integer.compare(this.level, other.level);
-//    }
+    //    /**
+    //     * 比较风险等级
+    //     *
+    //     * @param other 另一个风险等级
+    //     * @return 比较结果：负数表示当前等级较低，0表示相等，正数表示当前等级较高
+    //     */
+    //    public int compareTo(AuditRiskLevel other) {
+    //        return Integer.compare(this.level, other.level);
+    //    }
 
 }

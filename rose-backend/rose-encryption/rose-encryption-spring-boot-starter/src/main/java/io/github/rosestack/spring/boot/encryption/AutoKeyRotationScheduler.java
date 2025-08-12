@@ -1,21 +1,19 @@
 package io.github.rosestack.spring.boot.encryption;
 
-import io.github.rosestack.encryption.rotation.KeyRotationProperties;
 import io.github.rosestack.encryption.rotation.KeyRotationManager;
+import io.github.rosestack.encryption.rotation.KeyRotationProperties;
 import io.github.rosestack.encryption.rotation.KeySpec;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-
 /**
  * 自动密钥轮换调度器
- * <p>
- * 负责定期检查密钥状态并执行自动轮换
- * </p>
+ *
+ * <p>负责定期检查密钥状态并执行自动轮换
  *
  * @author Rose Team
  * @since 1.0.0
@@ -27,9 +25,7 @@ public class AutoKeyRotationScheduler {
     private final KeyRotationManager keyRotationManager;
     private final KeyRotationProperties properties;
 
-    /**
-     * 每小时检查一次密钥状态
-     */
+    /** 每小时检查一次密钥状态 */
     @Scheduled(fixedRate = 3600000) // 1小时 = 3600000毫秒
     public void checkKeyRotation() {
         try {
@@ -56,9 +52,7 @@ public class AutoKeyRotationScheduler {
         }
     }
 
-    /**
-     * 判断是否需要轮换密钥
-     */
+    /** 判断是否需要轮换密钥 */
     private boolean shouldRotateKey(KeySpec currentKey) {
         LocalDateTime activeTime = currentKey.getActiveTime();
         if (activeTime == null) {
@@ -73,23 +67,18 @@ public class AutoKeyRotationScheduler {
 
         if (shouldRotate) {
             long daysSinceActive = ChronoUnit.DAYS.between(activeTime, LocalDateTime.now());
-            log.info("密钥版本 {} 已激活 {} 天，达到轮换周期 {} 天，需要轮换",
-                    currentKey.getVersion(), daysSinceActive, rotationDays);
+            log.info("密钥版本 {} 已激活 {} 天，达到轮换周期 {} 天，需要轮换", currentKey.getVersion(), daysSinceActive, rotationDays);
         }
 
         return shouldRotate;
     }
 
-    /**
-     * 执行自动轮换
-     */
+    /** 执行自动轮换 */
     private void performAutoRotation(KeySpec currentKey) {
         try {
             log.info("开始自动密钥轮换，当前版本: {}", currentKey.getVersion());
 
-            String newVersion = keyRotationManager.rotateToNewVersion(
-                    currentKey.getEncryptType()
-            );
+            String newVersion = keyRotationManager.rotateToNewVersion(currentKey.getEncryptType());
 
             log.info("自动密钥轮换完成: {} -> {}", currentKey.getVersion(), newVersion);
 
@@ -104,9 +93,7 @@ public class AutoKeyRotationScheduler {
         }
     }
 
-    /**
-     * 清理过期密钥
-     */
+    /** 清理过期密钥 */
     private void cleanupExpiredKeys() {
         try {
             log.debug("开始清理过期密钥");
@@ -145,50 +132,37 @@ public class AutoKeyRotationScheduler {
         }
     }
 
-    /**
-     * 发送轮换成功通知
-     */
+    /** 发送轮换成功通知 */
     private void sendRotationNotification(String oldVersion, String newVersion) {
         // 这里可以扩展为发送邮件、消息队列、webhook等
         log.info("密钥轮换通知: {} -> {}", oldVersion, newVersion);
 
         // 示例：记录到审计日志
-        recordAuditLog("KEY_ROTATION_SUCCESS",
-                String.format("密钥轮换成功: %s -> %s", oldVersion, newVersion));
+        recordAuditLog("KEY_ROTATION_SUCCESS", String.format("密钥轮换成功: %s -> %s", oldVersion, newVersion));
     }
 
-    /**
-     * 发送轮换失败通知
-     */
+    /** 发送轮换失败通知 */
     private void sendRotationFailureNotification(String currentVersion, String errorMessage) {
         // 这里可以扩展为发送告警邮件、消息等
         log.error("密钥轮换失败通知: 版本={}, 错误={}", currentVersion, errorMessage);
 
         // 示例：记录到审计日志
-        recordAuditLog("KEY_ROTATION_FAILURE",
-                String.format("密钥轮换失败: 版本=%s, 错误=%s", currentVersion, errorMessage));
+        recordAuditLog("KEY_ROTATION_FAILURE", String.format("密钥轮换失败: 版本=%s, 错误=%s", currentVersion, errorMessage));
     }
 
-    /**
-     * 记录审计日志
-     */
+    /** 记录审计日志 */
     private void recordAuditLog(String action, String details) {
         // 这里可以集成到审计系统
-        log.info("审计日志: action={}, details={}, timestamp={}",
-                action, details, LocalDateTime.now());
+        log.info("审计日志: action={}, details={}, timestamp={}", action, details, LocalDateTime.now());
     }
 
-    /**
-     * 手动触发密钥轮换检查（用于测试）
-     */
+    /** 手动触发密钥轮换检查（用于测试） */
     public void triggerManualCheck() {
         log.info("手动触发密钥轮换检查");
         checkKeyRotation();
     }
 
-    /**
-     * 获取下次轮换时间
-     */
+    /** 获取下次轮换时间 */
     public LocalDateTime getNextRotationTime() {
         try {
             KeySpec currentKey = keyRotationManager.getCurrentKeySpec();
@@ -205,9 +179,7 @@ public class AutoKeyRotationScheduler {
         }
     }
 
-    /**
-     * 获取轮换状态信息
-     */
+    /** 获取轮换状态信息 */
     public RotationStatus getRotationStatus() {
         try {
             KeySpec currentKey = keyRotationManager.getCurrentKeySpec();
@@ -251,9 +223,7 @@ public class AutoKeyRotationScheduler {
         }
     }
 
-    /**
-     * 轮换状态信息
-     */
+    /** 轮换状态信息 */
     public static class RotationStatus {
         private String status;
         private String currentVersion;

@@ -10,17 +10,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class JsonUtils {
-    private JsonUtils() {
-    }
+    private JsonUtils() {}
 
     private static volatile ObjectMapper objectMapper;
 
@@ -31,9 +29,7 @@ public abstract class JsonUtils {
     public static final ObjectMapper IGNORE_UNKNOWN_PROPERTIES_JSON_MAPPER = createIgnoreUnknownPropertiesMapper();
 
     private static ObjectMapper createDefaultMapper() {
-        return JsonMapper.builder()
-                .findAndAddModules()
-                .build();
+        return JsonMapper.builder().findAndAddModules().build();
     }
 
     private static ObjectMapper createPrettySortedMapper() {
@@ -72,7 +68,8 @@ public abstract class JsonUtils {
             return getObjectMapper().readValue(string, clazz);
         } catch (IOException e) {
             log.warn("Failed to deserialize string to {}: {}", clazz.getSimpleName(), string, e);
-            throw new IllegalArgumentException("The given string value cannot be transformed to Json object: " + string, e);
+            throw new IllegalArgumentException(
+                    "The given string value cannot be transformed to Json object: " + string, e);
         }
     }
 
@@ -84,7 +81,8 @@ public abstract class JsonUtils {
             return getObjectMapper().readValue(string, valueTypeRef);
         } catch (IOException e) {
             log.warn("Failed to deserialize string to {}: {}", valueTypeRef.getType(), string, e);
-            throw new IllegalArgumentException("The given string value cannot be transformed to Json object: " + string, e);
+            throw new IllegalArgumentException(
+                    "The given string value cannot be transformed to Json object: " + string, e);
         }
     }
 
@@ -96,8 +94,14 @@ public abstract class JsonUtils {
             ObjectMapper mapper = ignoreUnknownFields ? IGNORE_UNKNOWN_PROPERTIES_JSON_MAPPER : getObjectMapper();
             return mapper.readValue(string, clazz);
         } catch (IOException e) {
-            log.warn("Failed to deserialize string to {} (ignoreUnknownFields={}): {}", clazz.getSimpleName(), ignoreUnknownFields, string, e);
-            throw new IllegalArgumentException("The given string value cannot be transformed to Json object: " + string, e);
+            log.warn(
+                    "Failed to deserialize string to {} (ignoreUnknownFields={}): {}",
+                    clazz.getSimpleName(),
+                    ignoreUnknownFields,
+                    string,
+                    e);
+            throw new IllegalArgumentException(
+                    "The given string value cannot be transformed to Json object: " + string, e);
         }
     }
 
@@ -108,8 +112,10 @@ public abstract class JsonUtils {
         try {
             return getObjectMapper().writeValueAsString(value);
         } catch (JsonProcessingException e) {
-            log.warn("Failed to serialize object to string: {}", value.getClass().getSimpleName(), e);
-            throw new IllegalArgumentException("The given Json object value cannot be transformed to a String: " + value, e);
+            log.warn(
+                    "Failed to serialize object to string: {}", value.getClass().getSimpleName(), e);
+            throw new IllegalArgumentException(
+                    "The given Json object value cannot be transformed to a String: " + value, e);
         }
     }
 
@@ -140,12 +146,11 @@ public abstract class JsonUtils {
     }
 
     /**
-     * 通用字段处理方法
-     * 递归遍历对象的每个属性，使用提供的处理函数对字段进行处理
+     * 通用字段处理方法 递归遍历对象的每个属性，使用提供的处理函数对字段进行处理
      *
-     * @param object         需要处理的对象
+     * @param object 需要处理的对象
      * @param fieldProcessor 字段处理函数，接收字段名和字段值，返回处理后的值
-     * @param <T>            对象类型
+     * @param <T> 对象类型
      * @return 处理后的对象
      */
     public static <T> T processFields(T object, BiFunction<String, JsonNode, JsonNode> fieldProcessor) {
@@ -175,7 +180,7 @@ public abstract class JsonUtils {
     /**
      * 递归处理JsonNode，使用字段处理函数对每个字段进行处理
      *
-     * @param node           JSON节点
+     * @param node JSON节点
      * @param fieldProcessor 字段处理函数
      */
     private static void processJsonNode(JsonNode node, BiFunction<String, JsonNode, JsonNode> fieldProcessor) {
@@ -209,14 +214,14 @@ public abstract class JsonUtils {
     }
 
     /**
-     * 创建自定义脱敏处理器
-     * 对指定字段进行脱敏，使用自定义的脱敏值
+     * 创建自定义脱敏处理器 对指定字段进行脱敏，使用自定义的脱敏值
      *
-     * @param maskValue       脱敏值
+     * @param maskValue 脱敏值
      * @param sensitiveFields 敏感字段名称数组
      * @return 脱敏处理器
      */
-    public static BiFunction<String, JsonNode, JsonNode> createCustomMaskProcessor(String maskValue, String... sensitiveFields) {
+    public static BiFunction<String, JsonNode, JsonNode> createCustomMaskProcessor(
+            String maskValue, String... sensitiveFields) {
         Set<String> sensitiveFieldSet = new HashSet<>(Arrays.asList(sensitiveFields));
         return (fieldName, fieldValue) -> {
             if (sensitiveFieldSet.contains(fieldName) && fieldValue.isTextual()) {
@@ -227,8 +232,7 @@ public abstract class JsonUtils {
     }
 
     /**
-     * 创建字段替换处理器
-     * 根据映射关系替换字段值
+     * 创建字段替换处理器 根据映射关系替换字段值
      *
      * @param replacements 字段名到新值的映射
      * @return 替换处理器
@@ -243,14 +247,14 @@ public abstract class JsonUtils {
     }
 
     /**
-     * 创建字段转换处理器
-     * 对指定字段的值进行转换
+     * 创建字段转换处理器 对指定字段的值进行转换
      *
-     * @param fieldName   字段名
+     * @param fieldName 字段名
      * @param transformer 值转换函数
      * @return 转换处理器
      */
-    public static BiFunction<String, JsonNode, JsonNode> createTransformProcessor(String fieldName, Function<String, String> transformer) {
+    public static BiFunction<String, JsonNode, JsonNode> createTransformProcessor(
+            String fieldName, Function<String, String> transformer) {
         return (name, value) -> {
             if (fieldName.equals(name) && value.isTextual()) {
                 String transformedValue = transformer.apply(value.asText());
@@ -261,14 +265,14 @@ public abstract class JsonUtils {
     }
 
     /**
-     * 创建组合处理器
-     * 将多个处理器组合在一起，按顺序执行
+     * 创建组合处理器 将多个处理器组合在一起，按顺序执行
      *
      * @param processors 处理器数组
      * @return 组合处理器
      */
     @SafeVarargs
-    public static BiFunction<String, JsonNode, JsonNode> createCompositeProcessor(BiFunction<String, JsonNode, JsonNode>... processors) {
+    public static BiFunction<String, JsonNode, JsonNode> createCompositeProcessor(
+            BiFunction<String, JsonNode, JsonNode>... processors) {
         return (fieldName, fieldValue) -> {
             JsonNode currentValue = fieldValue;
             for (BiFunction<String, JsonNode, JsonNode> processor : processors) {

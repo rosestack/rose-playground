@@ -6,13 +6,12 @@ import io.github.rosestack.notification.domain.entity.NotificationPreference;
 import io.github.rosestack.notification.domain.repository.NotificationPreferenceRepository;
 import io.github.rosestack.notification.infrastructure.mybatis.convert.NotificationPreferenceConvert;
 import io.github.rosestack.notification.infrastructure.mybatis.entity.NotificationPreferenceEntity;
+import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.Optional;
-
-
 @Mapper
-public interface NotificationPreferenceMapper extends BaseMapper<NotificationPreferenceEntity>, NotificationPreferenceRepository {
+public interface NotificationPreferenceMapper
+        extends BaseMapper<NotificationPreferenceEntity>, NotificationPreferenceRepository {
     default Optional<NotificationPreference> findById(String id) {
         NotificationPreferenceEntity entity = selectById(id);
         return entity != null ? Optional.of(NotificationPreferenceConvert.toDomain(entity)) : Optional.empty();

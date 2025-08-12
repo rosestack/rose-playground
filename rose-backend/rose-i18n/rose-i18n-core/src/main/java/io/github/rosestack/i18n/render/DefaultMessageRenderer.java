@@ -3,7 +3,6 @@ package io.github.rosestack.i18n.render;
 import io.github.rosestack.core.util.FormatUtils;
 import io.github.rosestack.i18n.evaluator.ExpressionEvaluator;
 import io.github.rosestack.i18n.evaluator.SpelExpressionEvaluator;
-
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class DefaultMessageRenderer implements MessageRenderer {
         }
 
         if (args == null) {
-            return message;  // null 参数时返回原消息
+            return message; // null 参数时返回原消息
         }
 
         // 根据参数类型和消息格式选择最合适的插值方式，只处理一次
@@ -77,9 +76,7 @@ public class DefaultMessageRenderer implements MessageRenderer {
         return message;
     }
 
-    /**
-     * 处理 ${expression} 表达式
-     */
+    /** 处理 ${expression} 表达式 */
     private String processExpressions(String message, Map<String, Object> arg, Locale locale) {
         Matcher matcher = EXPRESSION_PATTERN.matcher(message);
         StringBuffer result = new StringBuffer();
@@ -109,5 +106,3 @@ public class DefaultMessageRenderer implements MessageRenderer {
         return result.toString();
     }
 }
-
-

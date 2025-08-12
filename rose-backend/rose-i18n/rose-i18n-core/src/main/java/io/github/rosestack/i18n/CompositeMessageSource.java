@@ -1,5 +1,9 @@
 package io.github.rosestack.i18n;
 
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,14 +11,7 @@ import org.springframework.core.OrderComparator;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-/**
- * Composite I18nMessageSource that can aggregate multiple message sources and search in order.
- */
+/** Composite I18nMessageSource that can aggregate multiple message sources and search in order. */
 public class CompositeMessageSource implements I18nMessageSource, ReloadedResourceMessageSource {
     private static final Logger logger = LoggerFactory.getLogger(CompositeMessageSource.class);
 
@@ -55,8 +52,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         return message;
     }
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public Map<String, String> getMessages(Locale locale) {
         for (I18nMessageSource i18nMessageSource : i18nMessageSources) {
             Map<String, String> messages = i18nMessageSource.getMessages(locale);
@@ -67,18 +63,18 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         return null;
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Locale getLocale() {
         I18nMessageSource i18nMessageSource = getFirstMessageSource();
         return i18nMessageSource == null ? getDefaultLocale() : i18nMessageSource.getLocale();
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public Locale getDefaultLocale() {
         I18nMessageSource i18nMessageSource = getFirstMessageSource();
-        return i18nMessageSource == null ? ReloadedResourceMessageSource.super.getDefaultLocale() : i18nMessageSource.getDefaultLocale();
+        return i18nMessageSource == null
+                ? ReloadedResourceMessageSource.super.getDefaultLocale()
+                : i18nMessageSource.getDefaultLocale();
     }
 
     @Override
@@ -92,8 +88,9 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
             }
         });
 
-        return supportedLocales.isEmpty() ? getDefaultSupportedLocales() :
-                Collections.unmodifiableList(supportedLocales);
+        return supportedLocales.isEmpty()
+                ? getDefaultSupportedLocales()
+                : Collections.unmodifiableList(supportedLocales);
     }
 
     public List<Locale> getDefaultSupportedLocales() {
@@ -111,9 +108,8 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
         if (messageSources == null) {
             this.i18nMessageSources = Collections.emptyList();
         } else {
-            List<I18nMessageSource> newMessageSources = messageSources.stream()
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toCollection(ArrayList::new));
+            List<I18nMessageSource> newMessageSources =
+                    messageSources.stream().filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
             OrderComparator.sort(newMessageSources);
             this.i18nMessageSources = newMessageSources;
         }
@@ -122,7 +118,8 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
             ((ArrayList<?>) oldMessageSources).clear();
         }
 
-        logger.debug("Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, this.i18nMessageSources);
+        logger.debug(
+                "Source '{}' sets ServiceMessageSource list, sorted : {}", messageSources, this.i18nMessageSources);
     }
 
     @Override
@@ -170,8 +167,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
      *
      * @return non-null
      */
-    @NonNull
-    public List<I18nMessageSource> getMessageSources() {
+    @NonNull public List<I18nMessageSource> getMessageSources() {
         return Collections.unmodifiableList(i18nMessageSources);
     }
 
@@ -184,9 +180,7 @@ public class CompositeMessageSource implements I18nMessageSource, ReloadedResour
 
     @Override
     public String toString() {
-        return "CompositeMessageSource{" +
-                "messageSources=" + i18nMessageSources +
-                '}';
+        return "CompositeMessageSource{" + "messageSources=" + i18nMessageSources + '}';
     }
 
     private I18nMessageSource getFirstMessageSource() {

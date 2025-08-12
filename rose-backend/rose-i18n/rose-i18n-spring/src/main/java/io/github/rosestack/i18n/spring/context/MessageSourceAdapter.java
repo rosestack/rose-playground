@@ -1,13 +1,12 @@
 package io.github.rosestack.i18n.spring.context;
 
 import io.github.rosestack.i18n.I18nMessageSource;
+import java.util.Locale;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
-
-import java.util.Locale;
 
 public class MessageSourceAdapter implements MessageSource, SmartInitializingSingleton {
 
@@ -17,7 +16,8 @@ public class MessageSourceAdapter implements MessageSource, SmartInitializingSin
 
     private MessageSource defaultMessageSource;
 
-    public MessageSourceAdapter(I18nMessageSource i18nMessageSource, ObjectProvider<MessageSource> messageSourceProvider) {
+    public MessageSourceAdapter(
+            I18nMessageSource i18nMessageSource, ObjectProvider<MessageSource> messageSourceProvider) {
         this.i18nMessageSource = i18nMessageSource;
         this.messageSourceProvider = messageSourceProvider;
     }
@@ -62,9 +62,11 @@ public class MessageSourceAdapter implements MessageSource, SmartInitializingSin
 
     @Override
     public String toString() {
-        return "MessageSourceAdapter{" +
-                "i18nMessageSource=" + i18nMessageSource +
-                ", defaultMessageSource=" + defaultMessageSource +
-                '}';
+        return "MessageSourceAdapter{"
+                + "i18nMessageSource="
+                + i18nMessageSource
+                + ", defaultMessageSource="
+                + defaultMessageSource
+                + '}';
     }
 }

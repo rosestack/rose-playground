@@ -5,13 +5,12 @@ import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.TenantSubscriptionRepository;
 import io.github.rosestack.billing.repository.UsageRecordRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 /**
  * 财务报表服务
@@ -27,9 +26,7 @@ public class FinancialReportService {
     private final TenantSubscriptionRepository subscriptionRepository;
     private final UsageRecordRepository usageRepository;
 
-    /**
-     * 生成收入报表
-     */
+    /** 生成收入报表 */
     public RevenueReport generateRevenueReport(LocalDateTime startTime, LocalDateTime endTime, String reportType) {
         log.info("生成收入报表：{} - {}，类型：{}", startTime, endTime, reportType);
 
@@ -40,9 +37,8 @@ public class FinancialReportService {
         report.setGeneratedTime(LocalDateTime.now());
 
         // 计算总收入（空值兜底为0）
-        BigDecimal totalRevenue = Optional.ofNullable(
-                invoiceRepository.sumPaidAmountByPeriod(startTime, endTime)
-        ).orElse(BigDecimal.ZERO);
+        BigDecimal totalRevenue = Optional.ofNullable(invoiceRepository.sumPaidAmountByPeriod(startTime, endTime))
+                .orElse(BigDecimal.ZERO);
         report.setTotalRevenue(totalRevenue);
 
         // 按时间维度统计收入
@@ -64,9 +60,7 @@ public class FinancialReportService {
         return report;
     }
 
-    /**
-     * 生成订阅报表
-     */
+    /** 生成订阅报表 */
     public SubscriptionReport generateSubscriptionReport(LocalDateTime startTime, LocalDateTime endTime) {
         log.info("生成订阅报表：{} - {}", startTime, endTime);
 
@@ -104,9 +98,7 @@ public class FinancialReportService {
         return report;
     }
 
-    /**
-     * 生成使用量报表
-     */
+    /** 生成使用量报表 */
     public UsageReport generateUsageReport(LocalDateTime startTime, LocalDateTime endTime) {
         log.info("生成使用量报表：{} - {}", startTime, endTime);
 
@@ -128,9 +120,7 @@ public class FinancialReportService {
         return report;
     }
 
-    /**
-     * 生成综合财务报表
-     */
+    /** 生成综合财务报表 */
     public ComprehensiveFinancialReport generateComprehensiveReport(LocalDateTime startTime, LocalDateTime endTime) {
         log.info("生成综合财务报表：{} - {}", startTime, endTime);
 
@@ -155,9 +145,7 @@ public class FinancialReportService {
         return report;
     }
 
-    /**
-     * 生成实时仪表板数据
-     */
+    /** 生成实时仪表板数据 */
     public DashboardData generateDashboardData() {
         DashboardData dashboard = new DashboardData();
         dashboard.setGeneratedTime(LocalDateTime.now());
@@ -166,15 +154,15 @@ public class FinancialReportService {
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
         // 今日收入
-        BigDecimal todayRevenue = Optional.ofNullable(
-            invoiceRepository.sumPaidAmountByPeriod(now.toLocalDate().atStartOfDay(), now)
-        ).orElse(BigDecimal.ZERO);
+        BigDecimal todayRevenue = Optional.ofNullable(invoiceRepository.sumPaidAmountByPeriod(
+                        now.toLocalDate().atStartOfDay(), now))
+                .orElse(BigDecimal.ZERO);
         dashboard.setTodayRevenue(todayRevenue);
 
         // 本月收入
-        BigDecimal monthRevenue = Optional.ofNullable(
-            invoiceRepository.sumPaidAmountByPeriod(now.toLocalDate().withDayOfMonth(1).atStartOfDay(), now)
-        ).orElse(BigDecimal.ZERO);
+        BigDecimal monthRevenue = Optional.ofNullable(invoiceRepository.sumPaidAmountByPeriod(
+                        now.toLocalDate().withDayOfMonth(1).atStartOfDay(), now))
+                .orElse(BigDecimal.ZERO);
         dashboard.setMonthRevenue(monthRevenue);
 
         // 总活跃订阅
@@ -194,10 +182,9 @@ public class FinancialReportService {
         return dashboard;
     }
 
-
-
     // 私有辅助方法
-    private Map<String, BigDecimal> calculateRevenueByPeriod(LocalDateTime startTime, LocalDateTime endTime, String reportType) {
+    private Map<String, BigDecimal> calculateRevenueByPeriod(
+            LocalDateTime startTime, LocalDateTime endTime, String reportType) {
         Map<String, BigDecimal> result = new LinkedHashMap<>();
         // 复用按天统计的底层数据，再进行聚合
         List<Map<String, Object>> dailyStats = invoiceRepository.getRevenueStatsByPeriod(startTime, endTime);
@@ -255,7 +242,8 @@ public class FinancialReportService {
         return map;
     }
 
-    private List<TenantRevenueData> calculateTopTenantsByRevenue(LocalDateTime startTime, LocalDateTime endTime, int limit) {
+    private List<TenantRevenueData> calculateTopTenantsByRevenue(
+            LocalDateTime startTime, LocalDateTime endTime, int limit) {
         List<Map<String, Object>> rows = invoiceRepository.getTopTenantsByRevenue(startTime, endTime, limit);
         List<TenantRevenueData> list = new ArrayList<>();
         if (rows == null) return list;
@@ -280,10 +268,11 @@ public class FinancialReportService {
         BigDecimal current = invoiceRepository.sumPaidAmountByPeriod(startTime, endTime);
         BigDecimal previous = invoiceRepository.sumPaidAmountByPeriod(prevStart, prevEnd);
         if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
-            return current == null || current.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : new BigDecimal("1.00");
+            return current == null || current.compareTo(BigDecimal.ZERO) == 0
+                    ? BigDecimal.ZERO
+                    : new BigDecimal("1.00");
         }
-        return current.subtract(previous)
-                .divide(previous, 4, java.math.RoundingMode.HALF_UP);
+        return current.subtract(previous).divide(previous, 4, java.math.RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateAverageOrderValue(LocalDateTime startTime, LocalDateTime endTime) {
@@ -336,7 +325,8 @@ public class FinancialReportService {
         }
     }
 
-    private List<TenantUsageData> calculateTopTenantsByUsage(LocalDateTime startTime, LocalDateTime endTime, int limit) {
+    private List<TenantUsageData> calculateTopTenantsByUsage(
+            LocalDateTime startTime, LocalDateTime endTime, int limit) {
         List<TenantUsageData> list = new ArrayList<>();
         List<Map<String, Object>> rows = usageRepository.getTopTenantsByUsage(startTime, endTime, limit);
         if (rows == null) return list;
@@ -393,7 +383,11 @@ public class FinancialReportService {
     private BigDecimal toBigDecimal(Object val) {
         if (val == null) return BigDecimal.ZERO;
         if (val instanceof BigDecimal bd) return bd;
-        try { return new BigDecimal(val.toString()); } catch (Exception e) { return BigDecimal.ZERO; }
+        try {
+            return new BigDecimal(val.toString());
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
     }
 
     // 简单周Key计算：yyyy-Www（ISO 周序号）

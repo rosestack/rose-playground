@@ -13,9 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
-/**
- * 基础指标埋点：Outbox backlog、失败数；未入账支付数
- */
+/** 基础指标埋点：Outbox backlog、失败数；未入账支付数 */
 @Component
 @RequiredArgsConstructor
 @ConditionalOnClass(MeterRegistry.class)
@@ -27,26 +25,24 @@ public class BillingMetrics {
 
     @PostConstruct
     public void init() {
-        Gauge.builder("billing.outbox.backlog", this, s ->
-                        outboxRepository.selectCount(null))
+        Gauge.builder("billing.outbox.backlog", this, s -> outboxRepository.selectCount(null))
                 .description("outbox backlog size")
                 .register(registry);
 
-        Gauge.builder("billing.outbox.failed", this, s ->
-                        outboxRepository.selectCount(
-                                new LambdaQueryWrapper<OutboxRecord>()
-                                        .eq(OutboxRecord::getStatus, OutboxStatus.FAILED)
-                        ))
+        Gauge.builder(
+                        "billing.outbox.failed",
+                        this,
+                        s -> outboxRepository.selectCount(new LambdaQueryWrapper<OutboxRecord>()
+                                .eq(OutboxRecord::getStatus, OutboxStatus.FAILED)))
                 .description("outbox failed size")
                 .register(registry);
 
-        Gauge.builder("billing.payments.unposted", this, s ->
-                        paymentRecordRepository.selectCount(
-                                new LambdaQueryWrapper<PaymentRecord>()
-                                        .eq(PaymentRecord::getPosted, Boolean.FALSE)
-                        ))
+        Gauge.builder(
+                        "billing.payments.unposted",
+                        this,
+                        s -> paymentRecordRepository.selectCount(
+                                new LambdaQueryWrapper<PaymentRecord>().eq(PaymentRecord::getPosted, Boolean.FALSE)))
                 .description("payments not posted")
                 .register(registry);
     }
 }
-

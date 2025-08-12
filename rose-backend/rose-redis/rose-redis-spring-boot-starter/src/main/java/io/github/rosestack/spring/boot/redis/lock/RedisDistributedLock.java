@@ -1,9 +1,5 @@
 package io.github.rosestack.spring.boot.redis.lock;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,12 +7,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 /**
  * 基于 Redis 的分布式锁实现
- * <p>
- * 支持可重入、超时、自动续期等特性。使用 Lua 脚本确保操作的原子性。
- * </p>
+ *
+ * <p>支持可重入、超时、自动续期等特性。使用 Lua 脚本确保操作的原子性。
  *
  * @author Rose Team
  * @since 1.0.0
@@ -32,62 +30,57 @@ public class RedisDistributedLock implements DistributedLock {
 
     // 可重入锁计数器
     private final ThreadLocal<AtomicInteger> holdCount = ThreadLocal.withInitial(() -> new AtomicInteger(0));
-    
+
     // 续期任务
     private final ConcurrentHashMap<String, ScheduledFuture<?>> renewalTasks = new ConcurrentHashMap<>();
 
     // Lua 脚本：获取锁
-    private static final String LOCK_SCRIPT = 
-        "if redis.call('exists', KEYS[1]) == 0 then " +
-        "  redis.call('hset', KEYS[1], ARGV[2], 1) " +
-        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
-        "  return nil " +
-        "end " +
-        "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then " +
-        "  redis.call('hincrby', KEYS[1], ARGV[2], 1) " +
-        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
-        "  return nil " +
-        "end " +
-        "return redis.call('pttl', KEYS[1])";
+    private static final String LOCK_SCRIPT = "if redis.call('exists', KEYS[1]) == 0 then "
+            + "  redis.call('hset', KEYS[1], ARGV[2], 1) "
+            + "  redis.call('pexpire', KEYS[1], ARGV[1]) "
+            + "  return nil "
+            + "end "
+            + "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then "
+            + "  redis.call('hincrby', KEYS[1], ARGV[2], 1) "
+            + "  redis.call('pexpire', KEYS[1], ARGV[1]) "
+            + "  return nil "
+            + "end "
+            + "return redis.call('pttl', KEYS[1])";
 
     // Lua 脚本：释放锁
-    private static final String UNLOCK_SCRIPT = 
-        "if redis.call('hexists', KEYS[1], ARGV[2]) == 0 then " +
-        "  return nil " +
-        "end " +
-        "local counter = redis.call('hincrby', KEYS[1], ARGV[2], -1) " +
-        "if counter > 0 then " +
-        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
-        "  return 0 " +
-        "else " +
-        "  redis.call('del', KEYS[1]) " +
-        "  return 1 " +
-        "end";
+    private static final String UNLOCK_SCRIPT = "if redis.call('hexists', KEYS[1], ARGV[2]) == 0 then "
+            + "  return nil "
+            + "end "
+            + "local counter = redis.call('hincrby', KEYS[1], ARGV[2], -1) "
+            + "if counter > 0 then "
+            + "  redis.call('pexpire', KEYS[1], ARGV[1]) "
+            + "  return 0 "
+            + "else "
+            + "  redis.call('del', KEYS[1]) "
+            + "  return 1 "
+            + "end";
 
     // Lua 脚本：续期锁
-    private static final String RENEWAL_SCRIPT = 
-        "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then " +
-        "  redis.call('pexpire', KEYS[1], ARGV[1]) " +
-        "  return 1 " +
-        "else " +
-        "  return 0 " +
-        "end";
+    private static final String RENEWAL_SCRIPT = "if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then "
+            + "  redis.call('pexpire', KEYS[1], ARGV[1]) "
+            + "  return 1 "
+            + "else "
+            + "  return 0 "
+            + "end";
 
     // Lua 脚本：强制释放锁
-    private static final String FORCE_UNLOCK_SCRIPT = 
-        "if redis.call('del', KEYS[1]) == 1 then " +
-        "  return 1 " +
-        "else " +
-        "  return 0 " +
-        "end";
+    private static final String FORCE_UNLOCK_SCRIPT =
+            "if redis.call('del', KEYS[1]) == 1 then " + "  return 1 " + "else " + "  return 0 " + "end";
 
-    public RedisDistributedLock(RedisTemplate<String, Object> redisTemplate, 
-                               String lockName, 
-                               long defaultLeaseTime,
-                               ScheduledExecutorService scheduler) {
+    public RedisDistributedLock(
+            RedisTemplate<String, Object> redisTemplate,
+            String lockName,
+            long defaultLeaseTime,
+            ScheduledExecutorService scheduler) {
         this.redisTemplate = redisTemplate;
         this.lockName = lockName;
-        this.lockValue = UUID.randomUUID().toString() + ":" + Thread.currentThread().getId();
+        this.lockValue =
+                UUID.randomUUID().toString() + ":" + Thread.currentThread().getId();
         this.defaultLeaseTime = defaultLeaseTime;
         this.scheduler = scheduler;
     }
@@ -108,16 +101,16 @@ public class RedisDistributedLock implements DistributedLock {
         long waitTimeMs = timeUnit.toMillis(waitTime);
         long leaseTimeMs = timeUnit.toMillis(leaseTime);
         long startTime = System.currentTimeMillis();
-        
+
         while (System.currentTimeMillis() - startTime < waitTimeMs) {
             if (acquireLock(leaseTimeMs)) {
                 return true;
             }
-            
+
             // 短暂等待后重试
             Thread.sleep(50);
         }
-        
+
         return false;
     }
 
@@ -129,7 +122,7 @@ public class RedisDistributedLock implements DistributedLock {
     @Override
     public void lock(long leaseTime, TimeUnit timeUnit) throws InterruptedException {
         long leaseTimeMs = timeUnit.toMillis(leaseTime);
-        
+
         while (!acquireLock(leaseTimeMs)) {
             // 等待一段时间后重试
             Thread.sleep(100);
@@ -146,14 +139,12 @@ public class RedisDistributedLock implements DistributedLock {
             }
 
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(UNLOCK_SCRIPT, Long.class);
-            Long result = redisTemplate.execute(script, 
-                    Collections.singletonList(lockName), 
-                    defaultLeaseTime, 
-                    lockValue);
+            Long result =
+                    redisTemplate.execute(script, Collections.singletonList(lockName), defaultLeaseTime, lockValue);
 
             if (result != null) {
                 count.decrementAndGet();
-                
+
                 // 如果完全释放锁，清理续期任务
                 if (result == 1) {
                     count.set(0);
@@ -163,7 +154,7 @@ public class RedisDistributedLock implements DistributedLock {
                 }
                 return true;
             }
-            
+
             return false;
         } catch (Exception e) {
             log.error("释放锁失败: {}", lockName, e);
@@ -176,7 +167,7 @@ public class RedisDistributedLock implements DistributedLock {
         try {
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(FORCE_UNLOCK_SCRIPT, Long.class);
             Long result = redisTemplate.execute(script, Collections.singletonList(lockName));
-            
+
             if (result != null && result == 1) {
                 holdCount.get().set(0);
                 holdCount.remove();
@@ -184,7 +175,7 @@ public class RedisDistributedLock implements DistributedLock {
                 log.debug("强制释放锁: {}", lockName);
                 return true;
             }
-            
+
             return false;
         } catch (Exception e) {
             log.error("强制释放锁失败: {}", lockName, e);
@@ -234,11 +225,8 @@ public class RedisDistributedLock implements DistributedLock {
         try {
             long leaseTimeMs = timeUnit.toMillis(leaseTime);
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(RENEWAL_SCRIPT, Long.class);
-            Long result = redisTemplate.execute(script, 
-                    Collections.singletonList(lockName), 
-                    leaseTimeMs, 
-                    lockValue);
-            
+            Long result = redisTemplate.execute(script, Collections.singletonList(lockName), leaseTimeMs, lockValue);
+
             return result != null && result == 1;
         } catch (Exception e) {
             log.error("续期锁失败: {}", lockName, e);
@@ -251,16 +239,11 @@ public class RedisDistributedLock implements DistributedLock {
         return lockName;
     }
 
-    /**
-     * 获取锁的核心逻辑
-     */
+    /** 获取锁的核心逻辑 */
     private boolean acquireLock(long leaseTime) {
         try {
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(LOCK_SCRIPT, Long.class);
-            Long result = redisTemplate.execute(script, 
-                    Collections.singletonList(lockName), 
-                    leaseTime, 
-                    lockValue);
+            Long result = redisTemplate.execute(script, Collections.singletonList(lockName), leaseTime, lockValue);
 
             if (result == null) {
                 // 成功获取锁
@@ -269,7 +252,7 @@ public class RedisDistributedLock implements DistributedLock {
                 log.debug("成功获取锁: {}, 重入次数: {}", lockName, holdCount.get().get());
                 return true;
             }
-            
+
             return false;
         } catch (Exception e) {
             log.error("获取锁失败: {}", lockName, e);
@@ -277,16 +260,14 @@ public class RedisDistributedLock implements DistributedLock {
         }
     }
 
-    /**
-     * 调度续期任务
-     */
+    /** 调度续期任务 */
     private void scheduleRenewalTask(long leaseTime) {
         if (scheduler == null) {
             return;
         }
 
         String taskKey = lockName + ":" + lockValue;
-        
+
         // 取消之前的续期任务
         ScheduledFuture<?> existingTask = renewalTasks.get(taskKey);
         if (existingTask != null && !existingTask.isCancelled()) {
@@ -295,32 +276,34 @@ public class RedisDistributedLock implements DistributedLock {
 
         // 调度新的续期任务，在锁过期前 1/3 时间进行续期
         long renewalInterval = leaseTime / 3;
-        ScheduledFuture<?> renewalTask = scheduler.scheduleAtFixedRate(() -> {
-            try {
-                if (isHeldByCurrentThread()) {
-                    boolean renewed = renewLease(leaseTime, TimeUnit.MILLISECONDS);
-                    if (renewed) {
-                        log.debug("锁续期成功: {}", lockName);
-                    } else {
-                        log.warn("锁续期失败: {}", lockName);
+        ScheduledFuture<?> renewalTask = scheduler.scheduleAtFixedRate(
+                () -> {
+                    try {
+                        if (isHeldByCurrentThread()) {
+                            boolean renewed = renewLease(leaseTime, TimeUnit.MILLISECONDS);
+                            if (renewed) {
+                                log.debug("锁续期成功: {}", lockName);
+                            } else {
+                                log.warn("锁续期失败: {}", lockName);
+                                cancelRenewalTask();
+                            }
+                        } else {
+                            log.debug("锁不再被当前线程持有，取消续期任务: {}", lockName);
+                            cancelRenewalTask();
+                        }
+                    } catch (Exception e) {
+                        log.error("锁续期任务执行失败: {}", lockName, e);
                         cancelRenewalTask();
                     }
-                } else {
-                    log.debug("锁不再被当前线程持有，取消续期任务: {}", lockName);
-                    cancelRenewalTask();
-                }
-            } catch (Exception e) {
-                log.error("锁续期任务执行失败: {}", lockName, e);
-                cancelRenewalTask();
-            }
-        }, renewalInterval, renewalInterval, TimeUnit.MILLISECONDS);
+                },
+                renewalInterval,
+                renewalInterval,
+                TimeUnit.MILLISECONDS);
 
         renewalTasks.put(taskKey, renewalTask);
     }
 
-    /**
-     * 取消续期任务
-     */
+    /** 取消续期任务 */
     private void cancelRenewalTask() {
         String taskKey = lockName + ":" + lockValue;
         ScheduledFuture<?> task = renewalTasks.remove(taskKey);

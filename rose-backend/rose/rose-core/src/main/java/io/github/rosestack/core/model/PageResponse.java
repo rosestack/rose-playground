@@ -6,9 +6,8 @@ import java.util.List;
 
 /**
  * 分页响应对象
- * <p>
- * 提供标准的分页响应格式，包含数据列表、分页信息和统计信息
- * </p>
+ *
+ * <p>提供标准的分页响应格式，包含数据列表、分页信息和统计信息
  *
  * @param <T> 数据类型
  * @author rosestack
@@ -40,8 +39,7 @@ public class PageResponse<T> implements Serializable {
     /** 是否有上一页 */
     private boolean hasPrevious;
 
-    public PageResponse() {
-    }
+    public PageResponse() {}
 
     public PageResponse(List<T> records, long total, long page, long size) {
         this.records = records;
@@ -176,14 +174,21 @@ public class PageResponse<T> implements Serializable {
 
     @Override
     public String toString() {
-        return "PageResponse{" +
-                "records=" + records +
-                ", total=" + total +
-                ", page=" + page +
-                ", size=" + size +
-                ", pages=" + pages +
-                ", hasNext=" + hasNext +
-                ", hasPrevious=" + hasPrevious +
-                '}';
+        return "PageResponse{"
+                + "records="
+                + records
+                + ", total="
+                + total
+                + ", page="
+                + page
+                + ", size="
+                + size
+                + ", pages="
+                + pages
+                + ", hasNext="
+                + hasNext
+                + ", hasPrevious="
+                + hasPrevious
+                + '}';
     }
-} 
+}

@@ -1,113 +1,55 @@
 package io.github.rosestack.iam.idp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.Data;
 
-import java.util.List;
-
-/**
- * 身份源
- */
+/** 身份源 */
 @Data
 public class Identity {
-    /**
-     * 身份源 ID
-     */
+    /** 身份源 ID */
     private String id;
 
-    /**
-     * 身份源连接 ID
-     */
+    /** 身份源连接 ID */
     private String identityProviderId;
 
     /**
-     * 外部身份源类型：
-     * - `wechat`: 微信
-     * - `qq`: QQ
-     * - `wechatwork`: 企业微信
-     * - `dingtalk`: 钉钉
-     * - `weibo`: 微博
-     * - `github`: GitHub
-     * - `alipay`: 支付宝
-     * - `baidu`: 百度
-     * - `lark`: 飞书
-     * - `welink`: Welink
-     * - `yidun`: 网易易盾
-     * - `qingcloud`: 青云
-     * - `google`: Google
-     * - `gitlab`: GitLab
-     * - `gitee`: Gitee
-     * - `twitter`: Twitter
-     * - `facebook`: Facebook
-     * - `slack`: Slack
-     * - `linkedin`: Linkedin
-     * - `instagram`: Instagram
-     * - `oidc`: OIDC 型企业身份源
-     * - `oauth2`: OAuth2 型企业身份源
-     * - `saml`: SAML 型企业身份源
-     * - `ldap`: LDAP 型企业身份源
-     * - `ad`: AD 型企业身份源
-     * - `cas`: CAS 型企业身份源
-     * - `azure-ad`: Azure AD 型企业身份源
+     * 外部身份源类型： - `wechat`: 微信 - `qq`: QQ - `wechatwork`: 企业微信 - `dingtalk`: 钉钉 - `weibo`: 微博 -
+     * `github`: GitHub - `alipay`: 支付宝 - `baidu`: 百度 - `lark`: 飞书 - `welink`: Welink - `yidun`: 网易易盾
+     * - `qingcloud`: 青云 - `google`: Google - `gitlab`: GitLab - `gitee`: Gitee - `twitter`: Twitter -
+     * `facebook`: Facebook - `slack`: Slack - `linkedin`: Linkedin - `instagram`: Instagram - `oidc`:
+     * OIDC 型企业身份源 - `oauth2`: OAuth2 型企业身份源 - `saml`: SAML 型企业身份源 - `ldap`: LDAP 型企业身份源 - `ad`: AD
+     * 型企业身份源 - `cas`: CAS 型企业身份源 - `azure-ad`: Azure AD 型企业身份源
      */
     private Provider provider;
-    /**
-     * Identity 类型，如 unionid, openid, primary
-     */
+
+    /** Identity 类型，如 unionid, openid, primary */
     private String type;
-    /**
-     * 在外部身份源中的 ID
-     */
+
+    /** 在外部身份源中的 ID */
     private String userId;
-    /**
-     * 用户在 idp 中的身份信息
-     */
+
+    /** 用户在 idp 中的身份信息 */
     private Object userInfoInIdp;
-    /**
-     * 在外部身份源中的 Access Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。
-     */
+
+    /** 在外部身份源中的 Access Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。 */
     private String accessToken;
-    /**
-     * 在外部身份源中的 Refresh Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。
-     */
+
+    /** 在外部身份源中的 Refresh Token（此参数只会在用户主动获取时返回，管理侧接口不会返回）。 */
     private String refreshToken;
-    /**
-     * 身份来自的身份源连接 ID 列表
-     */
+
+    /** 身份来自的身份源连接 ID 列表 */
     private List<String> originConnIds;
 
     /**
-     * 外部身份源类型：
-     * - `wechat`: 微信
-     * - `qq`: QQ
-     * - `wechatwork`: 企业微信
-     * - `dingtalk`: 钉钉
-     * - `weibo`: 微博
-     * - `github`: GitHub
-     * - `alipay`: 支付宝
-     * - `baidu`: 百度
-     * - `lark`: 飞书
-     * - `welink`: Welink
-     * - `yidun`: 网易易盾
-     * - `qingcloud`: 青云
-     * - `google`: Google
-     * - `gitlab`: GitLab
-     * - `gitee`: Gitee
-     * - `twitter`: Twitter
-     * - `facebook`: Facebook
-     * - `slack`: Slack
-     * - `linkedin`: Linkedin
-     * - `instagram`: Instagram
-     * - `oidc`: OIDC 型企业身份源
-     * - `oauth2`: OAuth2 型企业身份源
-     * - `saml`: SAML 型企业身份源
-     * - `ldap`: LDAP 型企业身份源
-     * - `ad`: AD 型企业身份源
-     * - `cas`: CAS 型企业身份源
-     * - `azure-ad`: Azure AD 型企业身份源
+     * 外部身份源类型： - `wechat`: 微信 - `qq`: QQ - `wechatwork`: 企业微信 - `dingtalk`: 钉钉 - `weibo`: 微博 -
+     * `github`: GitHub - `alipay`: 支付宝 - `baidu`: 百度 - `lark`: 飞书 - `welink`: Welink - `yidun`: 网易易盾
+     * - `qingcloud`: 青云 - `google`: Google - `gitlab`: GitLab - `gitee`: Gitee - `twitter`: Twitter -
+     * `facebook`: Facebook - `slack`: Slack - `linkedin`: Linkedin - `instagram`: Instagram - `oidc`:
+     * OIDC 型企业身份源 - `oauth2`: OAuth2 型企业身份源 - `saml`: SAML 型企业身份源 - `ldap`: LDAP 型企业身份源 - `ad`: AD
+     * 型企业身份源 - `cas`: CAS 型企业身份源 - `azure-ad`: Azure AD 型企业身份源
      */
     public static enum Provider {
-
         @JsonProperty("oidc")
         OIDC("oidc"),
 
@@ -233,6 +175,4 @@ public class Identity {
             return value;
         }
     }
-
-
 }

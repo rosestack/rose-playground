@@ -8,7 +8,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class DelegatingFactoryBean implements FactoryBean<Object>, InitializingBean, DisposableBean, ApplicationContextAware, BeanNameAware {
+public class DelegatingFactoryBean
+        implements FactoryBean<Object>, InitializingBean, DisposableBean, ApplicationContextAware, BeanNameAware {
     private final Object delegate;
     private final Class<?> objectType;
 
@@ -47,6 +48,5 @@ public class DelegatingFactoryBean implements FactoryBean<Object>, InitializingB
         if (this.delegate instanceof DisposableBean) {
             ((DisposableBean) this.delegate).destroy();
         }
-
     }
 }

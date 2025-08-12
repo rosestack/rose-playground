@@ -4,9 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * 核心层的权限提供者管理抽象，Starter 实现具体发现与装配。
- */
+/** 核心层的权限提供者管理抽象，Starter 实现具体发现与装配。 */
 public abstract class AbstractDataPermissionProviderManager {
     protected final Map<String, List<DataPermissionProvider>> fieldSupportCache = new ConcurrentHashMap<>();
     protected final List<DataPermissionProvider> allProviders = new ArrayList<>();
@@ -20,12 +18,12 @@ public abstract class AbstractDataPermissionProviderManager {
     public DataPermissionProvider getProvider(String field) {
         List<DataPermissionProvider> list = fieldSupportCache.get(field);
         if (list == null || list.isEmpty()) return null;
-        return list.stream().min(Comparator.comparingInt(DataPermissionProvider::getPriority)).orElse(null);
+        return list.stream()
+                .min(Comparator.comparingInt(DataPermissionProvider::getPriority))
+                .orElse(null);
     }
 
-    /**
-     * 获取字段支持情况
-     */
+    /** 获取字段支持情况 */
     public Map<String, String> getFieldSupportMapping() {
         Map<String, String> mapping = new HashMap<>();
         fieldSupportCache.forEach((field, providers) -> {
@@ -38,7 +36,7 @@ public abstract class AbstractDataPermissionProviderManager {
         return mapping;
     }
 
-    public List<DataPermissionProvider> getAllProviders() { return allProviders; }
+    public List<DataPermissionProvider> getAllProviders() {
+        return allProviders;
+    }
 }
-
-

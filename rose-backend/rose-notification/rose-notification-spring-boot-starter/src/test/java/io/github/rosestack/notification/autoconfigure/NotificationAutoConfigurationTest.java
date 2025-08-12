@@ -15,8 +15,7 @@ class NotificationAutoConfigurationTest {
                     "rose.notification.sender-cache-max-size=500",
                     "rose.notification.sender-cache-expire-after-access-seconds=600",
                     "rose.notification.sms-provider-cache-max-size=500",
-                    "rose.notification.sms-provider-cache-expire-after-access-seconds=600"
-            );
+                    "rose.notification.sms-provider-cache-expire-after-access-seconds=600");
 
     @Test
     void autoConfigCreatesNoticeService() {
@@ -26,5 +25,3 @@ class NotificationAutoConfigurationTest {
         });
     }
 }
-
-

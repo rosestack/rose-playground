@@ -1,24 +1,22 @@
 package io.github.rosestack.spring.filter;
 
+import static io.github.rosestack.core.Constants.HeaderName.HEADER_TRACE_ID;
+import static io.github.rosestack.core.Constants.MdcName.MDC_REQUEST_ID;
+
 import io.github.rosestack.core.Constants;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.MDC;
-
 import java.io.IOException;
 import java.util.UUID;
-
-import static io.github.rosestack.core.Constants.HeaderName.HEADER_TRACE_ID;
-import static io.github.rosestack.core.Constants.MdcName.MDC_REQUEST_ID;
+import org.slf4j.MDC;
 
 /**
  * 请求 ID 过滤器
- * <p>
- * 为每个请求生成唯一标识，支持链路追踪
- * </p>
+ *
+ * <p>为每个请求生成唯一标识，支持链路追踪
  *
  * @author rosestack
  * @since 1.0.0

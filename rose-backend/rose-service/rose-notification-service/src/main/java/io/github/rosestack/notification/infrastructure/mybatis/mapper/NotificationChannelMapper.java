@@ -6,23 +6,23 @@ import io.github.rosestack.notification.domain.repository.NotificationChannelRep
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.infrastructure.mybatis.convert.NotificationChannelConvert;
 import io.github.rosestack.notification.infrastructure.mybatis.entity.NotificationChannelEntity;
+import java.util.List;
+import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
-import java.util.Optional;
-
-
 @Mapper
-public interface NotificationChannelMapper extends BaseMapper<NotificationChannelEntity>, NotificationChannelRepository {
+public interface NotificationChannelMapper
+        extends BaseMapper<NotificationChannelEntity>, NotificationChannelRepository {
     default Optional<NotificationChannel> findById(String id) {
         NotificationChannelEntity entity = selectById(id);
         return entity != null ? Optional.of(NotificationChannelConvert.toDomain(entity)) : Optional.empty();
     }
 
     @Select("SELECT * FROM notification_channel WHERE channel_type = #{channelType} AND tenant_id = #{tenantId}")
-    List<NotificationChannelEntity> selectByTypeAndTenantId(@Param("channelType") String channelType, @Param("tenantId") String tenantId);
+    List<NotificationChannelEntity> selectByTypeAndTenantId(
+            @Param("channelType") String channelType, @Param("tenantId") String tenantId);
 
     default List<NotificationChannel> findByTypeAndTenantId(NotificationChannelType channelType, String tenantId) {
         return selectByTypeAndTenantId(channelType.name(), tenantId).stream()
