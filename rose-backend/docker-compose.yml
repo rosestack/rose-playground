@@ -23,7 +23,7 @@ services:
       retries: 10
       start_period: 30s
     volumes:
-      - ./rose-application/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./rose-application/src/main/resources/iam-schema.sql:/docker-entrypoint-initdb.d/iam-schema.sql:ro
 
   rose-redis:
     image: redis:7-alpine

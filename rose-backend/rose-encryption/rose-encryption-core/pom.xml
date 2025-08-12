@@ -25,11 +25,5 @@
       <artifactId>rose-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.openjdk.nashorn</groupId>
-      <artifactId>nashorn-core</artifactId>
-      <version>15.4</version>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
 </project>
