@@ -47,7 +47,8 @@ class RefundCallbackControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(io.github.rosestack.billing.enums.BillingErrorCode.CALLBACK_UPDATE_FAILED.getCode()));
+                .andExpect(jsonPath("$.code")
+                        .value(io.github.rosestack.billing.enums.BillingErrorCode.CALLBACK_UPDATE_FAILED.getCode()));
     }
 
     @Test

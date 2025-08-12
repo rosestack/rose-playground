@@ -56,9 +56,6 @@ rose:
       - "/error"
       - "/static/**"
       - "/public/**"
-      # 可以添加更多自定义排除路径
-      # - "/api/health/**"
-      # - "/api/metrics/**"
 
     # 过滤器配置
     filter:

@@ -51,8 +51,6 @@ class DefaultMessageRendererTest {
         customInterpolator = new DefaultMessageRenderer(mockEvaluator);
     }
 
-    // ==================== 基础功能测试 ====================
-
     @Test
     void testNullMessage_ShouldReturnNull() {
         assertNull(interpolator.render(null, Locale.ENGLISH, new Object[] {"test"}));
@@ -87,8 +85,6 @@ class DefaultMessageRendererTest {
         result = customInterpolator.render(message, Locale.ENGLISH, new Object[] {"test"});
         assertEquals(message, result);
     }
-
-    // ==================== 表达式插值测试 (${expression}) ====================
 
     @Test
     void testExpressionInterpolation_SimpleProperty() {

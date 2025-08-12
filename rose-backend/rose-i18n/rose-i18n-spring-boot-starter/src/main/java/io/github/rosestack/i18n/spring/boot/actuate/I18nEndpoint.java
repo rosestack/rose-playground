@@ -1,11 +1,20 @@
 package io.github.rosestack.i18n.spring.boot.actuate;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static org.springframework.util.StringUtils.hasText;
+
 import io.github.rosestack.i18n.AbstractResourceMessageSource;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource;
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
@@ -17,16 +26,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.*;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static org.springframework.util.StringUtils.hasText;
 
 /**
  * I18n Spring Boot Actuator Endpoint
