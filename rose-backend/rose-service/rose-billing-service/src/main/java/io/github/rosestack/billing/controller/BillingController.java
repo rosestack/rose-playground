@@ -202,4 +202,8 @@ class ProcessPaymentRequest {
     private String paymentMethod;
     @NotBlank
     private String transactionId;
+
+    public io.github.rosestack.billing.payment.PaymentMethod getPaymentMethodEnum() {
+        try { return io.github.rosestack.billing.payment.PaymentMethod.valueOf(paymentMethod); } catch (Exception e) { return null; }
+    }
 }

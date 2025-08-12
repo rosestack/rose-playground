@@ -4,6 +4,10 @@ import io.github.rosestack.notice.NoticeException;
 import io.github.rosestack.notice.SenderConfiguration;
 import io.github.rosestack.notice.spi.Sender;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,46 +23,80 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SenderFactory {
     private static final ConsoleSender CONSOLE_SENDER = new ConsoleSender();
-    private static final Map<String, Sender> SENDERS = new ConcurrentHashMap<>();
-    private static final Map<String, Map<SenderConfiguration, Sender>> SENDER_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Class<? extends Sender>> SENDER_CLASSES = new ConcurrentHashMap<>();
+    private static final Cache<String, Sender> SENDER_CACHE = Caffeine.newBuilder()
+            .maximumSize(getMaxCacheSize())
+            .expireAfterAccess(getExpireAfterAccessSeconds())
+            .removalListener((String key, Sender value, RemovalCause cause) -> {
+                if (value != null) {
+                    value.destroy();
+                }
+            })
+            .build();
 
     static {
         ServiceLoader.load(Sender.class)
-                .forEach(sender -> SENDERS.put(sender.getChannelType().toLowerCase(), sender));
+                .forEach(sender -> SENDER_CLASSES.put(sender.getChannelType().toLowerCase(), sender.getClass()));
     }
 
     public static Sender getSender(String channel, SenderConfiguration config) {
         if (channel == null) {
             return CONSOLE_SENDER;
         }
-        if (SENDER_MAP.containsKey(channel.toLowerCase())) {
-            Sender sender = SENDER_MAP.get(channel.toLowerCase()).get(config);
-            if (sender == null) {
-                sender = SENDERS.get(channel.toLowerCase());
-                sender.configure(config);
-            }
-            return sender;
-        } else {
-            Sender sender = SENDERS.get(channel.toLowerCase());
-            if (sender == null) {
-                throw new NoticeException("不支持的通知渠道: " + channel);
-            }
-            sender.configure(config);
-            Map<SenderConfiguration, Sender> senderMap = new ConcurrentHashMap<>();
-            senderMap.put(config, sender);
-            SENDER_MAP.put(channel.toLowerCase(), senderMap);
-
-            return sender;
+        String key = channel.toLowerCase();
+        Class<? extends Sender> clazz = SENDER_CLASSES.get(key);
+        if (clazz == null) {
+            throw new NoticeException("不支持的通知渠道: " + channel);
         }
+        String cfgKey = buildConfigKey(key, config);
+        return SENDER_CACHE.get(cfgKey, k -> {
+            try {
+                java.lang.reflect.Constructor<? extends Sender> ctor = clazz.getDeclaredConstructor();
+                if (!ctor.canAccess(null)) {
+                    ctor.setAccessible(true);
+                }
+                Sender instance = ctor.newInstance();
+                instance.configure(config);
+                return instance;
+            } catch (Exception e) {
+                throw new NoticeException("创建 Sender 实例失败: " + clazz.getName(), e);
+            }
+        });
     }
 
     public static void destroy() {
-        SENDER_MAP.values().forEach(senderMap -> senderMap.values().forEach(Sender::destroy));
-        SENDERS.clear();
-        SENDER_MAP.clear();
+        // 先显式销毁缓存中的实例，再清理缓存
+        SENDER_CACHE.asMap().values().forEach(Sender::destroy);
+        SENDER_CACHE.invalidateAll();
+        SENDER_CACHE.cleanUp();
+        SENDER_CLASSES.clear();
     }
 
     public static void register(String channel, Sender sender) {
-        SENDERS.put(channel.toLowerCase(), sender);
+        if (channel == null || sender == null) {
+            return;
+        }
+        SENDER_CLASSES.put(channel.toLowerCase(), sender.getClass());
+    }
+
+    private static String buildConfigKey(String channel, SenderConfiguration config) {
+        StringBuilder sb = new StringBuilder(channel.toLowerCase());
+        sb.append("|");
+        if (config != null && config.getConfig() != null) {
+            config.getConfig().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(e -> sb.append(e.getKey()).append('=').append(String.valueOf(e.getValue())).append('&'));
+        }
+        return sb.toString();
+    }
+
+    private static long getMaxCacheSize() {
+        String val = System.getProperty("rose.notification.sender.cache.maxSize", "1000");
+        try { return Math.max(100L, Long.parseLong(val)); } catch (Exception ignored) { return 1000L; }
+    }
+
+    private static java.time.Duration getExpireAfterAccessSeconds() {
+        String val = System.getProperty("rose.notification.sender.cache.expireAfterAccessSeconds", "1800");
+        try { long sec = Math.max(60L, Long.parseLong(val)); return java.time.Duration.ofSeconds(sec); } catch (Exception ignored) { return java.time.Duration.ofMinutes(30); }
     }
 }

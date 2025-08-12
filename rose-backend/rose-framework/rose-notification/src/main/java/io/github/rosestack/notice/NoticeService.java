@@ -9,8 +9,8 @@ import io.github.rosestack.notice.spi.NoticeSendInterceptor;
 import io.github.rosestack.notice.spi.Sender;
 import io.github.rosestack.notice.support.NoopBlacklistChecker;
 import io.github.rosestack.notice.support.NoopIdempotencyStore;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,15 +23,17 @@ import java.util.concurrent.Executors;
 /**
  * 通用通知发送服务，支持同步、异步、批量、重试、黑名单、拦截器、幂等。
  */
-@Slf4j
-@Setter
 public class NoticeService {
+    private static final Logger log = LoggerFactory.getLogger(NoticeService.class);
+
     private final List<NoticeSendInterceptor> interceptors = new ArrayList<>();
 
     private BlacklistChecker blacklistChecker;
     private IdempotencyStore idempotencyStore;
     private ExecutorService executor;
     private boolean retryable = false;
+    private NoticeMetrics metrics;
+    private boolean executorManagedExternally = false;
 
     public NoticeService() {
         ServiceLoader.load(NoticeSendInterceptor.class).forEach(interceptors::add);
@@ -39,6 +41,7 @@ public class NoticeService {
         this.blacklistChecker = new NoopBlacklistChecker();
         this.idempotencyStore = new NoopIdempotencyStore();
         this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.executorManagedExternally = false;
     }
 
     public void addInterceptor(NoticeSendInterceptor interceptor) {
@@ -49,6 +52,28 @@ public class NoticeService {
         this.interceptors.remove(interceptor);
     }
 
+    public void setBlacklistChecker(BlacklistChecker blacklistChecker) {
+        this.blacklistChecker = blacklistChecker;
+    }
+
+    public void setIdempotencyStore(IdempotencyStore idempotencyStore) {
+        this.idempotencyStore = idempotencyStore;
+    }
+
+    public void setExecutor(ExecutorService executor) {
+        this.executor = executor;
+        this.executorManagedExternally = true;
+    }
+
+    public void setRetryable(boolean retryable) {
+        this.retryable = retryable;
+    }
+
+    /** 可选注入 metrics（Micrometer） */
+    public void setMetrics(NoticeMetrics metrics) {
+        this.metrics = metrics;
+    }
+
     public SendResult send(SendRequest request, SenderConfiguration config) {
         validate(request);
         try {
@@ -56,11 +81,27 @@ public class NoticeService {
 
             renderTemplate(request, config.getTemplateType());
 
+            long start = System.nanoTime();
             SendResult result = doSend(request, config);
+            if (metrics != null) {
+                metrics.recordSuccess(System.nanoTime() - start);
+            }
 
             postProcess(request, result);
             return result;
+        } catch (NoticeException e) {
+            if (metrics != null) {
+                metrics.recordFailure(0);
+            }
+            for (NoticeSendInterceptor interceptor : interceptors) {
+                interceptor.onError(request, e);
+            }
+            log.error("通知异常: {}", e.getMessage());
+            return SendResult.fail(e.getMessage(), request.getRequestId());
         } catch (Exception e) {
+            if (metrics != null) {
+                metrics.recordFailure(0);
+            }
             for (NoticeSendInterceptor interceptor : interceptors) {
                 interceptor.onError(request, e);
             }
@@ -70,11 +111,13 @@ public class NoticeService {
     }
 
     private SendResult doSend(SendRequest request, SenderConfiguration config) {
-        Sender sender = SenderFactory.getSender(config.getChannelType(), config);
+        Sender baseSender = SenderFactory.getSender(config.getChannelType(), config);
+        Sender sender = baseSender;
         if (retryable) {
-            sender = new RetryableSender(sender);
+            sender = new RetryableSender(baseSender);
+            // 让重试包装器读取重试相关配置
+            sender.configure(config);
         }
-        sender.send(request);
 
         String receiptId = sender.send(request);
         return SendResult.success(request.getRequestId(), receiptId);
@@ -82,7 +125,7 @@ public class NoticeService {
 
     private void preCheck(SendRequest request) {
         if (idempotencyStore.exists(request.getRequestId())) {
-            log.info("命中幂等: requestId={}", request.getRequestId());
+            log.warn("命中幂等: requestId={}", request.getRequestId());
             throw new NoticeException("重复请求，已处理: " + request.getRequestId());
         }
         if (blacklistChecker.isBlacklisted(request)) {
@@ -105,7 +148,7 @@ public class NoticeService {
         for (NoticeSendInterceptor interceptor : interceptors) {
             interceptor.afterSend(request, result);
         }
-        log.info("通知发送结果: request={}", result);
+        log.info("通知发送结果: {}", result);
     }
 
     public CompletableFuture<SendResult> sendAsync(SendRequest request, SenderConfiguration channelConfig) {
@@ -114,9 +157,20 @@ public class NoticeService {
 
     public List<SendResult> sendBatch(List<SendRequest> requests, SenderConfiguration channelConfig) {
         if (requests == null || requests.isEmpty()) return Collections.emptyList();
-        List<SendResult> results = new ArrayList<>();
+        List<CompletableFuture<SendResult>> futures = new ArrayList<>(requests.size());
         for (SendRequest req : requests) {
-            results.add(send(req, channelConfig));
+            futures.add(sendAsync(req, channelConfig));
+        }
+        List<SendResult> results = new ArrayList<>(requests.size());
+        for (int i = 0; i < futures.size(); i++) {
+            CompletableFuture<SendResult> f = futures.get(i);
+            SendRequest req = requests.get(i);
+            try {
+                results.add(f.join());
+            } catch (Exception ex) {
+                String msg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+                results.add(SendResult.fail(msg, req.getRequestId()));
+            }
         }
         return results;
     }
@@ -155,6 +209,10 @@ public class NoticeService {
     }
 
     public void destroy() {
-        executor.shutdown();
+        if (!executorManagedExternally && executor != null) {
+            executor.shutdown();
+        }
+        SenderFactory.destroy();
+        io.github.rosestack.notice.sender.sms.SmsProviderFactory.destroy();
     }
 }

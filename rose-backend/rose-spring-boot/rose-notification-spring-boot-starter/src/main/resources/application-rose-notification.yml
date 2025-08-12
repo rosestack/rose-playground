@@ -1,0 +1,38 @@
+rose:
+  notification:
+    # 是否开启 Sender 层重试包装（默认 false）
+    retryable: false
+
+    # 异步/批量发送线程池大小（默认 CPU 核数）
+    executor-core-size: 0
+
+    # 发送器实例缓存（对应 SenderFactory）最大容量与基于访问过期（秒）
+    sender-cache-max-size: 1000
+    sender-cache-expire-after-access-seconds: 1800
+
+    # 短信服务商实例缓存（对应 SmsProviderFactory）最大容量与基于访问过期（秒）
+    sms-provider-cache-max-size: 1000
+    sms-provider-cache-expire-after-access-seconds: 1800
+
+# 说明：
+# 1) 邮件/短信渠道的账号、模板等参数在发送时通过 SenderConfiguration.config 传入，
+#    本配置文件不覆盖渠道账号信息。
+#    例如：
+#      SenderConfiguration.builder()
+#         .channelType("email")
+#         .templateType("SimpleVariableTemplateContentRender")
+#         .config(Map.of(
+#           "mail.smtp.host", "smtp.example.com",
+#           "mail.smtp.username", "user",
+#           "mail.smtp.password", "pass",
+#           "mail.smtp.port", 465,
+#           "mail.smtp.from", "noreply@example.com",
+#           "retry.maxAttempts", 3,
+#           "retry.initialDelayMillis", 200,
+#           "retry.jitterMillis", 100
+#         ))
+#         .build();
+# 2) 如需启用 Micrometer 指标，请在应用引入 spring-boot-starter-actuator 或 micrometer-registry，
+#    Starter 会自动注入 NoticeMetrics（计数器/耗时指标）。
+
+

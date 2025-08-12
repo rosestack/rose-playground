@@ -15,7 +15,7 @@ import io.github.rosestack.notice.spi.Sender;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-class SmsSender extends AbstractConfigure implements Sender {
+public class SmsSender extends AbstractConfigure implements Sender {
     private SmsProvider smsProvider;
 
     @Override

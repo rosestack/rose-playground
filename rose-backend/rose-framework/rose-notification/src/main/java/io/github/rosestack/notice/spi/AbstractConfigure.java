@@ -23,7 +23,7 @@ public abstract class AbstractConfigure implements Configurable {
             try {
                 doConfigure(config);
             } catch (Exception e) {
-                throw new NoticeException("阿里云短信配置不完整", e);
+                throw new NoticeException("配置初始化失败", e);
             }
             isConfigured.set(true);
         }

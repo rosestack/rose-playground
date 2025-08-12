@@ -4,6 +4,7 @@ import io.github.rosestack.billing.aspect.annotation.TrackEmailUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackSmsUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackStorageUsage;
 import io.github.rosestack.billing.aspect.annotation.TrackUserChange;
+import io.github.rosestack.billing.entity.TenantSubscription;
 import io.github.rosestack.billing.service.BillingService;
 import io.github.rosestack.billing.service.SubscriptionService;
 import io.github.rosestack.billing.service.UserMetricsService;
@@ -49,7 +50,7 @@ public class UsageTrackingAspect {
                 }
 
                 String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
-                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
                     billingService.recordUsage(tenantId, subscriptionId,
@@ -77,7 +78,7 @@ public class UsageTrackingAspect {
                 BigDecimal storageSize = new BigDecimal(result.toString());
 
                 String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
-                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
                     billingService.recordUsage(tenantId, subscriptionId,
@@ -108,7 +109,7 @@ public class UsageTrackingAspect {
                 int currentUserCount = getUserCount(tenantId);
 
                 String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
-                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
                     billingService.recordUsage(tenantId, subscriptionId,
@@ -136,7 +137,7 @@ public class UsageTrackingAspect {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
                 String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
-                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
                     billingService.recordUsage(tenantId, subscriptionId,
@@ -164,7 +165,7 @@ public class UsageTrackingAspect {
             String tenantId = TenantContextHolder.getCurrentTenantId();
             if (tenantId != null) {
                 String subscriptionId = subscriptionService.getActiveSubscription(tenantId)
-                        .map(io.github.rosestack.billing.entity.TenantSubscription::getId)
+                        .map(TenantSubscription::getId)
                         .orElse(null);
                 if (subscriptionId != null) {
                     billingService.recordUsage(tenantId, subscriptionId,

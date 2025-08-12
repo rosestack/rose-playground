@@ -16,17 +16,21 @@ public class TemplateContentRenderFactory {
 
     static {
         ServiceLoader.load(TemplateContentRender.class)
-                .forEach(render -> RENDERS.put(render.getClass().getSimpleName(), render));
+                .forEach(render -> RENDERS.put(render.getClass().getSimpleName().toLowerCase(), render));
     }
 
     public static TemplateContentRender getRender(String key) {
         if (key == null) {
             return DEFAULT_TEMPLATE_RENDER;
         }
-        return RENDERS.get(key);
+        TemplateContentRender render = RENDERS.get(key.toLowerCase());
+        return render != null ? render : DEFAULT_TEMPLATE_RENDER;
     }
 
     public static void register(String key, TemplateContentRender render) {
+        if (key == null || render == null) {
+            return;
+        }
         RENDERS.put(key.toLowerCase(), render);
     }
 }

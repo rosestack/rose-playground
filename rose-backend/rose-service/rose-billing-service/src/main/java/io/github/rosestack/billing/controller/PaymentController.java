@@ -3,7 +3,13 @@ package io.github.rosestack.billing.controller;
 import io.github.rosestack.billing.entity.Invoice;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.payment.PaymentStatus;
+import io.github.rosestack.billing.payment.PaymentMethod;
+
 import io.github.rosestack.billing.service.BillingService;
+import jakarta.validation.constraints.NotBlank;
+
+import io.github.rosestack.billing.validation.PaymentMethodSubset;
+
 import io.github.rosestack.billing.service.InvoiceService;
 import io.github.rosestack.core.model.ApiResponse;
 import lombok.Data;
@@ -92,6 +98,12 @@ public class PaymentController {
 
     @Data
     static class CreatePaymentLinkRequest {
+        @NotBlank
+        @io.github.rosestack.billing.validation.PaymentMethodSubset(anyOf = {
+            io.github.rosestack.billing.payment.PaymentMethod.ALIPAY,
+            io.github.rosestack.billing.payment.PaymentMethod.WECHAT,
+            io.github.rosestack.billing.payment.PaymentMethod.STRIPE
+        })
         private String paymentMethod;
     }
 }

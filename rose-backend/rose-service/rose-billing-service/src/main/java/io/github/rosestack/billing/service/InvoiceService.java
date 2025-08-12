@@ -9,7 +9,6 @@ import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.billing.exception.InvoiceNotFoundException;
 import io.github.rosestack.billing.repository.InvoiceRepository;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,9 +72,9 @@ public class InvoiceService extends ServiceImpl<InvoiceRepository, Invoice> {
      * @throws IllegalArgumentException 当参数无效时抛出
      */
     @Transactional(rollbackFor = Exception.class)
-    public void markInvoiceAsPaid(@NotBlank String invoiceId,
-                                  @NotBlank String paymentMethod,
-                                  @NotBlank String transactionId) {
+    public void markInvoiceAsPaid(String invoiceId,
+                                  String paymentMethod,
+                                  String transactionId) {
 
         Invoice invoice = invoiceRepository.selectById(invoiceId);
         // 幂等性检查：若同一 transactionId 已处理则忽略

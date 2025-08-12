@@ -33,4 +33,12 @@ public class SendRequest {
     private List<String> cc;
 
     private Map<String, Object> variables;
+
+    // 显式 getter/setter，避免依赖 Lombok 处理器
+    public String getRequestId() { return requestId; }
+    public String getTarget() { return target; }
+    public String getTemplateContent() { return templateContent; }
+    public void setTemplateContent(String templateContent) { this.templateContent = templateContent; }
+    public List<String> getCc() { return cc; }
+    public Map<String, Object> getVariables() { return variables; }
 }
