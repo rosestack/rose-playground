@@ -18,6 +18,7 @@
         <module>rose-iam-api</module>
         <module>rose-iam-service</module>
         <module>rose-notification-service</module>
+        <module>rose-application</module>
     </modules>
 
 </project>

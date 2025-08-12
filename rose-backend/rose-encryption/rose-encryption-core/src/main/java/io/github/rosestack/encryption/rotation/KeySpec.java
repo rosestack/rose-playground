@@ -1,13 +1,12 @@
 package io.github.rosestack.encryption.rotation;
 
 import io.github.rosestack.encryption.enums.EncryptType;
+import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  * 密钥规格定义
@@ -98,16 +97,16 @@ public class KeySpec {
      * 检查是否可用于加密
      */
     public boolean canEncrypt() {
-        return active && !deprecated &&
-                (expireTime == null || LocalDateTime.now().isBefore(expireTime));
+        return active
+                && !deprecated
+                && (expireTime == null || LocalDateTime.now().isBefore(expireTime));
     }
 
     /**
      * 检查是否可用于解密
      */
     public boolean canDecrypt() {
-        return !deprecated &&
-                (expireTime == null || LocalDateTime.now().isBefore(expireTime.plusDays(30)));
+        return !deprecated && (expireTime == null || LocalDateTime.now().isBefore(expireTime.plusDays(30)));
     }
 
     /**

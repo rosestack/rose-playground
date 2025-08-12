@@ -3,16 +3,15 @@ package io.github.rosestack.encryption;
 import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm4.Sm4;
 import io.github.rosestack.encryption.enums.EncryptType;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 通用加密工具类
@@ -27,13 +26,13 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 public final class EncryptionUtils {
 
-    private EncryptionUtils() {
-    }
+    private EncryptionUtils() {}
 
     /**
      * Cipher 实例缓存 - 线程安全
      */
     private static final ConcurrentMap<String, Cipher> ENCRYPT_CIPHER_CACHE = new ConcurrentHashMap<>();
+
     private static final ConcurrentMap<String, Cipher> DECRYPT_CIPHER_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, Long> PERFORMANCE_STATS = new ConcurrentHashMap<>();
 
@@ -289,7 +288,7 @@ public final class EncryptionUtils {
             case AES:
                 return 16; // 128位
             case DES:
-                return 8;  // 64位
+                return 8; // 64位
             default:
                 return 16;
         }
@@ -314,9 +313,7 @@ public final class EncryptionUtils {
      * 获取缓存统计信息
      */
     public static String getCacheStats() {
-        return String.format("加密缓存: %d, 解密缓存: %d",
-                ENCRYPT_CIPHER_CACHE.size(),
-                DECRYPT_CIPHER_CACHE.size());
+        return String.format("加密缓存: %d, 解密缓存: %d", ENCRYPT_CIPHER_CACHE.size(), DECRYPT_CIPHER_CACHE.size());
     }
 
     /**

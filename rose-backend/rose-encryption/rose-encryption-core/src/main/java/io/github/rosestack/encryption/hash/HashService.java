@@ -2,16 +2,15 @@ package io.github.rosestack.encryption.hash;
 
 import io.github.rosestack.encryption.annotation.EncryptField;
 import io.github.rosestack.encryption.enums.HashType;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 哈希服务
@@ -137,9 +136,7 @@ public class HashService {
 
         // 使用常量时间比较，防止时序攻击
         return MessageDigest.isEqual(
-                computedHash.getBytes(StandardCharsets.UTF_8),
-                storedHash.getBytes(StandardCharsets.UTF_8)
-        );
+                computedHash.getBytes(StandardCharsets.UTF_8), storedHash.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

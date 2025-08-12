@@ -2,7 +2,6 @@ package io.github.rosestack.encryption.annotation;
 
 import io.github.rosestack.encryption.enums.EncryptType;
 import io.github.rosestack.encryption.enums.HashType;
-
 import java.lang.annotation.*;
 
 /**

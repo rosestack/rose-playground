@@ -4,11 +4,6 @@ import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm4.Sm4;
 import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.enums.EncryptType;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -18,6 +13,10 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 支持密钥轮换的字段加密器
@@ -47,18 +46,18 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
 
         try {
             KeySpec currentKeySpec = keyRotationManager.getCurrentKeySpec();
-            
+
             // 验证算法类型匹配
             if (currentKeySpec.getEncryptType() != encryptType) {
-                throw new IllegalArgumentException("当前密钥规格算法类型不匹配: " + 
-                    currentKeySpec.getEncryptType() + " vs " + encryptType);
+                throw new IllegalArgumentException(
+                        "当前密钥规格算法类型不匹配: " + currentKeySpec.getEncryptType() + " vs " + encryptType);
             }
 
             String encryptedData = doEncrypt(plainText, encryptType, currentKeySpec);
-            
+
             // 添加版本前缀
             return "{" + currentKeySpec.getVersion() + "}:" + encryptedData;
-            
+
         } catch (Exception e) {
             log.error("字段加密失败: {}", e.getMessage(), e);
             throw new RuntimeException("字段加密失败", e);
@@ -74,27 +73,27 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
         try {
             // 解析版本信息
             Matcher matcher = VERSIONED_DATA_PATTERN.matcher(cipherText);
-            
+
             if (matcher.matches()) {
                 // 有版本信息的新格式
                 String version = matcher.group(1);
                 String encryptedData = matcher.group(2);
-                
+
                 KeySpec keySpec = keyRotationManager.getKeySpec(version);
                 if (keySpec == null) {
                     throw new IllegalArgumentException("未找到密钥版本: " + version);
                 }
-                
+
                 if (!keySpec.canDecrypt()) {
                     throw new IllegalArgumentException("密钥版本不可用于解密: " + version);
                 }
-                
+
                 return doDecrypt(encryptedData, encryptType, keySpec);
             } else {
                 // 旧格式，尝试用所有可用的密钥解密
                 return decryptWithFallback(cipherText, encryptType);
             }
-            
+
         } catch (Exception e) {
             log.error("字段解密失败: {}", e.getMessage(), e);
             return cipherText; // 解密失败时返回原文
@@ -114,7 +113,7 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
                 }
             }
         }
-        
+
         log.warn("所有密钥版本都无法解密数据");
         return cipherText;
     }
@@ -178,7 +177,7 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
         SecretKeySpec secretKey = new SecretKeySpec(keyBytes, encryptType.name());
         Cipher cipher = Cipher.getInstance(encryptType.name());
         cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        
+
         byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(encrypted);
     }
@@ -190,7 +189,7 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
         SecretKeySpec secretKey = new SecretKeySpec(keyBytes, encryptType.name());
         Cipher cipher = Cipher.getInstance(encryptType.name());
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        
+
         byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(cipherText));
         return new String(decrypted, StandardCharsets.UTF_8);
     }
@@ -203,10 +202,10 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PublicKey publicKey = keyFactory.generatePublic(keySpec);
-        
+
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        
+
         byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(encrypted);
     }
@@ -219,10 +218,10 @@ public class RotationAwareFieldEncryptor implements FieldEncryptor {
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
-        
+
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        
+
         byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(cipherText));
         return new String(decrypted, StandardCharsets.UTF_8);
     }

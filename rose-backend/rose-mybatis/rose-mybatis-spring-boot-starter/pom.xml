@@ -19,7 +19,11 @@
             <artifactId>rose-mybatis-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Rose 内部依赖 -->
+        <dependency>
+            <groupId>io.github.rosestack</groupId>
+            <artifactId>rose-spring-boot-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.github.rosestack</groupId>
             <artifactId>rose-encryption-spring-boot-starter</artifactId>

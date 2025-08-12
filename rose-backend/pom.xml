@@ -33,7 +33,6 @@
         <module>rose-redis</module>
         <module>rose-spring-boot</module>
         <module>rose-service</module>
-        <module>rose-application</module>
     </modules>
 
     <dependencyManagement>
@@ -72,7 +71,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-<!--            <scope>provided</scope>-->
+            <!--            <scope>provided</scope>-->
         </dependency>
 
         <dependency>

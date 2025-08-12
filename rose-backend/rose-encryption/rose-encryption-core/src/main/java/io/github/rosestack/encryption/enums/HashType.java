@@ -18,7 +18,7 @@ public enum HashType {
      * </p>
      */
     SHA256("SHA-256"),
-    
+
     /**
      * SHA-512 哈希算法
      * <p>
@@ -26,7 +26,7 @@ public enum HashType {
      * </p>
      */
     SHA512("SHA-512"),
-    
+
     /**
      * HMAC-SHA256 哈希算法
      * <p>
@@ -35,7 +35,7 @@ public enum HashType {
      * </p>
      */
     HMAC_SHA256("HmacSHA256"),
-    
+
     /**
      * HMAC-SHA512 哈希算法
      * <p>
@@ -43,13 +43,13 @@ public enum HashType {
      * </p>
      */
     HMAC_SHA512("HmacSHA512");
-    
+
     private final String algorithm;
-    
+
     HashType(String algorithm) {
         this.algorithm = algorithm;
     }
-    
+
     /**
      * 获取算法名称
      *
@@ -58,7 +58,7 @@ public enum HashType {
     public String getAlgorithm() {
         return algorithm;
     }
-    
+
     /**
      * 是否为 HMAC 算法
      *

@@ -15,19 +15,15 @@
     </description>
 
     <dependencies>
-        <!-- Rose 内部依赖 -->
         <dependency>
             <groupId>io.github.rosestack</groupId>
             <artifactId>rose-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- Rose Notice 模块（复用 RateLimiter 接口） -->
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-notification-core</artifactId>
+            <artifactId>rose-spring-context</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
         </dependency>
 
         <!-- Spring Boot 核心依赖 -->

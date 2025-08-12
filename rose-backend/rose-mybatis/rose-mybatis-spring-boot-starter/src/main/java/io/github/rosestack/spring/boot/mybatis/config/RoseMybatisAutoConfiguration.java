@@ -15,14 +15,12 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.github.rosestack.spring.SpringContextUtils;
-import io.github.rosestack.spring.YmlPropertySourceFactory;
 import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.hash.HashService;
 import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
 import io.github.rosestack.mybatis.provider.CurrentUserProvider;
-import io.github.rosestack.mybatis.provider.DefaultCurrentTenantProvider;
-import io.github.rosestack.mybatis.provider.DefaultCurrentUserProvider;
+import io.github.rosestack.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.boot.core.util.FilterRegistrationBeanUtils;
 import io.github.rosestack.spring.boot.mybatis.audit.RoseMetaObjectHandler;
 import io.github.rosestack.spring.boot.mybatis.encryption.FieldEncryptionInterceptor;
 import io.github.rosestack.spring.boot.mybatis.permission.DataPermissionMetrics;
@@ -30,6 +28,8 @@ import io.github.rosestack.spring.boot.mybatis.permission.RoseDataPermissionHand
 import io.github.rosestack.spring.boot.mybatis.permission.controller.DataPermissionController;
 import io.github.rosestack.spring.boot.mybatis.permission.provider.DataPermissionProviderManager;
 import io.github.rosestack.spring.boot.mybatis.permission.service.DataPermissionService;
+import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentTenantProvider;
+import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentUserProvider;
 import io.github.rosestack.spring.boot.mybatis.tenant.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.tenant.TenantIdFilter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -190,7 +190,7 @@ public class RoseMybatisAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "rose.mybatis.tenant", name = "enabled", havingValue = "true")
     public FilterRegistrationBean<TenantIdFilter> tenantIdFilter() {
-        return SpringContextUtils.createFilterBean(new TenantIdFilter(properties.getTenant().getIgnoreTablePrefixes()), TENANT_ID_FILTER_ORDER);
+        return FilterRegistrationBeanUtils.createFilterBean(new TenantIdFilter(properties.getTenant().getIgnoreTablePrefixes()), TENANT_ID_FILTER_ORDER);
     }
 
     @Bean

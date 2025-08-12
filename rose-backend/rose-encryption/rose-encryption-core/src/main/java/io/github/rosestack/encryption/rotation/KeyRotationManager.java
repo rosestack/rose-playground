@@ -3,8 +3,6 @@ package io.github.rosestack.encryption.rotation;
 import com.antherd.smcrypto.sm2.Keypair;
 import com.antherd.smcrypto.sm2.Sm2;
 import io.github.rosestack.encryption.enums.EncryptType;
-import lombok.extern.slf4j.Slf4j;
-
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -13,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 密钥轮换管理器
@@ -79,9 +78,7 @@ public class KeyRotationManager {
      * 获取所有可用于解密的密钥规格
      */
     public List<KeySpec> getDecryptableKeySpecs() {
-        return keySpecs.values().stream()
-                .filter(KeySpec::canDecrypt)
-                .collect(Collectors.toList());
+        return keySpecs.values().stream().filter(KeySpec::canDecrypt).collect(Collectors.toList());
     }
 
     /**
@@ -216,7 +213,6 @@ public class KeyRotationManager {
         return Base64.getEncoder().encodeToString(key);
     }
 
-
     /**
      * 生成SM2密钥对（需要SM2库支持）
      */
@@ -239,8 +235,10 @@ public class KeyRotationManager {
             keyGen.initialize(2048);
             java.security.KeyPair keyPair = keyGen.generateKeyPair();
 
-            builder.publicKey(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
-            builder.privateKey(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
+            builder.publicKey(
+                    Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+            builder.privateKey(
+                    Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
         } catch (Exception e) {
             throw new RuntimeException("生成RSA密钥对失败", e);
         }
@@ -261,8 +259,8 @@ public class KeyRotationManager {
         List<String> expiredVersions = keySpecs.entrySet().stream()
                 .filter(entry -> {
                     KeySpec spec = entry.getValue();
-                    return spec.getExpireTime() != null &&
-                            now.isAfter(spec.getExpireTime().plusDays(30)); // 30天宽限期
+                    return spec.getExpireTime() != null
+                            && now.isAfter(spec.getExpireTime().plusDays(30)); // 30天宽限期
                 })
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());

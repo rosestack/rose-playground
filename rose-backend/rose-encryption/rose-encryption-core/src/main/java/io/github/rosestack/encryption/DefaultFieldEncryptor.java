@@ -1,11 +1,10 @@
 package io.github.rosestack.encryption;
 
 import io.github.rosestack.encryption.enums.EncryptType;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Map;
 
 /**
  * 优化的字段加密器实现

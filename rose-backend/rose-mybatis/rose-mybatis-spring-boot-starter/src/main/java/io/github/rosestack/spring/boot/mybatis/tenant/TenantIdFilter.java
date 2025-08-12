@@ -1,9 +1,9 @@
 package io.github.rosestack.spring.boot.mybatis.tenant;
 
-import io.github.rosestack.spring.AbstractBaseFilter;
-import io.github.rosestack.mybatis.tenant.TenantContextHolder;
 import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
-import io.github.rosestack.mybatis.provider.DefaultCurrentTenantProvider;
+import io.github.rosestack.mybatis.tenant.TenantContextHolder;
+import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentTenantProvider;
+import io.github.rosestack.spring.filter.AbstractBaseFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
