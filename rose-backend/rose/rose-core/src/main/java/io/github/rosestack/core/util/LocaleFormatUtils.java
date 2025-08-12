@@ -2,7 +2,6 @@ package io.github.rosestack.core.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.rosestack.core.jackson.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;

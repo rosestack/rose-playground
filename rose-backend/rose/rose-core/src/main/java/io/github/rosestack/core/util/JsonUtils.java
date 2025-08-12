@@ -1,4 +1,4 @@
-package io.github.rosestack.core.jackson;
+package io.github.rosestack.core.util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.audit.support;
 
-import io.github.rosestack.core.jackson.JsonUtils;
+import io.github.rosestack.core.util.JsonUtils;
 import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.spring.boot.audit.annotation.Audit;
 import io.github.rosestack.spring.boot.audit.entity.AuditLog;

@@ -17,13 +17,13 @@ services:
       --explicit_defaults_for_timestamp=true
       --lower_case_table_names=1
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-password}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-password}" ]
       interval: 10s
       timeout: 10s
       retries: 10
       start_period: 30s
     volumes:
-      - ./rose-application/src/main/resources/iam-schema.sql:/docker-entrypoint-initdb.d/iam-schema.sql:ro
+      - ./sql:/docker-entrypoint-initdb.d:ro
 
   rose-redis:
     image: redis:7-alpine

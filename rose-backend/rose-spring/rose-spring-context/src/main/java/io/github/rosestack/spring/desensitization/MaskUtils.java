@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.desensitization;
 
 import io.github.rosestack.spring.annotation.FieldSensitive;
-import io.github.rosestack.core.jackson.JsonUtils;
+import io.github.rosestack.core.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
