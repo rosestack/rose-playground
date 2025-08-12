@@ -3,7 +3,6 @@ package io.github.rosestack.notice.support;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.rosestack.notice.spi.IdempotencyStore;
-
 import java.time.Duration;
 
 /**

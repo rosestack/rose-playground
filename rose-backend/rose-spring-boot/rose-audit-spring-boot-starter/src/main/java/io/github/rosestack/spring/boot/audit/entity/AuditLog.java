@@ -7,12 +7,11 @@ import io.github.rosestack.spring.boot.audit.enums.AuditStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * 审计日志主表实体类
@@ -38,8 +37,7 @@ public class AuditLog {
     /**
      * 事件时间
      */
-    @NotNull(message = "事件时间不能为空")
-    @TableField("event_time")
+    @NotNull(message = "事件时间不能为空") @TableField("event_time")
     private LocalDateTime eventTime;
 
     /**

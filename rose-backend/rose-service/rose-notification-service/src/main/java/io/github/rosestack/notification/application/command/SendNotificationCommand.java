@@ -3,11 +3,10 @@ package io.github.rosestack.notification.application.command;
 import io.github.rosestack.notification.domain.value.TargetType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
-
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder
@@ -26,8 +25,7 @@ public class SendNotificationCommand {
     /**
      * 目标类型（如 EMAIL、MOBILE、USERNAME、USERID）
      */
-    @NotNull
-    private TargetType targetType;
+    @NotNull private TargetType targetType;
 
     /**
      * 模板ID，驱动一切

@@ -7,12 +7,11 @@ import io.github.rosestack.spring.boot.audit.enums.AuditDetailType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * 审计日志详情表实体类
@@ -39,8 +38,7 @@ public class AuditLogDetail {
     /**
      * 审计日志ID（外键）
      */
-    @NotNull(message = "审计日志ID不能为空")
-    @TableField("audit_log_id")
+    @NotNull(message = "审计日志ID不能为空") @TableField("audit_log_id")
     private Long auditLogId;
 
     /**

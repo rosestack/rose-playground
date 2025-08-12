@@ -1,11 +1,10 @@
 package io.github.rosestack.spring.boot.redis.ratelimit;
 
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-
-import java.util.Collections;
 
 /**
  * 令牌桶限流器

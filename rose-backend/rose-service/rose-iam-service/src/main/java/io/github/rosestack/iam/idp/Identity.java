@@ -1,9 +1,8 @@
 package io.github.rosestack.iam.idp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 /**
  * 身份源

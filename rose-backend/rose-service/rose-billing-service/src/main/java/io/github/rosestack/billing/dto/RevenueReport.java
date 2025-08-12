@@ -1,11 +1,10 @@
 package io.github.rosestack.billing.dto;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import lombok.Data;
 
 /**
  * 收入报表数据模型

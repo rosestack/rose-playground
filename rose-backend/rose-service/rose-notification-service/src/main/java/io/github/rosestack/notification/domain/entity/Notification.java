@@ -3,9 +3,8 @@ package io.github.rosestack.notification.domain.entity;
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.domain.value.NotificationStatus;
 import io.github.rosestack.notification.domain.value.TargetType;
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import lombok.Data;
 
 /**
  * 通知聚合根

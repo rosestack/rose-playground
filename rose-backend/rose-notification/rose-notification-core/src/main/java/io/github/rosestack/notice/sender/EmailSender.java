@@ -11,7 +11,6 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -94,6 +93,5 @@ public class EmailSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 }

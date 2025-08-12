@@ -5,9 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.NotificationChannelTypeHandler;
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Data;
 
 /**
  * NotificationChannel 持久化对象

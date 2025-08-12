@@ -3,7 +3,6 @@ package io.github.rosestack.notice;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-
 import java.util.concurrent.TimeUnit;
 
 /**

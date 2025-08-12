@@ -1,7 +1,6 @@
 package io.github.rosestack.notice.render;
 
 import io.github.rosestack.notice.spi.TemplateContentRender;
-
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;

@@ -19,8 +19,7 @@ public abstract class AbstractDataPermissionProviderManager {
     /**
      * 简单校验：同一字段是否被多个 Provider 支持（Starter 可扩展日志输出）
      */
-    protected void validateFieldUniqueness() {
-    }
+    protected void validateFieldUniqueness() {}
 
     public DataPermissionProvider getProvider(String field) {
         List<DataPermissionProvider> list = fieldSupportCache.get(field);

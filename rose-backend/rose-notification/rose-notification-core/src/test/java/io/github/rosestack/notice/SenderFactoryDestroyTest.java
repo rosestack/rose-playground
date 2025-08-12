@@ -2,12 +2,11 @@ package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.sender.SenderFactory;
 import io.github.rosestack.notice.spi.Sender;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class SenderFactoryDestroyTest {
     @AfterEach
@@ -49,7 +48,6 @@ class SenderFactoryDestroyTest {
         }
 
         @Override
-        public void configure(SenderConfiguration config) {
-        }
+        public void configure(SenderConfiguration config) {}
     }
 }

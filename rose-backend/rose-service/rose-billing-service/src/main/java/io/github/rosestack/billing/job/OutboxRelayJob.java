@@ -15,6 +15,7 @@ public class OutboxRelayJob {
 
     private final OutboxService outboxService;
     private final TenantBillingConfigService configService;
+
     @Value("${rose.billing.outbox.limit:100}")
     private int defaultOutboxLimit;
 

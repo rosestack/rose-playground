@@ -1,9 +1,6 @@
 package io.github.rosestack.core.util;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,8 +9,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * FormatUtils 测试类 测试字符串格式化和占位符替换功能
@@ -22,11 +21,11 @@ class FormatUtilsTest {
 
     static Stream<Arguments> providePlaceholderTestCases() {
         return Stream.of(
-                Arguments.of("简单测试: {}", new Object[]{"成功"}, "简单测试: 成功"),
-                Arguments.of("多参数: {} + {} = {}", new Object[]{1, 2, 3}, "多参数: 1 + 2 = 3"),
-                Arguments.of("无占位符", new Object[]{"忽略"}, "无占位符"),
-                Arguments.of("空参数: {}", new Object[]{""}, "空参数: "),
-                Arguments.of("特殊字符: {} & {}", new Object[]{"<test>", "\"quote\""}, "特殊字符: <test> & \"quote\""));
+                Arguments.of("简单测试: {}", new Object[] {"成功"}, "简单测试: 成功"),
+                Arguments.of("多参数: {} + {} = {}", new Object[] {1, 2, 3}, "多参数: 1 + 2 = 3"),
+                Arguments.of("无占位符", new Object[] {"忽略"}, "无占位符"),
+                Arguments.of("空参数: {}", new Object[] {""}, "空参数: "),
+                Arguments.of("特殊字符: {} & {}", new Object[] {"<test>", "\"quote\""}, "特殊字符: <test> & \"quote\""));
     }
 
     @Test

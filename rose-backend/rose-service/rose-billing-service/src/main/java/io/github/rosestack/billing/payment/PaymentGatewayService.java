@@ -6,15 +6,14 @@ import io.github.rosestack.billing.dto.RefundResult;
 import io.github.rosestack.billing.entity.PaymentRecord;
 import io.github.rosestack.billing.enums.PaymentRecordStatus;
 import io.github.rosestack.billing.repository.PaymentRecordRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 /**
  * 支付网关服务 集成多种支付方式
@@ -230,8 +229,8 @@ public class PaymentGatewayService {
                     request.getPaymentMethod() == null
                             ? null
                             : (request.getPaymentMethod() instanceof PaymentMethod
-                            ? ((PaymentMethod) request.getPaymentMethod()).name()
-                            : request.getPaymentMethod().toString()));
+                                    ? ((PaymentMethod) request.getPaymentMethod()).name()
+                                    : request.getPaymentMethod().toString()));
             record.setTransactionId(result.getTransactionId());
             record.setStatus(result.isSuccess() ? PaymentRecordStatus.SUCCESS : PaymentRecordStatus.PENDING);
             record.setGatewayResponse(result.getGatewayResponse());

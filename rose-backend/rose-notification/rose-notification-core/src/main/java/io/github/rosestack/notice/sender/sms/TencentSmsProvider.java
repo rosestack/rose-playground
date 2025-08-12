@@ -38,7 +38,7 @@ public class TencentSmsProvider extends AbstractConfigure implements SmsProvider
         String templateId = config.getConfig().get("tencent.sms.templateId").toString();
         String[] templateParams = request.getTemplateContent() != null
                 ? request.getTemplateContent().split(",")
-                : new String[]{};
+                : new String[] {};
         String phoneNumber = request.getTarget();
         if (isAnyBlank(sdkAppId, signName, templateId, phoneNumber)) {
             throw new NoticeException("腾讯云短信配置或参数不完整");
@@ -48,7 +48,7 @@ public class TencentSmsProvider extends AbstractConfigure implements SmsProvider
         req.setSmsSdkAppId(sdkAppId);
         req.setSignName(signName);
         req.setTemplateId(templateId);
-        req.setPhoneNumberSet(new String[]{phoneNumber});
+        req.setPhoneNumberSet(new String[] {phoneNumber});
         req.setTemplateParamSet(templateParams);
 
         SendSmsResponse resp = client.SendSms(req);
@@ -65,6 +65,5 @@ public class TencentSmsProvider extends AbstractConfigure implements SmsProvider
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 }

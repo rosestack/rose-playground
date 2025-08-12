@@ -8,15 +8,14 @@ import io.github.rosestack.core.model.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 计费管理控制器
@@ -196,9 +195,9 @@ class ProcessPaymentRequest {
     @NotBlank
     @io.github.rosestack.billing.validation.PaymentMethodSubset(
             anyOf = {
-                    io.github.rosestack.billing.payment.PaymentMethod.ALIPAY,
-                    io.github.rosestack.billing.payment.PaymentMethod.WECHAT,
-                    io.github.rosestack.billing.payment.PaymentMethod.STRIPE
+                io.github.rosestack.billing.payment.PaymentMethod.ALIPAY,
+                io.github.rosestack.billing.payment.PaymentMethod.WECHAT,
+                io.github.rosestack.billing.payment.PaymentMethod.STRIPE
             })
     private String paymentMethod;
 

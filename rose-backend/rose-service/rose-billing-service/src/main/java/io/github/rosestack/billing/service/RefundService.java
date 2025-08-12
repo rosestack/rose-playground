@@ -7,14 +7,13 @@ import io.github.rosestack.billing.enums.InvoiceStatus;
 import io.github.rosestack.billing.enums.RefundStatus;
 import io.github.rosestack.billing.payment.PaymentGatewayService;
 import io.github.rosestack.billing.repository.RefundRecordRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -197,10 +196,14 @@ public class RefundService {
                 try {
                     String payload = new com.fasterxml.jackson.databind.ObjectMapper()
                             .writeValueAsString(java.util.Map.of(
-                                    "invoiceId", invoiceId,
-                                    "refundId", rr.getRefundId(),
-                                    "totalRefunded", refunded,
-                                    "currency", invoice.getCurrency(),
+                                    "invoiceId",
+                                    invoiceId,
+                                    "refundId",
+                                    rr.getRefundId(),
+                                    "totalRefunded",
+                                    refunded,
+                                    "currency",
+                                    invoice.getCurrency(),
                                     "occurredTime",
                                     java.time.LocalDateTime.now().toString()));
                     outboxService.saveEvent(invoice.getTenantId(), "InvoiceRefunded", invoiceId, payload);

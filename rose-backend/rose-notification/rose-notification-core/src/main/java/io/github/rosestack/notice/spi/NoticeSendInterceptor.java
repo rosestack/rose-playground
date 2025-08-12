@@ -10,18 +10,15 @@ public interface NoticeSendInterceptor {
     /**
      * 发送前
      */
-    default void beforeSend(SendRequest request) {
-    }
+    default void beforeSend(SendRequest request) {}
 
     /**
      * 发送后
      */
-    default void afterSend(SendRequest request, SendResult result) {
-    }
+    default void afterSend(SendRequest request, SendResult result) {}
 
     /**
      * 异常时
      */
-    default void onError(SendRequest request, Exception ex) {
-    }
+    default void onError(SendRequest request, Exception ex) {}
 }

@@ -2,7 +2,6 @@ package io.github.rosestack.notice.support;
 
 import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.notice.spi.BlacklistChecker;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

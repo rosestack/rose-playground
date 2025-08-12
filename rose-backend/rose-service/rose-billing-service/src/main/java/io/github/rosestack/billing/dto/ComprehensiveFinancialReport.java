@@ -1,8 +1,7 @@
 package io.github.rosestack.billing.dto;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import lombok.Data;
 
 /**
  * 综合财务报表数据模型

@@ -3,12 +3,11 @@ package io.github.rosestack.spring.boot.audit.listener;
 import io.github.rosestack.spring.boot.audit.entity.AuditLog;
 import io.github.rosestack.spring.boot.audit.entity.AuditLogDetail;
 import io.github.rosestack.spring.boot.audit.support.storage.AuditStorage;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
-
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor

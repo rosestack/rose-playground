@@ -1,9 +1,8 @@
 package io.github.rosestack.notice.support;
 
 import io.github.rosestack.notice.spi.IdempotencyStore;
-import org.springframework.data.redis.core.StringRedisTemplate;
-
 import java.time.Duration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
  * 基于 Redis 的幂等存储，采用 setIfAbsent + 过期时间。

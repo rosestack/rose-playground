@@ -1,12 +1,11 @@
 package io.github.rosestack.spring.boot.mybatis.permission.provider;
 
 import jakarta.annotation.PostConstruct;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 数据权限提供者管理器

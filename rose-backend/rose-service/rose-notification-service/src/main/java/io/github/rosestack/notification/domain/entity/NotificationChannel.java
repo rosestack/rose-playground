@@ -1,9 +1,8 @@
 package io.github.rosestack.notification.domain.entity;
 
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Data;
 
 /**
  * 渠道配置聚合根

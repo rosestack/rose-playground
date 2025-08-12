@@ -4,6 +4,7 @@ import io.github.rosestack.spring.boot.redis.annotation.RateLimited;
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
 import io.github.rosestack.spring.boot.redis.exception.RateLimitExceededException;
 import io.github.rosestack.spring.boot.redis.ratelimit.RateLimitManager;
+import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,8 +19,6 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.lang.reflect.Method;
 
 /**
  * 限流切面

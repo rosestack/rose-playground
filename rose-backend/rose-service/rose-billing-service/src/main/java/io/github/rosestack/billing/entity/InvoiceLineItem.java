@@ -1,10 +1,9 @@
 package io.github.rosestack.billing.entity;
 
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
+import java.math.BigDecimal;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.math.BigDecimal;
 
 /**
  * 账单明细项

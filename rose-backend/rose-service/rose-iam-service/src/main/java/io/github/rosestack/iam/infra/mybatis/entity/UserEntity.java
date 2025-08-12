@@ -2,10 +2,9 @@ package io.github.rosestack.iam.infra.mybatis.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.time.LocalDateTime;
 
 /**
  * 用户实体类

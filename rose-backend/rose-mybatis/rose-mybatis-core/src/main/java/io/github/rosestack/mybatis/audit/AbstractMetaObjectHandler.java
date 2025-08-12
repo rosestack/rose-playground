@@ -1,9 +1,8 @@
 package io.github.rosestack.mybatis.audit;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import org.apache.ibatis.reflection.MetaObject;
-
 import java.time.LocalDateTime;
+import org.apache.ibatis.reflection.MetaObject;
 
 /**
  * 元数据处理器（核心抽象，不依赖 Spring 配置），由 Starter 注入属性与上下文实现类。

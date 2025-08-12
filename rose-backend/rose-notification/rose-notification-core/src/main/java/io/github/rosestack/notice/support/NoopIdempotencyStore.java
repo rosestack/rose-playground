@@ -13,6 +13,5 @@ public class NoopIdempotencyStore implements IdempotencyStore {
     }
 
     @Override
-    public void put(String requestId) {
-    }
+    public void put(String requestId) {}
 }

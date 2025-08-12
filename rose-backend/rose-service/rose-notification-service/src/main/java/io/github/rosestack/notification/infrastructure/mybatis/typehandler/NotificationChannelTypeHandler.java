@@ -1,13 +1,12 @@
 package io.github.rosestack.notification.infrastructure.mybatis.typehandler;
 
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.MappedTypes;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 
 @MappedTypes(NotificationChannelType.class)
 public class NotificationChannelTypeHandler extends BaseTypeHandler<NotificationChannelType> {

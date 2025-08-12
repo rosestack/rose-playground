@@ -2,11 +2,10 @@ package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.sender.RetryableSender;
 import io.github.rosestack.notice.spi.Sender;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class RetryableSenderTest {
     @Test
@@ -46,11 +45,9 @@ class RetryableSenderTest {
         }
 
         @Override
-        public void destroy() {
-        }
+        public void destroy() {}
 
         @Override
-        public void configure(SenderConfiguration config) {
-        }
+        public void configure(SenderConfiguration config) {}
     }
 }

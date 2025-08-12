@@ -1,9 +1,8 @@
 package io.github.rosestack.billing.dto;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.Map;
+import lombok.Data;
 
 /**
  * 支付请求对象

@@ -1,11 +1,10 @@
 package io.github.rosestack.spring.boot.auth.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 认证模块配置属性

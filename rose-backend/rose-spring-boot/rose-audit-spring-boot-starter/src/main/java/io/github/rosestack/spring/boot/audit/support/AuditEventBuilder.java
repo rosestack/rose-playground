@@ -13,16 +13,15 @@ import io.github.rosestack.spring.boot.audit.listener.AuditEvent;
 import io.github.rosestack.spring.desensitization.MaskUtils;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.time.LocalDateTime;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.time.LocalDateTime;
-import java.util.*;
 
 /**
  * 审计日志构建器
@@ -289,7 +288,7 @@ public class AuditEventBuilder {
 
         if (detailKey.isSensitive()) {
             auditLogDetail.setDetailValue(JsonUtils.toString(
-                    MaskUtils.maskSensitiveFields(detailValue, maskFields.toArray(new String[]{}))));
+                    MaskUtils.maskSensitiveFields(detailValue, maskFields.toArray(new String[] {}))));
             auditLogDetail.setIsSensitive(auditLogDetail.getDetailValue().contains(MaskUtils.MASKED));
         } else {
             auditLogDetail.setIsSensitive(false);

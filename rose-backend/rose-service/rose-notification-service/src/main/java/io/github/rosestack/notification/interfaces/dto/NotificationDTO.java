@@ -1,8 +1,7 @@
 package io.github.rosestack.notification.interfaces.dto;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import lombok.Data;
 
 /**
  * 通知信息 DTO

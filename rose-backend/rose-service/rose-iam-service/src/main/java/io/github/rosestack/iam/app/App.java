@@ -1,10 +1,9 @@
 package io.github.rosestack.iam.app;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Data
 public class App {

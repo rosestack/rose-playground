@@ -2,9 +2,8 @@ package io.github.rosestack.spring.boot.audit.listener;
 
 import io.github.rosestack.spring.boot.audit.entity.AuditLog;
 import io.github.rosestack.spring.boot.audit.entity.AuditLogDetail;
-import lombok.Getter;
-
 import java.util.List;
+import lombok.Getter;
 
 /**
  * 审计事件

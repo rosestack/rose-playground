@@ -4,10 +4,9 @@ import io.github.rosestack.notification.domain.entity.Notification;
 import io.github.rosestack.notification.domain.repository.NotificationRepository;
 import io.github.rosestack.notification.shared.constant.NotificationConstants;
 import io.github.rosestack.notification.shared.exception.NotificationException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * 通知查询服务

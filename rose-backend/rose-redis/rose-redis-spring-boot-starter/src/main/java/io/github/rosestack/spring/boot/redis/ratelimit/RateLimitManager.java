@@ -1,12 +1,11 @@
 package io.github.rosestack.spring.boot.redis.ratelimit;
 
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 限流管理器

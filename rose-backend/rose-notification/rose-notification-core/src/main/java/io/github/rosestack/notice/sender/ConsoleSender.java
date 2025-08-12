@@ -23,10 +23,8 @@ public class ConsoleSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 
     @Override
-    public void doConfigure(SenderConfiguration config) throws Exception {
-    }
+    public void doConfigure(SenderConfiguration config) throws Exception {}
 }

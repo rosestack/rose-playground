@@ -4,6 +4,8 @@ import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.annotation.EncryptField;
 import io.github.rosestack.encryption.hash.HashService;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.sql.Statement;
+import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -14,9 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
-
-import java.sql.Statement;
-import java.util.Collection;
 
 /**
  * 字段加密拦截器
@@ -29,14 +28,14 @@ import java.util.Collection;
  */
 @Slf4j
 @Intercepts({
-        @Signature(
-                type = Executor.class,
-                method = "update",
-                args = {MappedStatement.class, Object.class}),
-        @Signature(
-                type = ResultSetHandler.class,
-                method = "handleResultSets",
-                args = {Statement.class})
+    @Signature(
+            type = Executor.class,
+            method = "update",
+            args = {MappedStatement.class, Object.class}),
+    @Signature(
+            type = ResultSetHandler.class,
+            method = "handleResultSets",
+            args = {Statement.class})
 })
 public class FieldEncryptionInterceptor implements Interceptor {
 
@@ -227,6 +226,5 @@ public class FieldEncryptionInterceptor implements Interceptor {
     }
 
     @Override
-    public void setProperties(java.util.Properties properties) {
-    }
+    public void setProperties(java.util.Properties properties) {}
 }

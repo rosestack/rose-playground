@@ -1,14 +1,13 @@
 package io.github.rosestack.spring.boot.mybatis.permission.controller;
 
 import io.github.rosestack.spring.boot.mybatis.permission.service.DataPermissionService;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 数据权限缓存管理控制器

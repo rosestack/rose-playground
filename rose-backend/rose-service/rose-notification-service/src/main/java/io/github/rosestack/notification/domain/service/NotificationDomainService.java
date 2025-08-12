@@ -7,10 +7,9 @@ import io.github.rosestack.notification.domain.repository.NotificationChannelRep
 import io.github.rosestack.notification.domain.repository.NotificationTemplateRepository;
 import io.github.rosestack.notification.shared.constant.NotificationConstants;
 import io.github.rosestack.notification.shared.exception.NotificationException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 /**
  * 通知领域服务

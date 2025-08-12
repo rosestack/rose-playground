@@ -4,9 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.entity.RefundRecord;
 import io.github.rosestack.billing.enums.RefundStatus;
-import org.apache.ibatis.annotations.Mapper;
-
 import java.math.BigDecimal;
+import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface RefundRecordRepository extends BaseMapper<RefundRecord> {

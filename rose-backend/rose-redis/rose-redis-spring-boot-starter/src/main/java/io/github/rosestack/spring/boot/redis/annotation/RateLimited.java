@@ -1,7 +1,6 @@
 package io.github.rosestack.spring.boot.redis.annotation;
 
 import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
-
 import java.lang.annotation.*;
 
 /**

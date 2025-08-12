@@ -2,9 +2,8 @@ package io.github.rosestack.notification.interfaces.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Data;
 
 /**
  * 发送通知请求 DTO
@@ -32,8 +31,7 @@ public class SendNotificationRequest {
     /**
      * 目标类型
      */
-    @NotNull(message = "目标类型不能为空")
-    private String targetType;
+    @NotNull(message = "目标类型不能为空") private String targetType;
 
     /**
      * 模板ID

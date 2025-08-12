@@ -5,12 +5,11 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.List;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Rose Audit 配置属性
@@ -39,22 +38,19 @@ public class AuditProperties {
      * 存储配置
      */
     @Valid
-    @NotNull
-    private Storage storage = new Storage();
+    @NotNull private Storage storage = new Storage();
 
     /**
      * 数据保留配置
      */
     @Valid
-    @NotNull
-    private Retention retention = new Retention();
+    @NotNull private Retention retention = new Retention();
 
     /**
      * 事件过滤配置
      */
     @Valid
-    @NotNull
-    private Filter filter = new Filter();
+    @NotNull private Filter filter = new Filter();
 
     /**
      * 存储配置

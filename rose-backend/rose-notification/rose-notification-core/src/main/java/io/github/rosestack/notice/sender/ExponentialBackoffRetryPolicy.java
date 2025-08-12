@@ -1,7 +1,6 @@
 package io.github.rosestack.notice.sender;
 
 import io.github.rosestack.notice.NoticeRetryableException;
-
 import java.util.concurrent.ThreadLocalRandom;
 
 /**

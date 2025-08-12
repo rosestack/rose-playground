@@ -2,13 +2,12 @@ package io.github.rosestack.spring.boot.mybatis.permission.service;
 
 import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
 import io.github.rosestack.spring.boot.mybatis.permission.RoseDataPermissionHandler;
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 /**
  * 数据权限缓存管理服务

@@ -1,16 +1,15 @@
 package io.github.rosestack.iam.entity;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.github.rosestack.iam.infra.mybatis.entity.UserEntity;
 import io.github.rosestack.mybatis.audit.BaseEntity;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * UserEntity继承关系测试

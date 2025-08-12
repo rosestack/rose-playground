@@ -1,8 +1,7 @@
 package io.github.rosestack.iam.idp;
 
-import lombok.Data;
-
 import java.util.List;
+import lombok.Data;
 
 @Data
 public class IdentityProviderTemplate {

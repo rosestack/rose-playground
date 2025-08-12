@@ -1,5 +1,10 @@
 package io.github.rosestack.i18n.spring.cloud.integration;
 
+import static com.jayway.jsonpath.JsonPath.using;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import io.github.rosestack.i18n.I18nMessageSource;
@@ -7,6 +12,7 @@ import io.github.rosestack.i18n.spring.boot.actuate.I18nEndpoint;
 import io.github.rosestack.i18n.spring.boot.actuate.autoconfigure.I18nEndpointAutoConfiguration;
 import io.github.rosestack.i18n.spring.boot.autoconfigure.I18nAutoConfiguration;
 import io.github.rosestack.i18n.spring.cloud.event.ReloadableResourceServiceMessageSourceListener;
+import java.util.Locale;
 import org.assertj.core.util.Maps;
 import org.assertj.core.util.Sets;
 import org.hamcrest.MatcherAssert;
@@ -19,13 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
-
-import java.util.Locale;
-
-import static com.jayway.jsonpath.JsonPath.using;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(
         classes = MessageSourceIntegrationTest.Config.class,
@@ -54,11 +53,10 @@ class MessageSourceIntegrationTest {
 
     @ImportAutoConfiguration(
             classes = {
-                    I18nAutoConfiguration.class,
-                    I18nEndpointAutoConfiguration.class,
-                    PropertyPlaceholderAutoConfiguration.class
+                I18nAutoConfiguration.class,
+                I18nEndpointAutoConfiguration.class,
+                PropertyPlaceholderAutoConfiguration.class
             })
     @Import(value = {ReloadableResourceServiceMessageSourceListener.class})
-    static class Config {
-    }
+    static class Config {}
 }

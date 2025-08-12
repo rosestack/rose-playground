@@ -1,8 +1,7 @@
 package io.github.rosestack.billing.dto;
 
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Data;
 
 /**
  * 支付结果对象

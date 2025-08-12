@@ -1,10 +1,9 @@
 package io.github.rosestack.notice;
 
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
-
-import java.util.Map;
 
 @Data
 @ToString

@@ -5,11 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.enums.SubscriptionStatus;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 租户订阅实体

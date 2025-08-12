@@ -4,7 +4,6 @@ import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.notice.SenderConfiguration;
 import io.github.rosestack.notice.spi.AbstractConfigure;
 import io.github.rosestack.notice.spi.Sender;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -43,8 +42,7 @@ public class RetryableSender extends AbstractConfigure implements Sender {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 
     @Override
     public void doConfigure(SenderConfiguration config) throws Exception {

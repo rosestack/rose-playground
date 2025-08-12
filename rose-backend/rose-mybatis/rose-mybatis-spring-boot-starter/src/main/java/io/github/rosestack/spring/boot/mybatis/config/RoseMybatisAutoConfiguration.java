@@ -1,5 +1,7 @@
 package io.github.rosestack.spring.boot.mybatis.config;
 
+import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDER;
+
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.core.injector.DefaultSqlInjector;
@@ -34,6 +36,9 @@ import io.github.rosestack.spring.boot.mybatis.tenant.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.tenant.TenantIdFilter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -49,12 +54,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDER;
 
 /**
  * Rose MyBatis Plus 自动配置类

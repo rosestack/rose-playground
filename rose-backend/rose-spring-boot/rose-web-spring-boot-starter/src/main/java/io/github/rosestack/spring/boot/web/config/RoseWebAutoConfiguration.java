@@ -22,16 +22,16 @@ import org.springframework.context.annotation.PropertySource;
  * @since 1.0.0
  */
 @Import({
-        CorsConfig.class,
-        AsyncConfig.class,
-        MessageConfig.class,
-        MetricConfig.class,
-        WebMvcConfig.class,
-        SwaggerConfig.class,
-        // 精准引入组件（替代包扫描）
-        ApiResponseBodyAdvice.class,
-        GlobalExceptionHandler.class,
-        ExceptionHandlerHelper.class
+    CorsConfig.class,
+    AsyncConfig.class,
+    MessageConfig.class,
+    MetricConfig.class,
+    WebMvcConfig.class,
+    SwaggerConfig.class,
+    // 精准引入组件（替代包扫描）
+    ApiResponseBodyAdvice.class,
+    GlobalExceptionHandler.class,
+    ExceptionHandlerHelper.class
 })
 @Slf4j
 @AutoConfiguration

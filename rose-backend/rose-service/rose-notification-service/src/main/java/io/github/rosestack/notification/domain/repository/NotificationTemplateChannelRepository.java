@@ -2,7 +2,6 @@ package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.NotificationTemplateChannel;
 import io.github.rosestack.notification.domain.value.NotificationChannelType;
-
 import java.util.List;
 
 public interface NotificationTemplateChannelRepository {

@@ -5,6 +5,8 @@ import io.github.rosestack.spring.boot.redis.exception.LockAcquisitionException;
 import io.github.rosestack.spring.boot.redis.exception.LockTimeoutException;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLock;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLockManager;
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,9 +21,6 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 分布式锁切面

@@ -1,5 +1,8 @@
 package io.github.rosestack.spring.boot.web.config;
 
+import static io.github.rosestack.core.Constants.FilterOrder.CACHING_REQUEST_FILTER_ORDER;
+import static io.github.rosestack.core.Constants.FilterOrder.XSS_FILTER_ORDER;
+
 import io.github.rosestack.core.Constants;
 import io.github.rosestack.spring.boot.core.util.FilterRegistrationBeanUtils;
 import io.github.rosestack.spring.filter.CachingRequestFilter;
@@ -11,9 +14,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import static io.github.rosestack.core.Constants.FilterOrder.CACHING_REQUEST_FILTER_ORDER;
-import static io.github.rosestack.core.Constants.FilterOrder.XSS_FILTER_ORDER;
 
 /**
  * Web MVC 配置

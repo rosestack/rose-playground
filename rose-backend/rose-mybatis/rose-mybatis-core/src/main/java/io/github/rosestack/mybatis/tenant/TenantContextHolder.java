@@ -1,9 +1,8 @@
 package io.github.rosestack.mybatis.tenant;
 
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Supplier;
 
 /**
  * 核心层租户上下文持有者（不依赖 Spring）。

@@ -1,8 +1,7 @@
 package io.github.rosestack.notification.domain.value;
 
-import lombok.Data;
-
 import java.time.LocalTime;
+import lombok.Data;
 
 /**
  * 时间窗口值对象

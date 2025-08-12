@@ -2,12 +2,11 @@ package io.github.rosestack.notice;
 
 import io.github.rosestack.notice.sender.SenderFactory;
 import io.github.rosestack.notice.spi.Sender;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
 
 class BatchSendTest {
     @AfterEach
@@ -65,11 +64,9 @@ class BatchSendTest {
         }
 
         @Override
-        public void destroy() {
-        }
+        public void destroy() {}
 
         @Override
-        public void configure(SenderConfiguration config) {
-        }
+        public void configure(SenderConfiguration config) {}
     }
 }
