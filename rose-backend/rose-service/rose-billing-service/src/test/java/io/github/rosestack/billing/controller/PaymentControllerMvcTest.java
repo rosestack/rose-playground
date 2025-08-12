@@ -30,7 +30,7 @@ class PaymentControllerMvcTest {
 
     @Test
     void createPaymentLink_returnsLink() throws Exception {
-        Mockito.when(paymentGatewayService.createPaymentLink(eq("inv-1"), any(), eq("WECHAT"), eq("t-1")))
+        Mockito.when(paymentGatewayService.createPaymentLink(eq("inv-1"), any(), eq(io.github.rosestack.billing.payment.PaymentMethod.WECHAT), eq("t-1")))
                 .thenReturn("https://pay.link");
         var req = new PaymentController.CreatePaymentLinkRequest();
         req.setPaymentMethod("WECHAT");
@@ -55,7 +55,7 @@ class PaymentControllerMvcTest {
 
     @Test
     void handleCallback_invalidSignature_returnsError() throws Exception {
-        Mockito.when(paymentGatewayService.verifyPaymentCallback(eq("ALIPAY"), anyMap()))
+        Mockito.when(paymentGatewayService.verifyPaymentCallback(eq(io.github.rosestack.billing.payment.PaymentMethod.ALIPAY), anyMap()))
                 .thenReturn(false);
 
         mockMvc.perform(post("/api/billing/payment/callback/{method}", "ALIPAY")
@@ -67,7 +67,7 @@ class PaymentControllerMvcTest {
 
     @Test
     void handleCallback_success_callsBillingService() throws Exception {
-        Mockito.when(paymentGatewayService.verifyPaymentCallback(eq("WECHAT"), anyMap()))
+        Mockito.when(paymentGatewayService.verifyPaymentCallback(eq(io.github.rosestack.billing.payment.PaymentMethod.WECHAT), anyMap()))
                 .thenReturn(true);
 
         mockMvc.perform(post("/api/billing/payment/callback/{method}", "WECHAT")
@@ -78,7 +78,7 @@ class PaymentControllerMvcTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200));
 
-        Mockito.verify(billingService).processPayment("inv-1", "WECHAT", "tx-1");
+        Mockito.verify(billingService).processPayment("inv-1", io.github.rosestack.billing.payment.PaymentMethod.WECHAT, "tx-1");
     }
 
     @Test

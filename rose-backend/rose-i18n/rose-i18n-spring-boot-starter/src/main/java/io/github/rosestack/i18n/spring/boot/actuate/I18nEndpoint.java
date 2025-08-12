@@ -19,6 +19,8 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -160,14 +162,21 @@ public class I18nEndpoint {
         Map<String, Object> newProperties = propertySource.getSource();
         newProperties.put(propertyName, propertyValue);
 
-        messageSource.init();
+        // PropertySource-backed message source loads on demand; no explicit init required
         return newProperties;
     }
 
     private Properties loadProperties(PropertySourceResourceI18nMessageSource messageSource, Locale locale)
             throws IOException {
-        Properties properties = messageSource.loadAllProperties(locale);
-        return properties == null ? new Properties() : properties;
+        String propertyName = messageSource.getPropertyName(locale);
+        String content = environment.getProperty(propertyName);
+        Properties properties = new Properties();
+        if (hasText(content)) {
+            try (Reader r = new StringReader(content)) {
+                properties.load(r);
+            }
+        }
+        return properties;
     }
 
     private MapPropertySource getPropertySource() {

@@ -64,7 +64,7 @@ class RefundControllerTest {
         mockMvc.perform(post("/api/billing/refund")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(500));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(io.github.rosestack.core.model.ErrorCode.BAD_REQUEST.getCode()));
     }
 }
