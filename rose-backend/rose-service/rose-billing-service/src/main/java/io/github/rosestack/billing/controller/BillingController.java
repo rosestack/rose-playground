@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,7 +27,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/billing")
 @RequiredArgsConstructor
-@org.springframework.validation.annotation.Validated
+@Validated
 
 public class BillingController {
 

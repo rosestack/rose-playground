@@ -59,7 +59,7 @@ public class PaymentController {
         }
         String invoiceId = extractInvoiceId(paymentMethod, callbackData);
         String transactionId = extractTransactionId(paymentMethod, callbackData);
-        billingService.processPayment(invoiceId, paymentMethod, transactionId);
+        billingService.processPayment(invoiceId, pm, transactionId);
         return ApiResponse.success();
     }
 

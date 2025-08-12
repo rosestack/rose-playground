@@ -11,12 +11,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-i18n-spring-cloud</artifactId>
+    <artifactId>rose-i18n-spring-cloud-starter</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-i18n-spring-boot</artifactId>
+            <artifactId>rose-i18n-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 

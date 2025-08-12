@@ -23,7 +23,6 @@
             <artifactId>rose-web-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>io.github.rosestack</groupId>
             <artifactId>rose-mybatis-spring-boot-starter</artifactId>

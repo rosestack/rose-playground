@@ -42,7 +42,7 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
 
     public RoseDataPermissionHandler(
             DataPermissionProviderManager providerManager,
-            Cache<String, List<String>> permissionCache,
+            @Autowired(required = false) Cache<String, List<String>> permissionCache,
             CurrentUserProvider currentUserProvider,
             @Autowired(required = false) MeterRegistry registry) {
         this.currentUserProvider = currentUserProvider;
@@ -111,6 +111,10 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
         String currentUserId = currentUserProvider.getCurrentUserId();
         if (currentUserId == null) {
             return getPermissionValues(dataPermission); // 无用户信息时不缓存
+        }
+
+        if (permissionCache == null) {
+            return getPermissionValues(dataPermission);
         }
 
         // 构建缓存键
@@ -242,7 +246,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
      */
     public void clearAllCache() {
         annotationCache.clear();
-        permissionCache.invalidateAll();
+        if (permissionCache != null) {
+            permissionCache.invalidateAll();
+        }
         log.info("所有数据权限缓存已清空");
     }
 
@@ -254,7 +260,10 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
             return;
         }
 
-        permissionCache.asMap().keySet().removeIf(key -> key.startsWith(userId + ":"));
+        if (permissionCache != null) {
+            permissionCache.asMap().keySet().removeIf(key -> key.startsWith(userId + ":"));
+        }
+
         log.info("用户 {} 的权限缓存已清空", userId);
     }
 
@@ -264,7 +273,9 @@ public class RoseDataPermissionHandler implements MultiDataPermissionHandler {
     public Map<String, Object> getCacheStats() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("annotationCacheSize", annotationCache.size());
-        stats.put("permissionCacheSize", permissionCache.estimatedSize());
+        if (permissionCache != null) {
+            stats.put("permissionCacheSize", permissionCache.estimatedSize());
+        }
         stats.put("lastCleanupTime", LocalDateTime.now());
         return stats;
     }

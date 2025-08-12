@@ -285,7 +285,11 @@ public class BillingService {
     /**
      * 处理支付
      */
-    @Transactional
+    // Overload using enum for type safety at call sites
+    public void processPayment(String invoiceId, io.github.rosestack.billing.payment.PaymentMethod method, String transactionId) {
+        processPayment(invoiceId, method == null ? null : method.name(), transactionId);
+    }
+
     public void processPayment(String invoiceId, String paymentMethod, String transactionId) {
         // 使用 InvoiceService 处理支付
         invoiceService.markInvoiceAsPaid(invoiceId, paymentMethod, transactionId);
