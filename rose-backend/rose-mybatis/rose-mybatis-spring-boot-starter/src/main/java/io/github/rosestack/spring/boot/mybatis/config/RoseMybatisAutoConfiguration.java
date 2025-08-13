@@ -176,7 +176,7 @@ public class RoseMybatisAutoConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public DataPermissionHandler roseDataPermissionHandler(
+    public RoseDataPermissionHandler roseDataPermissionHandler(
             DataPermissionProviderManager providerManager,
             Cache<String, List<String>> dataPermissionCache,
             CurrentUserProvider currentUserProvider,

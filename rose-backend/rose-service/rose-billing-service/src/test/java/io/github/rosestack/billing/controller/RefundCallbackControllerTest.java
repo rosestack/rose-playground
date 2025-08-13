@@ -33,7 +33,7 @@ class RefundCallbackControllerTest {
 
     @Test
     void handleRefundCallback_ok() throws Exception {
-        Mockito.when(gatewayService.verifyRefundCallback(eq("ALIPAY"), any(Map.class)))
+        Mockito.when(gatewayService.verifyRefundCallback(eq(io.github.rosestack.billing.payment.PaymentMethod.ALIPAY), any(Map.class)))
                 .thenReturn(true);
         Mockito.when(refundService.processRefundCallback(eq("ALIPAY"), any(Map.class)))
                 .thenReturn(true);
@@ -47,8 +47,7 @@ class RefundCallbackControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code")
-                        .value(io.github.rosestack.billing.enums.BillingErrorCode.CALLBACK_UPDATE_FAILED.getCode()));
+                .andExpect(jsonPath("$.code").value(200));
     }
 
     @Test

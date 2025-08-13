@@ -29,6 +29,13 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
+        <!-- Needed by rose-mybatis auto-config during test context startup -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

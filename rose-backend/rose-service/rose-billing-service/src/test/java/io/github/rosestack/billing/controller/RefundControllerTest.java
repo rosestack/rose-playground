@@ -8,8 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import io.github.rosestack.spring.boot.web.exception.GlobalExceptionHandler;
+import io.github.rosestack.spring.boot.web.exception.ExceptionHandlerHelper;
 
 import java.math.BigDecimal;
 
@@ -30,7 +33,13 @@ class RefundControllerTest {
         PaymentGatewayService gatewayService =
                 Mockito.mock(PaymentGatewayService.class);
         RefundController controller = new RefundController(refundService, gatewayService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        // 注册全局异常处理，保证校验错误被包装为统一的ApiResponse
+        StaticMessageSource messageSource = new StaticMessageSource();
+        ExceptionHandlerHelper helper = new ExceptionHandlerHelper(messageSource);
+        GlobalExceptionHandler advice = new GlobalExceptionHandler(helper);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(advice)
+                .build();
     }
 
     @Test
@@ -67,6 +76,6 @@ class RefundControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(401));
+                .andExpect(jsonPath("$.code").value(400));
     }
 }
