@@ -139,7 +139,7 @@ public class RoseSecurityAutoConfiguration {
         String loginPath = properties.getAuth().getLoginPath();
         String logoutPath = properties.getAuth().getLogoutPath();
         String refreshPath = properties.getAuth().getRefreshPath();
-        boolean stateless = properties.getSession().isStateless();
+        boolean stateless = properties.isStateless();
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(

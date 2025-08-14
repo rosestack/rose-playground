@@ -24,15 +24,12 @@ public class RoseSecurityProperties {
      */
     private boolean enabled = true;
 
+    private boolean stateless = true;
+
     /**
      * 基础认证配置
      */
     private Auth auth = new Auth();
-
-    /**
-     * 会话管理配置
-     */
-    private Session session = new Session();
 
     /**
      * JWT 配置
@@ -49,10 +46,6 @@ public class RoseSecurityProperties {
      */
     private Mfa mfa = new Mfa();
 
-    /**
-     * CORS 配置
-     */
-    private Cors cors = new Cors();
 
     /**
      * 安全防护配置
@@ -264,22 +257,6 @@ public class RoseSecurityProperties {
     }
 
     /**
-     * 会话管理配置
-     */
-    @Data
-    public static class Session {
-        /**
-         * 是否无状态模式
-         */
-        private boolean stateless = true;
-
-        /**
-         * 会话超时时间
-         */
-        private Duration timeout = Duration.ofHours(8);
-    }
-
-    /**
      * JWT 配置
      */
     @Data
@@ -452,42 +429,6 @@ public class RoseSecurityProperties {
              */
             private int codeLength = 6;
         }
-    }
-
-    /**
-     * CORS 配置
-     */
-    @Data
-    public static class Cors {
-        /**
-         * 是否启用 CORS
-         */
-        private boolean enabled = true;
-
-        /**
-         * 允许的源
-         */
-        private List<String> allowedOrigins = new ArrayList<>(List.of("*"));
-
-        /**
-         * 允许的方法
-         */
-        private List<String> allowedMethods = new ArrayList<>(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        /**
-         * 允许的头部
-         */
-        private List<String> allowedHeaders = new ArrayList<>(List.of("*"));
-
-        /**
-         * 是否允许凭证
-         */
-        private boolean allowCredentials = true;
-
-        /**
-         * 预检请求缓存时间
-         */
-        private Duration maxAge = Duration.ofHours(1);
     }
 
     /**
