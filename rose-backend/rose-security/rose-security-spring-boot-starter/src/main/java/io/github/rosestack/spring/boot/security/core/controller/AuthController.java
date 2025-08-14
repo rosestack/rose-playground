@@ -1,14 +1,14 @@
-package io.github.rosestack.spring.boot.security.auth.controller;
+package io.github.rosestack.spring.boot.security.core.controller;
 
 import io.github.rosestack.core.model.ApiResponse;
-import io.github.rosestack.spring.boot.security.account.CaptchaService;
-import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
-import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.auth.filter.TokenAuthenticationFilter;
-import io.github.rosestack.spring.boot.security.auth.service.TokenService;
-import io.github.rosestack.spring.boot.security.extension.AuditEvent;
-import io.github.rosestack.spring.boot.security.extension.AuditEventPublisher;
-import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.account.CaptchaService;
+import io.github.rosestack.spring.boot.security.core.account.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
+import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.core.extension.AuditEvent;
+import io.github.rosestack.spring.boot.security.core.extension.AuditEventPublisher;
+import io.github.rosestack.spring.boot.security.core.extension.AuthenticationHook;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;

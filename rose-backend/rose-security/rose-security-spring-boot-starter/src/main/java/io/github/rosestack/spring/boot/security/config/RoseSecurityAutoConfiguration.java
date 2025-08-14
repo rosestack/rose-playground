@@ -1,25 +1,27 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.YmlPropertySourceFactory;
-import io.github.rosestack.spring.boot.security.account.CaptchaService;
-import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
-import io.github.rosestack.spring.boot.security.account.impl.InMemoryLoginAttemptService;
-import io.github.rosestack.spring.boot.security.account.impl.NoopCaptchaService;
-import io.github.rosestack.spring.boot.security.auth.controller.AuthController;
-import io.github.rosestack.spring.boot.security.auth.filter.TokenAuthenticationFilter;
-import io.github.rosestack.spring.boot.security.auth.service.TokenService;
-import io.github.rosestack.spring.boot.security.auth.service.impl.MemoryTokenService;
-import io.github.rosestack.spring.boot.security.auth.service.impl.RedisTokenService;
-import io.github.rosestack.spring.boot.security.extension.AuditEventPublisher;
-import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.extension.DefaultAuthenticationHook;
-import io.github.rosestack.spring.boot.security.extension.LoggingAuditEventPublisher;
+import io.github.rosestack.spring.boot.security.core.account.CaptchaService;
+import io.github.rosestack.spring.boot.security.core.account.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.core.account.impl.InMemoryLoginAttemptService;
+import io.github.rosestack.spring.boot.security.core.account.impl.NoopCaptchaService;
+import io.github.rosestack.spring.boot.security.core.controller.AuthController;
+import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
+import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.core.service.impl.MemoryTokenService;
+import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenService;
+import io.github.rosestack.spring.boot.security.core.extension.AuditEventPublisher;
+import io.github.rosestack.spring.boot.security.core.extension.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.extension.DefaultAuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.extension.LoggingAuditEventPublisher;
 import io.github.rosestack.spring.boot.security.jwt.ClaimMapper;
 import io.github.rosestack.spring.boot.security.jwt.InMemoryRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
-import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -46,10 +48,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -93,15 +91,13 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnBean(RedisTemplate.class)
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
     public TokenService tokenService(
-            RedisTemplate<String, Object> redisTemplate,
-            AuthenticationHook authenticationHook) {
+            RedisTemplate<String, Object> redisTemplate, AuthenticationHook authenticationHook) {
         return new RedisTokenService(redisTemplate, properties, authenticationHook);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "rose.security.auth", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public TokenAuthenticationFilter tokenAuthenticationFilter(
-            TokenService tokenService) {
+    public TokenAuthenticationFilter tokenAuthenticationFilter(TokenService tokenService) {
         return new TokenAuthenticationFilter(tokenService, properties);
     }
 
@@ -137,9 +133,13 @@ public class RoseSecurityAutoConfiguration {
             AuditEventPublisher auditEventPublisher,
             LoginAttemptService loginAttemptService,
             CaptchaService captchaService) {
-        AuthController controller = new AuthController(tokenService,
-                authenticationManager, authenticationHook, auditEventPublisher,
-                loginAttemptService, captchaService);
+        AuthController controller = new AuthController(
+                tokenService,
+                authenticationManager,
+                authenticationHook,
+                auditEventPublisher,
+                loginAttemptService,
+                captchaService);
         return controller;
     }
 
@@ -178,7 +178,8 @@ public class RoseSecurityAutoConfiguration {
             ObjectProvider<ClaimMapper> claimMapperProvider,
             ObjectProvider<TokenRevocationStore> revocationStoreProvider) {
         ClaimMapper claimMapper = claimMapperProvider.getIfAvailable();
-        TokenRevocationStore revocationStore = revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
+        TokenRevocationStore revocationStore =
+                revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
         return new JwtTokenService(properties, authenticationHook, claimMapper, revocationStore);
     }
 

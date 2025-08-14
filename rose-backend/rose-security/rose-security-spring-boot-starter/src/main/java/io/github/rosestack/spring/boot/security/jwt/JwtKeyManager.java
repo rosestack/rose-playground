@@ -4,8 +4,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jose.jwk.*;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
-import lombok.RequiredArgsConstructor;
-
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -13,13 +11,14 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import lombok.RequiredArgsConstructor;
 
 /**
  * JWT 密钥管理：支持 HS/RS/ES 与 JWK/Keystore
- * 最小实现：
- * - HS：直接使用 secret
- * - JWK：远程获取（不缓存）
- * - Keystore：加载私钥用于签名（RSA/EC），公钥校验可由解析端完成
+ * 说明：
+ * - HS：本地 secret 签名/验签
+ * - Keystore：本地 RSA/EC 私钥签名，证书公钥验签
+ * - JWK：从远端 JWKS 获取公钥验签（按 kid/alg 匹配）
  */
 @RequiredArgsConstructor
 public class JwtKeyManager {
@@ -71,11 +70,14 @@ public class JwtKeyManager {
     }
 
     public Object verifier() throws Exception {
+        // 如果配置为 JWK，优先使用 JWKS 公钥
+        if (properties.getJwt().getKey().getType() == RoseSecurityProperties.Jwt.Key.KeyType.JWK) {
+            return null; // 调用方（JwtTokenService）将通过 getVerifierFor(SignedJWT) 选择具体 verifier
+        }
         switch (properties.getJwt().getAlgorithm()) {
             case RS256:
             case RS384:
             case RS512: {
-                // 解析端通常用公钥，这里简化：若 keystore 中包含证书可取公钥
                 PublicKey pub = loadCertificatePublicKey();
                 return new RSASSAVerifier((RSAPublicKey) pub);
             }
@@ -100,7 +102,9 @@ public class JwtKeyManager {
         KeyStore ks = tryLoadKeyStore(path, key.getKeystorePassword());
         String alias = key.getKeyAlias();
         if (alias == null) throw new IllegalStateException("Key alias not configured");
-        return (PrivateKey) ks.getKey(alias, key.getKeystorePassword() != null ? key.getKeystorePassword().toCharArray() : null);
+        return (PrivateKey) ks.getKey(
+                alias,
+                key.getKeystorePassword() != null ? key.getKeystorePassword().toCharArray() : null);
     }
 
     private java.security.PublicKey loadCertificatePublicKey() throws Exception {
@@ -131,4 +135,3 @@ public class JwtKeyManager {
         return ks;
     }
 }
-

@@ -1,22 +1,15 @@
 package io.github.rosestack.spring.boot.security.jwt;
 
-
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.auth.service.TokenService;
-import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-
+import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.core.extension.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -25,6 +18,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * 基于 Nimbus 的 HS256 JWT Token 服务（最小可用版本）
@@ -97,11 +95,14 @@ public class JwtTokenService implements TokenService {
             if (!sig) return false;
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
             Date exp = claims.getExpirationTime();
-            if (exp == null || exp.toInstant().isBefore(Instant.now().minus(properties.getJwt().getClockSkew()))) {
+            if (exp == null
+                    || exp.toInstant()
+                            .isBefore(Instant.now().minus(properties.getJwt().getClockSkew()))) {
                 return false;
             }
             // 标准声明可选校验
-            if (properties.getJwt().getIssuer() != null && !properties.getJwt().getIssuer().equals(claims.getIssuer())) {
+            if (properties.getJwt().getIssuer() != null
+                    && !properties.getJwt().getIssuer().equals(claims.getIssuer())) {
                 return false;
             }
             if (properties.getJwt().isRequireIssuedAt() && claims.getIssueTime() == null) {
@@ -110,7 +111,8 @@ public class JwtTokenService implements TokenService {
             if (properties.getJwt().isRequireNotBefore() && claims.getNotBeforeTime() == null) {
                 return false;
             }
-            if (properties.getJwt().getAudience() != null && !properties.getJwt().getAudience().isEmpty()) {
+            if (properties.getJwt().getAudience() != null
+                    && !properties.getJwt().getAudience().isEmpty()) {
                 java.util.List<String> aud = claims.getAudience();
                 if (aud == null || aud.stream().noneMatch(properties.getJwt().getAudience()::contains)) {
                     return false;

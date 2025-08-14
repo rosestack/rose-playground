@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.account;
+package io.github.rosestack.spring.boot.security.core.account;
 
 /**
  * 验证码 SPI 接口

@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.extension;
+package io.github.rosestack.spring.boot.security.core.extension;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;

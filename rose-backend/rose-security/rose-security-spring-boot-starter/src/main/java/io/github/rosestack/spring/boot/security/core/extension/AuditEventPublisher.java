@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.extension;
+package io.github.rosestack.spring.boot.security.core.extension;
 
 /**
  * 审计事件发布接口

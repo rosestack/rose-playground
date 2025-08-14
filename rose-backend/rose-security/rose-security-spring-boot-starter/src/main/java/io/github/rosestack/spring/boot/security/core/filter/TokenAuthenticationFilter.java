@@ -1,9 +1,9 @@
-package io.github.rosestack.spring.boot.security.auth.filter;
+package io.github.rosestack.spring.boot.security.core.filter;
 
-import static io.github.rosestack.spring.boot.security.auth.service.TokenService.TOKEN_HEADER;
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
 
-import io.github.rosestack.spring.boot.security.auth.service.TokenService;
-import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

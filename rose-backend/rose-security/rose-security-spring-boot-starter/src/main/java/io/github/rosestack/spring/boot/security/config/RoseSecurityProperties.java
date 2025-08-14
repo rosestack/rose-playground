@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.properties;
+package io.github.rosestack.spring.boot.security.config;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -359,6 +359,7 @@ public class RoseSecurityProperties {
          * 可选标准声明校验与元数据
          */
         private String issuer; // iss
+
         private java.util.List<String> audience = new java.util.ArrayList<>(); // aud
         private boolean requireIssuedAt = true; // 是否强制要求 iat
         private boolean requireNotBefore = false; // 是否强制要求 nbf

@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.auth.domain;
+package io.github.rosestack.spring.boot.security.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;

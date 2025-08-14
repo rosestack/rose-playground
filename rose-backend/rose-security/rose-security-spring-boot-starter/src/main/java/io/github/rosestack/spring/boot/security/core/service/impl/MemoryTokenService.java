@@ -1,9 +1,9 @@
-package io.github.rosestack.spring.boot.security.auth.service.impl;
+package io.github.rosestack.spring.boot.security.core.service.impl;
 
-import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.auth.service.TokenService;
-import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.core.extension.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
