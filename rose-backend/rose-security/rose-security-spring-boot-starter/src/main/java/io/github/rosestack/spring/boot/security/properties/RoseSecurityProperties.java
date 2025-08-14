@@ -326,7 +326,7 @@ public class RoseSecurityProperties {
             private String jwkSetUri;
 
             /**
-             * Keystore 路径
+             * Keystore 路径（支持 classpath:, file: 或绝对路径），默认尝试 JKS，其次 PKCS12
              */
             private String keystorePath;
 
@@ -354,6 +354,14 @@ public class RoseSecurityProperties {
                 KEYSTORE
             }
         }
+
+        /**
+         * 可选标准声明校验与元数据
+         */
+        private String issuer; // iss
+        private java.util.List<String> audience = new java.util.ArrayList<>(); // aud
+        private boolean requireIssuedAt = true; // 是否强制要求 iat
+        private boolean requireNotBefore = false; // 是否强制要求 nbf
     }
 
     /**

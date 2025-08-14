@@ -20,10 +20,9 @@ import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,6 +30,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +46,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -68,7 +72,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseSecurityProperties.class)
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class RoseSecurityAutoConfiguration {
+    private final RoseSecurityProperties properties;
 
     @PostConstruct
     public void init() {
@@ -78,7 +84,7 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "memory")
-    public TokenService tokenService(RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
+    public TokenService tokenService(AuthenticationHook authenticationHook) {
         return new MemoryTokenService(properties, authenticationHook);
     }
 
@@ -88,7 +94,6 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
     public TokenService tokenService(
             RedisTemplate<String, Object> redisTemplate,
-            RoseSecurityProperties properties,
             AuthenticationHook authenticationHook) {
         return new RedisTokenService(redisTemplate, properties, authenticationHook);
     }
@@ -96,7 +101,7 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "rose.security.auth", name = "enabled", havingValue = "true", matchIfMissing = true)
     public TokenAuthenticationFilter tokenAuthenticationFilter(
-            TokenService tokenService, RoseSecurityProperties properties) {
+            TokenService tokenService) {
         return new TokenAuthenticationFilter(tokenService, properties);
     }
 
@@ -132,13 +137,9 @@ public class RoseSecurityAutoConfiguration {
             AuditEventPublisher auditEventPublisher,
             LoginAttemptService loginAttemptService,
             CaptchaService captchaService) {
-        AuthController controller = new AuthController(
-                tokenService,
-                authenticationManager,
-                authenticationHook,
-                auditEventPublisher,
-                loginAttemptService,
-                captchaService);
+        AuthController controller = new AuthController(tokenService,
+                authenticationManager, authenticationHook, auditEventPublisher,
+                loginAttemptService, captchaService);
         return controller;
     }
 
@@ -150,14 +151,14 @@ public class RoseSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LoginAttemptService loginAttemptService(RoseSecurityProperties properties) {
-        return new InMemoryLoginAttemptService(properties);
+    public CaptchaService captchaService() {
+        return new NoopCaptchaService();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public CaptchaService captchaService() {
-        return new NoopCaptchaService();
+    public LoginAttemptService loginAttemptService() {
+        return new InMemoryLoginAttemptService(properties);
     }
 
     @Bean
@@ -170,15 +171,14 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
-    @org.springframework.context.annotation.Primary
+    @Primary
     public TokenService jwtTokenService(
             RoseSecurityProperties properties,
             AuthenticationHook authenticationHook,
-            org.springframework.beans.factory.ObjectProvider<ClaimMapper> claimMapperProvider,
-            org.springframework.beans.factory.ObjectProvider<TokenRevocationStore> revocationStoreProvider) {
+            ObjectProvider<ClaimMapper> claimMapperProvider,
+            ObjectProvider<TokenRevocationStore> revocationStoreProvider) {
         ClaimMapper claimMapper = claimMapperProvider.getIfAvailable();
-        TokenRevocationStore revocationStore =
-                revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
+        TokenRevocationStore revocationStore = revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
         return new JwtTokenService(properties, authenticationHook, claimMapper, revocationStore);
     }
 
