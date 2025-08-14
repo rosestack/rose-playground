@@ -166,6 +166,13 @@ public class RoseSecurityAutoConfiguration {
     public AuditEventPublisher auditEventPublisher() {
         return new LoggingAuditEventPublisher();
     }
+    @Bean
+    @ConditionalOnMissingBean(TokenRevocationStore.class)
+    @ConditionalOnBean(RedisTemplate.class)
+    public TokenRevocationStore redisRevocationStore(RedisTemplate<String, Object> redisTemplate) {
+        return new io.github.rosestack.spring.boot.security.jwt.RedisRevocationStore(redisTemplate);
+    }
+
 
     // JWT 开关：开启时注册 JwtTokenService 作为首选 TokenService
     @Bean

@@ -5,21 +5,23 @@ import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * JWT 密钥管理：支持 HS/RS/ES 与 JWK/Keystore
@@ -36,11 +38,12 @@ public class JwtKeyManager {
     private volatile JWKSet cachedJwkSet;
     // Keystore 缓存
     private volatile Instant keystoreLoadedAt;
-    private volatile java.security.PrivateKey cachedPrivateKey;
-    private volatile java.security.PublicKey cachedPublicKey;
-
+    private volatile PrivateKey cachedPrivateKey;
+    private volatile PublicKey cachedPublicKey;
     // 可注入的 RestTemplate；若未设置，则使用默认的 SimpleClientHttpRequestFactory 构建
     private volatile RestTemplate restTemplate;
+
+    private final RoseSecurityProperties properties;
 
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -50,16 +53,13 @@ public class JwtKeyManager {
         RestTemplate rt = this.restTemplate;
         if (rt == null) {
             SimpleClientHttpRequestFactory f = new SimpleClientHttpRequestFactory();
-            f.setConnectTimeout((int) properties.getJwt().getKey().getJwkConnectTimeoutMillis());
-            f.setReadTimeout((int) properties.getJwt().getKey().getJwkReadTimeoutMillis());
+            f.setConnectTimeout(properties.getJwt().getKey().getJwkConnectTimeoutMillis());
+            f.setReadTimeout(properties.getJwt().getKey().getJwkReadTimeoutMillis());
             rt = new RestTemplate(f);
             this.restTemplate = rt;
         }
         return rt;
     }
-
-
-    private final RoseSecurityProperties properties;
 
     public JWSAlgorithm algorithm() {
         switch (properties.getJwt().getAlgorithm()) {
@@ -167,7 +167,7 @@ public class JwtKeyManager {
                     key.getKeystorePassword() != null
                             ? key.getKeystorePassword().toCharArray()
                             : null);
-            java.security.cert.Certificate cert = ks.getCertificate(alias);
+            Certificate cert = ks.getCertificate(alias);
             if (cert != null) {
                 cachedPublicKey = cert.getPublicKey();
             }
@@ -206,7 +206,7 @@ public class JwtKeyManager {
         throw new IllegalStateException("不支持的 JWK 类型: " + k.getClass().getSimpleName());
     }
 
-    private java.security.PublicKey loadCertificatePublicKey() throws Exception {
+    private PublicKey loadCertificatePublicKey() throws Exception {
         RoseSecurityProperties.Jwt.Key key = properties.getJwt().getKey();
         String path = key.getKeystorePath();
         if (path == null) {
@@ -215,7 +215,7 @@ public class JwtKeyManager {
         if (needReload(keystoreLoadedAt) || cachedPublicKey == null) {
             KeyStore ks = tryLoadKeyStore(path, key.getKeystorePassword());
             String alias = key.getKeyAlias();
-            java.security.cert.Certificate cert = ks.getCertificate(alias);
+            Certificate cert = ks.getCertificate(alias);
             if (cert == null) {
                 throw new IllegalStateException("Certificate not found for alias: " + alias);
             }
