@@ -5,11 +5,6 @@ import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -22,6 +17,10 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * JWT 密钥管理：支持 HS/RS/ES 与 JWK/Keystore

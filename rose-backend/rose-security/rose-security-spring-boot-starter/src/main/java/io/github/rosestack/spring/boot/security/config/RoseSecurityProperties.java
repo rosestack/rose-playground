@@ -108,12 +108,12 @@ public class RoseSecurityProperties {
             /**
              * Token 有效期
              */
-            private Duration expiration = Duration.ofHours(24);
+            private Duration accessTokenExpiredTime = Duration.ofHours(24);
 
             /**
              * Token 刷新时间窗口
              */
-            private Duration refreshWindow = Duration.ofMinutes(30);
+            private Duration refreshTokenExpiredTime = Duration.ofMinutes(30);
 
             /**
              * 最大并发会话数

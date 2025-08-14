@@ -2,6 +2,8 @@ package io.github.rosestack.spring.boot.security.core.service;
 
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import java.util.Optional;
+
+import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
@@ -22,10 +24,10 @@ public interface TokenService {
      * @param userDetails 用户信息
      * @return Token 信息
      */
-    TokenInfo createToken(UserDetails userDetails);
+    UserTokenInfo createToken(UserDetails userDetails);
 
     /**
-     * 验证 Token
+     * 验证 accessToken
      *
      * @param accessToken 令牌
      * @return 验证是否通过
@@ -33,20 +35,20 @@ public interface TokenService {
     boolean validateToken(String accessToken);
 
     /**
-     * 从 Token 获取用户信息
+     * 从 accessToken 获取用户信息
      *
      * @param accessToken 令牌
      * @return 用户信息（可能为空）
      */
-    Optional<UserDetails> getUserDetails(String accessToken);
+    UserDetails getUserDetails(String accessToken);
 
     /**
-     * 刷新 Token
+     * 刷新 accessToken
      *
      * @param refreshToken 原令牌
      * @return 新的 Token 信息
      */
-    Optional<TokenInfo> refreshToken(String refreshToken);
+    UserTokenInfo refreshAccessToken(String refreshToken);
 
     /**
      * 撤销 accessToken

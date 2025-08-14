@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.jwt;
+package io.github.rosestack.spring.boot.security.jwt.impl;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSHeader;
@@ -8,10 +8,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-
+import io.github.rosestack.spring.boot.security.jwt.ClaimMapper;
+import io.github.rosestack.spring.boot.security.jwt.JwtKeyManager;
+import io.github.rosestack.spring.boot.security.jwt.JwtTokenProcessor;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtTokenExpiredException;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtValidationException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,6 +21,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * JWT Token 处理器实现类
@@ -43,16 +47,19 @@ public class JwtTokenProcessorImpl implements JwtTokenProcessor {
         Map<String, Object> customClaims = claimMapper == null ? Map.of() : claimMapper.toClaims(userDetails);
         try {
             Instant now = Instant.now();
-            JWTClaimsSet claims = buildClaims(userDetails.getUsername(), customClaims, properties.getJwt().getExpiration(), now);
+            JWTClaimsSet claims = buildClaims(
+                    userDetails.getUsername(), customClaims, properties.getJwt().getExpiration(), now);
 
             JWSHeader header = new JWSHeader.Builder(keyManager.algorithm())
-                    .type(JOSEObjectType.JWT).build();
+                    .type(JOSEObjectType.JWT)
+                    .build();
 
             SignedJWT jwt = new SignedJWT(header, claims);
             jwt.sign((JWSSigner) keyManager.signer());
             String accessToken = jwt.serialize();
 
-            LocalDateTime expiresAt = LocalDateTime.ofInstant(claims.getExpirationTime().toInstant(), ZoneOffset.UTC);
+            LocalDateTime expiresAt =
+                    LocalDateTime.ofInstant(claims.getExpirationTime().toInstant(), ZoneOffset.UTC);
 
             return TokenInfo.builder()
                     .accessToken(accessToken)
@@ -70,7 +77,14 @@ public class JwtTokenProcessorImpl implements JwtTokenProcessor {
 
     @Override
     public UserDetails parseToken(String accessToken) {
-        return null;
+        JWTClaimsSet claims = parseAndValidate(accessToken);
+        if (claimMapper != null) {
+            UserDetails mapped = claimMapper.fromClaims(claims.getClaims());
+            if (mapped != null) {
+                return mapped;
+            }
+        }
+        return defaultUserDetails(claims);
     }
 
     @Override
@@ -104,8 +118,8 @@ public class JwtTokenProcessorImpl implements JwtTokenProcessor {
     /**
      * 构建标准JWT声明集合
      */
-    private JWTClaimsSet buildClaims(String username, Map<String, Object> customClaims,
-                                     Duration expiration, Instant now) {
+    private JWTClaimsSet buildClaims(
+            String username, Map<String, Object> customClaims, Duration expiration, Instant now) {
         Instant exp = now.plus(expiration);
         JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
                 .subject(username)
@@ -126,8 +140,8 @@ public class JwtTokenProcessorImpl implements JwtTokenProcessor {
      */
     private boolean checkStandardClaims(JWTClaimsSet claims) {
         // 检查发行者
-        if (properties.getJwt().getIssuer() != null &&
-                !properties.getJwt().getIssuer().equals(claims.getIssuer())) {
+        if (properties.getJwt().getIssuer() != null
+                && !properties.getJwt().getIssuer().equals(claims.getIssuer())) {
             return false;
         }
 
@@ -142,7 +156,8 @@ public class JwtTokenProcessorImpl implements JwtTokenProcessor {
         }
 
         // 检查受众
-        if (properties.getJwt().getAudience() != null && !properties.getJwt().getAudience().isEmpty()) {
+        if (properties.getJwt().getAudience() != null
+                && !properties.getJwt().getAudience().isEmpty()) {
             List<String> aud = claims.getAudience();
             if (aud == null || aud.stream().noneMatch(properties.getJwt().getAudience()::contains)) {
                 return false;

@@ -1,17 +1,15 @@
 package io.github.rosestack.spring.boot.security.jwt;
 
-import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
-import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtTokenExpiredException;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.text.ParseException;
-import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -26,8 +24,8 @@ public class JwtTokenService implements TokenService {
     private final JwtTokenProcessor jwtTokenProcessor;
 
     @Override
-    public TokenInfo createToken(UserDetails user) {
-        return jwtTokenProcessor.createToken(user);
+    public UserTokenInfo createToken(UserDetails user) {
+        return null;
     }
 
     @Override
@@ -48,35 +46,21 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public Optional<UserDetails> getUserDetails(String accessToken) {
+    public UserDetails getUserDetails(String accessToken) {
         try {
             UserDetails userDetails = jwtTokenProcessor.parseToken(accessToken);
-            return Optional.of(userDetails);
+            return userDetails;
         } catch (JwtTokenExpiredException ex) {
             authenticationHook.onTokenExpired(accessToken);
-            return Optional.empty();
+            return null;
         } catch (JwtValidationException ex) {
-            return Optional.empty();
+            return null;
         }
     }
 
     @Override
-    public Optional<TokenInfo> refreshToken(String refreshToken) {
-        try {
-            SignedJWT jwt = SignedJWT.parse(refreshToken);
-            Instant issuedAt = jwt.getJWTClaimsSet().getIssueTime().toInstant();
-            if (Instant.now().isAfter(issuedAt.plus(properties.getAuth().getToken().getRefreshWindow()))) {
-                return Optional.empty();
-            }
-            String subject = jwt.getJWTClaimsSet().getSubject();
-            UserDetails user = User.withUsername(subject)
-                    .password("")
-                    .authorities("ROLE_USER")
-                    .build();
-            return Optional.of(createToken(user));
-        } catch (ParseException e) {
-            return Optional.empty();
-        }
+    public UserTokenInfo refreshAccessToken(String refreshToken) {
+        return null;
     }
 
     @Override

@@ -1,7 +1,7 @@
-package io.github.rosestack.spring.boot.security.jwt;
+package io.github.rosestack.spring.boot.security.jwt.impl;
 
 import com.nimbusds.jwt.SignedJWT;
-import java.text.ParseException;
+import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +24,9 @@ public class RedisRevocationStore implements TokenRevocationStore {
         try {
             Instant now = Instant.now();
             Instant exp = extractExpiry(accessToken);
-            long ttlSeconds = exp != null ? Math.max(0, exp.getEpochSecond() - now.getEpochSecond()) : Duration.ofDays(1).getSeconds();
+            long ttlSeconds = exp != null
+                    ? Math.max(0, exp.getEpochSecond() - now.getEpochSecond())
+                    : Duration.ofDays(1).getSeconds();
             redisTemplate.opsForValue().set(key(accessToken), "1", ttlSeconds, TimeUnit.SECONDS);
         } catch (Exception e) {
             // 最坏情况下不设置 TTL，以确保撤销生效
@@ -52,4 +54,3 @@ public class RedisRevocationStore implements TokenRevocationStore {
         }
     }
 }
-

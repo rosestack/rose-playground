@@ -38,18 +38,6 @@ public class TokenInfo {
     private LocalDateTime expiresAt;
 
     /**
-     * 用户名
-     */
-    @JsonIgnore
-    private String username;
-
-    /**
-     * 创建时间
-     */
-    @JsonIgnore
-    private LocalDateTime createdAt;
-
-    /**
      * 是否已过期
      *
      * @return 是否过期

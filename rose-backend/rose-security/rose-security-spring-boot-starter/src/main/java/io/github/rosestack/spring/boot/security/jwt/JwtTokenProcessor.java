@@ -2,6 +2,8 @@ package io.github.rosestack.spring.boot.security.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtTokenExpiredException;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtValidationException;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**

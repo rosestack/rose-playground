@@ -1,5 +1,6 @@
-package io.github.rosestack.spring.boot.security.jwt;
+package io.github.rosestack.spring.boot.security.jwt.impl;
 
+import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
