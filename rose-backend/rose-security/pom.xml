@@ -8,15 +8,13 @@
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-spring-boot</artifactId>
+    <artifactId>rose-security</artifactId>
     <packaging>pom</packaging>
+    <name>rose-security</name>
 
     <modules>
-        <module>rose-spring-boot-core</module>
-        <module>rose-audit-spring-boot-starter</module>
-        <module>rose-web-spring-boot-starter</module>
+        <module>rose-security-spring-boot-starter</module>
     </modules>
 
 </project>

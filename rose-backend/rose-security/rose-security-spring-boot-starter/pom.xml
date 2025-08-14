@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.github.rosestack</groupId>
-        <artifactId>rose-spring-boot</artifactId>
+        <artifactId>rose-security</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-auth-spring-boot-starter</artifactId>
-    <name>rose-auth-spring-boot-starter</name>
+    <artifactId>rose-security-spring-boot-starter</artifactId>
+    <name>rose-security-spring-boot-starter</name>
 
     <properties>
         <passay.version>1.6.6</passay.version>

@@ -38,6 +38,7 @@
         <module>rose-notification</module>
         <module>rose-mybatis</module>
         <module>rose-redis</module>
+        <module>rose-security</module>
         <module>rose-spring-boot</module>
         <module>rose-service</module>
     </modules>
