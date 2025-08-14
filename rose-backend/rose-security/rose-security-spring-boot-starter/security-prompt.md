@@ -1,11 +1,13 @@
 我需要开发一个名为 `rose-security-spring-boot-starter` 的 Spring Boot Starter 模块，实现完整的认证与授权功能。请按照以下详细规范进行开发：
 
 **项目结构要求：**
+
 - 在当前工作目录下创建 `rose-security-spring-boot-starter` 模块
 - 使用标准的 Maven 项目结构
 - 包名前缀：`io.github.rosestack.spring.boot.security`
 
 **技术栈约束：**
+
 - Spring Boot 3.x
 - Spring Security 6+
 - Java 17+
@@ -21,7 +23,7 @@
     - 可配置登出端点（默认 `/api/auth/logout`）
     - 可配置刷新端点（默认 `/api/auth/refresh`）
     - 可配置基础路径（默认 `/api/**`）
-    - 可配置放行路径（默认 `/public/**, /actuator/**, /error`）
+    - 可配置放行路径
     - 用户名/密码认证
     - 默认提供基于内存的 UserDetailsService 实现
     - 短 token 生成与管理
@@ -74,6 +76,7 @@
     - 多提供商支持
 
 **配置规范：**
+
 - 配置前缀：`rose.security.*`
 - 子模块配置示例：
     - `rose.security.jwt.enabled=true`
@@ -84,22 +87,26 @@
 - 支持通过 Spring Bean 替换默认实现
 
 **数据存储抽象：**
+
 - 不强绑定特定数据源
 - 支持 Redis/数据库/内存存储
 - 由使用方选择和配置存储方案
 
 **安全默认值：**
+
 - 提供生产级安全默认配置
 - 遵循 "Secure by default" 原则
 - 允许完全自定义覆盖
 
 **边界说明：**
+
 - 专注认证与鉴权框架能力
 - 不包含用户、角色、权限等具体数据模型
 - 不实现授权服务器
 - 使用方需实现 `UserDetailsService`
 
 **交付要求：**
+
 1. 完整的项目结构和 Maven 配置
 2. 核心代码实现（确保可编译通过）
 3. 配置类和属性定义

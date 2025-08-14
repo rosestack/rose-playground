@@ -1,10 +1,11 @@
 package io.github.rosestack.spring.boot.security.properties;
 
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Rose Security 配置属性
@@ -80,9 +81,15 @@ public class RoseSecurityProperties {
          */
         private String refreshPath = "/api/auth/refresh";
 
+        /**
+         * 受保护路径
+         */
         private String bashPath = "/api/**";
 
-        private String[] permitPaths = new String[] {"/public/**", "/actuator/**", "/error"};
+        /**
+         * 允许访问的路径
+         */
+        private String[] permitPaths = new String[]{};
 
         /**
          * Token 配置
