@@ -117,7 +117,7 @@ public final class JwtSupport {
 
     public static TokenInfo createToken(String username, Map<String, Object> custom, RoseSecurityProperties props) {
         try {
-            java.time.Instant now = java.time.Instant.now();
+            Instant now = Instant.now();
             JWTClaimsSet claims = buildClaims(username, custom, props.getJwt().getExpiration(), now);
             JwtKeyManager km = getKeyManager(props);
             JWSHeader header = new JWSHeader.Builder(km.algorithm())
@@ -142,14 +142,46 @@ public final class JwtSupport {
         }
     }
 
+    // 抛出式校验：返回 claims，过期抛 JwtTokenExpiredException，其它失败抛 JwtValidationException
+    public static JWTClaimsSet parseAndValidate(String token, RoseSecurityProperties props) {
+        try {
+            SignedJWT jwt = SignedJWT.parse(token);
+            Object verifier = getKeyManager(props).getVerifierFor(jwt);
+            boolean sig = jwt.verify((com.nimbusds.jose.JWSVerifier) (verifier != null ? verifier : getKeyManager(props).verifier()));
+            if (!sig) throw new JwtValidationException("Invalid signature");
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            Instant now = Instant.now();
+            if (claims.getExpirationTime() == null || claims.getExpirationTime().toInstant().isBefore(now.minus(props.getJwt().getClockSkew()))) {
+                throw new JwtTokenExpiredException("Token expired");
+            }
+            if (!checkStandardClaims(props, claims)) throw new JwtValidationException("Standard claims invalid");
+            return claims;
+        } catch (JwtTokenExpiredException e) {
+            throw e;
+        } catch (JwtValidationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new JwtValidationException("Token parse/validate error", e);
+        }
+    }
+
     // 便捷静态方法：解析 subject（验签 + 标准校验）
     public static Optional<String> parseSubject(String token, RoseSecurityProperties props) {
-        return verifyAndGetClaims(token, props).map(JWTClaimsSet::getSubject);
+        try {
+            return Optional.of(parseAndValidate(token, props).getSubject());
+        } catch (JwtTokenExpiredException | JwtValidationException e) {
+            return Optional.empty();
+        }
     }
 
     // 便捷静态方法：校验 token（验签 + 标准校验）
     public static boolean validate(String token, RoseSecurityProperties props) {
-        return verifyAndGetClaims(token, props).isPresent();
+        try {
+            parseAndValidate(token, props);
+            return true;
+        } catch (JwtTokenExpiredException | JwtValidationException e) {
+            return false;
+        }
     }
 
     /**

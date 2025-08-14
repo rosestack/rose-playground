@@ -38,24 +38,30 @@ public class JwtTokenService implements TokenService {
         if (revocationStore != null && revocationStore.isRevoked(token)) {
             return false;
         }
-        return JwtSupport.validate(token, properties);
+        try {
+            JwtSupport.parseAndValidate(token, properties);
+            return true;
+        } catch (JwtTokenExpiredException ex) {
+            authenticationHook.onTokenExpired(token);
+            return false;
+        } catch (JwtValidationException ex) {
+            log.debug("JWT 验证失败: {}", ex.getMessage());
+            return false;
+        }
     }
 
     @Override
     public Optional<UserDetails> getUserDetails(String token) {
         try {
-            Optional<JWTClaimsSet> claimsOpt = JwtSupport.verifyAndGetClaims(token, properties);
-            if (claimsOpt.isEmpty()) return Optional.empty();
-            JWTClaimsSet claims = claimsOpt.get();
-            if (claims.getExpirationTime() == null || claims.getExpirationTime().toInstant().isBefore(Instant.now())) {
-                authenticationHook.onTokenExpired(token);
-                return Optional.empty();
-            }
+            JWTClaimsSet claims = JwtSupport.parseAndValidate(token, properties);
             if (claimMapper != null) {
                 return Optional.ofNullable(claimMapper.fromClaims(claims.getClaims()));
             }
             return Optional.of(JwtSupport.defaultUserDetails(claims));
-        } catch (Exception e) {
+        } catch (JwtTokenExpiredException ex) {
+            authenticationHook.onTokenExpired(token);
+            return Optional.empty();
+        } catch (JwtValidationException ex) {
             return Optional.empty();
         }
     }
