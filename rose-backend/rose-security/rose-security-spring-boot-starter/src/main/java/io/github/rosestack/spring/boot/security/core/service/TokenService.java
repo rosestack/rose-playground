@@ -1,8 +1,5 @@
 package io.github.rosestack.spring.boot.security.core.service;
 
-import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import java.util.Optional;
-
 import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import org.springframework.security.core.userdetails.UserDetails;
 

@@ -2,6 +2,7 @@ package io.github.rosestack.spring.boot.security.core.controller;
 
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.support.*;
@@ -74,7 +75,7 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
             // 创建Token
-            TokenInfo tokenInfo = tokenService.createToken(userDetails);
+            UserTokenInfo userTokenInfo = tokenService.createToken(userDetails);
 
             // 记录成功
             if (loginAttemptService != null) {
@@ -85,7 +86,7 @@ public class AuthController {
             authenticationHook.onLoginSuccess(userDetails.getUsername(), authentication);
             auditEventPublisher.publish(AuditEvent.loginSuccess(
                     userDetails.getUsername(), Map.of("authorities", userDetails.getAuthorities())));
-            return ResponseEntity.ok(ApiResponse.success(tokenInfo));
+            return ResponseEntity.ok(ApiResponse.success(userTokenInfo.getTokenInfo()));
 
         } catch (AuthenticationException e) {
             log.warn("用户 {} 登录失败: {}", request.getUsername(), e.getMessage());
@@ -108,9 +109,9 @@ public class AuthController {
         String username = null;
 
         if (token != null) {
-            var userDetails = tokenService.getUserDetails(token);
-            if (userDetails.isPresent()) {
-                username = userDetails.get().getUsername();
+            UserDetails userDetails = tokenService.getUserDetails(token);
+            if (userDetails != null) {
+                username = userDetails.getUsername();
                 // 注销前钩子
                 authenticationHook.beforeLogout(username);
             }
@@ -139,16 +140,16 @@ public class AuthController {
             if (!authenticationHook.beforeTokenRefresh(request.getRefreshToken())) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新被拦截"));
             }
-            TokenInfo tokenInfo = tokenService.refreshAccessToken(request.getRefreshToken());
-            if (tokenInfo == null) {
+            UserTokenInfo userTokenInfo = tokenService.refreshAccessToken(request.getRefreshToken());
+            if (userTokenInfo == null) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新失败，请重新登录"));
             }
 
             // 刷新成功钩子 + 审计
-            authenticationHook.onTokenRefreshSuccess(tokenInfo.getUsername(), tokenInfo.getAccessToken());
-            auditEventPublisher.publish(AuditEvent.tokenRefresh(tokenInfo.getUsername(),
-                    Map.of("expiresAt", String.valueOf(tokenInfo.getExpiresAt()))));
-            return ResponseEntity.ok(ApiResponse.success(tokenInfo));
+            authenticationHook.onTokenRefreshSuccess(userTokenInfo.getUsername(), userTokenInfo.getTokenInfo().getAccessToken());
+            auditEventPublisher.publish(AuditEvent.tokenRefresh(
+                    userTokenInfo.getUsername(), Map.of("expiresAt", String.valueOf(userTokenInfo.getTokenInfo().getExpiresAt()))));
+            return ResponseEntity.ok(ApiResponse.success(userTokenInfo.getTokenInfo()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新失败"));
         }
@@ -161,11 +162,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCurrentUser(HttpServletRequest request) {
         String token = TokenAuthenticationFilter.extractTokenFromRequest(request);
         if (token != null) {
-            var userDetails = tokenService.getUserDetails(token);
-            if (userDetails.isPresent()) {
-                UserDetails user = userDetails.get();
+            UserDetails userDetails = tokenService.getUserDetails(token);
+            if (userDetails != null) {
                 return ResponseEntity.ok(ApiResponse.success(
-                        Map.of("username", user.getUsername(), "authorities", user.getAuthorities())));
+                        Map.of("username", userDetails.getUsername(), "authorities", userDetails.getAuthorities())));
             }
         }
 

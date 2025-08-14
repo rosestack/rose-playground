@@ -1,9 +1,7 @@
 package io.github.rosestack.spring.boot.security.core.service.impl;
 
-import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -11,9 +11,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +34,7 @@ public class MemoryTokenService implements TokenService {
 
     private final Map<String, LocalDateTime> refreshExpiry = new ConcurrentHashMap<>();
 
-    private final Map<String, List<UserTokenInfo>> usernameToAccessTokensMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> usernameToAccessTokensMap = new ConcurrentHashMap<>();
 
     private final Map<String, String> accessTokenToRefreshTokenMap = new ConcurrentHashMap<>();
 
@@ -42,8 +42,8 @@ public class MemoryTokenService implements TokenService {
     public UserTokenInfo createToken(UserDetails userDetails) {
         // 并发控制
         int max = properties.getAuth().getToken().getMaximumSessions();
-        List<UserTokenInfo> userTokenInfos =
-                usernameToAccessTokensMap.getOrDefault(userDetails.getUsername(), new ArrayList<>());
+        Set<String> userTokenInfos =
+                usernameToAccessTokensMap.getOrDefault(userDetails.getUsername(), new TreeSet<>());
         if (userTokenInfos.size() >= max && properties.getAuth().getToken().isMaxSessionsPreventsLogin()) {
             throw new IllegalStateException("超过最大并发会话数");
         }
@@ -55,8 +55,7 @@ public class MemoryTokenService implements TokenService {
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime accessExpiresAt = now.plus(properties.getAuth().getToken().getAccessTokenExpiredTime());
-        LocalDateTime refreshExpiresAt =
-                now.plus(properties.getAuth().getToken().getRefreshTokenExpiredTime());
+        LocalDateTime refreshExpiresAt = now.plus(properties.getAuth().getToken().getRefreshTokenExpiredTime());
 
         TokenInfo tokenInfo = TokenInfo.builder()
                 .accessToken(accessToken)
@@ -66,11 +65,15 @@ public class MemoryTokenService implements TokenService {
                 .build();
 
         UserTokenInfo userTokenInfo = UserTokenInfo.builder()
-                .tokenInfo(tokenInfo).username(userDetails.getUsername()).build();
+                .tokenInfo(tokenInfo)
+                .username(userDetails.getUsername())
+                .build();
 
         refreshIndex.put(refreshToken, userTokenInfo);
         refreshExpiry.put(refreshToken, refreshExpiresAt);
-        usernameToAccessTokensMap.computeIfAbsent(userDetails.getUsername(), k -> new ArrayList<>()).add(userTokenInfo);
+        usernameToAccessTokensMap
+                .computeIfAbsent(userDetails.getUsername(), k -> new TreeSet<>())
+                .add(accessToken);
         accessTokenToRefreshTokenMap.put(accessToken, refreshToken);
         return userTokenInfo;
     }
@@ -111,9 +114,8 @@ public class MemoryTokenService implements TokenService {
             throw new IllegalArgumentException("refreshToken 不存在");
         }
 
-        boolean refreshTokenExpired =
-                refreshExpiry.getOrDefault(refreshToken, LocalDateTime.now()).isAfter(LocalDateTime.now());
-        if (refreshTokenExpired) {
+        LocalDateTime refreshTokenExpiredTime = refreshExpiry.get(refreshToken);
+        if (refreshTokenExpiredTime == null || LocalDateTime.now().isAfter(refreshTokenExpiredTime)) {
             throw new IllegalArgumentException("refreshToken 已过期");
         }
 
@@ -121,9 +123,9 @@ public class MemoryTokenService implements TokenService {
 
         LocalDateTime now = LocalDateTime.now();
         // 仅当 accessToken 临近过期（在窗口内）或已过期时允许刷新
-        LocalDateTime nearThreshold = accessTokenExpireTime.minusMinutes(2);
-        if (now.isBefore(nearThreshold)) {
-            return userTokenInfo;
+        LocalDateTime near = accessTokenExpireTime.minus(properties.getAuth().getToken().getRefreshWindow());
+        if (now.isBefore(near) && !userTokenInfo.getTokenInfo().isExpired()) {
+            return userTokenInfo; // 太早，不刷新
         }
 
         String newAccessToken = UUID.randomUUID().toString();
@@ -133,14 +135,14 @@ public class MemoryTokenService implements TokenService {
         LocalDateTime newRefreshExpiresAt =
                 now.plus(properties.getAuth().getToken().getRefreshTokenExpiredTime());
 
-        // 更新 refresh 映射与过期
-        refreshIndex.remove(refreshToken);
-        refreshExpiry.remove(refreshToken);
+        String oldAccess = userTokenInfo.getTokenInfo().getAccessToken();
+        String oldRefresh = refreshToken;
 
-        refreshIndex.put(refreshToken, userTokenInfo);
-        refreshExpiry.put(refreshToken, newRefreshExpiresAt);
-        usernameToAccessTokensMap.computeIfAbsent(userTokenInfo.getUsername(), k -> new ArrayList<>()).add(userTokenInfo);
-        accessTokenToRefreshTokenMap.put(newAccessToken, refreshToken);
+        // 删除旧映射
+        refreshIndex.remove(oldRefresh);
+        refreshExpiry.remove(oldRefresh);
+        accessTokenToRefreshTokenMap.remove(oldAccess);
+        usernameToAccessTokensMap.get(userTokenInfo.getUsername()).remove(oldAccess);
 
         TokenInfo tokenInfo = TokenInfo.builder()
                 .accessToken(newAccessToken)
@@ -149,7 +151,16 @@ public class MemoryTokenService implements TokenService {
                 .expiresAt(newAccessExpiresAt)
                 .build();
 
-        return UserTokenInfo.builder().tokenInfo(tokenInfo).username(userTokenInfo.getUsername()).build();
+        userTokenInfo.setTokenInfo(tokenInfo);
+
+        // 生成新 token 并写新映射
+        userTokenInfo.setTokenInfo(tokenInfo);
+        refreshIndex.put(newRefreshToken, userTokenInfo);
+        refreshExpiry.put(newRefreshToken, newRefreshExpiresAt);
+        accessTokenToRefreshTokenMap.put(newAccessToken, newRefreshToken);
+        usernameToAccessTokensMap.computeIfAbsent(userTokenInfo.getUsername(), k -> new TreeSet<>()).add(newAccessToken);
+
+        return userTokenInfo;
     }
 
     @Override
@@ -157,21 +168,26 @@ public class MemoryTokenService implements TokenService {
         String refreshToken = accessTokenToRefreshTokenMap.get(accessToken);
         if (refreshToken != null) {
             UserTokenInfo userTokenInfo = refreshIndex.remove(refreshToken);
-            usernameToAccessTokensMap.remove(userTokenInfo.getUsername());
-            accessTokenToRefreshTokenMap.remove(refreshToken);
+            if (userTokenInfo != null) {
+                Set<String> tokenInfos = usernameToAccessTokensMap.get(userTokenInfo.getUsername());
+                if (tokenInfos != null) {
+                    tokenInfos.remove(accessToken);
+                }
+                authenticationHook.onTokenRevoked(accessToken);
+            }
+            accessTokenToRefreshTokenMap.remove(accessToken);
             refreshExpiry.remove(refreshToken);
         }
     }
 
     @Override
     public void revokeAllTokens(String username) {
-        List<UserTokenInfo> userTokenInfos = usernameToAccessTokensMap.remove(username);
+        Set<String> accessTokens = usernameToAccessTokensMap.remove(username);
 
-        if (userTokenInfos != null) {
+        if (accessTokens != null) {
             authenticationHook.onRevoked(username);
 
-            userTokenInfos.forEach(e -> {
-                String accessToken = e.getTokenInfo().getAccessToken();
+            accessTokens.forEach(accessToken -> {
                 String refreshToken = accessTokenToRefreshTokenMap.remove(accessToken);
                 refreshIndex.remove(refreshToken);
                 refreshExpiry.remove(refreshToken);
@@ -184,7 +200,7 @@ public class MemoryTokenService implements TokenService {
         return Math.max(
                 0,
                 usernameToAccessTokensMap
-                        .getOrDefault(username, new ArrayList<>())
+                        .getOrDefault(username, new TreeSet<>())
                         .size());
     }
 }

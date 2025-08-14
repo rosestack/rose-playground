@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Optional;
-
 /**
  * 基于 Nimbus 的 HS256 JWT Token 服务（最小可用版本）
  */
