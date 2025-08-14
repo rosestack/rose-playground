@@ -1,11 +1,15 @@
 package io.github.rosestack.spring.boot.security.auth.filter;
 
+import static io.github.rosestack.spring.boot.security.auth.service.TokenService.TOKEN_HEADER;
+
 import io.github.rosestack.spring.boot.security.auth.service.TokenService;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,11 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.Optional;
-
-import static io.github.rosestack.spring.boot.security.auth.service.TokenService.TOKEN_HEADER;
 
 /**
  * Token 认证过滤器

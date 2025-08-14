@@ -4,16 +4,15 @@ import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.auth.service.TokenService;
 import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * 内存 Token 服务实现
@@ -78,7 +77,9 @@ public class MemoryTokenService implements TokenService {
     public Optional<TokenInfo> refreshToken(String token) {
         TokenInfo info = tokens.get(token);
         if (info == null) return Optional.empty();
-        if (LocalDateTime.now().isAfter(info.getCreatedAt().plus(properties.getAuth().getToken().getRefreshWindow()))) {
+        if (LocalDateTime.now()
+                .isAfter(
+                        info.getCreatedAt().plus(properties.getAuth().getToken().getRefreshWindow()))) {
             return Optional.empty();
         }
         String newToken = UUID.randomUUID().toString();

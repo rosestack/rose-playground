@@ -1,11 +1,10 @@
 package io.github.rosestack.spring.boot.security.properties;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Rose Security 配置属性
@@ -46,7 +45,6 @@ public class RoseSecurityProperties {
      */
     private Mfa mfa = new Mfa();
 
-
     /**
      * 安全防护配置
      */
@@ -84,7 +82,7 @@ public class RoseSecurityProperties {
 
         private String bashPath = "/api/**";
 
-        private String[] permitPaths = new String[]{"/public/**", "/actuator/**", "/error"};
+        private String[] permitPaths = new String[] {"/public/**", "/actuator/**", "/error"};
 
         /**
          * Token 配置

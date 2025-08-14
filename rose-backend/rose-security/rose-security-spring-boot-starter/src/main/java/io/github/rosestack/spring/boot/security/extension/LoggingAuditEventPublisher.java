@@ -15,7 +15,11 @@ import org.springframework.stereotype.Component;
 public class LoggingAuditEventPublisher implements AuditEventPublisher {
     @Override
     public void publish(AuditEvent event) {
-        log.info("AuditEvent type={}, user={}, ip={}, details={}", event.getType(), event.getUsername(), event.getIp(),
+        log.info(
+                "AuditEvent type={}, user={}, ip={}, details={}",
+                event.getType(),
+                event.getUsername(),
+                event.getIp(),
                 event.getDetails());
     }
 }

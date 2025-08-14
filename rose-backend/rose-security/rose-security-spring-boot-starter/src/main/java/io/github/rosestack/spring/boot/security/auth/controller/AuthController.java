@@ -8,6 +8,8 @@ import io.github.rosestack.spring.boot.security.extension.AuditEvent;
 import io.github.rosestack.spring.boot.security.extension.AuditEventPublisher;
 import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
+import java.util.Optional;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +25,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * 认证控制器
@@ -67,13 +66,15 @@ public class AuthController {
 
             log.info("用户 {} 登录成功", userDetails.getUsername());
             authenticationHook.onLoginSuccess(userDetails.getUsername(), authentication);
-            auditEventPublisher.publish(AuditEvent.loginSuccess(userDetails.getUsername(), Map.of("authorities", userDetails.getAuthorities())));
+            auditEventPublisher.publish(AuditEvent.loginSuccess(
+                    userDetails.getUsername(), Map.of("authorities", userDetails.getAuthorities())));
             return ResponseEntity.ok(ApiResponse.success(tokenInfo));
 
         } catch (AuthenticationException e) {
             log.warn("用户 {} 登录失败: {}", request.getUsername(), e.getMessage());
             authenticationHook.onLoginFailure(request.getUsername(), e);
-            auditEventPublisher.publish(AuditEvent.loginFailure(request.getUsername(), Map.of("error", e.getMessage())));
+            auditEventPublisher.publish(
+                    AuditEvent.loginFailure(request.getUsername(), Map.of("error", e.getMessage())));
             return ResponseEntity.badRequest().body(ApiResponse.error("用户名或密码错误"));
         }
     }
@@ -100,7 +101,8 @@ public class AuthController {
             // 注销成功钩子 + 审计
             if (username != null) {
                 authenticationHook.onLogoutSuccess(username);
-                auditEventPublisher.publish(AuditEvent.logout(username, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
+                auditEventPublisher.publish(
+                        AuditEvent.logout(username, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
             }
         }
 
@@ -123,8 +125,11 @@ public class AuthController {
             }
 
             // 刷新成功钩子 + 审计
-            authenticationHook.onTokenRefreshSuccess(tokenInfo.get().getUsername(), tokenInfo.get().getAccessToken());
-            auditEventPublisher.publish(AuditEvent.tokenRefresh(tokenInfo.get().getUsername(), Map.of("expiresAt", String.valueOf(tokenInfo.get().getExpiresAt()))));
+            authenticationHook.onTokenRefreshSuccess(
+                    tokenInfo.get().getUsername(), tokenInfo.get().getAccessToken());
+            auditEventPublisher.publish(AuditEvent.tokenRefresh(
+                    tokenInfo.get().getUsername(),
+                    Map.of("expiresAt", String.valueOf(tokenInfo.get().getExpiresAt()))));
             return ResponseEntity.ok(ApiResponse.success(tokenInfo));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新失败"));
@@ -141,7 +146,8 @@ public class AuthController {
             var userDetails = tokenService.getUserDetails(token);
             if (userDetails.isPresent()) {
                 UserDetails user = userDetails.get();
-                return ResponseEntity.ok(ApiResponse.success(Map.of("username", user.getUsername(), "authorities", user.getAuthorities())));
+                return ResponseEntity.ok(ApiResponse.success(
+                        Map.of("username", user.getUsername(), "authorities", user.getAuthorities())));
             }
         }
 

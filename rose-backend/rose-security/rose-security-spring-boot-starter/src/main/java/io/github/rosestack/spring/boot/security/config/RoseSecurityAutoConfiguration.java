@@ -12,6 +12,9 @@ import io.github.rosestack.spring.boot.security.extension.DefaultAuthenticationH
 import io.github.rosestack.spring.boot.security.extension.LoggingAuditEventPublisher;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -35,10 +38,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -79,7 +78,8 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnMissingBean(TokenService.class)
     @ConditionalOnBean(RedisTemplate.class)
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
-    public TokenService tokenService(RedisTemplate redisTemplate, RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
+    public TokenService tokenService(
+            RedisTemplate redisTemplate, RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
         return new RedisTokenService(redisTemplate, properties, authenticationHook);
     }
 
@@ -115,10 +115,11 @@ public class RoseSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(AuthController.class)
-    public AuthController authController(TokenService tokenService,
-                                         AuthenticationManager authenticationManager,
-                                         AuthenticationHook authenticationHook,
-                                         AuditEventPublisher auditEventPublisher) {
+    public AuthController authController(
+            TokenService tokenService,
+            AuthenticationManager authenticationManager,
+            AuthenticationHook authenticationHook,
+            AuditEventPublisher auditEventPublisher) {
         return new AuthController(tokenService, authenticationManager, authenticationHook, auditEventPublisher);
     }
 
@@ -154,10 +155,12 @@ public class RoseSecurityAutoConfiguration {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(
                         stateless ? SessionCreationPolicy.STATELESS : SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(permits.toArray(new String[0])).permitAll()
-                        .requestMatchers(basePath).authenticated()
-                        .anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> auth.requestMatchers(permits.toArray(new String[0]))
+                        .permitAll()
+                        .requestMatchers(basePath)
+                        .authenticated()
+                        .anyRequest()
+                        .permitAll());
 
         if (stateless) {
             http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
