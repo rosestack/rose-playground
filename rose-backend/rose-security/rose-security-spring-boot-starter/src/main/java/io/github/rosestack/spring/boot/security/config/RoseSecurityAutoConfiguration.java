@@ -12,9 +12,6 @@ import io.github.rosestack.spring.boot.security.extension.DefaultAuthenticationH
 import io.github.rosestack.spring.boot.security.extension.LoggingAuditEventPublisher;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -38,6 +35,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -144,7 +145,6 @@ public class RoseSecurityAutoConfiguration {
         String refreshPath = properties.getAuth().getRefreshPath();
         String basePath = properties.getAuth().getBashPath();
         String[] permitPaths = properties.getAuth().getPermitPaths();
-        boolean stateless = properties.isStateless();
 
         List<String> permits = new ArrayList<>();
         Collections.addAll(permits, permitPaths);
@@ -153,18 +153,13 @@ public class RoseSecurityAutoConfiguration {
         permits.add(refreshPath);
 
         http.csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(
-                        stateless ? SessionCreationPolicy.STATELESS : SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(permits.toArray(new String[0]))
-                        .permitAll()
-                        .requestMatchers(basePath)
-                        .authenticated()
-                        .anyRequest()
-                        .permitAll());
-
-        if (stateless) {
-            http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        }
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers(permits.toArray(new String[0])).permitAll()
+                                .requestMatchers(basePath).authenticated()
+                                .anyRequest().permitAll()
+                )
+                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

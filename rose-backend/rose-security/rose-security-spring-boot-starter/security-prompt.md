@@ -11,31 +11,32 @@
 - Java 17+
 - 面向 Servlet 堆栈（Spring MVC）
 - 支持前后端分离架构
-- 默认无状态认证（基于 token）
+- 无状态认证（基于 token）
 
 **功能实现优先级（按顺序开发）：**
 
 1. **基础认证模块** (`rose.security.auth.*`)
     - 集成 Spring Security 拦截器
     - 可配置登录端点（默认 `/api/auth/login`）
+    - 可配置登出端点（默认 `/api/auth/logout`）
+    - 可配置刷新端点（默认 `/api/auth/refresh`）
+    - 可配置基础路径（默认 `/api/**`）
+    - 可配置放行路径（默认 `/public/**, /actuator/**, /error`）
     - 用户名/密码认证
+    - 默认提供基于内存的 UserDetailsService 实现
     - 短 token 生成与管理
     - Token 超时配置
     - Token 并发控制
     - 主动下线功能
     - 可选 Redis 分布式存储
 
-2. **会话管理模块** (`rose.security.session.*`)
-    - 默认无状态模式
-    - 可配置会话策略
-
-3. **扩展机制模块** (`rose.security.extension.*`)
+2. **扩展机制模块** (`rose.security.extension.*`)
     - SPI 接口定义
     - 认证流程钩子（登录前后、成功失败）
     - 审计事件接口
     - 日志 Hook 机制
 
-4. **账号安全模块** (`rose.security.account.*`)
+3. **账号安全模块** (`rose.security.account.*`)
     - 密码复杂度策略
     - 密码历史记录
     - 密码过期策略
@@ -43,7 +44,7 @@
     - 防暴力破解
     - 可插拔验证码机制
 
-5. **JWT 模块** (`rose.security.jwt.*`)
+4. **JWT 模块** (`rose.security.jwt.*`)
     - 支持 HS256/RS256/ES256 算法
     - JWK/Keystore 密钥管理
     - 密钥轮换机制
@@ -51,25 +52,24 @@
     - 标准声明校验（exp/iat/nbf/aud/iss/sub）
     - 自定义 Claim 映射
     - Token 撤销/黑名单 SPI
-
-6. **多因子认证模块** (`rose.security.mfa.*`)
+5. **多因子认证模块** (`rose.security.mfa.*`)
     - TOTP 参考实现
     - MFA SPI 接口
 
-7. **安全防护模块** (`rose.security.protection.*`)
+6. **安全防护模块** (`rose.security.protection.*`)
     - CORS 配置
     - IP 白/黑名单
     - 速率限制
     - 防重放攻击
     - 时间窗校验
 
-8. **可观测性模块** (`rose.security.observability.*`)
+7. **可观测性模块** (`rose.security.observability.*`)
     - 认证成功率指标
     - 延迟监控
     - 结构化日志
     - Trace 上报
 
-9. **OAuth2 Client 模块** (`rose.security.oauth2.*`)
+8. **OAuth2 Client 模块** (`rose.security.oauth2.*`)
     - OAuth2 客户端登录
     - 多提供商支持
 
