@@ -43,7 +43,7 @@ public class MemoryTokenService implements TokenService {
         // 并发控制
         int max = properties.getAuth().getToken().getMaximumSessions();
         Set<String> userTokenInfos =
-                usernameToAccessTokensMap.getOrDefault(userDetails.getUsername(), new TreeSet<>());
+                usernameToAccessTokensMap.getOrDefault(userDetails.getUsername(), ConcurrentHashMap.newKeySet());
         if (userTokenInfos.size() >= max && properties.getAuth().getToken().isMaxSessionsPreventsLogin()) {
             throw new IllegalStateException("超过最大并发会话数");
         }
@@ -72,7 +72,7 @@ public class MemoryTokenService implements TokenService {
         refreshIndex.put(refreshToken, userTokenInfo);
         refreshExpiry.put(refreshToken, refreshExpiresAt);
         usernameToAccessTokensMap
-                .computeIfAbsent(userDetails.getUsername(), k -> new TreeSet<>())
+                .computeIfAbsent(userDetails.getUsername(), k -> ConcurrentHashMap.newKeySet())
                 .add(accessToken);
         accessTokenToRefreshTokenMap.put(accessToken, refreshToken);
         return userTokenInfo;
@@ -151,14 +151,12 @@ public class MemoryTokenService implements TokenService {
                 .expiresAt(newAccessExpiresAt)
                 .build();
 
-        userTokenInfo.setTokenInfo(tokenInfo);
-
         // 生成新 token 并写新映射
         userTokenInfo.setTokenInfo(tokenInfo);
         refreshIndex.put(newRefreshToken, userTokenInfo);
         refreshExpiry.put(newRefreshToken, newRefreshExpiresAt);
         accessTokenToRefreshTokenMap.put(newAccessToken, newRefreshToken);
-        usernameToAccessTokensMap.computeIfAbsent(userTokenInfo.getUsername(), k -> new TreeSet<>()).add(newAccessToken);
+        usernameToAccessTokensMap.computeIfAbsent(userTokenInfo.getUsername(), k -> ConcurrentHashMap.newKeySet()).add(newAccessToken);
 
         return userTokenInfo;
     }
@@ -200,7 +198,7 @@ public class MemoryTokenService implements TokenService {
         return Math.max(
                 0,
                 usernameToAccessTokensMap
-                        .getOrDefault(username, new TreeSet<>())
+                        .getOrDefault(username, ConcurrentHashMap.newKeySet())
                         .size());
     }
 }
