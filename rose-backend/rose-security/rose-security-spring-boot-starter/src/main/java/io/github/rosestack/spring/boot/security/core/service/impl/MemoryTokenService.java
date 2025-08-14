@@ -193,11 +193,19 @@ public class MemoryTokenService implements TokenService {
     }
 
     @Override
-    public int getActiveTokenCount(String username) {
-        return Math.max(
-                0,
-                usernameToAccessTokensMap
-                        .computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet())
-                        .size());
+    public Set<String> getActiveTokens(String username) {
+        //清除过期的 token
+        Set<String> accessTokens = usernameToAccessTokensMap.computeIfPresent(username, (k, tokens) -> {
+            tokens.removeIf(accessToken -> {
+                String refreshToken = accessTokenToRefreshTokenMap.get(accessToken);
+                if (refreshToken == null) {
+                    return true;
+                }
+                UserTokenInfo info = refreshIndex.get(refreshToken);
+                return info == null || info.getTokenInfo().isExpired();
+            });
+            return tokens;
+        });
+        return accessTokens;
     }
 }

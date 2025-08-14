@@ -3,6 +3,8 @@ package io.github.rosestack.spring.boot.security.core.service;
 import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Set;
+
 /**
  * Token 服务接口
  *
@@ -16,7 +18,7 @@ public interface TokenService {
     String TOKEN_TYPE_SIMPLE = "simple";
 
     /**
-     * 创建 Token
+     * 创建 UserTokenInfo
      *
      * @param userDetails 用户信息
      * @return Token 信息
@@ -55,17 +57,11 @@ public interface TokenService {
     void revokeToken(String accessToken);
 
     /**
-     * 撤销用户的所有 Token
+     * 撤销用户的所有 accessToken
      *
      * @param username 用户名
      */
     void revokeAllTokens(String username);
 
-    /**
-     * 获取用户当前活跃的 Token 数量
-     *
-     * @param username 用户名
-     * @return Token 数量
-     */
-    int getActiveTokenCount(String username);
+    Set<String> getActiveTokens(String username);
 }

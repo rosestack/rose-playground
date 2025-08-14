@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Set;
+
 /**
  * Redis Token 服务实现
  */
@@ -34,13 +36,15 @@ public class RedisTokenService implements TokenService {
     }
 
     @Override
-    public void revokeToken(String accessToken) {}
+    public void revokeToken(String accessToken) {
+    }
 
     @Override
-    public void revokeAllTokens(String username) {}
+    public void revokeAllTokens(String username) {
+    }
 
     @Override
-    public int getActiveTokenCount(String username) {
-        return 0;
+    public Set<String> getActiveTokens(String username) {
+        return null;
     }
 }

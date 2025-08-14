@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Set;
+
 /**
  * 基于 Nimbus 的 HS256 JWT Token 服务（最小可用版本）
  */
@@ -76,8 +78,8 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public int getActiveTokenCount(String username) {
+    public Set<String> getActiveTokens(String username) {
         // JWT 无状态默认返回 0 或无法统计的标识，这里返回 0
-        return 0;
+        return null;
     }
 }
