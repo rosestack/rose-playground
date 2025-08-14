@@ -1,4 +1,0 @@
-io.github.rosestack.spring.boot.auth.config.AuthAutoConfiguration
-io.github.rosestack.spring.boot.auth.config.JwtConfiguration
-io.github.rosestack.spring.boot.auth.config.OAuth2ClientConfiguration
-io.github.rosestack.spring.boot.auth.config.SecurityConfiguration
