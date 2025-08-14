@@ -1,6 +1,5 @@
 package io.github.rosestack.spring.boot.security.jwt;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
@@ -13,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -24,25 +22,24 @@ import java.util.Optional;
 public class JwtTokenService implements TokenService {
     private final RoseSecurityProperties properties;
     private final AuthenticationHook authenticationHook;
-    private final ClaimMapper claimMapper;
     private final TokenRevocationStore revocationStore;
+    private final JwtTokenProcessor jwtTokenProcessor;
 
     @Override
     public TokenInfo createToken(UserDetails user) {
-        Map<String, Object> custom = claimMapper == null ? Map.of() : claimMapper.toClaims(user);
-        return JwtSupport.createToken(user.getUsername(), custom, properties);
+        return jwtTokenProcessor.createToken(user);
     }
 
     @Override
-    public boolean validateToken(String token) {
-        if (revocationStore != null && revocationStore.isRevoked(token)) {
+    public boolean validateToken(String accessToken) {
+        if (revocationStore != null && revocationStore.isRevoked(accessToken)) {
             return false;
         }
         try {
-            JwtSupport.parseAndValidate(token, properties);
+            jwtTokenProcessor.parseAndValidate(accessToken);
             return true;
         } catch (JwtTokenExpiredException ex) {
-            authenticationHook.onTokenExpired(token);
+            authenticationHook.onTokenExpired(accessToken);
             return false;
         } catch (JwtValidationException ex) {
             log.debug("JWT 验证失败: {}", ex.getMessage());
@@ -51,15 +48,12 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public Optional<UserDetails> getUserDetails(String token) {
+    public Optional<UserDetails> getUserDetails(String accessToken) {
         try {
-            JWTClaimsSet claims = JwtSupport.parseAndValidate(token, properties);
-            if (claimMapper != null) {
-                return Optional.ofNullable(claimMapper.fromClaims(claims.getClaims()));
-            }
-            return Optional.of(JwtSupport.defaultUserDetails(claims));
+            UserDetails userDetails = jwtTokenProcessor.parseToken(accessToken);
+            return Optional.of(userDetails);
         } catch (JwtTokenExpiredException ex) {
-            authenticationHook.onTokenExpired(token);
+            authenticationHook.onTokenExpired(accessToken);
             return Optional.empty();
         } catch (JwtValidationException ex) {
             return Optional.empty();
@@ -67,9 +61,9 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public Optional<TokenInfo> refreshToken(String token) {
+    public Optional<TokenInfo> refreshToken(String refreshToken) {
         try {
-            SignedJWT jwt = SignedJWT.parse(token);
+            SignedJWT jwt = SignedJWT.parse(refreshToken);
             Instant issuedAt = jwt.getJWTClaimsSet().getIssueTime().toInstant();
             if (Instant.now().isAfter(issuedAt.plus(properties.getAuth().getToken().getRefreshWindow()))) {
                 return Optional.empty();
@@ -86,11 +80,11 @@ public class JwtTokenService implements TokenService {
     }
 
     @Override
-    public void revokeToken(String token) {
+    public void revokeToken(String accessToken) {
         if (revocationStore != null) {
-            revocationStore.revoke(token);
+            revocationStore.revoke(accessToken);
         }
-        authenticationHook.onTokenRevoked(token);
+        authenticationHook.onTokenRevoked(accessToken);
     }
 
     @Override

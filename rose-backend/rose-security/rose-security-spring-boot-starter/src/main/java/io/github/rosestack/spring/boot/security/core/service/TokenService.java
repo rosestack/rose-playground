@@ -27,33 +27,33 @@ public interface TokenService {
     /**
      * 验证 Token
      *
-     * @param token 令牌
+     * @param accessToken 令牌
      * @return 验证是否通过
      */
-    boolean validateToken(String token);
+    boolean validateToken(String accessToken);
 
     /**
      * 从 Token 获取用户信息
      *
-     * @param token 令牌
+     * @param accessToken 令牌
      * @return 用户信息（可能为空）
      */
-    Optional<UserDetails> getUserDetails(String token);
+    Optional<UserDetails> getUserDetails(String accessToken);
 
     /**
      * 刷新 Token
      *
-     * @param token 原令牌
+     * @param refreshToken 原令牌
      * @return 新的 Token 信息
      */
-    Optional<TokenInfo> refreshToken(String token);
+    Optional<TokenInfo> refreshToken(String refreshToken);
 
     /**
-     * 撤销 Token
+     * 撤销 accessToken
      *
-     * @param token 令牌
+     * @param accessToken 令牌
      */
-    void revokeToken(String token);
+    void revokeToken(String accessToken);
 
     /**
      * 撤销用户的所有 Token

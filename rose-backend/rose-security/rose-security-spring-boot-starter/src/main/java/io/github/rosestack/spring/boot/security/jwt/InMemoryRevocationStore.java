@@ -10,12 +10,12 @@ public class InMemoryRevocationStore implements TokenRevocationStore {
     private final Set<String> blacklist = ConcurrentHashMap.newKeySet();
 
     @Override
-    public void revoke(String token) {
-        blacklist.add(token);
+    public void revoke(String accessToken) {
+        blacklist.add(accessToken);
     }
 
     @Override
-    public boolean isRevoked(String token) {
-        return blacklist.contains(token);
+    public boolean isRevoked(String accessToken) {
+        return blacklist.contains(accessToken);
     }
 }

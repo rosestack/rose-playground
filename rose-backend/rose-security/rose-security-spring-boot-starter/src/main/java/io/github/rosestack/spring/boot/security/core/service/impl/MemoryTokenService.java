@@ -36,12 +36,12 @@ public class MemoryTokenService implements TokenService {
             throw new IllegalStateException("超过最大并发会话数");
         }
 
-        String token = UUID.randomUUID().toString();
+        String accessToken = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiresAt = now.plus(properties.getAuth().getToken().getExpiration());
 
         TokenInfo info = TokenInfo.builder()
-                .accessToken(token)
+                .accessToken(accessToken)
                 .refreshToken(UUID.randomUUID().toString())
                 .tokenType(TOKEN_TYPE_SIMPLE)
                 .expiresAt(expiresAt)
@@ -49,15 +49,15 @@ public class MemoryTokenService implements TokenService {
                 .createdAt(now)
                 .build();
 
-        tokens.put(token, info);
+        tokens.put(accessToken, info);
         userTokenCount.merge(userDetails.getUsername(), 1, Integer::sum);
-        log.debug("创建 token: {} for user: {}", token, userDetails.getUsername());
+        log.debug("创建 accessToken: {} for user: {}", accessToken, userDetails.getUsername());
         return info;
     }
 
     @Override
-    public boolean validateToken(String token) {
-        TokenInfo info = tokens.get(token);
+    public boolean validateToken(String accessToken) {
+        TokenInfo info = tokens.get(accessToken);
         return info != null && !info.isExpired();
     }
 

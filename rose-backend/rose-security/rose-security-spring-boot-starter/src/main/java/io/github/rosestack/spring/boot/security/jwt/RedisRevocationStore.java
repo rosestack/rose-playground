@@ -20,31 +20,31 @@ public class RedisRevocationStore implements TokenRevocationStore {
     private static final String PREFIX = "rose:security:jwt:blacklist:";
 
     @Override
-    public void revoke(String token) {
+    public void revoke(String accessToken) {
         try {
             Instant now = Instant.now();
-            Instant exp = extractExpiry(token);
+            Instant exp = extractExpiry(accessToken);
             long ttlSeconds = exp != null ? Math.max(0, exp.getEpochSecond() - now.getEpochSecond()) : Duration.ofDays(1).getSeconds();
-            redisTemplate.opsForValue().set(key(token), "1", ttlSeconds, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(key(accessToken), "1", ttlSeconds, TimeUnit.SECONDS);
         } catch (Exception e) {
             // 最坏情况下不设置 TTL，以确保撤销生效
-            redisTemplate.opsForValue().set(key(token), "1");
+            redisTemplate.opsForValue().set(key(accessToken), "1");
         }
     }
 
     @Override
-    public boolean isRevoked(String token) {
-        Boolean has = redisTemplate.hasKey(key(token));
+    public boolean isRevoked(String accessToken) {
+        Boolean has = redisTemplate.hasKey(key(accessToken));
         return has != null && has;
     }
 
-    private String key(String token) {
-        return PREFIX + token;
+    private String key(String accessToken) {
+        return PREFIX + accessToken;
     }
 
-    private Instant extractExpiry(String token) {
+    private Instant extractExpiry(String accessToken) {
         try {
-            SignedJWT jwt = SignedJWT.parse(token);
+            SignedJWT jwt = SignedJWT.parse(accessToken);
             if (jwt.getJWTClaimsSet().getExpirationTime() == null) return null;
             return jwt.getJWTClaimsSet().getExpirationTime().toInstant();
         } catch (Exception e) {

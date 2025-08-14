@@ -5,15 +5,16 @@ import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Redis Token 服务实现
@@ -67,14 +68,14 @@ public class RedisTokenService implements TokenService {
     }
 
     @Override
-    public boolean validateToken(String token) {
-        Optional<TokenInfo> infoOpt = readToken(token);
+    public boolean validateToken(String accessToken) {
+        Optional<TokenInfo> infoOpt = readToken(accessToken);
         return infoOpt.filter(info -> !info.isExpired()).isPresent();
     }
 
     @Override
-    public Optional<UserDetails> getUserDetails(String token) {
-        Optional<TokenInfo> infoOpt = readToken(token);
+    public Optional<UserDetails> getUserDetails(String accessToken) {
+        Optional<TokenInfo> infoOpt = readToken(accessToken);
         return infoOpt.filter(info -> !info.isExpired()).map(info -> User.withUsername(info.getUsername())
                 .password("")
                 .authorities("ROLE_USER")
@@ -82,8 +83,8 @@ public class RedisTokenService implements TokenService {
     }
 
     @Override
-    public Optional<TokenInfo> refreshToken(String token) {
-        Optional<TokenInfo> origOpt = readToken(token);
+    public Optional<TokenInfo> refreshToken(String refreshToken) {
+        Optional<TokenInfo> origOpt = readToken(refreshToken);
         if (origOpt.isEmpty()) return Optional.empty();
         TokenInfo orig = origOpt.get();
         if (LocalDateTime.now()
@@ -113,24 +114,24 @@ public class RedisTokenService implements TokenService {
 
         // 替换用户集合中的 token
         SetOperations<String, Object> setOps = redisTemplate.opsForSet();
-        setOps.remove(userTokensKey(orig.getUsername()), token);
+        setOps.remove(userTokensKey(orig.getUsername()), refreshToken);
         setOps.add(userTokensKey(orig.getUsername()), newToken);
         redisTemplate.expire(userTokensKey(orig.getUsername()), java.time.Duration.ofSeconds(seconds));
 
         // 删除旧 token
-        redisTemplate.delete(tokenKey(token));
+        redisTemplate.delete(tokenKey(refreshToken));
         return Optional.of(newInfo);
     }
 
     @Override
-    public void revokeToken(String token) {
-        Optional<TokenInfo> infoOpt = readToken(token);
+    public void revokeToken(String accessToken) {
+        Optional<TokenInfo> infoOpt = readToken(accessToken);
         if (infoOpt.isPresent()) {
             TokenInfo info = infoOpt.get();
-            redisTemplate.delete(tokenKey(token));
-            redisTemplate.opsForSet().remove(userTokensKey(info.getUsername()), token);
+            redisTemplate.delete(tokenKey(accessToken));
+            redisTemplate.opsForSet().remove(userTokensKey(info.getUsername()), accessToken);
 
-            authenticationHook.onTokenRevoked(token);
+            authenticationHook.onTokenRevoked(accessToken);
         }
     }
 
@@ -155,12 +156,12 @@ public class RedisTokenService implements TokenService {
         return size == null ? 0 : size.intValue();
     }
 
-    private String tokenKey(String token) {
+    private String tokenKey(String accessToken) {
         String prefix = properties.getAuth().getToken().getRedis().getKeyPrefix();
         if (!prefix.endsWith(":")) {
             prefix = prefix + ":";
         }
-        return prefix + "token:" + token;
+        return prefix + "token:" + accessToken;
     }
 
     private String userTokensKey(String username) {
@@ -171,10 +172,10 @@ public class RedisTokenService implements TokenService {
         return prefix + "user:" + username + ":tokens";
     }
 
-    private Optional<TokenInfo> readToken(String token) {
+    private Optional<TokenInfo> readToken(String accessToken) {
         try {
             TokenInfo info =
-                    JsonUtils.fromString((String) redisTemplate.opsForValue().get(tokenKey(token)), TokenInfo.class);
+                    JsonUtils.fromString((String) redisTemplate.opsForValue().get(tokenKey(accessToken)), TokenInfo.class);
             return Optional.of(info);
         } catch (Exception e) {
             log.warn("解析 Redis Token 失败: {}", e.getMessage());

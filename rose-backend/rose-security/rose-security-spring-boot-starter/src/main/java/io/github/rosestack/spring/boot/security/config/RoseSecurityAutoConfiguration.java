@@ -14,14 +14,8 @@ import io.github.rosestack.spring.boot.security.core.support.impl.DefaultAuthent
 import io.github.rosestack.spring.boot.security.core.support.impl.InMemoryLoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.support.impl.LoggingAuditEventPublisher;
 import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
-import io.github.rosestack.spring.boot.security.jwt.ClaimMapper;
-import io.github.rosestack.spring.boot.security.jwt.InMemoryRevocationStore;
-import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
-import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
+import io.github.rosestack.spring.boot.security.jwt.*;
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -48,6 +42,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -166,13 +164,13 @@ public class RoseSecurityAutoConfiguration {
     public AuditEventPublisher auditEventPublisher() {
         return new LoggingAuditEventPublisher();
     }
+
     @Bean
     @ConditionalOnMissingBean(TokenRevocationStore.class)
     @ConditionalOnBean(RedisTemplate.class)
     public TokenRevocationStore redisRevocationStore(RedisTemplate<String, Object> redisTemplate) {
-        return new io.github.rosestack.spring.boot.security.jwt.RedisRevocationStore(redisTemplate);
+        return new RedisRevocationStore(redisTemplate);
     }
-
 
     // JWT 开关：开启时注册 JwtTokenService 作为首选 TokenService
     @Bean
@@ -180,19 +178,33 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     @Primary
     public TokenService jwtTokenService(
-            RoseSecurityProperties properties,
             AuthenticationHook authenticationHook,
-            ObjectProvider<ClaimMapper> claimMapperProvider,
-            ObjectProvider<TokenRevocationStore> revocationStoreProvider) {
+            ObjectProvider<TokenRevocationStore> revocationStoreProvider,
+            JwtTokenProcessor jwtTokenProcessor) {
+        TokenRevocationStore revocationStore = revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
+        return new JwtTokenService(properties, authenticationHook, revocationStore, jwtTokenProcessor);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
+    @ConditionalOnMissingBean
+    public JwtKeyManager jwtKeyManager() {
+        return new JwtKeyManager(properties);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
+    @ConditionalOnMissingBean
+    public JwtTokenProcessor jwtTokenProcessor(JwtKeyManager jwtKeyManager, ObjectProvider<ClaimMapper> claimMapperProvider) {
         ClaimMapper claimMapper = claimMapperProvider.getIfAvailable();
-        TokenRevocationStore revocationStore =
-                revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
-        return new JwtTokenService(properties, authenticationHook, claimMapper, revocationStore);
+        JwtTokenProcessorImpl impl = new JwtTokenProcessorImpl(properties, jwtKeyManager, claimMapper);
+        JwtSupport.setProcessor(impl);
+        return impl;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http, RoseSecurityProperties properties, TokenAuthenticationFilter tokenAuthenticationFilter)
+            HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter)
             throws Exception {
         String loginPath = properties.getAuth().getLoginPath();
         String logoutPath = properties.getAuth().getLogoutPath();
