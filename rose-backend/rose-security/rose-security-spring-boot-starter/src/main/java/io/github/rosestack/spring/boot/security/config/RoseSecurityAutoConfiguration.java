@@ -1,6 +1,10 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.boot.security.account.CaptchaService;
+import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.account.impl.InMemoryLoginAttemptService;
+import io.github.rosestack.spring.boot.security.account.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.auth.controller.AuthController;
 import io.github.rosestack.spring.boot.security.auth.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.auth.service.TokenService;
@@ -10,8 +14,15 @@ import io.github.rosestack.spring.boot.security.extension.AuditEventPublisher;
 import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
 import io.github.rosestack.spring.boot.security.extension.DefaultAuthenticationHook;
 import io.github.rosestack.spring.boot.security.extension.LoggingAuditEventPublisher;
+import io.github.rosestack.spring.boot.security.jwt.ClaimMapper;
+import io.github.rosestack.spring.boot.security.jwt.InMemoryRevocationStore;
+import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
+import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -35,10 +46,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -69,18 +76,20 @@ public class RoseSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(TokenService.class)
+    @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "memory")
     public TokenService tokenService(RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
         return new MemoryTokenService(properties, authenticationHook);
     }
 
     @Bean
-    @ConditionalOnMissingBean(TokenService.class)
+    @ConditionalOnMissingBean
     @ConditionalOnBean(RedisTemplate.class)
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
     public TokenService tokenService(
-            RedisTemplate redisTemplate, RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
+            RedisTemplate<String, Object> redisTemplate,
+            RoseSecurityProperties properties,
+            AuthenticationHook authenticationHook) {
         return new RedisTokenService(redisTemplate, properties, authenticationHook);
     }
 
@@ -98,7 +107,7 @@ public class RoseSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(AuthenticationManager.class)
+    @ConditionalOnMissingBean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
@@ -115,25 +124,62 @@ public class RoseSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(AuthController.class)
+    @ConditionalOnMissingBean
     public AuthController authController(
             TokenService tokenService,
             AuthenticationManager authenticationManager,
             AuthenticationHook authenticationHook,
-            AuditEventPublisher auditEventPublisher) {
-        return new AuthController(tokenService, authenticationManager, authenticationHook, auditEventPublisher);
+            AuditEventPublisher auditEventPublisher,
+            LoginAttemptService loginAttemptService,
+            CaptchaService captchaService) {
+        AuthController controller = new AuthController(
+                tokenService,
+                authenticationManager,
+                authenticationHook,
+                auditEventPublisher,
+                loginAttemptService,
+                captchaService);
+        return controller;
     }
 
     @Bean
-    @ConditionalOnMissingBean(AuthenticationHook.class)
+    @ConditionalOnMissingBean
     public AuthenticationHook authenticationHook() {
         return new DefaultAuthenticationHook();
     }
 
     @Bean
-    @ConditionalOnMissingBean(AuditEventPublisher.class)
+    @ConditionalOnMissingBean
+    public LoginAttemptService loginAttemptService(RoseSecurityProperties properties) {
+        return new InMemoryLoginAttemptService(properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CaptchaService captchaService() {
+        return new NoopCaptchaService();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public AuditEventPublisher auditEventPublisher() {
         return new LoggingAuditEventPublisher();
+    }
+
+    // JWT 开关：开启时注册 JwtTokenService 作为首选 TokenService
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
+    @ConditionalOnMissingBean
+    @org.springframework.context.annotation.Primary
+    public TokenService jwtTokenService(
+            RoseSecurityProperties properties,
+            AuthenticationHook authenticationHook,
+            org.springframework.beans.factory.ObjectProvider<ClaimMapper> claimMapperProvider,
+            org.springframework.beans.factory.ObjectProvider<TokenRevocationStore> revocationStoreProvider) {
+        ClaimMapper claimMapper = claimMapperProvider.getIfAvailable();
+        TokenRevocationStore revocationStore =
+                revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
+        return new JwtTokenService(properties, authenticationHook, claimMapper, revocationStore);
     }
 
     @Bean
@@ -154,11 +200,12 @@ public class RoseSecurityAutoConfiguration {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(permits.toArray(new String[0])).permitAll()
-                                .requestMatchers(basePath).authenticated()
-                                .anyRequest().permitAll()
-                )
+                .authorizeHttpRequests(auth -> auth.requestMatchers(permits.toArray(new String[0]))
+                        .permitAll()
+                        .requestMatchers(basePath)
+                        .authenticated()
+                        .anyRequest()
+                        .permitAll())
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

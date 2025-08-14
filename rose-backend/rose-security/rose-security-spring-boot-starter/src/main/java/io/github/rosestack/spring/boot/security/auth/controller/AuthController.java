@@ -1,6 +1,8 @@
 package io.github.rosestack.spring.boot.security.auth.controller;
 
 import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.spring.boot.security.account.CaptchaService;
+import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.auth.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.auth.service.TokenService;
@@ -43,18 +45,32 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AuthenticationHook authenticationHook;
     private final AuditEventPublisher auditEventPublisher;
+    private final LoginAttemptService loginAttemptService;
+    private final CaptchaService captchaService;
 
     /**
      * 用户登录
      */
     @PostMapping("${rose.security.auth.login-path:/api/auth/login}")
-    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<TokenInfo>> login(@RequestBody LoginRequest request) {
         try {
             // 登录前钩子
             if (!authenticationHook.beforeLogin(request.getUsername(), request.getPassword())) {
                 log.warn("登录被扩展钩子拦截，用户:{}", request.getUsername());
                 return ResponseEntity.badRequest().body(ApiResponse.error("登录被拦截"));
             }
+
+            // 登录失败锁定检查与验证码校验（可选）
+            if (loginAttemptService != null && loginAttemptService.isLocked(request.getUsername())) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("账户已锁定，请稍后再试"));
+            }
+            if (captchaService != null && request.getCaptcha() != null) {
+                boolean ok = captchaService.validate("login", request.getUsername(), request.getCaptcha());
+                if (!ok) {
+                    return ResponseEntity.badRequest().body(ApiResponse.error("验证码错误"));
+                }
+            }
+
             // 验证用户凭证
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -63,6 +79,11 @@ public class AuthController {
 
             // 创建Token
             TokenInfo tokenInfo = tokenService.createToken(userDetails);
+
+            // 记录成功
+            if (loginAttemptService != null) {
+                loginAttemptService.recordSuccess(userDetails.getUsername());
+            }
 
             log.info("用户 {} 登录成功", userDetails.getUsername());
             authenticationHook.onLoginSuccess(userDetails.getUsername(), authentication);
@@ -73,6 +94,9 @@ public class AuthController {
         } catch (AuthenticationException e) {
             log.warn("用户 {} 登录失败: {}", request.getUsername(), e.getMessage());
             authenticationHook.onLoginFailure(request.getUsername(), e);
+            if (loginAttemptService != null) {
+                loginAttemptService.recordFailure(request.getUsername());
+            }
             auditEventPublisher.publish(
                     AuditEvent.loginFailure(request.getUsername(), Map.of("error", e.getMessage())));
             return ResponseEntity.badRequest().body(ApiResponse.error("用户名或密码错误"));
@@ -83,7 +107,7 @@ public class AuthController {
      * 用户注销
      */
     @PostMapping("${rose.security.auth.logout-path:/api/auth/logout}")
-    public ResponseEntity<ApiResponse> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         String token = TokenAuthenticationFilter.extractTokenFromRequest(request);
         String username = null;
 
@@ -113,7 +137,7 @@ public class AuthController {
      * 刷新Token
      */
     @PostMapping("${rose.security.auth.refresh-path:/api/auth/refresh}")
-    public ResponseEntity<ApiResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<ApiResponse<Optional<TokenInfo>>> refreshToken(@RequestBody RefreshTokenRequest request) {
         try {
             // 刷新前钩子
             if (!authenticationHook.beforeTokenRefresh(request.getRefreshToken())) {
@@ -140,7 +164,7 @@ public class AuthController {
      * 获取当前用户信息
      */
     @GetMapping("/api/auth/me")
-    public ResponseEntity<ApiResponse> getCurrentUser(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCurrentUser(HttpServletRequest request) {
         String token = TokenAuthenticationFilter.extractTokenFromRequest(request);
         if (token != null) {
             var userDetails = tokenService.getUserDetails(token);
@@ -161,6 +185,7 @@ public class AuthController {
     public static class LoginRequest {
         private String username;
         private String password;
+        private String captcha; // 可选：验证码
     }
 
     /**
