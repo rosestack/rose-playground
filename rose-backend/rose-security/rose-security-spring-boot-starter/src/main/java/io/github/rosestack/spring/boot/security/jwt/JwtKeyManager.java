@@ -5,9 +5,6 @@ import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -19,6 +16,10 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * JWT 密钥管理：支持 HS/RS/ES 与 JWK/Keystore
@@ -37,6 +38,26 @@ public class JwtKeyManager {
     private volatile Instant keystoreLoadedAt;
     private volatile java.security.PrivateKey cachedPrivateKey;
     private volatile java.security.PublicKey cachedPublicKey;
+
+    // 可注入的 RestTemplate；若未设置，则使用默认的 SimpleClientHttpRequestFactory 构建
+    private volatile RestTemplate restTemplate;
+
+    public void setRestTemplate(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    private RestTemplate getRestTemplate() {
+        RestTemplate rt = this.restTemplate;
+        if (rt == null) {
+            SimpleClientHttpRequestFactory f = new SimpleClientHttpRequestFactory();
+            f.setConnectTimeout((int) properties.getJwt().getKey().getJwkConnectTimeoutMillis());
+            f.setReadTimeout((int) properties.getJwt().getKey().getJwkReadTimeoutMillis());
+            rt = new RestTemplate(f);
+            this.restTemplate = rt;
+        }
+        return rt;
+    }
+
 
     private final RoseSecurityProperties properties;
 
@@ -91,7 +112,10 @@ public class JwtKeyManager {
                 JWKSet jwks = loadJwks();
                 Object v = selectVerifierByAlg(jwks);
                 if (isLoggingEnabled()) {
-                    log.debug("Selected JWK verifier alg={}, keys={}", algorithm().getName(), jwks.getKeys().size());
+                    log.debug(
+                            "Selected JWK verifier alg={}, keys={}",
+                            algorithm().getName(),
+                            jwks.getKeys().size());
                 }
                 return v;
             }
@@ -116,8 +140,13 @@ public class JwtKeyManager {
                     return new MACVerifier(properties.getJwt().getSecret().getBytes());
             }
         } catch (Exception ex) {
-            // 记录最小日志，避免抛出过多细节
-            return new MACVerifier(properties.getJwt().getSecret().getBytes());
+            if (isLoggingEnabled()) {
+                log.warn("Create default verifier failed: {}", ex.getMessage());
+            }
+            if (properties.getJwt().isFallbackToSecretForVerify()) {
+                return new MACVerifier(properties.getJwt().getSecret().getBytes());
+            }
+            throw ex;
         }
     }
 
@@ -135,7 +164,9 @@ public class JwtKeyManager {
             }
             cachedPrivateKey = (PrivateKey) ks.getKey(
                     alias,
-                    key.getKeystorePassword() != null ? key.getKeystorePassword().toCharArray() : null);
+                    key.getKeystorePassword() != null
+                            ? key.getKeystorePassword().toCharArray()
+                            : null);
             java.security.cert.Certificate cert = ks.getCertificate(alias);
             if (cert != null) {
                 cachedPublicKey = cert.getPublicKey();
@@ -146,12 +177,14 @@ public class JwtKeyManager {
     }
 
     private boolean isLoggingEnabled() {
-        return properties.getObservability() == null || properties.getObservability().isStructuredLoggingEnabled();
+        return properties.getObservability() == null
+                || properties.getObservability().isStructuredLoggingEnabled();
     }
 
     private Object selectVerifierByAlg(JWKSet jwks) throws Exception {
         for (JWK k : jwks.getKeys()) {
-            if (k.getAlgorithm() != null && k.getAlgorithm().getName().equals(algorithm().getName())) {
+            if (k.getAlgorithm() != null
+                    && k.getAlgorithm().getName().equals(algorithm().getName())) {
                 return toVerifier(k);
             }
         }
@@ -229,14 +262,12 @@ public class JwtKeyManager {
         while (attempt < max) {
             attempt++;
             try {
-                java.net.URL url = new java.net.URL(uri);
-                java.net.URLConnection conn = url.openConnection();
-                conn.setConnectTimeout(properties.getJwt().getKey().getJwkConnectTimeoutMillis());
-                conn.setReadTimeout(properties.getJwt().getKey().getJwkReadTimeoutMillis());
-                try (InputStream is = conn.getInputStream()) {
-                    JWKSet set = JWKSet.load(is);
-                    return set;
+                String json = getRestTemplate().getForObject(uri, String.class);
+                if (json == null || json.isEmpty()) {
+                    throw new IllegalStateException("Empty JWKS response");
                 }
+                JWKSet set = JWKSet.parse(json);
+                return set;
             } catch (Exception ex) {
                 last = ex;
                 Thread.sleep(Math.min(500L * attempt, 1500L));
@@ -246,6 +277,9 @@ public class JwtKeyManager {
             return cachedJwkSet;
         }
         if (last != null) {
+            if (isLoggingEnabled()) {
+                log.warn("Fetch JWKS failed after {} attempts: {}", attempt, last.getMessage());
+            }
             throw last;
         }
         throw new IllegalStateException("JWKS 获取失败且无可用缓存");
@@ -268,7 +302,8 @@ public class JwtKeyManager {
         JWK match = kid != null ? jwks.getKeyByKeyId(kid) : null;
         if (match == null) {
             for (JWK k : jwks.getKeys()) {
-                if (k.getAlgorithm() != null && k.getAlgorithm().getName().equals(algorithm().getName())) {
+                if (k.getAlgorithm() != null
+                        && k.getAlgorithm().getName().equals(algorithm().getName())) {
                     match = k;
                     break;
                 }
@@ -286,5 +321,4 @@ public class JwtKeyManager {
         }
         throw new IllegalStateException("未在 JWKS 中找到可用的 verifier");
     }
-
 }

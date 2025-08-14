@@ -19,6 +19,9 @@ import io.github.rosestack.spring.boot.security.jwt.InMemoryRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -45,10 +48,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Rose Security 自动配置类

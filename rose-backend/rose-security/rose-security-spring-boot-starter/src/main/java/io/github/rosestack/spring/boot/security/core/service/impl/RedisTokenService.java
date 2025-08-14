@@ -1,10 +1,10 @@
 package io.github.rosestack.spring.boot.security.core.service.impl;
 
 import io.github.rosestack.core.util.JsonUtils;
+import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;

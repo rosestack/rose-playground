@@ -380,9 +380,14 @@ public class RoseSecurityProperties {
          */
         private String issuer; // iss
 
-        private java.util.List<String> audience = new java.util.ArrayList<>(); // aud
+        private List<String> audience = new ArrayList<>(); // aud
         private boolean requireIssuedAt = true; // 是否强制要求 iat
         private boolean requireNotBefore = false; // 是否强制要求 nbf
+
+        /**
+         * 验证器创建失败时是否回退到 HS Secret 验证
+         */
+        private boolean fallbackToSecretForVerify = false;
     }
 
     /**
