@@ -3,6 +3,7 @@ package io.github.rosestack.spring.boot.security.auth.service.impl;
 import io.github.rosestack.core.util.JsonUtils;
 import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.auth.service.TokenService;
+import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,8 @@ public class RedisTokenService implements TokenService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final RoseSecurityProperties properties;
+    private final AuthenticationHook authenticationHook;
+
 
     @Override
     public TokenInfo createToken(UserDetails userDetails) {
@@ -127,6 +130,8 @@ public class RedisTokenService implements TokenService {
             TokenInfo info = infoOpt.get();
             redisTemplate.delete(tokenKey(token));
             redisTemplate.opsForSet().remove(userTokensKey(info.getUsername()), token);
+
+            authenticationHook.onTokenRevoked(token);
         }
     }
 
@@ -140,6 +145,8 @@ public class RedisTokenService implements TokenService {
                 redisTemplate.delete(tokenKey((String) t));
             }
             redisTemplate.delete(key);
+
+            authenticationHook.onRevoked(username);
         }
     }
 

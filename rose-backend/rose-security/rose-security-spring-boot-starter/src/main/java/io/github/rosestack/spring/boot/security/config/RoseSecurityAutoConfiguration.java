@@ -22,7 +22,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -36,6 +35,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -68,16 +71,16 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(TokenService.class)
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "memory")
-    public TokenService tokenService(RoseSecurityProperties properties) {
-        return new MemoryTokenService(properties);
+    public TokenService tokenService(RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
+        return new MemoryTokenService(properties, authenticationHook);
     }
 
     @Bean
     @ConditionalOnMissingBean(TokenService.class)
-    @ConditionalOnBean(StringRedisTemplate.class)
+    @ConditionalOnBean(RedisTemplate.class)
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
-    public TokenService tokenService(RedisTemplate redisTemplate, RoseSecurityProperties properties) {
-        return new RedisTokenService(redisTemplate, properties);
+    public TokenService tokenService(RedisTemplate redisTemplate, RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
+        return new RedisTokenService(redisTemplate, properties, authenticationHook);
     }
 
     @Bean
@@ -138,17 +141,27 @@ public class RoseSecurityAutoConfiguration {
         String loginPath = properties.getAuth().getLoginPath();
         String logoutPath = properties.getAuth().getLogoutPath();
         String refreshPath = properties.getAuth().getRefreshPath();
+        String basePath = properties.getAuth().getBashPath();
+        String[] permitPaths = properties.getAuth().getPermitPaths();
         boolean stateless = properties.isStateless();
+
+        List<String> permits = new ArrayList<>();
+        Collections.addAll(permits, permitPaths);
+        permits.add(loginPath);
+        permits.add(logoutPath);
+        permits.add(refreshPath);
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(
                         stateless ? SessionCreationPolicy.STATELESS : SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(
-                        auth -> auth.requestMatchers(loginPath, logoutPath, refreshPath)
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated())
-                .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(permits.toArray(new String[0])).permitAll()
+                        .requestMatchers(basePath).authenticated()
+                        .anyRequest().permitAll());
+
+        if (stateless) {
+            http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        }
 
         return http.build();
     }

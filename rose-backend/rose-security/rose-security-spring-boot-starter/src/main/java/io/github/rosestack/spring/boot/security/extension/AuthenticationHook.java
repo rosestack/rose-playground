@@ -27,7 +27,7 @@ public interface AuthenticationHook {
     /**
      * 登录成功后钩子
      *
-     * @param username 用户名
+     * @param username       用户名
      * @param authentication 认证对象
      */
     default void onLoginSuccess(String username, Authentication authentication) {
@@ -37,7 +37,7 @@ public interface AuthenticationHook {
     /**
      * 登录失败后钩子
      *
-     * @param username 用户名
+     * @param username  用户名
      * @param exception 认证异常
      */
     default void onLoginFailure(String username, AuthenticationException exception) {
@@ -62,6 +62,22 @@ public interface AuthenticationHook {
         // 默认空实现
     }
 
+    default void onTokenExpired(String token) {
+        // 默认空实现
+    }
+
+    default void onTokenRevoked(String token) {
+        // 默认空实现
+    }
+
+    default void onLockOut(String username) {
+        // 默认空实现
+    }
+
+    default void onRevoked(String username) {
+        // 默认空实现
+    }
+
     /**
      * Token刷新前钩子
      *
@@ -75,7 +91,7 @@ public interface AuthenticationHook {
     /**
      * Token刷新成功后钩子
      *
-     * @param username 用户名
+     * @param username       用户名
      * @param newAccessToken 新的访问Token
      */
     default void onTokenRefreshSuccess(String username, String newAccessToken) {

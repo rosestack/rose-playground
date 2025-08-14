@@ -2,6 +2,7 @@ package io.github.rosestack.spring.boot.security.auth.service.impl;
 
 import io.github.rosestack.spring.boot.security.auth.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.auth.service.TokenService;
+import io.github.rosestack.spring.boot.security.extension.AuthenticationHook;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MemoryTokenService implements TokenService {
 
     private final RoseSecurityProperties properties;
+    private final AuthenticationHook authenticationHook;
 
     private final Map<String, TokenInfo> tokens = new ConcurrentHashMap<>();
     private final Map<String, Integer> userTokenCount = new ConcurrentHashMap<>();
@@ -99,6 +101,7 @@ public class MemoryTokenService implements TokenService {
         TokenInfo info = tokens.remove(token);
         if (info != null) {
             userTokenCount.merge(info.getUsername(), -1, Integer::sum);
+            authenticationHook.onTokenRevoked(token);
         }
     }
 
@@ -111,6 +114,7 @@ public class MemoryTokenService implements TokenService {
             }
             return match;
         });
+        authenticationHook.onRevoked(username);
     }
 
     @Override

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -57,7 +58,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     log.debug("已为用户 {} 设置认证上下文", userDetails.getUsername());
                 }
             } else {
-                log.debug("Token无效: {}", token.substring(0, Math.min(token.length(), 8)) + "...");
+                log.debug("Token无效: {}", StringUtils.abbreviate(token, 8));
             }
         }
 
@@ -81,11 +82,21 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String loginPath = properties.getAuth().getLoginPath();
         String logoutPath = properties.getAuth().getLogoutPath();
         String refreshPath = properties.getAuth().getRefreshPath();
-        // 跳过登录、注销、刷新等认证端点以及公共端点
-        return path.equals(loginPath)
-                || path.equals(logoutPath)
-                || path.equals(refreshPath)
-                || path.startsWith("/public/")
-                || path.startsWith("/actuator/");
+        String[] permitPaths = properties.getAuth().getPermitPaths();
+
+        if (path.equals(loginPath) || path.equals(logoutPath) || path.equals(refreshPath)) {
+            return true;
+        }
+
+        // 配置化的公共端点放行
+        if (permitPaths != null && permitPaths.length > 0) {
+            org.springframework.util.AntPathMatcher matcher = new org.springframework.util.AntPathMatcher();
+            for (String pattern : permitPaths) {
+                if (matcher.match(pattern, path)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
