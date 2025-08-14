@@ -1,50 +1,109 @@
-我想开发一个Spring Boot Starter，实现完整的认证与授权功能模块。具体需求如下：
+我需要开发一个名为 `rose-security-spring-boot-starter` 的 Spring Boot Starter 模块，实现完整的认证与授权功能。请按照以下详细规范进行开发：
 
-**核心功能要求：**
-1. 基础认证：用户名/密码登录，集成 Spring Security 过滤器链与自定义 AuthenticationProvider
-2. 密码与账号安全：密码复杂度/历史/过期策略，登录失败锁定、防爆破与验证码（可插拔）
-3. 用户生命周期：提供事件与接口（参考样例），不内置注册/找回/重置/资料修改/模板；具体流程由使用方实现
-4. 会话管理：默认无状态（stateless API）；可选开启会话：会话超时、并发会话控制、Remember-Me、主动下线（踢出），分布式会话（可选 Redis）
-5. Token 与密钥：仅面向 JWT（与 OAuth2 无关）。支持 HS256/RS256/ES256 等算法的签名验证，JWK/Keystore 密钥装载与轮换，时钟偏移校正（clock skew），标准声明校验（exp/iat/nbf/aud/iss/sub），自定义 Claim 到 GrantedAuthority/Scope 的映射；提供可选的 Token 撤销/黑名单 SPI；不负责令牌的颁发/刷新。
-6. 第三方登录与 SSO：后台仅作为资源服务器/OAuth2 Client；前端负责跳转与授权流程；不内置各家 IdP Connector/SDK，SAML2/企业单点为可选集成样例
-7. 多因子认证（MFA）：提供 TOTP 参考实现与 SPI；短信/邮件验证码由使用方接入网关，WebAuthn/FIDO2 为可选扩展
-8. 授权模型：仅提供基于 Spring Security 的权限校验与注解支持；不内置用户-角色-权限数据模型，权限由使用方通过 UserDetailsService 提供
-9. 访问控制：提供 URL/方法级权限注解与表达式，数据行/列级权限不内置实现，仅提供扩展点
-10. 服务到服务认证：API Key/HMAC/Client Credentials，密钥管理与轮换
-11. 安全防护：CSRF/CORS、IP 白/黑名单、速率限制与节流、防重放与时间窗校验
-12. 审计与合规：提供审计事件与日志 Hook；不内置审计存储/检索 UI/留存策略，实现由使用方决定
-13. 可观测性：认证成功率、延迟等指标，结构化日志与 Trace 上报
-14. 配置与扩展：Starter 自动配置、配置属性映射；SPI 扩展认证流与事件钩子（登录/注册前后）、Webhooks
-15. 国际化：多语言与时区支持，消息资源可自定义
-16. 性能与伸缩：缓存策略、冷/热点配置、无共享横向扩展与压测基线
+**项目结构要求：**
+- 在当前工作目录下创建 `rose-security-spring-boot-starter` 模块
+- 使用标准的 Maven 项目结构
+- 包名前缀：`io.github.rosestack.spring.boot.security`
 
+**技术栈约束：**
+- Spring Boot 3.x
+- Spring Security 6+
+- Java 17+
+- 面向 Servlet 堆栈（Spring MVC）
+- 支持前后端分离架构
+- 默认无状态认证（基于 token）
 
-**技术实现要求：**
-- 基于 Spring Boot 3.x / Spring Security 6+
-- 面向前后端分离的后端 API：默认无状态、基于 JWT 的认证；仅聚焦 Servlet 堆栈（Spring MVC），WebFlux 可选
-- 不实现授权服务器；聚焦认证/鉴权与 JWT 验证能力
-- 提供自动配置与配置属性（前缀建议：rose.auth.*）
-- 核心扩展点 SPI：UserDetailsService、AuthenticationProvider、PasswordEncoder、AuthenticationEventPublisher、PermissionEvaluator、AccessDecisionVoter、MethodSecurityExpressionHandler、MfaProvider、TokenRevocationStore、AuditEventPublisher；可选 TenantResolver
-- JWT 能力：HS256/RS256/ES256、JWK/Keystore 装载与轮换、clock skew 校正、标准声明校验（exp/iat/nbf/aud/iss/sub）、Claim→GrantedAuthority/Scope 映射
-- 会话能力：默认 stateless；可选开启会话：会话超时、并发控制、Remember-Me；分布式会话（可选 Redis）
-- 安全响应与异常：统一异常与错误码；AuthenticationEntryPoint/AccessDeniedHandler 定制
-- 可观测性：Micrometer 指标、结构化日志、Trace 上报
-- 示例与文档：提供最小示例与使用文档；示例中的登录/注册仅作演示，不作为 Starter 内置功能
+**功能实现优先级（按顺序开发）：**
 
-**配置灵活性：**
-- 配置前缀：rose.security.*（示例：rose.security.jwt.*, rose.security.oauth2.*）
-- 开关化控制：各模块可独立启用/禁用（如 jwt.enabled, oauth2.enabled, mfa.enabled, cors.enabled）
-- 可替换实现：UserDetailsService、AuthenticationProvider、PermissionEvaluator、MfaProvider、TokenRevocationStore、AuditEventPublisher 等均可通过 Spring Bean 覆盖
-- 策略可配置：密码策略、会话并发、限流/节流、跨域、CSRF、安全头等
-- 数据存储抽象：Starter 不强绑定数据源，Redis/DB/内存由使用方选择并配置
-- 国际化与消息：支持自定义 MessageSource 与时区
-- 扩展钩子：登录/注册/鉴权前后事件 Hook、Webhooks（如需）
-- 生产建议：提供安全默认值（Secure by default），但允许完全自定义
+1. **基础认证模块** (`rose.security.auth.*`)
+    - 集成 Spring Security 拦截器
+    - 可配置登录端点（默认 `/api/auth/login`）
+    - 用户名/密码认证
+    - 短 token 生成与管理
+    - Token 超时配置
+    - Token 并发控制
+    - 主动下线功能
+    - 可选 Redis 分布式存储
 
-**范围边界说明：**
-- 本 Starter 聚焦认证与鉴权框架能力，不内置具体用户、角色、权限、组织、多租户等数据模型与隔离策略
-- 本 Starter 不实现授权服务器
-- 使用方需实现 UserDetailsService（或 ReactiveUserDetailsService），并按需提供 GrantedAuthority/Scope 等权限信息
-- 如需组织/层级/行列级数据权限，请在业务侧实现并通过扩展点（自定义 Filter、AccessDecisionVoter、PermissionEvaluator、MethodSecurityExpressionHandler 等）接入
+2. **会话管理模块** (`rose.security.session.*`)
+    - 默认无状态模式
+    - 可配置会话策略
 
-请提供完整的项目结构、核心代码实现、配置示例和使用说明。
+3. **扩展机制模块** (`rose.security.extension.*`)
+    - SPI 接口定义
+    - 认证流程钩子（登录前后、成功失败）
+    - 审计事件接口
+    - 日志 Hook 机制
+
+4. **账号安全模块** (`rose.security.account.*`)
+    - 密码复杂度策略
+    - 密码历史记录
+    - 密码过期策略
+    - 登录失败锁定
+    - 防暴力破解
+    - 可插拔验证码机制
+
+5. **JWT 模块** (`rose.security.jwt.*`)
+    - 支持 HS256/RS256/ES256 算法
+    - JWK/Keystore 密钥管理
+    - 密钥轮换机制
+    - 时钟偏移校正
+    - 标准声明校验（exp/iat/nbf/aud/iss/sub）
+    - 自定义 Claim 映射
+    - Token 撤销/黑名单 SPI
+
+6. **多因子认证模块** (`rose.security.mfa.*`)
+    - TOTP 参考实现
+    - MFA SPI 接口
+
+7. **安全防护模块** (`rose.security.protection.*`)
+    - CORS 配置
+    - IP 白/黑名单
+    - 速率限制
+    - 防重放攻击
+    - 时间窗校验
+
+8. **可观测性模块** (`rose.security.observability.*`)
+    - 认证成功率指标
+    - 延迟监控
+    - 结构化日志
+    - Trace 上报
+
+9. **OAuth2 Client 模块** (`rose.security.oauth2.*`)
+    - OAuth2 客户端登录
+    - 多提供商支持
+
+**配置规范：**
+- 配置前缀：`rose.security.*`
+- 子模块配置示例：
+    - `rose.security.jwt.enabled=true`
+    - `rose.security.mfa.enabled=false`
+    - `rose.security.oauth2.enabled=true`
+    - `rose.security.cors.enabled=true`
+- 每个模块都有独立的开关控制
+- 支持通过 Spring Bean 替换默认实现
+
+**数据存储抽象：**
+- 不强绑定特定数据源
+- 支持 Redis/数据库/内存存储
+- 由使用方选择和配置存储方案
+
+**安全默认值：**
+- 提供生产级安全默认配置
+- 遵循 "Secure by default" 原则
+- 允许完全自定义覆盖
+
+**边界说明：**
+- 专注认证与鉴权框架能力
+- 不包含用户、角色、权限等具体数据模型
+- 不实现授权服务器
+- 使用方需实现 `UserDetailsService`
+
+**交付要求：**
+1. 完整的项目结构和 Maven 配置
+2. 核心代码实现（确保可编译通过）
+3. 配置类和属性定义
+4. 使用示例和文档
+5. 单元测试（基础覆盖）
+
+请按照上述优先级顺序逐步实现，每完成一个模块后确认代码可以编译通过再继续下一个模块。
