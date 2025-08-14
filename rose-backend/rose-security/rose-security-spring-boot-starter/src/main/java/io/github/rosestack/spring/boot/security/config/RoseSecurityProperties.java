@@ -346,6 +346,26 @@ public class RoseSecurityProperties {
             private Duration rotationInterval = Duration.ofDays(30);
 
             /**
+             * JWKS 拉取连接超时（毫秒）
+             */
+            private int jwkConnectTimeoutMillis = 2000;
+
+            /**
+             * JWKS 拉取读取超时（毫秒）
+             */
+            private int jwkReadTimeoutMillis = 3000;
+
+            /**
+             * JWKS 拉取最大重试次数（含首次），最小为1
+             */
+            private int jwkMaxRetries = 1;
+
+            /**
+             * 拉取失败时是否回退到缓存（若存在且未超过轮换间隔）
+             */
+            private boolean jwkFallbackToCache = true;
+
+            /**
              * 密钥类型枚举
              */
             public enum KeyType {

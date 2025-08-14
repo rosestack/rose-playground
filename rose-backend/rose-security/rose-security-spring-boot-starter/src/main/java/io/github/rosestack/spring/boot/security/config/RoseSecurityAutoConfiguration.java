@@ -1,10 +1,6 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.YmlPropertySourceFactory;
-import io.github.rosestack.spring.boot.security.core.support.CaptchaService;
-import io.github.rosestack.spring.boot.security.core.support.LoginAttemptService;
-import io.github.rosestack.spring.boot.security.core.support.impl.InMemoryLoginAttemptService;
-import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.core.controller.AuthController;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
@@ -12,16 +8,17 @@ import io.github.rosestack.spring.boot.security.core.service.impl.MemoryTokenSer
 import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuditEventPublisher;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.support.CaptchaService;
+import io.github.rosestack.spring.boot.security.core.support.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.support.impl.DefaultAuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.support.impl.InMemoryLoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.support.impl.LoggingAuditEventPublisher;
+import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.jwt.ClaimMapper;
 import io.github.rosestack.spring.boot.security.jwt.InMemoryRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -48,6 +45,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类

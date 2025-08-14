@@ -6,7 +6,9 @@ import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -15,6 +17,8 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * JWT 密钥管理：支持 HS/RS/ES 与 JWK/Keystore
@@ -23,8 +27,16 @@ import java.security.interfaces.RSAPublicKey;
  * - Keystore：本地 RSA/EC 私钥签名，证书公钥验签
  * - JWK：从远端 JWKS 获取公钥验签（按 kid/alg 匹配）
  */
+@Slf4j
 @RequiredArgsConstructor
 public class JwtKeyManager {
+    // JWKS 缓存
+    private volatile Instant jwksFetchedAt;
+    private volatile JWKSet cachedJwkSet;
+    // Keystore 缓存
+    private volatile Instant keystoreLoadedAt;
+    private volatile java.security.PrivateKey cachedPrivateKey;
+    private volatile java.security.PublicKey cachedPublicKey;
 
     private final RoseSecurityProperties properties;
 
@@ -73,52 +85,111 @@ public class JwtKeyManager {
     }
 
     public Object verifier() throws Exception {
-        // 如果配置为 JWK，优先使用 JWKS 公钥
-        if (properties.getJwt().getKey().getType() == RoseSecurityProperties.Jwt.Key.KeyType.JWK) {
-            return null; // 调用方（JwtTokenService）将通过 getVerifierFor(SignedJWT) 选择具体 verifier
-        }
-        switch (properties.getJwt().getAlgorithm()) {
-            case RS256:
-            case RS384:
-            case RS512: {
-                PublicKey pub = loadCertificatePublicKey();
-                return new RSASSAVerifier((RSAPublicKey) pub);
+        try {
+            if (properties.getJwt().getKey().getType() == RoseSecurityProperties.Jwt.Key.KeyType.JWK) {
+                // 返回当前 JWKS 中匹配算法的第一个 verifier（用于非指定 token 验证场景）
+                JWKSet jwks = loadJwks();
+                Object v = selectVerifierByAlg(jwks);
+                if (isLoggingEnabled()) {
+                    log.debug("Selected JWK verifier alg={}, keys={}", algorithm().getName(), jwks.getKeys().size());
+                }
+                return v;
             }
-            case ES256:
-            case ES384:
-            case ES512: {
-                PublicKey pub = loadCertificatePublicKey();
-                return new ECDSAVerifier((ECPublicKey) pub);
+
+            switch (properties.getJwt().getAlgorithm()) {
+                case RS256:
+                case RS384:
+                case RS512: {
+                    PublicKey pub = loadCertificatePublicKey();
+                    return new RSASSAVerifier((RSAPublicKey) pub);
+                }
+                case ES256:
+                case ES384:
+                case ES512: {
+                    PublicKey pub = loadCertificatePublicKey();
+                    return new ECDSAVerifier((ECPublicKey) pub);
+                }
+                case HS384:
+                case HS512:
+                case HS256:
+                default:
+                    return new MACVerifier(properties.getJwt().getSecret().getBytes());
             }
-            case HS384:
-            case HS512:
-            case HS256:
-            default:
-                return new MACVerifier(properties.getJwt().getSecret().getBytes());
+        } catch (Exception ex) {
+            // 记录最小日志，避免抛出过多细节
+            return new MACVerifier(properties.getJwt().getSecret().getBytes());
         }
     }
 
     private PrivateKey loadPrivateKeyFromKeystore() throws Exception {
         RoseSecurityProperties.Jwt.Key key = properties.getJwt().getKey();
         String path = key.getKeystorePath();
-        if (path == null) throw new IllegalStateException("Keystore path not configured");
-        KeyStore ks = tryLoadKeyStore(path, key.getKeystorePassword());
-        String alias = key.getKeyAlias();
-        if (alias == null) throw new IllegalStateException("Key alias not configured");
-        return (PrivateKey) ks.getKey(
-                alias,
-                key.getKeystorePassword() != null ? key.getKeystorePassword().toCharArray() : null);
+        if (path == null) {
+            throw new IllegalStateException("Keystore path not configured");
+        }
+        if (needReload(keystoreLoadedAt) || cachedPrivateKey == null) {
+            KeyStore ks = tryLoadKeyStore(path, key.getKeystorePassword());
+            String alias = key.getKeyAlias();
+            if (alias == null) {
+                throw new IllegalStateException("Key alias not configured");
+            }
+            cachedPrivateKey = (PrivateKey) ks.getKey(
+                    alias,
+                    key.getKeystorePassword() != null ? key.getKeystorePassword().toCharArray() : null);
+            java.security.cert.Certificate cert = ks.getCertificate(alias);
+            if (cert != null) {
+                cachedPublicKey = cert.getPublicKey();
+            }
+            keystoreLoadedAt = Instant.now();
+        }
+        return cachedPrivateKey;
+    }
+
+    private boolean isLoggingEnabled() {
+        return properties.getObservability() == null || properties.getObservability().isStructuredLoggingEnabled();
+    }
+
+    private Object selectVerifierByAlg(JWKSet jwks) throws Exception {
+        for (JWK k : jwks.getKeys()) {
+            if (k.getAlgorithm() != null && k.getAlgorithm().getName().equals(algorithm().getName())) {
+                return toVerifier(k);
+            }
+        }
+        // 无匹配则回退第一个可用
+        if (!jwks.getKeys().isEmpty()) {
+            return toVerifier(jwks.getKeys().get(0));
+        }
+        throw new IllegalStateException("JWKS 中未找到可用的 verifier");
+    }
+
+    private Object toVerifier(JWK k) throws Exception {
+        if (k instanceof RSAKey) {
+            return new RSASSAVerifier(((RSAKey) k).toRSAPublicKey());
+        } else if (k instanceof ECKey) {
+            return new ECDSAVerifier(((ECKey) k).toECPublicKey());
+        } else if (k instanceof OctetSequenceKey) {
+            return new MACVerifier(((OctetSequenceKey) k).toByteArray());
+        }
+        throw new IllegalStateException("不支持的 JWK 类型: " + k.getClass().getSimpleName());
     }
 
     private java.security.PublicKey loadCertificatePublicKey() throws Exception {
         RoseSecurityProperties.Jwt.Key key = properties.getJwt().getKey();
         String path = key.getKeystorePath();
-        if (path == null) throw new IllegalStateException("Keystore path not configured");
-        KeyStore ks = tryLoadKeyStore(path, key.getKeystorePassword());
-        String alias = key.getKeyAlias();
-        java.security.cert.Certificate cert = ks.getCertificate(alias);
-        if (cert == null) throw new IllegalStateException("Certificate not found for alias: " + alias);
-        return cert.getPublicKey();
+        if (path == null) {
+            throw new IllegalStateException("Keystore path not configured");
+        }
+        if (needReload(keystoreLoadedAt) || cachedPublicKey == null) {
+            KeyStore ks = tryLoadKeyStore(path, key.getKeystorePassword());
+            String alias = key.getKeyAlias();
+            java.security.cert.Certificate cert = ks.getCertificate(alias);
+            if (cert == null) {
+                throw new IllegalStateException("Certificate not found for alias: " + alias);
+            }
+            cachedPublicKey = cert.getPublicKey();
+            keystoreLoadedAt = Instant.now();
+        }
+        return cachedPublicKey;
     }
 
     private KeyStore tryLoadKeyStore(String location, String password) throws Exception {
@@ -130,12 +201,60 @@ public class JwtKeyManager {
             String p = location.substring("classpath:".length());
             is = this.getClass().getResourceAsStream(p.startsWith("/") ? p : "/" + p);
         } else if (lower.startsWith("file:")) {
-            is = new java.io.FileInputStream(location.substring("file:".length()));
+            is = new FileInputStream(location.substring("file:".length()));
         } else {
-            is = new java.io.FileInputStream(location);
+            is = new FileInputStream(location);
         }
         ks.load(is, password != null ? password.toCharArray() : null);
         return ks;
+    }
+
+    private JWKSet loadJwks() throws Exception {
+        String uri = properties.getJwt().getKey().getJwkSetUri();
+        if (uri == null || uri.isEmpty()) {
+            throw new IllegalStateException("JWK Set URI 未配置");
+        }
+        if (cachedJwkSet == null || needReload(jwksFetchedAt)) {
+            cachedJwkSet = fetchJwksWithRetry();
+            jwksFetchedAt = Instant.now();
+        }
+        return cachedJwkSet;
+    }
+
+    private JWKSet fetchJwksWithRetry() throws Exception {
+        String uri = properties.getJwt().getKey().getJwkSetUri();
+        int max = Math.max(1, properties.getJwt().getKey().getJwkMaxRetries());
+        int attempt = 0;
+        Exception last = null;
+        while (attempt < max) {
+            attempt++;
+            try {
+                java.net.URL url = new java.net.URL(uri);
+                java.net.URLConnection conn = url.openConnection();
+                conn.setConnectTimeout(properties.getJwt().getKey().getJwkConnectTimeoutMillis());
+                conn.setReadTimeout(properties.getJwt().getKey().getJwkReadTimeoutMillis());
+                try (InputStream is = conn.getInputStream()) {
+                    JWKSet set = JWKSet.load(is);
+                    return set;
+                }
+            } catch (Exception ex) {
+                last = ex;
+                Thread.sleep(Math.min(500L * attempt, 1500L));
+            }
+        }
+        if (properties.getJwt().getKey().isJwkFallbackToCache() && cachedJwkSet != null && !needReload(jwksFetchedAt)) {
+            return cachedJwkSet;
+        }
+        if (last != null) {
+            throw last;
+        }
+        throw new IllegalStateException("JWKS 获取失败且无可用缓存");
+    }
+
+    private boolean needReload(Instant lastLoaded) {
+        Duration interval = properties.getJwt().getKey().getRotationInterval();
+        if (lastLoaded == null) return true;
+        return Instant.now().isAfter(lastLoaded.plus(interval));
     }
 
     // 基于 JWKS 的 verifier 选择：优先 kid，其次按算法匹配
@@ -143,11 +262,7 @@ public class JwtKeyManager {
         if (properties.getJwt().getKey().getType() != RoseSecurityProperties.Jwt.Key.KeyType.JWK) {
             return verifier();
         }
-        String uri = properties.getJwt().getKey().getJwkSetUri();
-        if (uri == null || uri.isEmpty()) {
-            throw new IllegalStateException("JWK Set URI 未配置");
-        }
-        JWKSet jwks = JWKSet.load(new java.net.URL(uri));
+        JWKSet jwks = loadJwks();
 
         String kid = jwt.getHeader().getKeyID();
         JWK match = kid != null ? jwks.getKeyByKeyId(kid) : null;
