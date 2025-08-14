@@ -132,7 +132,6 @@ public class RoseSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http, RoseSecurityProperties properties, TokenAuthenticationFilter tokenAuthenticationFilter)
             throws Exception {

@@ -6,13 +6,12 @@ import io.github.rosestack.spring.boot.security.auth.service.TokenService;
 import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,34 +25,8 @@ public class RedisTokenService implements TokenService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RoseSecurityProperties properties;
 
-    private String tokenKey(String token) {
-        String prefix = properties.getAuth().getToken().getRedis().getKeyPrefix();
-        if (!prefix.endsWith(":")) {
-            prefix = prefix + ":";
-        }
-        return prefix + "token:" + token;
-    }
-
-    private String userTokensKey(String username) {
-        String prefix = properties.getAuth().getToken().getRedis().getKeyPrefix();
-        if (!prefix.endsWith(":")) {
-            prefix = prefix + ":";
-        }
-        return prefix + "user:" + username + ":tokens";
-    }
-
-    private Optional<TokenInfo> readToken(String token) {
-        try {
-            TokenInfo info = JsonUtils.fromString((String) redisTemplate.opsForValue().get(tokenKey(token)), TokenInfo.class);
-            return Optional.of(info);
-        } catch (Exception e) {
-            log.warn("解析 Redis Token 失败: {}", e.getMessage());
-            return Optional.empty();
-        }
-    }
-
     @Override
-    public TokenInfo createToken(org.springframework.security.core.userdetails.UserDetails userDetails) {
+    public TokenInfo createToken(UserDetails userDetails) {
         // 并发控制
         int max = properties.getAuth().getToken().getMaximumSessions();
         boolean prevent = properties.getAuth().getToken().isMaxSessionsPreventsLogin();
@@ -71,7 +44,7 @@ public class RedisTokenService implements TokenService {
         TokenInfo info = TokenInfo.builder()
                 .accessToken(token)
                 .refreshToken(UUID.randomUUID().toString())
-                .tokenType("Bearer")
+                .tokenType(TOKEN_TYPE_SIMPLE)
                 .expiresAt(expiresAt)
                 .username(userDetails.getUsername())
                 .createdAt(now)
@@ -99,10 +72,10 @@ public class RedisTokenService implements TokenService {
     }
 
     @Override
-    public Optional<org.springframework.security.core.userdetails.UserDetails> getUserDetails(String token) {
+    public Optional<UserDetails> getUserDetails(String token) {
         Optional<TokenInfo> infoOpt = readToken(token);
         return infoOpt.filter(info -> !info.isExpired())
-                .map(info -> org.springframework.security.core.userdetails.User.withUsername(info.getUsername())
+                .map(info -> User.withUsername(info.getUsername())
                         .password("")
                         .authorities("ROLE_USER")
                         .build());
@@ -113,9 +86,7 @@ public class RedisTokenService implements TokenService {
         Optional<TokenInfo> origOpt = readToken(token);
         if (origOpt.isEmpty()) return Optional.empty();
         TokenInfo orig = origOpt.get();
-        if (LocalDateTime.now()
-                .isAfter(
-                        orig.getCreatedAt().plus(properties.getAuth().getToken().getRefreshWindow()))) {
+        if (LocalDateTime.now().isAfter(orig.getCreatedAt().plus(properties.getAuth().getToken().getRefreshWindow()))) {
             return Optional.empty();
         }
 
@@ -125,7 +96,7 @@ public class RedisTokenService implements TokenService {
         TokenInfo newInfo = TokenInfo.builder()
                 .accessToken(newToken)
                 .refreshToken(UUID.randomUUID().toString())
-                .tokenType("Bearer")
+                .tokenType(TOKEN_TYPE_SIMPLE)
                 .expiresAt(now.plus(properties.getAuth().getToken().getExpiration()))
                 .username(orig.getUsername())
                 .createdAt(now)
@@ -176,5 +147,31 @@ public class RedisTokenService implements TokenService {
     public int getActiveTokenCount(String username) {
         Long size = redisTemplate.opsForSet().size(userTokensKey(username));
         return size == null ? 0 : size.intValue();
+    }
+
+    private String tokenKey(String token) {
+        String prefix = properties.getAuth().getToken().getRedis().getKeyPrefix();
+        if (!prefix.endsWith(":")) {
+            prefix = prefix + ":";
+        }
+        return prefix + "token:" + token;
+    }
+
+    private String userTokensKey(String username) {
+        String prefix = properties.getAuth().getToken().getRedis().getKeyPrefix();
+        if (!prefix.endsWith(":")) {
+            prefix = prefix + ":";
+        }
+        return prefix + "user:" + username + ":tokens";
+    }
+
+    private Optional<TokenInfo> readToken(String token) {
+        try {
+            TokenInfo info = JsonUtils.fromString((String) redisTemplate.opsForValue().get(tokenKey(token)), TokenInfo.class);
+            return Optional.of(info);
+        } catch (Exception e) {
+            log.warn("解析 Redis Token 失败: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 }

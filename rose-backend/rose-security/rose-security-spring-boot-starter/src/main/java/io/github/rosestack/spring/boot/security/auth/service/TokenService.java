@@ -15,6 +15,7 @@ import java.util.Optional;
  */
 public interface TokenService {
     String TOKEN_HEADER = "X-Token";
+    String TOKEN_TYPE_SIMPLE = "simple";
 
     /**
      * 创建 Token

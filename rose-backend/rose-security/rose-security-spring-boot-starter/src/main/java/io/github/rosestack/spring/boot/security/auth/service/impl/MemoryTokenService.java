@@ -42,7 +42,7 @@ public class MemoryTokenService implements TokenService {
         TokenInfo info = TokenInfo.builder()
                 .accessToken(token)
                 .refreshToken(UUID.randomUUID().toString())
-                .tokenType("simple")
+                .tokenType(TOKEN_TYPE_SIMPLE)
                 .expiresAt(expiresAt)
                 .username(userDetails.getUsername())
                 .createdAt(now)
@@ -76,8 +76,7 @@ public class MemoryTokenService implements TokenService {
     public Optional<TokenInfo> refreshToken(String token) {
         TokenInfo info = tokens.get(token);
         if (info == null) return Optional.empty();
-        if (LocalDateTime.now().isAfter(
-                info.getCreatedAt().plus(properties.getAuth().getToken().getRefreshWindow()))) {
+        if (LocalDateTime.now().isAfter(info.getCreatedAt().plus(properties.getAuth().getToken().getRefreshWindow()))) {
             return Optional.empty();
         }
         String newToken = UUID.randomUUID().toString();
@@ -85,7 +84,7 @@ public class MemoryTokenService implements TokenService {
         TokenInfo newInfo = TokenInfo.builder()
                 .accessToken(newToken)
                 .refreshToken(UUID.randomUUID().toString())
-                .tokenType("simple")
+                .tokenType(TOKEN_TYPE_SIMPLE)
                 .expiresAt(now.plus(properties.getAuth().getToken().getExpiration()))
                 .username(info.getUsername())
                 .createdAt(now)
