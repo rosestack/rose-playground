@@ -1,6 +1,6 @@
-package io.github.rosestack.spring.boot.security.core.account.impl;
+package io.github.rosestack.spring.boot.security.core.support.impl;
 
-import io.github.rosestack.spring.boot.security.core.account.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.core.support.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import java.time.Duration;
 import java.time.Instant;

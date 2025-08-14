@@ -3,15 +3,18 @@ package io.github.rosestack.spring.boot.security.jwt;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jose.jwk.*;
-import io.github.rosestack.spring.boot.security.properties.RoseSecurityProperties;
+import com.nimbusds.jwt.SignedJWT;
+import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import lombok.RequiredArgsConstructor;
+
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import lombok.RequiredArgsConstructor;
 
 /**
  * JWT 密钥管理：支持 HS/RS/ES 与 JWK/Keystore
@@ -84,8 +87,8 @@ public class JwtKeyManager {
             case ES256:
             case ES384:
             case ES512: {
-                java.security.PublicKey pub = loadCertificatePublicKey();
-                return new com.nimbusds.jose.crypto.ECDSAVerifier((java.security.interfaces.ECPublicKey) pub);
+                PublicKey pub = loadCertificatePublicKey();
+                return new ECDSAVerifier((ECPublicKey) pub);
             }
             case HS384:
             case HS512:
@@ -134,4 +137,39 @@ public class JwtKeyManager {
         ks.load(is, password != null ? password.toCharArray() : null);
         return ks;
     }
+
+    // 基于 JWKS 的 verifier 选择：优先 kid，其次按算法匹配
+    public Object getVerifierFor(SignedJWT jwt) throws Exception {
+        if (properties.getJwt().getKey().getType() != RoseSecurityProperties.Jwt.Key.KeyType.JWK) {
+            return verifier();
+        }
+        String uri = properties.getJwt().getKey().getJwkSetUri();
+        if (uri == null || uri.isEmpty()) {
+            throw new IllegalStateException("JWK Set URI 未配置");
+        }
+        JWKSet jwks = JWKSet.load(new java.net.URL(uri));
+
+        String kid = jwt.getHeader().getKeyID();
+        JWK match = kid != null ? jwks.getKeyByKeyId(kid) : null;
+        if (match == null) {
+            for (JWK k : jwks.getKeys()) {
+                if (k.getAlgorithm() != null && k.getAlgorithm().getName().equals(algorithm().getName())) {
+                    match = k;
+                    break;
+                }
+            }
+        }
+        if (match == null && !jwks.getKeys().isEmpty()) {
+            match = jwks.getKeys().get(0);
+        }
+        if (match instanceof RSAKey) {
+            return new RSASSAVerifier(((RSAKey) match).toRSAPublicKey());
+        } else if (match instanceof ECKey) {
+            return new ECDSAVerifier(((ECKey) match).toECPublicKey());
+        } else if (match instanceof OctetSequenceKey) {
+            return new MACVerifier(((OctetSequenceKey) match).toByteArray());
+        }
+        throw new IllegalStateException("未在 JWKS 中找到可用的 verifier");
+    }
+
 }

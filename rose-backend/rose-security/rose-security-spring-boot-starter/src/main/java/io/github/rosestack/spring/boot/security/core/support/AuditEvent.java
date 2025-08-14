@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.core.extension;
+package io.github.rosestack.spring.boot.security.core.support;
 
 import io.github.rosestack.spring.util.ServletUtils;
 import java.time.Instant;

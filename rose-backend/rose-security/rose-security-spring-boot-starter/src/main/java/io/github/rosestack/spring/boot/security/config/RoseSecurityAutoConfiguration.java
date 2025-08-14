@@ -1,19 +1,19 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.YmlPropertySourceFactory;
-import io.github.rosestack.spring.boot.security.core.account.CaptchaService;
-import io.github.rosestack.spring.boot.security.core.account.LoginAttemptService;
-import io.github.rosestack.spring.boot.security.core.account.impl.InMemoryLoginAttemptService;
-import io.github.rosestack.spring.boot.security.core.account.impl.NoopCaptchaService;
+import io.github.rosestack.spring.boot.security.core.support.CaptchaService;
+import io.github.rosestack.spring.boot.security.core.support.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.core.support.impl.InMemoryLoginAttemptService;
+import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.core.controller.AuthController;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.service.impl.MemoryTokenService;
 import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenService;
-import io.github.rosestack.spring.boot.security.core.extension.AuditEventPublisher;
-import io.github.rosestack.spring.boot.security.core.extension.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.core.extension.DefaultAuthenticationHook;
-import io.github.rosestack.spring.boot.security.core.extension.LoggingAuditEventPublisher;
+import io.github.rosestack.spring.boot.security.core.support.AuditEventPublisher;
+import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.support.impl.DefaultAuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.support.impl.LoggingAuditEventPublisher;
 import io.github.rosestack.spring.boot.security.jwt.ClaimMapper;
 import io.github.rosestack.spring.boot.security.jwt.InMemoryRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;

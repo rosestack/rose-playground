@@ -8,7 +8,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
-import io.github.rosestack.spring.boot.security.core.extension.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import java.text.ParseException;
 import java.time.Instant;
@@ -88,7 +88,9 @@ public class JwtTokenService implements TokenService {
             SignedJWT jwt = SignedJWT.parse(token);
             boolean sig;
             try {
-                sig = jwt.verify((JWSVerifier) new JwtKeyManager(properties).verifier());
+                JwtKeyManager km = new JwtKeyManager(properties);
+                Object v = km.getVerifierFor(jwt);
+                sig = jwt.verify((JWSVerifier) (v != null ? v : km.verifier()));
             } catch (Exception ex) {
                 return false;
             }
