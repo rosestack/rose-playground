@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,7 +42,7 @@ public class MemoryTokenService implements TokenService {
         // 并发控制
         int max = properties.getAuth().getToken().getMaximumSessions();
         Set<String> userTokenInfos =
-                usernameToAccessTokensMap.getOrDefault(userDetails.getUsername(), ConcurrentHashMap.newKeySet());
+                usernameToAccessTokensMap.computeIfAbsent(userDetails.getUsername(), k -> ConcurrentHashMap.newKeySet());
         if (userTokenInfos.size() >= max && properties.getAuth().getToken().isMaxSessionsPreventsLogin()) {
             throw new IllegalStateException("超过最大并发会话数");
         }
@@ -198,7 +197,7 @@ public class MemoryTokenService implements TokenService {
         return Math.max(
                 0,
                 usernameToAccessTokensMap
-                        .getOrDefault(username, ConcurrentHashMap.newKeySet())
+                        .computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet())
                         .size());
     }
 }
