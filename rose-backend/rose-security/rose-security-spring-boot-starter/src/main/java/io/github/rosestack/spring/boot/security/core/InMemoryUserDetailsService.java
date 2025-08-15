@@ -1,7 +1,5 @@
-package io.github.rosestack.spring.boot.security.core.user;
+package io.github.rosestack.spring.boot.security.core;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

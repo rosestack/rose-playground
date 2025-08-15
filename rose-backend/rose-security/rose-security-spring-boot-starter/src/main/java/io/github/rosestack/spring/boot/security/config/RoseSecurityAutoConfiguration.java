@@ -8,7 +8,7 @@ import io.github.rosestack.spring.boot.security.core.filter.LoginAuthenticationF
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.handler.LoginFailureHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LoginSuccessHandler;
-import io.github.rosestack.spring.boot.security.core.logout.TokenLogoutHandler;
+import io.github.rosestack.spring.boot.security.core.handler.TokenLogoutHandler;
 import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import io.github.rosestack.spring.boot.security.protect.AccessListFilter;

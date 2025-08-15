@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.core.logout;
+package io.github.rosestack.spring.boot.security.core.handler;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;

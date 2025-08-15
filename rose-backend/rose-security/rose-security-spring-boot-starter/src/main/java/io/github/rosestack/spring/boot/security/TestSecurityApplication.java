@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.security;
 
-import io.github.rosestack.spring.boot.security.core.user.InMemoryUserDetailsService;
+import io.github.rosestack.spring.boot.security.core.InMemoryUserDetailsService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
