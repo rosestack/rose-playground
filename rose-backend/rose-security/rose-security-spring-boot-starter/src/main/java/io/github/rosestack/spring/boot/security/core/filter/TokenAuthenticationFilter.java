@@ -1,14 +1,12 @@
 package io.github.rosestack.spring.boot.security.core.filter;
 
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
-
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +17,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
+
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
+
 /**
  * Token 认证过滤器
  *
@@ -27,7 +29,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
-
     private final TokenService tokenService;
     private final RoseSecurityProperties properties;
 
@@ -35,7 +36,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = extractTokenFromRequest(request);
+        String token = ServletUtils.getRequestHeader(TOKEN_HEADER);
 
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // 验证Token并获取用户信息
@@ -60,17 +61,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    /**
-     * 从请求中提取Token
-     */
-    public static String extractTokenFromRequest(HttpServletRequest request) {
-        String token = request.getHeader(TOKEN_HEADER);
-        if (token != null) {
-            return token;
-        }
-        return null;
     }
 
     @Override

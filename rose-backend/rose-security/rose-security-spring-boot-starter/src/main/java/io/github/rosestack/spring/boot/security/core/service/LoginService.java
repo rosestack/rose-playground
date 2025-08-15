@@ -7,6 +7,7 @@ import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationLifecycleHook;
+import io.github.rosestack.spring.util.ServletUtils;
 import io.github.rosestack.spring.util.SpringContextUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -19,6 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -79,7 +82,7 @@ public class LoginService {
     }
 
     public void logout(HttpServletRequest request) {
-        String token = TokenAuthenticationFilter.extractTokenFromRequest(request);
+        String token = ServletUtils.getRequestHeader(TOKEN_HEADER);
         String username = null;
 
         if (token != null) {
