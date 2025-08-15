@@ -14,7 +14,9 @@ public class AccessListMatcher {
     }
 
     public boolean isAllowed(HttpServletRequest request, String username) {
-        if (!props.isEnabled()) return true;
+        if (!props.isEnabled()) {
+            return true;
+        }
         String clientIp = request.getRemoteAddr();
         Set<String> allowIp = store.allowedIps();
         Set<String> denyIp = store.deniedIps();
@@ -35,5 +37,3 @@ public class AccessListMatcher {
         return anyAllowed && !anyDenied;
     }
 }
-
-

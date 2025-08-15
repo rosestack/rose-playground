@@ -11,10 +11,7 @@ import io.github.rosestack.spring.boot.security.core.handler.LoginSuccessHandler
 import io.github.rosestack.spring.boot.security.core.handler.TokenLogoutHandler;
 import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
-import io.github.rosestack.spring.boot.security.protect.AccessListFilter;
-import io.github.rosestack.spring.boot.security.protect.AccessListMatcher;
-import io.github.rosestack.spring.boot.security.protect.AccessListStore;
-import io.github.rosestack.spring.boot.security.protect.MemoryAccessListStore;
+import io.github.rosestack.spring.boot.security.protect.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -54,9 +51,7 @@ public class RoseSecurityAutoConfiguration {
             RestAuthenticationEntryPoint entryPoint,
             RestAccessDeniedHandler accessDeniedHandler,
             TokenService tokenService,
-            AuthenticationManager authenticationManager,
-            @Autowired(required = false) LoginLockoutService lockoutService,
-            @Autowired(required = false) AccessListStore accessListStore)
+            AuthenticationManager authenticationManager)
             throws Exception {
         // 基础放行路径
         List<String> permit = props.getPermitAll();
@@ -82,17 +77,28 @@ public class RoseSecurityAutoConfiguration {
                 new LoginAuthenticationFilter(
                         authenticationManager,
                         props,
-                        new LoginSuccessHandler(tokenService, lockoutService),
-                        new LoginFailureHandler(lockoutService)),
+                        new LoginSuccessHandler(tokenService, loginLockoutService(props), sessionKickoutService(tokenService, props)),
+                        new LoginFailureHandler(loginLockoutService(props))),
                 UsernamePasswordAuthenticationFilter.class);
 
         http.addFilterBefore(
                 new TokenAuthenticationFilter(tokenService, props), UsernamePasswordAuthenticationFilter.class);
 
         // Access list filter placed after TokenAuthenticationFilter to get username
-        if (accessListStore != null) {
+        if (props.getProtect().getAccessList().isEnabled()) {
             AccessListMatcher matcher = new AccessListMatcher(accessListStore(props), props);
             http.addFilterAfter(new AccessListFilter(matcher, props), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        // Replay protection (before rate limit)
+        if (props.getProtect().getReplay().isEnabled()) {
+            http.addFilterAfter(
+                    new ReplayFilter(new ReplayProtection(props), props), UsernamePasswordAuthenticationFilter.class);
+        }
+        // Rate limiting
+        if (props.getProtect().getRateLimit().isEnabled()) {
+            http.addFilterAfter(
+                    new RateLimitFilter(new RateLimiter(props), props), UsernamePasswordAuthenticationFilter.class);
         }
 
         return http.build();

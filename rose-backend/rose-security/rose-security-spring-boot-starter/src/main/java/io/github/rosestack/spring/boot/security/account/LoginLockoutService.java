@@ -36,7 +36,9 @@ public class LoginLockoutService {
     }
 
     public void onFailure(String username) {
-        if (!isEnabled()) return;
+        if (!isEnabled()) {
+            return;
+        }
         State s = stateByUser.computeIfAbsent(username, k -> new State());
         if (s.lockUntil != null && Instant.now().isBefore(s.lockUntil)) {
             return; // still locked
@@ -49,6 +51,9 @@ public class LoginLockoutService {
     }
 
     public void onSuccess(String username) {
+        if (!isEnabled()) {
+            return;
+        }
         State s = stateByUser.get(username);
         if (s != null) {
             s.failures = 0;

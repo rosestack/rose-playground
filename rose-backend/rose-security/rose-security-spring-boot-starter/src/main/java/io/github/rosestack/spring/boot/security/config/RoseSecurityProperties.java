@@ -62,6 +62,8 @@ public class RoseSecurityProperties {
     @Getter
     public static class Protect {
         private final AccessList accessList = new AccessList();
+        private final RateLimit rateLimit = new RateLimit();
+        private final Replay replay = new Replay();
 
         @Getter
         @Setter
@@ -89,6 +91,30 @@ public class RoseSecurityProperties {
 
             /** 启用的维度（简化：ip,username） */
             private List<String> dimensions = List.of("ip", "username");
+        }
+
+        @Getter
+        @Setter
+        public static class RateLimit {
+            /** 是否启用限流（默认 false） */
+            private boolean enabled = false;
+            /** 每窗口最大请求数（默认 100） */
+            private int limit = 100;
+            /** 窗口大小（默认 PT1M） */
+            private Duration window = Duration.ofMinutes(1);
+        }
+
+        @Getter
+        @Setter
+        public static class Replay {
+            /** 是否启用防重放（默认 false） */
+            private boolean enabled = false;
+            /** 时间窗（默认 PT5M） */
+            private Duration window = Duration.ofMinutes(5);
+            /** Nonce 头名称（默认 X-Nonce） */
+            private String nonceHeader = "X-Nonce";
+            /** 时间戳头名称（默认 X-Timestamp，epoch seconds） */
+            private String timestampHeader = "X-Timestamp";
         }
     }
 
