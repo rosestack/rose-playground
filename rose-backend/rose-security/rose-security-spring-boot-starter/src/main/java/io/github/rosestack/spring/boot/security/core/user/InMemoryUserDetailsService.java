@@ -17,7 +17,7 @@ public class InMemoryUserDetailsService implements UserDetailsService {
 
     public InMemoryUserDetailsService(PasswordEncoder passwordEncoder) {
         this.defaultUser = User.withUsername("user")
-                .password(passwordEncoder.encode("rose!123"))
+                .password(passwordEncoder.encode("123"))
                 .roles("USER")
                 .build();
     }

@@ -1,6 +1,7 @@
 package io.github.rosestack.spring.boot.security.core.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels.AuthResponse;
@@ -9,16 +10,17 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
@@ -55,7 +57,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
         AuthResponse result = new AuthResponse(token, tokenService.getExpiresInSeconds());
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write(objectMapper.writeValueAsString(result));
+        response.getWriter().write(objectMapper.writeValueAsString(ApiResponse.success(result)));
     }
 }
 

@@ -4,17 +4,21 @@ import io.github.rosestack.spring.boot.security.core.RestAccessDeniedHandler;
 import io.github.rosestack.spring.boot.security.core.RestAuthenticationEntryPoint;
 import io.github.rosestack.spring.boot.security.core.filter.LoginAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
+import io.github.rosestack.spring.boot.security.core.logout.TokenLogoutHandler;
+import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
@@ -35,36 +39,41 @@ public class RoseSecurityAutoConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   RoseSecurityProperties props,
-                                                   RestAuthenticationEntryPoint entryPoint,
-                                                   RestAccessDeniedHandler accessDeniedHandler,
-                                                   TokenService tokenService,
-                                                   org.springframework.security.authentication.AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            RoseSecurityProperties props,
+            RestAuthenticationEntryPoint entryPoint,
+            RestAccessDeniedHandler accessDeniedHandler,
+            TokenService tokenService,
+            AuthenticationManager authenticationManager)
+            throws Exception {
         // 基础放行路径
         List<String> permit = props.getPermitAll();
 
-        http
-                .csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(reg -> {
                     if (permit != null && !permit.isEmpty()) {
                         reg.requestMatchers(permit.toArray(new String[0])).permitAll();
                     }
-                    reg.requestMatchers(props.getLoginPath(), props.getLogoutPath()).permitAll();
+                    reg.requestMatchers(props.getLoginPath(), props.getLogoutPath())
+                            .permitAll();
                     reg.requestMatchers(props.getBasePath()).authenticated();
                     reg.anyRequest().permitAll();
                 })
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(entryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
-                .httpBasic(Customizer.withDefaults());
+                .exceptionHandling(
+                        ex -> ex.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler))
+                .httpBasic(Customizer.withDefaults())
+                .logout(logout -> logout
+                        .logoutUrl(props.getLogoutPath())
+                        .addLogoutHandler(new TokenLogoutHandler(tokenService, props))
+                );
         // Filters
-        http.addFilterBefore(new LoginAuthenticationFilter(authenticationManager, props, tokenService),
-                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new TokenAuthenticationFilter(tokenService, props),
-                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(
+                new LoginAuthenticationFilter(authenticationManager, props, tokenService),
+                UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(
+                new TokenAuthenticationFilter(tokenService, props), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -72,6 +81,6 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnMissingBean(TokenService.class)
     @ConditionalOnProperty(prefix = "rose.security.token", name = "type", havingValue = "LOCAL", matchIfMissing = true)
     public TokenService opaqueTokenService(RoseSecurityProperties props) {
-        return new io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService(props);
+        return new OpaqueTokenService(props);
     }
 }
