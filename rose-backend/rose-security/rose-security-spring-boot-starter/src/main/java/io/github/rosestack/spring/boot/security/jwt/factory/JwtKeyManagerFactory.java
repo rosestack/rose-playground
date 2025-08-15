@@ -23,10 +23,9 @@ public class JwtKeyManagerFactory {
      * @param properties 安全配置
      * @return JWT密钥管理器
      */
-    public static JwtKeyManager create(RoseSecurityProperties properties) {
+    public static JwtKeyManager create(RoseSecurityProperties.Token properties) {
         if (properties == null
-                || properties.getToken() == null
-                || properties.getToken().getJwt() == null) {
+                || properties.getJwt() == null) {
             throw new JwtConfigurationException("JWT配置不能为空");
         }
 
@@ -37,8 +36,8 @@ public class JwtKeyManagerFactory {
     /**
      * 根据配置创建密钥加载器
      */
-    private static KeyLoader createKeyLoader(RoseSecurityProperties properties) {
-        RoseSecurityProperties.Token.Jwt jwtConfig = properties.getToken().getJwt();
+    private static KeyLoader createKeyLoader(RoseSecurityProperties.Token properties) {
+        RoseSecurityProperties.Token.Jwt jwtConfig = properties.getJwt();
         String algorithmName = jwtConfig.getAlgorithm().name();
         RoseSecurityProperties.Token.Jwt.Key keyConfig = jwtConfig.getKey();
 

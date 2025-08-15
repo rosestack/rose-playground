@@ -26,29 +26,21 @@ import org.springframework.data.redis.core.RedisTemplate;
 public class JwtTokenService extends RedisTokenService {
 
     private final JwtHelper jwtHelper;
-    private final RoseSecurityProperties properties;
 
     public JwtTokenService(
-            RoseSecurityProperties properties,
+            RoseSecurityProperties.Token properties,
             AuthenticationHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
-        super(properties.getToken(), authenticationHook, redisTemplate);
-
-        this.properties = properties;
-
-        if (properties.getToken().getJwt() == null
-                || !properties.getToken().getJwt().isEnabled()) {
-            throw new JwtConfigurationException("JWT配置未启用或缺失");
-        }
+        super(properties, authenticationHook, redisTemplate);
 
         JwtKeyManager keyManager = JwtKeyManagerFactory.create(properties);
-        String algorithmName = properties.getToken().getJwt().getAlgorithm().name();
+        String algorithmName = properties.getJwt().getAlgorithm().name();
         this.jwtHelper = new JwtHelper(keyManager, algorithmName);
     }
 
     @Override
     protected String generateAccessToken(String username) {
-        Duration expiration = properties.getToken().getAccessTokenExpiredTime();
+        Duration expiration = properties.getAccessTokenExpiredTime();
         return jwtHelper.generateToken(username, expiration);
     }
 

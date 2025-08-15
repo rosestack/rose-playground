@@ -16,9 +16,6 @@ import io.github.rosestack.spring.boot.security.core.support.impl.LoggingAuditEv
 import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -44,6 +41,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -170,7 +171,7 @@ public class RoseSecurityAutoConfiguration {
     @Primary
     public TokenService jwtTokenService(
             AuthenticationHook authenticationHook, RedisTemplate<String, Object> redisTemplate) {
-        return new JwtTokenService(properties, authenticationHook, redisTemplate);
+        return new JwtTokenService(properties.getToken(), authenticationHook, redisTemplate);
     }
 
     @Bean

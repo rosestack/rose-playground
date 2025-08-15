@@ -127,7 +127,8 @@ public abstract class AbstractTokenService implements TokenService {
             return false;
         }
 
-        return true;
+        // 调用子类的额外验证逻辑
+        return additionalValidation(accessToken, tokenInfo);
     }
 
     /**
@@ -215,6 +216,22 @@ public abstract class AbstractTokenService implements TokenService {
             }
         }
         return actives;
+    }
+
+    /**
+     * 额外的 Token 验证逻辑
+     * 
+     * <p>
+     * 子类可以重写此方法来添加特定的验证逻辑，如 JWT 签名验证等。
+     * 此方法在基础验证（非空检查、存储查找、过期时间检查）通过后调用。
+     * </p>
+     * 
+     * @param accessToken 访问令牌
+     * @param tokenInfo Token 信息对象
+     * @return 验证是否通过
+     */
+    protected boolean additionalValidation(String accessToken, TokenInfo tokenInfo) {
+        return true; // 默认通过额外验证
     }
 
     /**
