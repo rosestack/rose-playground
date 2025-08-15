@@ -1,10 +1,11 @@
 package io.github.rosestack.spring.boot.security.config;
 
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Rose Security 配置属性
@@ -22,8 +23,6 @@ public class RoseSecurityProperties {
      * 是否启用 Security 自动配置
      */
     private boolean enabled = true;
-
-    private boolean stateless = true;
 
     /**
      * 登录端点路径
@@ -48,7 +47,7 @@ public class RoseSecurityProperties {
     /**
      * 允许访问的路径
      */
-    private String[] permitPaths = new String[] {};
+    private String[] permitPaths = new String[]{};
 
     /**
      * Token 配置
@@ -96,11 +95,112 @@ public class RoseSecurityProperties {
         private StorageType storageType = StorageType.MEMORY;
 
         /**
+         * JWT 配置
+         */
+        private Jwt jwt = new Jwt();
+
+        /**
          * Token 存储类型枚举
          */
         public enum StorageType {
             MEMORY,
             REDIS
+        }
+
+        /**
+         * JWT 配置（作为Token的实现方式）
+         */
+        @Data
+        public static class Jwt {
+            /**
+             * 是否启用 JWT
+             */
+            private boolean enabled = false;
+
+            /**
+             * JWT 密钥
+             */
+            private String secret = "rose-security-jwt-secret-key-change-in-production";
+
+            /**
+             * JWT 签名算法
+             */
+            private Algorithm algorithm = Algorithm.HS256;
+
+            /**
+             * 密钥配置
+             */
+            private Key key = new Key();
+
+            /**
+             * JWT 算法枚举
+             */
+            public enum Algorithm {
+                HS256,
+                HS384,
+                HS512,
+                RS256,
+                RS384,
+                RS512,
+                ES256,
+                ES384,
+                ES512
+            }
+
+            /**
+             * 密钥配置
+             */
+            @Data
+            public static class Key {
+                /**
+                 * 密钥存储类型
+                 */
+                private KeyType type = KeyType.SECRET;
+
+                /**
+                 * JWK Set URI
+                 */
+                private String jwkSetUri;
+
+                /**
+                 * Keystore 路径（支持 classpath:, file: 或绝对路径），默认尝试 JKS，其次 PKCS12
+                 */
+                private String keystorePath;
+
+                /**
+                 * Keystore 密码
+                 */
+                private String keystorePassword;
+
+                /**
+                 * 密钥别名
+                 */
+                private String keyAlias;
+
+                /**
+                 * 密钥轮换间隔
+                 */
+                private Duration rotationInterval = Duration.ofDays(30);
+
+                /**
+                 * JWKS 拉取最大重试次数（含首次），最小为1
+                 */
+                private int jwkMaxRetries = 1;
+
+                /**
+                 * 拉取失败时是否回退到缓存（若存在且未超过轮换间隔）
+                 */
+                private boolean jwkFallbackToCache = true;
+
+                /**
+                 * 密钥类型枚举
+                 */
+                public enum KeyType {
+                    SECRET,
+                    JWK,
+                    KEYSTORE
+                }
+            }
         }
     }
 
@@ -203,10 +303,6 @@ public class RoseSecurityProperties {
         }
     }
 
-    /**
-     * JWT 配置
-     */
-    private Jwt jwt = new Jwt();
 
     /**
      * OAuth2 配置
@@ -222,116 +318,6 @@ public class RoseSecurityProperties {
      * 安全防护配置
      */
     private Protection protection = new Protection();
-
-    /**
-     * JWT 配置
-     */
-    @Data
-    public static class Jwt {
-        /**
-         * 是否启用 JWT
-         */
-        private boolean enabled = false;
-
-        /**
-         * JWT 密钥
-         */
-        private String secret = "rose-security-jwt-secret-key-change-in-production";
-
-        /**
-         * JWT 签名算法
-         */
-        private Algorithm algorithm = Algorithm.HS256;
-
-        /**
-         * 时钟偏移容错时间
-         */
-        private Duration clockSkew = Duration.ofMinutes(5);
-
-        /**
-         * 密钥配置
-         */
-        private Key key = new Key();
-
-        /**
-         * JWT 算法枚举
-         */
-        public enum Algorithm {
-            HS256,
-            HS384,
-            HS512,
-            RS256,
-            RS384,
-            RS512,
-            ES256,
-            ES384,
-            ES512
-        }
-
-        /**
-         * 密钥配置
-         */
-        @Data
-        public static class Key {
-            /**
-             * 密钥存储类型
-             */
-            private KeyType type = KeyType.SECRET;
-
-            /**
-             * JWK Set URI
-             */
-            private String jwkSetUri;
-
-            /**
-             * Keystore 路径（支持 classpath:, file: 或绝对路径），默认尝试 JKS，其次 PKCS12
-             */
-            private String keystorePath;
-
-            /**
-             * Keystore 密码
-             */
-            private String keystorePassword;
-
-            /**
-             * 密钥别名
-             */
-            private String keyAlias;
-
-            /**
-             * 密钥轮换间隔
-             */
-            private Duration rotationInterval = Duration.ofDays(30);
-
-            /**
-             * JWKS 拉取最大重试次数（含首次），最小为1
-             */
-            private int jwkMaxRetries = 1;
-
-            /**
-             * 拉取失败时是否回退到缓存（若存在且未超过轮换间隔）
-             */
-            private boolean jwkFallbackToCache = true;
-
-            /**
-             * 密钥类型枚举
-             */
-            public enum KeyType {
-                SECRET,
-                JWK,
-                KEYSTORE
-            }
-        }
-
-        /**
-         * 可选标准声明校验与元数据
-         */
-        private String issuer; // iss
-
-        private List<String> audience = new ArrayList<>(); // aud
-        private boolean requireIssuedAt = true; // 是否强制要求 iat
-        private boolean requireNotBefore = false; // 是否强制要求 nbf
-    }
 
     /**
      * OAuth2 配置

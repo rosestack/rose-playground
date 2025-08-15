@@ -26,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
  * </p>
  */
 @Slf4j
-public class JwksKeyLoader implements KeyLoader {
+public class JwksKeyLoader implements CacheableKeyLoader {
 
     private final String algorithmName;
     private final String jwkSetUri;
@@ -205,5 +205,16 @@ public class JwksKeyLoader implements KeyLoader {
             this.restTemplate = rt;
         }
         return rt;
+    }
+    
+    @Override
+    public void refreshCache() throws Exception {
+        log.info("强制刷新JWKS缓存");
+        jwksCache.refresh(this::fetchJwkSetWithRetry);
+    }
+    
+    @Override
+    public String getCacheStatus() {
+        return jwksCache.getStatus().toString();
     }
 }

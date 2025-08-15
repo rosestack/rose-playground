@@ -1,8 +1,6 @@
 ---
-description: Spring Boot 开发规范
 alwaysApply: true
 ---
-
 # Spring Boot 开发规范
 
 ## 角色定义

@@ -164,13 +164,13 @@ public class RoseSecurityAutoConfiguration {
 
     // JWT 开关：开启时注册 JwtTokenService 作为首选 TokenService
     @Bean
-    @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "rose.security.token.jwt", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
     @ConditionalOnBean(RedisTemplate.class)
     @Primary
     public TokenService jwtTokenService(
             AuthenticationHook authenticationHook, RedisTemplate<String, Object> redisTemplate) {
-        return new JwtTokenService(properties.getToken(), authenticationHook, redisTemplate);
+        return new JwtTokenService(properties, authenticationHook, redisTemplate);
     }
 
     @Bean

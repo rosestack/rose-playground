@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  */
 @Slf4j
-public class KeystoreKeyLoader implements KeyLoader {
+public class KeystoreKeyLoader implements CacheableKeyLoader {
 
     private final String algorithmName;
     private final String keystorePath;
@@ -194,5 +194,16 @@ public class KeystoreKeyLoader implements KeyLoader {
             this.privateKey = privateKey;
             this.publicKey = publicKey;
         }
+    }
+    
+    @Override
+    public void refreshCache() throws Exception {
+        log.info("强制刷新Keystore缓存");
+        keyCache.refresh(this::loadKeyPairFromSource);
+    }
+    
+    @Override
+    public String getCacheStatus() {
+        return keyCache.getStatus().toString();
     }
 }

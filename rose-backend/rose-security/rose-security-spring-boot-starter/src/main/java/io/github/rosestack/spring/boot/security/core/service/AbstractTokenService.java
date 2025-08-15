@@ -221,7 +221,7 @@ public abstract class AbstractTokenService implements TokenService {
      * 生成访问Token字符串
      * 子类可以重写以使用不同的生成策略（如JWT格式）
      */
-    protected String generateAccessToken() {
+    protected String generateAccessToken(String username) {
         return UUID.randomUUID().toString();
     }
 
@@ -239,7 +239,7 @@ public abstract class AbstractTokenService implements TokenService {
      */
     protected TokenInfo buildTokenInfo(String username) {
         LocalDateTime now = LocalDateTime.now();
-        String accessToken = generateAccessToken();
+        String accessToken = generateAccessToken(username);
         String refreshToken = generateRefreshToken();
 
         log.debug("创建 accessToken: {} for user: {}", accessToken, username);
