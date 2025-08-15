@@ -14,9 +14,10 @@ import io.github.rosestack.spring.boot.security.core.support.impl.DefaultAuthent
 import io.github.rosestack.spring.boot.security.core.support.impl.InMemoryLoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.support.impl.LoggingAuditEventPublisher;
 import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
-import io.github.rosestack.spring.boot.security.jwt.*;
+import io.github.rosestack.spring.boot.security.jwt.JwtKeyManager;
+import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
+import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.impl.InMemoryRevocationStore;
-import io.github.rosestack.spring.boot.security.jwt.impl.JwtTokenProcessorImpl;
 import io.github.rosestack.spring.boot.security.jwt.impl.RedisRevocationStore;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
     public TokenService tokenService(
             RedisTemplate<String, Object> redisTemplate, AuthenticationHook authenticationHook) {
-        return new RedisTokenService();
+        return new RedisTokenService(properties, authenticationHook, redisTemplate);
     }
 
     @Bean
@@ -178,14 +179,15 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
     @ConditionalOnMissingBean
+    @ConditionalOnBean(RedisTemplate.class)
     @Primary
     public TokenService jwtTokenService(
             AuthenticationHook authenticationHook,
             ObjectProvider<TokenRevocationStore> revocationStoreProvider,
-            JwtTokenProcessor jwtTokenProcessor) {
+            RedisTemplate<String, Object> redisTemplate) {
         TokenRevocationStore revocationStore =
                 revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
-        return new JwtTokenService(properties, authenticationHook, revocationStore, jwtTokenProcessor);
+        return new JwtTokenService(revocationStore, properties, authenticationHook, redisTemplate);
     }
 
     @Bean
@@ -193,16 +195,6 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public JwtKeyManager jwtKeyManager() {
         return new JwtKeyManager(properties);
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "rose.security.jwt", name = "enabled", havingValue = "true")
-    @ConditionalOnMissingBean
-    public JwtTokenProcessor jwtTokenProcessor(
-            JwtKeyManager jwtKeyManager, ObjectProvider<ClaimMapper> claimMapperProvider) {
-        ClaimMapper claimMapper = claimMapperProvider.getIfAvailable();
-        JwtTokenProcessorImpl impl = new JwtTokenProcessorImpl(properties, jwtKeyManager, claimMapper);
-        return impl;
     }
 
     @Bean

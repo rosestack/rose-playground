@@ -2,11 +2,11 @@ package io.github.rosestack.spring.boot.security.core.controller;
 
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.support.*;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 /**
  * 认证控制器
@@ -61,8 +59,8 @@ public class AuthController {
             if (loginAttemptService != null && loginAttemptService.isLocked(request.getUsername())) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("账户已锁定，请稍后再试"));
             }
-            if (captchaService != null && request.getCaptcha() != null) {
-                boolean ok = captchaService.validate("login", request.getUsername(), request.getCaptcha());
+            if (captchaService != null && request.getCode() != null) {
+                boolean ok = captchaService.validate("login", request.getUsername(), request.getCode());
                 if (!ok) {
                     return ResponseEntity.badRequest().body(ApiResponse.error("验证码错误"));
                 }
@@ -75,7 +73,7 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
             // 创建Token
-            UserTokenInfo userTokenInfo = tokenService.createToken(userDetails);
+            TokenInfo tokenInfo = tokenService.createToken(userDetails);
 
             // 记录成功
             if (loginAttemptService != null) {
@@ -86,7 +84,7 @@ public class AuthController {
             authenticationHook.onLoginSuccess(userDetails.getUsername(), authentication);
             auditEventPublisher.publish(AuditEvent.loginSuccess(
                     userDetails.getUsername(), Map.of("authorities", userDetails.getAuthorities())));
-            return ResponseEntity.ok(ApiResponse.success(userTokenInfo.getTokenInfo()));
+            return ResponseEntity.ok(ApiResponse.success(tokenInfo));
 
         } catch (AuthenticationException e) {
             log.warn("用户 {} 登录失败: {}", request.getUsername(), e.getMessage());
@@ -140,16 +138,16 @@ public class AuthController {
             if (!authenticationHook.beforeTokenRefresh(request.getRefreshToken())) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新被拦截"));
             }
-            UserTokenInfo userTokenInfo = tokenService.refreshAccessToken(request.getRefreshToken());
-            if (userTokenInfo == null) {
+            TokenInfo tokenInfo = tokenService.refreshAccessToken(request.getRefreshToken());
+            if (tokenInfo == null) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新失败，请重新登录"));
             }
 
             // 刷新成功钩子 + 审计
-            authenticationHook.onTokenRefreshSuccess(userTokenInfo.getUsername(), userTokenInfo.getTokenInfo().getAccessToken());
+            authenticationHook.onTokenRefreshSuccess(tokenInfo.getUsername(), tokenInfo.getAccessToken());
             auditEventPublisher.publish(AuditEvent.tokenRefresh(
-                    userTokenInfo.getUsername(), Map.of("expiresAt", String.valueOf(userTokenInfo.getTokenInfo().getExpiresAt()))));
-            return ResponseEntity.ok(ApiResponse.success(userTokenInfo.getTokenInfo()));
+                    tokenInfo.getUsername(), Map.of("expiresAt", String.valueOf(tokenInfo.getExpiresAt()))));
+            return ResponseEntity.ok(ApiResponse.success(tokenInfo));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Token刷新失败"));
         }
@@ -179,7 +177,7 @@ public class AuthController {
     public static class LoginRequest {
         private String username;
         private String password;
-        private String captcha; // 可选：验证码
+        private String code; // 可选：验证码
     }
 
     /**

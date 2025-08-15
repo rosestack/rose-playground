@@ -66,15 +66,11 @@ public interface AuthenticationHook {
         // 默认空实现
     }
 
-    default void onTokenRevoked(String token) {
+    default void onTokenRevoked(String username, String token) {
         // 默认空实现
     }
 
     default void onLockOut(String username) {
-        // 默认空实现
-    }
-
-    default void onRevoked(String username) {
         // 默认空实现
     }
 

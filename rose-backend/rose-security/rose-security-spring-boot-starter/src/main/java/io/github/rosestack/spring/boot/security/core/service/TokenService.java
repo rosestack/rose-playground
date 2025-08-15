@@ -1,9 +1,8 @@
 package io.github.rosestack.spring.boot.security.core.service;
 
-import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
-import org.springframework.security.core.userdetails.UserDetails;
-
+import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import java.util.Set;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Token 服务接口
@@ -18,12 +17,12 @@ public interface TokenService {
     String TOKEN_TYPE_SIMPLE = "simple";
 
     /**
-     * 创建 UserTokenInfo
+     * 创建 TokenInfo
      *
      * @param userDetails 用户信息
      * @return Token 信息
      */
-    UserTokenInfo createToken(UserDetails userDetails);
+    TokenInfo createToken(UserDetails userDetails);
 
     /**
      * 验证 accessToken
@@ -47,7 +46,7 @@ public interface TokenService {
      * @param refreshToken 原令牌
      * @return 新的 Token 信息
      */
-    UserTokenInfo refreshAccessToken(String refreshToken);
+    TokenInfo refreshAccessToken(String refreshToken);
 
     /**
      * 撤销 accessToken

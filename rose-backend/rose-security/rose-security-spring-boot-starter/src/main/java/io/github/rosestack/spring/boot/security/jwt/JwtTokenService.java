@@ -1,85 +1,38 @@
 package io.github.rosestack.spring.boot.security.jwt;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
-import io.github.rosestack.spring.boot.security.core.domain.UserTokenInfo;
-import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
+import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.jwt.exception.JwtTokenExpiredException;
-import io.github.rosestack.spring.boot.security.jwt.exception.JwtValidationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Set;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
- * 基于 Nimbus 的 HS256 JWT Token 服务（最小可用版本）
+ * 基于JWT + Redis的混合Token服务
+ *
+ * <p>结合JWT和Redis的优势：
+ * <ul>
+ *   <li>AccessToken使用JWT格式，无状态验证</li>
+ *   <li>RefreshToken存储在Redis中，支持撤销和会话管理</li>
+ *   <li>用户会话信息存储在Redis中，支持并发会话限制</li>
+ * </ul>
+ * </p>
  */
 @Slf4j
-@RequiredArgsConstructor
-public class JwtTokenService implements TokenService {
-    private final RoseSecurityProperties properties;
-    private final AuthenticationHook authenticationHook;
+public class JwtTokenService extends RedisTokenService {
     private final TokenRevocationStore revocationStore;
-    private final JwtTokenProcessor jwtTokenProcessor;
 
-    @Override
-    public UserTokenInfo createToken(UserDetails user) {
-        return null;
+    public JwtTokenService(
+            TokenRevocationStore revocationStore,
+            RoseSecurityProperties properties,
+            AuthenticationHook authenticationHook,
+            RedisTemplate<String, Object> redisTemplate) {
+        super(properties, authenticationHook, redisTemplate);
+        this.revocationStore = revocationStore;
     }
 
     @Override
-    public boolean validateToken(String accessToken) {
-        if (revocationStore != null && revocationStore.isRevoked(accessToken)) {
-            return false;
-        }
-        try {
-            jwtTokenProcessor.parseAndValidate(accessToken);
-            return true;
-        } catch (JwtTokenExpiredException ex) {
-            authenticationHook.onTokenExpired(accessToken);
-            return false;
-        } catch (JwtValidationException ex) {
-            log.debug("JWT 验证失败: {}", ex.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public UserDetails getUserDetails(String accessToken) {
-        try {
-            UserDetails userDetails = jwtTokenProcessor.parseToken(accessToken);
-            return userDetails;
-        } catch (JwtTokenExpiredException ex) {
-            authenticationHook.onTokenExpired(accessToken);
-            return null;
-        } catch (JwtValidationException ex) {
-            return null;
-        }
-    }
-
-    @Override
-    public UserTokenInfo refreshAccessToken(String refreshToken) {
-        return null;
-    }
-
-    @Override
-    public void revokeToken(String accessToken) {
-        if (revocationStore != null) {
-            revocationStore.revoke(accessToken);
-        }
-        authenticationHook.onTokenRevoked(accessToken);
-    }
-
-    @Override
-    public void revokeAllTokens(String username) {
-        // 简化：针对 JWT 无集中存储，调用钩子留给业务侧实现
-        authenticationHook.onRevoked(username);
-    }
-
-    @Override
-    public Set<String> getActiveTokens(String username) {
-        // JWT 无状态默认返回 0 或无法统计的标识，这里返回 0
-        return null;
+    protected TokenInfo buildTokenInfo(String username) {
+        return super.buildTokenInfo(username);
     }
 }

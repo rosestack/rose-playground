@@ -1,11 +1,10 @@
 package io.github.rosestack.spring.boot.security.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Rose Security 配置属性
@@ -89,7 +88,7 @@ public class RoseSecurityProperties {
         /**
          * 允许访问的路径
          */
-        private String[] permitPaths = new String[]{};
+        private String[] permitPaths = new String[] {};
 
         /**
          * Token 配置
@@ -110,7 +109,6 @@ public class RoseSecurityProperties {
              * AccessToken 有效期
              */
             private Duration accessTokenExpiredTime = Duration.ofHours(24);
-
 
             /**
              * RefreshToken 有效期
