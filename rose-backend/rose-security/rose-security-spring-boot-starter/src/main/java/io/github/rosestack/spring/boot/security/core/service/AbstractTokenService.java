@@ -174,8 +174,6 @@ public abstract class AbstractTokenService implements TokenService {
         storeTokenInfo(newTokenInfo);
 
         authenticationHook.onTokenRefreshSuccess(newTokenInfo.getUsername(), newTokenInfo.getAccessToken());
-        SpringContextUtils.publishEvent(
-                AuditEvent.tokenRefresh(username, Map.of("expiresAt", String.valueOf(newTokenInfo.getExpiresAt()))));
         return newTokenInfo;
     }
 

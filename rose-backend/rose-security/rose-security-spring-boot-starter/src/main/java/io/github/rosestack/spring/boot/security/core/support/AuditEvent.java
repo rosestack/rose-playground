@@ -11,7 +11,7 @@ import java.util.Map;
  */
 @Data
 public class AuditEvent {
-    private String type; // LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT, TOKEN_REFRESH
+    private String type; // LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT, LOCKOUT, KICKOUT
     private String username;
     private String ipAddress;
     private Instant timestamp;
@@ -35,9 +35,5 @@ public class AuditEvent {
 
     public static AuditEvent logout(String username, Map<String, Object> details) {
         return new AuditEvent("LOGOUT", username, details);
-    }
-
-    public static AuditEvent tokenRefresh(String username, Map<String, Object> details) {
-        return new AuditEvent("TOKEN_REFRESH", username, details);
     }
 }
