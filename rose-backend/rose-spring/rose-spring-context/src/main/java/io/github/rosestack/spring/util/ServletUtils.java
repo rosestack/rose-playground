@@ -248,6 +248,20 @@ public abstract class ServletUtils {
     }
 
     /**
+     * 获取当前请求的 Rose Web 认证详情
+     *
+     * @return RoseWebAuthenticationDetails 对象，如果不存在则返回 null
+     */
+    public static Object getRoseWebAuthenticationDetails() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+        // 使用字符串常量避免直接依赖 security 模块
+        return request.getAttribute("ROSE_WEB_AUTH_DETAILS");
+    }
+
+    /**
      * 将字符串渲染到客户端
      *
      * @param response    响应对象

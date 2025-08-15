@@ -4,6 +4,7 @@ import io.github.rosestack.spring.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.security.account.CaptchaService;
 import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.controller.AuthController;
+import io.github.rosestack.spring.boot.security.core.filter.RoseWebAuthenticationDetailsFilter;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.service.LoginService;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -58,7 +60,8 @@ import java.util.List;
  * @since 1.0.0
  */
 @Slf4j
-@AutoConfiguration(after = SecurityAutoConfiguration.class)
+@AutoConfiguration
+@AutoConfigureBefore(SecurityAutoConfiguration.class)
 @PropertySource(value = "classpath:application-rose-security.yml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseSecurityProperties.class)
@@ -91,6 +94,12 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter(TokenService tokenService) {
         return new TokenAuthenticationFilter(tokenService, properties);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public RoseWebAuthenticationDetailsFilter roseWebAuthenticationDetailsFilter() {
+        return new RoseWebAuthenticationDetailsFilter();
     }
 
     @Bean
@@ -148,7 +157,9 @@ public class RoseSecurityAutoConfiguration {
 
     @Bean
     public SecurityFilterChain apiSecurityFilterChain(
-            HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter) throws Exception {
+            HttpSecurity http, 
+            TokenAuthenticationFilter tokenAuthenticationFilter,
+            RoseWebAuthenticationDetailsFilter roseWebAuthenticationDetailsFilter) throws Exception {
         String loginPath = properties.getLoginPath();
         String logoutPath = properties.getLogoutPath();
         String refreshPath = properties.getRefreshPath();
@@ -166,7 +177,7 @@ public class RoseSecurityAutoConfiguration {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(permits.toArray(new String[0]))
                         .permitAll()
-                        .anyRequest()
+                        .requestMatchers(basePath)
                         .authenticated())
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

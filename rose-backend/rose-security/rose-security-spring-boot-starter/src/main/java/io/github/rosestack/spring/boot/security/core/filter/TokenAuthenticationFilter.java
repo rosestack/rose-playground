@@ -36,8 +36,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        // 记录请求开始时间
         long startTime = System.currentTimeMillis();
         String requestPath = request.getRequestURI();
         String method = request.getMethod();
@@ -75,18 +73,23 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private void processTokenAuthentication(HttpServletRequest request) {
         String token = ServletUtils.getRequestHeader(HEADER_API_KEY);
 
-        // 创建认证详细信息对象，用于记录整个认证过程
-        RoseWebAuthenticationDetails authDetails = new RoseAuthenticationDetailsSource().buildDetails(request);
+        // 首先尝试从 request attribute 中获取已创建的认证详情
+        RoseWebAuthenticationDetails authDetails =
+                (RoseWebAuthenticationDetails) request.getAttribute(RoseWebAuthenticationDetails.REQUEST_ATTRIBUTE_KEY);
+        if (authDetails == null) {
+            // 兜底逻辑：如果过滤器未创建，则手动创建
+            authDetails = new RoseAuthenticationDetailsSource().buildDetails(request);
+        }
 
         if (StringUtils.isBlank(token)) {
-            log.debug("请求中未找到Token: {}", request.getRequestURI());
+            log.info("请求中未找到Token: {}", request.getRequestURI());
             authDetails.markAuthFailure("NO_TOKEN", "请求中未找到Token");
             return;
         }
 
         // 检查Spring Security上下文是否已设置认证
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            log.debug("Spring Security上下文已存在认证信息，跳过Token处理");
+            log.info("Spring Security上下文已存在认证信息，跳过Token处理");
             authDetails.markAuthSuccess();
             return;
         }
@@ -121,7 +124,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             // 设置到Spring Security上下文
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            log.debug("已为用户 {} 设置认证上下文", userDetails.getUsername());
+            log.info("已为用户 {} 设置认证上下文", userDetails.getUsername());
 
         } catch (Exception e) {
             log.error("处理Token认证时发生异常: {}", StringUtils.abbreviate(token, 8), e);

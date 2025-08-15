@@ -54,6 +54,10 @@ public class AuditEvent {
                 .build();
     }
 
+    public static AuditEvent create(AuditEventType eventType, RoseWebAuthenticationDetails context) {
+        return create(eventType, context, null);
+    }
+
     public static AuditEvent create(AuditEventType eventType, Map<String, Object> details) {
         return create(
                 eventType,

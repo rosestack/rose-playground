@@ -4,7 +4,10 @@ import io.github.rosestack.core.exception.BusinessException;
 import io.github.rosestack.spring.boot.security.account.CaptchaService;
 import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.core.support.*;
+import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
+import io.github.rosestack.spring.boot.security.core.support.AuditEventType;
+import io.github.rosestack.spring.boot.security.core.support.AuthenticationLifecycleHook;
+import io.github.rosestack.spring.boot.security.core.support.RoseWebAuthenticationDetails;
 import io.github.rosestack.spring.util.ServletUtils;
 import io.github.rosestack.spring.util.SpringContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.github.rosestack.spring.boot.security.core.service.TokenService.HEADER_API_KEY;
@@ -50,8 +52,8 @@ public class LoginService {
             }
         }
 
-        RoseWebAuthenticationDetails authDetails =
-                new RoseAuthenticationDetailsSource().buildDetails(ServletUtils.getCurrentRequest());
+        RoseWebAuthenticationDetails authDetails = (RoseWebAuthenticationDetails)
+                ServletUtils.getCurrentRequest().getAttribute(RoseWebAuthenticationDetails.REQUEST_ATTRIBUTE_KEY);
 
         try {
             // 验证用户凭证
@@ -63,6 +65,10 @@ public class LoginService {
 
             log.info("用户 {} 登录成功", userDetails.getUsername());
 
+            authDetails.markAuthSuccess();
+            authDetails.setUsername(tokenInfo.getUsername());
+            authDetails.setToken(tokenInfo.getAccessToken());
+
             // 记录成功
             if (loginAttemptService != null) {
                 loginAttemptService.recordSuccess(userDetails.getUsername());
@@ -73,14 +79,14 @@ public class LoginService {
                     AuditEventType.LOGIN_SUCCESS, authDetails, Map.of("authorities", userDetails.getAuthorities())));
             return tokenInfo;
         } catch (Exception e) {
-            log.warn("用户 {} 登录失败: {}", username, e.getMessage());
+            log.warn("用户 {} 登录失败: {}", username, e.getMessage(), e);
             authenticationHook.onLoginFailure(username, e);
             if (loginAttemptService != null) {
                 loginAttemptService.recordFailure(username);
             }
-            SpringContextUtils.publishEvent(
-                    AuditEvent.create(AuditEventType.LOGIN_FAILURE, authDetails, new HashMap<>()));
-            throw new BusinessException("用户名或密码错误");
+            authDetails.withException(e);
+            SpringContextUtils.publishEvent(AuditEvent.create(AuditEventType.LOGIN_FAILURE, authDetails));
+            throw new BusinessException("用户名或密码错误", e);
         }
     }
 

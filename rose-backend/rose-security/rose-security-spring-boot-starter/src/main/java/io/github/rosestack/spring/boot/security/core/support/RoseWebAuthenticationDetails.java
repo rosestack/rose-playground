@@ -18,6 +18,12 @@ import static io.github.rosestack.spring.boot.security.core.service.TokenService
 @AllArgsConstructor
 @NoArgsConstructor
 public class RoseWebAuthenticationDetails implements Serializable {
+    
+    /**
+     * 用于在 HttpServletRequest 中存储 RoseWebAuthenticationDetails 的属性键
+     */
+    public static final String REQUEST_ATTRIBUTE_KEY = "ROSE_WEB_AUTH_DETAILS";
+    
     /**
      * 客户端IP地址
      */
