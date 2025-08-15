@@ -87,7 +87,7 @@ public class RoseSecurityAutoConfiguration {
                         authenticationManager,
                         props,
                         new LoginSuccessHandler(
-                                tokenService, loginLockoutService(props), tokenKickoutService(tokenService, props)),
+                                tokenService, loginLockoutService(props), tokenKickoutService(tokenService, props),eventPublisher),
                         new LoginFailureHandler(loginLockoutService(props))),
                 UsernamePasswordAuthenticationFilter.class);
 

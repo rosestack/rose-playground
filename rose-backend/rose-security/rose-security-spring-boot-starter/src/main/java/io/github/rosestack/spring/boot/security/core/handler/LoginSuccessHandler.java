@@ -10,12 +10,13 @@ import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -24,10 +25,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final LoginLockoutService lockoutService;
     private final TokenKickoutService tokenKickoutService;
     private final ApplicationEventPublisher publisher;
-
-    public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService, TokenKickoutService tokenKickoutService) {
-        this(tokenService, lockoutService, tokenKickoutService, null);
-    }
 
     public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService, TokenKickoutService tokenKickoutService, ApplicationEventPublisher publisher) {
         this.tokenService = tokenService;
