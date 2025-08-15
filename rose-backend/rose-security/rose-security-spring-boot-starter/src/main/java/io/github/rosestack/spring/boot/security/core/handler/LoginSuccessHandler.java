@@ -4,19 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.account.LoginLockoutService;
 import io.github.rosestack.spring.boot.security.account.TokenKickoutService;
-import io.github.rosestack.spring.boot.security.core.event.LoginSuccessEvent;
+import io.github.rosestack.spring.boot.security.core.event.TokenIssuedEvent;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels.AuthResponse;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
@@ -45,11 +44,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             lockoutService.onSuccess(username);
         }
         String token = tokenService.issue(username);
+        if (publisher != null) {
+            publisher.publishEvent(new TokenIssuedEvent(authentication, token));
+        }
         if (tokenKickoutService != null) {
             tokenKickoutService.enforceSingleSession(username, token);
-        }
-        if (publisher != null) {
-            publisher.publishEvent(new LoginSuccessEvent(username));
         }
         AuthResponse result = new AuthResponse(token, tokenService.getExpiresInSeconds());
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());

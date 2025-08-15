@@ -3,12 +3,14 @@ package io.github.rosestack.spring.boot.security.core.event;
 import lombok.Getter;
 
 @Getter
-public class LoginFailureEvent {
+public class UserLockedEvent {
     private final String username;
-    private final String reason;
+    private final boolean manual;
 
-    public LoginFailureEvent(String username, String reason) {
+    public UserLockedEvent(String username, boolean manual) {
         this.username = username;
-        this.reason = reason;
+        this.manual = manual;
     }
 }
+
+

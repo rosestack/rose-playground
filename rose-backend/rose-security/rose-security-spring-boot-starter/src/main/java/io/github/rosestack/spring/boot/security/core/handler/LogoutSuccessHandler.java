@@ -1,29 +1,25 @@
 package io.github.rosestack.spring.boot.security.core.handler;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
-import io.github.rosestack.spring.boot.security.core.event.LogoutEvent;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Optional;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.event.LogoutSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-public class TokenLogoutHandler implements LogoutHandler {
+public class LogoutSuccessHandler implements LogoutHandler {
 
     private final TokenService tokenService;
     private final RoseSecurityProperties properties;
-    private final ApplicationEventPublisher publisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public TokenLogoutHandler(TokenService tokenService, RoseSecurityProperties properties) {
-        this(tokenService, properties, null);
-    }
-
-    public TokenLogoutHandler(TokenService tokenService, RoseSecurityProperties properties, ApplicationEventPublisher publisher) {
+    public LogoutSuccessHandler(
+            TokenService tokenService, RoseSecurityProperties properties, ApplicationEventPublisher eventPublisher) {
         this.tokenService = tokenService;
         this.properties = properties;
-        this.publisher = publisher;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -31,13 +27,13 @@ public class TokenLogoutHandler implements LogoutHandler {
         String header = properties.getToken().getHeader();
         String token = request.getHeader(header);
         if (token != null && !token.isEmpty()) {
-            Optional<String> user = tokenService.resolveUsername(token);
             tokenService.revoke(token);
-            if (publisher != null && user.isPresent()) {
-                publisher.publishEvent(new LogoutEvent(user.get()));
+        }
+
+        if (this.eventPublisher != null) {
+            if (authentication != null) {
+                this.eventPublisher.publishEvent(new LogoutSuccessEvent(authentication));
             }
         }
     }
 }
-
-

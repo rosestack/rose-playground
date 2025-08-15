@@ -9,7 +9,7 @@ import io.github.rosestack.spring.boot.security.core.filter.LoginPreCheckFilter;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.handler.LoginFailureHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LoginSuccessHandler;
-import io.github.rosestack.spring.boot.security.core.handler.TokenLogoutHandler;
+import io.github.rosestack.spring.boot.security.core.handler.LogoutSuccessHandler;
 import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import io.github.rosestack.spring.boot.security.protect.*;
@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -51,7 +52,8 @@ public class RoseSecurityAutoConfiguration {
             RestAuthenticationEntryPoint entryPoint,
             RestAccessDeniedHandler accessDeniedHandler,
             TokenService tokenService,
-            AuthenticationManager authenticationManager)
+            AuthenticationManager authenticationManager,
+            ApplicationEventPublisher eventPublisher)
             throws Exception {
         // 基础放行路径
         List<String> permit = props.getPermitAll();
@@ -71,7 +73,7 @@ public class RoseSecurityAutoConfiguration {
                         ex -> ex.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler))
                 .httpBasic(Customizer.withDefaults())
                 .logout(logout -> logout.logoutUrl(props.getLogoutPath())
-                        .addLogoutHandler(new TokenLogoutHandler(tokenService, props)));
+                        .addLogoutHandler(new LogoutSuccessHandler(tokenService, props, eventPublisher)));
 
         // Login pre-check (account locked)
         if (props.getAccount().getLoginLock().isEnabled()) {
@@ -85,7 +87,7 @@ public class RoseSecurityAutoConfiguration {
                         authenticationManager,
                         props,
                         new LoginSuccessHandler(
-                                tokenService, loginLockoutService(props), sessionKickoutService(tokenService, props)),
+                                tokenService, loginLockoutService(props), tokenKickoutService(tokenService, props)),
                         new LoginFailureHandler(loginLockoutService(props))),
                 UsernamePasswordAuthenticationFilter.class);
 
@@ -137,7 +139,7 @@ public class RoseSecurityAutoConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public TokenKickoutService sessionKickoutService(TokenService tokenService, RoseSecurityProperties props) {
+    public TokenKickoutService tokenKickoutService(TokenService tokenService, RoseSecurityProperties props) {
         return new TokenKickoutService(tokenService, props);
     }
 
@@ -151,4 +153,5 @@ public class RoseSecurityAutoConfiguration {
     public AccessListStore accessListStore(RoseSecurityProperties props) {
         return new MemoryAccessListStore();
     }
+
 }

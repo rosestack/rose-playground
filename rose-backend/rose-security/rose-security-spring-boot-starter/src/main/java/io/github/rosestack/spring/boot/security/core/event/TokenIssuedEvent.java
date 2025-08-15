@@ -1,28 +1,19 @@
 package io.github.rosestack.spring.boot.security.core.event;
 
 import java.time.Instant;
+import lombok.Getter;
+import org.springframework.security.core.Authentication;
 
+@Getter
 public class TokenIssuedEvent {
-    private final String username;
+    private final Authentication authentication;
     private final String token;
     private final Instant issuedAt;
 
-    public TokenIssuedEvent(String username, String token) {
-        this.username = username;
+    public TokenIssuedEvent(Authentication authentication, String token) {
+        this.authentication = authentication;
         this.token = token;
         this.issuedAt = Instant.now();
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public Instant getIssuedAt() {
-        return issuedAt;
     }
 }
 
