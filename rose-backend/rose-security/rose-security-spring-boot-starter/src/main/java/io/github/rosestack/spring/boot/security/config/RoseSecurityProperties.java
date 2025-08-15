@@ -37,6 +37,9 @@ public class RoseSecurityProperties {
     /** 保护（防护）相关配置 */
     private final Protect protect = new Protect();
 
+    /** 账号安全配置 */
+    private final Account account = new Account();
+
     @Getter
     @Setter
     public static class Token {
@@ -48,12 +51,6 @@ public class RoseSecurityProperties {
 
         /** 过期时间（默认 PT2H） */
         private Duration ttl = Duration.ofHours(2);
-
-        /** 单用户并发 Token 数（默认 1） */
-        private int concurrentLimit = 1;
-
-        /** 超限时是否踢出最早 Token（默认 true） */
-        private boolean kickoutOldest = true;
 
         /** 存储方式：MEMORY 或 REDIS（默认 MEMORY） */
         private String store = "MEMORY";
@@ -92,6 +89,36 @@ public class RoseSecurityProperties {
 
             /** 启用的维度（简化：ip,username） */
             private List<String> dimensions = List.of("ip", "username");
+        }
+    }
+
+    @Getter
+    public static class Account {
+        private final LoginLock loginLock = new LoginLock();
+        private final Kickout kickout = new Kickout();
+
+        @Getter
+        @Setter
+        public static class LoginLock {
+            /** 是否启用登录失败锁定（默认 false） */
+            private boolean enabled = false;
+            /** 最大失败次数（默认 5） */
+            private int maxFailures = 5;
+            /** 冷却时间（默认 PT15M） */
+            private Duration cooldown = Duration.ofMinutes(15);
+        }
+
+        @Getter
+        @Setter
+        public static class Kickout {
+            /** 是否启用主动踢人（默认 false） */
+            private boolean enabled = false;
+
+            /** 单用户并发 Token 数（默认 1） */
+            private int concurrentLimit = 1;
+
+            /** 超限时是否踢出最早 Token（默认 true） */
+            private boolean kickoutOldest = true;
         }
     }
 }
