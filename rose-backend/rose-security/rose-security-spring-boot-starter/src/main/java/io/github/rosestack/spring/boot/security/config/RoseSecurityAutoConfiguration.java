@@ -5,6 +5,7 @@ import io.github.rosestack.spring.boot.security.account.SessionKickoutService;
 import io.github.rosestack.spring.boot.security.core.RestAccessDeniedHandler;
 import io.github.rosestack.spring.boot.security.core.RestAuthenticationEntryPoint;
 import io.github.rosestack.spring.boot.security.core.filter.LoginAuthenticationFilter;
+import io.github.rosestack.spring.boot.security.core.filter.LoginPreCheckFilter;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.handler.LoginFailureHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LoginSuccessHandler;
@@ -12,7 +13,6 @@ import io.github.rosestack.spring.boot.security.core.handler.TokenLogoutHandler;
 import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import io.github.rosestack.spring.boot.security.protect.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -72,12 +72,20 @@ public class RoseSecurityAutoConfiguration {
                 .httpBasic(Customizer.withDefaults())
                 .logout(logout -> logout.logoutUrl(props.getLogoutPath())
                         .addLogoutHandler(new TokenLogoutHandler(tokenService, props)));
-        // Filters
+
+        // Login pre-check (account locked)
+        if (props.getAccount().getLoginLock().isEnabled()) {
+            http.addFilterBefore(
+                    new LoginPreCheckFilter(props, loginLockoutService(props)),
+                    UsernamePasswordAuthenticationFilter.class);
+        }
+
         http.addFilterBefore(
                 new LoginAuthenticationFilter(
                         authenticationManager,
                         props,
-                        new LoginSuccessHandler(tokenService, loginLockoutService(props), sessionKickoutService(tokenService, props)),
+                        new LoginSuccessHandler(
+                                tokenService, loginLockoutService(props), sessionKickoutService(tokenService, props)),
                         new LoginFailureHandler(loginLockoutService(props))),
                 UsernamePasswordAuthenticationFilter.class);
 
