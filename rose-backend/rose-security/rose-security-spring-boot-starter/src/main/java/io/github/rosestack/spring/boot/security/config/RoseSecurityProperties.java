@@ -1,14 +1,19 @@
 package io.github.rosestack.spring.boot.security.config;
 
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 安全配置属性（最小可用集）。
  */
 @ConfigurationProperties(prefix = "rose.security")
+@Data
 public class RoseSecurityProperties {
 
     /** 是否启用安全特性，默认启用 */
@@ -32,58 +37,8 @@ public class RoseSecurityProperties {
     /** 保护（防护）相关配置 */
     private final Protect protect = new Protect();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getBasePath() {
-        return basePath;
-    }
-
-    public void setBasePath(String basePath) {
-        this.basePath = basePath;
-    }
-
-    public String getLoginPath() {
-        return loginPath;
-    }
-
-    public void setLoginPath(String loginPath) {
-        this.loginPath = loginPath;
-    }
-
-    public String getLogoutPath() {
-        return logoutPath;
-    }
-
-    public void setLogoutPath(String logoutPath) {
-        this.logoutPath = logoutPath;
-    }
-
-    public List<String> getPermitAll() {
-        return permitAll;
-    }
-
-    public void setPermitAll(List<String> permitAll) {
-        this.permitAll = permitAll;
-    }
-
-    public Token getToken() {
-        return token;
-    }
-
-    public Protect getProtect() {
-        return protect;
-    }
-
-    // =============================
-    // 嵌套属性对象
-    // =============================
-
+    @Getter
+    @Setter
     public static class Token {
         /** 是否启用 Token 功能（默认启用） */
         private boolean enabled = true;
@@ -108,79 +63,14 @@ public class RoseSecurityProperties {
 
         /** Redis Key 前缀（默认 rose:sec:token:） */
         private String redisKeyPrefix = "rose:sec:token:";
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getHeader() {
-            return header;
-        }
-
-        public void setHeader(String header) {
-            this.header = header;
-        }
-
-        public Duration getTtl() {
-            return ttl;
-        }
-
-        public void setTtl(Duration ttl) {
-            this.ttl = ttl;
-        }
-
-        public int getConcurrentLimit() {
-            return concurrentLimit;
-        }
-
-        public void setConcurrentLimit(int concurrentLimit) {
-            this.concurrentLimit = concurrentLimit;
-        }
-
-        public boolean isKickoutOldest() {
-            return kickoutOldest;
-        }
-
-        public void setKickoutOldest(boolean kickoutOldest) {
-            this.kickoutOldest = kickoutOldest;
-        }
-
-        public String getStore() {
-            return store;
-        }
-
-        public void setStore(String store) {
-            this.store = store;
-        }
-
-        public String getRedisKeyPrefix() {
-            return redisKeyPrefix;
-        }
-
-        public void setRedisKeyPrefix(String redisKeyPrefix) {
-            this.redisKeyPrefix = redisKeyPrefix;
-        }
     }
 
+    @Getter
     public static class Protect {
         private final AccessList accessList = new AccessList();
 
-        public AccessList getAccessList() {
-            return accessList;
-        }
-
+        @Getter
+        @Setter
         public static class AccessList {
             /** 是否启用访问名单（默认 false） */
             private boolean enabled = false;
@@ -205,70 +95,6 @@ public class RoseSecurityProperties {
 
             /** 启用的维度（简化：ip,username） */
             private List<String> dimensions = List.of("ip", "username");
-
-            public boolean isEnabled() {
-                return enabled;
-            }
-
-            public void setEnabled(boolean enabled) {
-                this.enabled = enabled;
-            }
-
-            public String getCombine() {
-                return combine;
-            }
-
-            public void setCombine(String combine) {
-                this.combine = combine;
-            }
-
-            public String getStore() {
-                return store;
-            }
-
-            public void setStore(String store) {
-                this.store = store;
-            }
-
-            public String getRedisKeyPrefix() {
-                return redisKeyPrefix;
-            }
-
-            public void setRedisKeyPrefix(String redisKeyPrefix) {
-                this.redisKeyPrefix = redisKeyPrefix;
-            }
-
-            public boolean isCacheEnabled() {
-                return cacheEnabled;
-            }
-
-            public void setCacheEnabled(boolean cacheEnabled) {
-                this.cacheEnabled = cacheEnabled;
-            }
-
-            public Duration getCacheTtl() {
-                return cacheTtl;
-            }
-
-            public void setCacheTtl(Duration cacheTtl) {
-                this.cacheTtl = cacheTtl;
-            }
-
-            public Duration getRefreshInterval() {
-                return refreshInterval;
-            }
-
-            public void setRefreshInterval(Duration refreshInterval) {
-                this.refreshInterval = refreshInterval;
-            }
-
-            public List<String> getDimensions() {
-                return dimensions;
-            }
-
-            public void setDimensions(List<String> dimensions) {
-                this.dimensions = dimensions;
-            }
         }
     }
 }
