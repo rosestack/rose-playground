@@ -101,7 +101,7 @@ public class KeystoreKeyLoader implements CacheableKeyLoader {
     /**
      * 加载密钥对（使用缓存）
      */
-    private KeyPair loadKeyPair() throws Exception {
+    private KeyPair loadKeyPair()  {
         return keyCache.get(() -> {
             try {
                 return doLoadKeyPair();
@@ -195,13 +195,13 @@ public class KeystoreKeyLoader implements CacheableKeyLoader {
             this.publicKey = publicKey;
         }
     }
-    
+
     @Override
     public void refreshCache() throws Exception {
         log.info("强制刷新Keystore缓存");
-        keyCache.refresh(this::loadKeyPairFromSource);
+        keyCache.refresh(this::loadKeyPair);
     }
-    
+
     @Override
     public String getCacheStatus() {
         return keyCache.getStatus().toString();

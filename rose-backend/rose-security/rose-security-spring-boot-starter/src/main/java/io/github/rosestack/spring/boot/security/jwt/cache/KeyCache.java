@@ -46,7 +46,7 @@ public class KeyCache<T> {
      * @return 缓存的值
      * @throws Exception 加载失败且无可用缓存时抛出异常
      */
-    public T get(Supplier<T> loader) throws Exception {
+    public T get(Supplier<T> loader)  {
         // 先尝试读锁
         lock.readLock().lock();
         try {

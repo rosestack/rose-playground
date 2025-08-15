@@ -24,7 +24,9 @@ public class JwtKeyManagerFactory {
      * @return JWT密钥管理器
      */
     public static JwtKeyManager create(RoseSecurityProperties properties) {
-        if (properties == null || properties.getToken() == null || properties.getToken().getJwt() == null) {
+        if (properties == null
+                || properties.getToken() == null
+                || properties.getToken().getJwt() == null) {
             throw new JwtConfigurationException("JWT配置不能为空");
         }
 
@@ -42,7 +44,8 @@ public class JwtKeyManagerFactory {
 
         switch (keyConfig.getType()) {
             case JWK:
-                if (keyConfig.getJwkSetUri() == null || keyConfig.getJwkSetUri().trim().isEmpty()) {
+                if (keyConfig.getJwkSetUri() == null
+                        || keyConfig.getJwkSetUri().trim().isEmpty()) {
                     throw new JwtConfigurationException("JWK类型需要配置jwkSetUri");
                 }
                 return new JwksKeyLoader(
@@ -53,10 +56,12 @@ public class JwtKeyManagerFactory {
                         keyConfig.isJwkFallbackToCache());
 
             case KEYSTORE:
-                if (keyConfig.getKeystorePath() == null || keyConfig.getKeystorePath().trim().isEmpty()) {
+                if (keyConfig.getKeystorePath() == null
+                        || keyConfig.getKeystorePath().trim().isEmpty()) {
                     throw new JwtConfigurationException("KEYSTORE类型需要配置keystorePath");
                 }
-                if (keyConfig.getKeyAlias() == null || keyConfig.getKeyAlias().trim().isEmpty()) {
+                if (keyConfig.getKeyAlias() == null
+                        || keyConfig.getKeyAlias().trim().isEmpty()) {
                     throw new JwtConfigurationException("KEYSTORE类型需要配置keyAlias");
                 }
                 return new KeystoreKeyLoader(

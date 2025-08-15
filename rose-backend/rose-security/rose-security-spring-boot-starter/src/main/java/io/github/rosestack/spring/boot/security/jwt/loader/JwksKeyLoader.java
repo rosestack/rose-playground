@@ -137,7 +137,7 @@ public class JwksKeyLoader implements CacheableKeyLoader {
     /**
      * 带重试机制的JWKS获取
      */
-    private JWKSet fetchJwkSetWithRetry() throws Exception {
+    private JWKSet fetchJwkSetWithRetry() {
         if (jwkSetUri == null || jwkSetUri.trim().isEmpty()) {
             throw new IllegalStateException("JWKS URI未配置");
         }
@@ -206,13 +206,13 @@ public class JwksKeyLoader implements CacheableKeyLoader {
         }
         return rt;
     }
-    
+
     @Override
     public void refreshCache() throws Exception {
         log.info("强制刷新JWKS缓存");
         jwksCache.refresh(this::fetchJwkSetWithRetry);
     }
-    
+
     @Override
     public String getCacheStatus() {
         return jwksCache.getStatus().toString();

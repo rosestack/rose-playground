@@ -6,10 +6,9 @@ import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenServ
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
 import io.github.rosestack.spring.boot.security.jwt.exception.JwtConfigurationException;
 import io.github.rosestack.spring.boot.security.jwt.factory.JwtKeyManagerFactory;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-
-import java.time.Duration;
 
 /**
  * 基于JWT + Redis的混合Token服务
@@ -37,7 +36,8 @@ public class JwtTokenService extends RedisTokenService {
 
         this.properties = properties;
 
-        if (properties.getToken().getJwt() == null || !properties.getToken().getJwt().isEnabled()) {
+        if (properties.getToken().getJwt() == null
+                || !properties.getToken().getJwt().isEnabled()) {
             throw new JwtConfigurationException("JWT配置未启用或缺失");
         }
 
