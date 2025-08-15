@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.core.support;
+package io.github.rosestack.spring.boot.security;
 
 /**
  * 审计事件类型枚举
