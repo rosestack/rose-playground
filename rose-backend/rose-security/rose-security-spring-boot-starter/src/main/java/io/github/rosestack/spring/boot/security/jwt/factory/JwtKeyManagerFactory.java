@@ -24,8 +24,7 @@ public class JwtKeyManagerFactory {
      * @return JWT密钥管理器
      */
     public static JwtKeyManager create(RoseSecurityProperties.Token properties) {
-        if (properties == null
-                || properties.getJwt() == null) {
+        if (properties == null || properties.getJwt() == null) {
             throw new JwtConfigurationException("JWT配置不能为空");
         }
 

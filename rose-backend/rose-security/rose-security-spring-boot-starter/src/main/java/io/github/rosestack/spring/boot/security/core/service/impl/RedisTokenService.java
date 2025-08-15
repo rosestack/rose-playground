@@ -3,7 +3,7 @@ package io.github.rosestack.spring.boot.security.core.service.impl;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.AbstractTokenService;
-import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.jwt.TokenManagementHook;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -34,7 +34,7 @@ public class RedisTokenService extends AbstractTokenService {
 
     public RedisTokenService(
             RoseSecurityProperties.Token properties,
-            AuthenticationHook authenticationHook,
+            TokenManagementHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook);
         this.redisTemplate = redisTemplate;

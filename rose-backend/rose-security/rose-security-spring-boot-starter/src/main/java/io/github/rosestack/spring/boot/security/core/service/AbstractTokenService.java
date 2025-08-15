@@ -2,12 +2,11 @@ package io.github.rosestack.spring.boot.security.core.service;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
+import io.github.rosestack.spring.boot.security.jwt.TokenManagementHook;
+import io.github.rosestack.spring.util.SpringContextUtils;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +40,7 @@ public abstract class AbstractTokenService implements TokenService {
     /**
      * 认证钩子
      */
-    protected final AuthenticationHook authenticationHook;
+    protected final TokenManagementHook authenticationHook;
 
     /**
      * 标准的Token创建流程
@@ -143,7 +142,7 @@ public abstract class AbstractTokenService implements TokenService {
 
         // 前置检查
         if (!authenticationHook.beforeTokenRefresh(refreshToken)) {
-            throw new IllegalStateException("Token刷新被拦截");
+            throw new IllegalArgumentException("Token刷新被拦截");
         }
 
         TokenInfo oldTokenInfo = findTokenInfoByRefreshToken(refreshToken);
@@ -174,7 +173,8 @@ public abstract class AbstractTokenService implements TokenService {
         storeTokenInfo(newTokenInfo);
 
         authenticationHook.onTokenRefreshSuccess(newTokenInfo.getUsername(), newTokenInfo.getAccessToken());
-
+        SpringContextUtils.publishEvent(
+                AuditEvent.tokenRefresh(username, Map.of("expiresAt", String.valueOf(newTokenInfo.getExpiresAt()))));
         return newTokenInfo;
     }
 
@@ -220,14 +220,14 @@ public abstract class AbstractTokenService implements TokenService {
 
     /**
      * 额外的 Token 验证逻辑
-     * 
+     *
      * <p>
      * 子类可以重写此方法来添加特定的验证逻辑，如 JWT 签名验证等。
      * 此方法在基础验证（非空检查、存储查找、过期时间检查）通过后调用。
      * </p>
-     * 
+     *
      * @param accessToken 访问令牌
-     * @param tokenInfo Token 信息对象
+     * @param tokenInfo   Token 信息对象
      * @return 验证是否通过
      */
     protected boolean additionalValidation(String accessToken, TokenInfo tokenInfo) {

@@ -4,6 +4,8 @@ import com.nimbusds.jose.*;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.jwt.algorithm.JwtAlgorithmFactory;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtTokenExpiredException;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtValidationException;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
@@ -31,7 +33,7 @@ public class JwtHelper {
     /**
      * 构造 JWT 工具类
      *
-     * @param keyManager 密钥管理器
+     * @param keyManager    密钥管理器
      * @param algorithmName 算法名称（如 HS256、RS256）
      */
     public JwtHelper(JwtKeyManager keyManager, String algorithmName) {
@@ -121,7 +123,8 @@ public class JwtHelper {
      * @param tokenString JWT 字符串
      * @return JWT 声明集合
      * @throws IllegalArgumentException 令牌格式无效或为空
-     * @throws RuntimeException         签名验证失败、令牌过期或其他验证失败
+     * @throws JwtValidationException   签名验证失败、格式错误或其他验证失败
+     * @throws JwtTokenExpiredException 令牌已过期
      */
     public JWTClaimsSet validateToken(String tokenString) {
         if (tokenString == null || tokenString.trim().isEmpty()) {
@@ -134,7 +137,7 @@ public class JwtHelper {
             // 签名验证
             JWSVerifier verifier = keyManager.createVerifierFor(jwt);
             if (!jwt.verify(verifier)) {
-                throw new RuntimeException("JWT 签名验证失败");
+                throw new JwtValidationException("JWT 签名验证失败");
             }
 
             // 获取声明
@@ -143,29 +146,27 @@ public class JwtHelper {
             // 过期时间验证
             Date expirationTime = claims.getExpirationTime();
             if (expirationTime != null && expirationTime.before(new Date())) {
-                throw new RuntimeException("JWT 已过期");
+                throw new JwtTokenExpiredException("JWT 已过期");
             }
 
             // 生效时间验证
             Date notBeforeTime = claims.getNotBeforeTime();
             if (notBeforeTime != null && notBeforeTime.after(new Date())) {
-                throw new RuntimeException("JWT 尚未生效");
+                throw new JwtValidationException("JWT 尚未生效");
             }
 
             log.debug("JWT 验证成功，主题: {}", claims.getSubject());
             return claims;
 
         } catch (ParseException e) {
-            log.warn("JWT 解析失败: {}", e.getMessage());
-            throw new IllegalArgumentException("JWT 解析失败: " + e.getMessage(), e);
+            throw new JwtValidationException("JWT 解析失败: " + e.getMessage(), e);
         } catch (JOSEException e) {
-            log.warn("JWT 签名验证异常: {}", e.getMessage());
-            throw new RuntimeException("JWT 签名验证异常: " + e.getMessage(), e);
-        } catch (RuntimeException e) {
+            throw new JwtValidationException("JWT 签名验证异常: " + e.getMessage(), e);
+        } catch (JwtTokenExpiredException | JwtValidationException e) {
+            // 直接重新抛出我们的自定义异常
             throw e;
         } catch (Exception e) {
-            log.error("JWT 验证未知异常: {}", e.getMessage(), e);
-            throw new RuntimeException("JWT 验证失败: " + e.getMessage(), e);
+            throw new JwtValidationException("JWT 验证失败: " + e.getMessage(), e);
         }
     }
 
@@ -180,21 +181,5 @@ public class JwtHelper {
     public String extractUsername(String tokenString) {
         JWTClaimsSet claims = validateToken(tokenString);
         return claims.getSubject();
-    }
-
-    /**
-     * 检查令牌是否有效（不抛异常的验证方法）
-     *
-     * @param tokenString JWT 字符串
-     * @return 是否有效
-     */
-    public boolean isTokenValid(String tokenString) {
-        try {
-            validateToken(tokenString);
-            return true;
-        } catch (Exception e) {
-            log.debug("JWT 令牌无效: {}", e.getMessage());
-            return false;
-        }
     }
 }

@@ -3,11 +3,11 @@ package io.github.rosestack.spring.boot.security.jwt;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenService;
-import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
-import io.github.rosestack.spring.boot.security.jwt.exception.JwtConfigurationException;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtTokenExpiredException;
 import io.github.rosestack.spring.boot.security.jwt.factory.JwtKeyManagerFactory;
 import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -29,7 +29,7 @@ public class JwtTokenService extends RedisTokenService {
 
     public JwtTokenService(
             RoseSecurityProperties.Token properties,
-            AuthenticationHook authenticationHook,
+            TokenManagementHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook, redisTemplate);
 
@@ -49,5 +49,22 @@ public class JwtTokenService extends RedisTokenService {
         TokenInfo baseTokenInfo = super.buildTokenInfo(username);
         baseTokenInfo.setTokenType(TOKEN_TYPE_JWT);
         return baseTokenInfo;
+    }
+
+    @Override
+    protected boolean additionalValidation(String accessToken, TokenInfo tokenInfo) {
+        try {
+            jwtHelper.validateToken(accessToken);
+            log.debug("JWT token 验证通过: {}", StringUtils.abbreviate(accessToken, 8));
+            return true;
+        } catch (JwtTokenExpiredException e) {
+            // 特殊处理：JWT token 过期，调用 hook 回调
+            authenticationHook.onTokenExpired(accessToken);
+            log.warn("JWT token 已过期: {}", e.getMessage());
+            return false;
+        } catch (Exception e) {
+            log.warn("JWT token 验证失败: {}", e.getMessage());
+            return false;
+        }
     }
 }

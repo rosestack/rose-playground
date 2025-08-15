@@ -101,7 +101,7 @@ public class KeystoreKeyLoader implements CacheableKeyLoader {
     /**
      * 加载密钥对（使用缓存）
      */
-    private KeyPair loadKeyPair()  {
+    private KeyPair loadKeyPair() {
         return keyCache.get(() -> {
             try {
                 return doLoadKeyPair();

@@ -3,9 +3,9 @@ package io.github.rosestack.spring.boot.security.jwt.exception;
 /**
  * 在校验 JWT 时发现 token 过期抛出
  */
-public class JwtTokenExpiredException extends RuntimeException {
+public class JwtTokenExpiredException extends JwtException {
     public JwtTokenExpiredException() {
-        super();
+        super("JWT token 已过期");
     }
 
     public JwtTokenExpiredException(String message) {
