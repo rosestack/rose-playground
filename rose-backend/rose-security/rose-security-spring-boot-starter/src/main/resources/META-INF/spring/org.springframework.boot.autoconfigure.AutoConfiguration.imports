@@ -1,2 +1,3 @@
 io.github.rosestack.spring.boot.security.config.RoseSecurityAutoConfiguration
+io.github.rosestack.spring.boot.security.core.listener.SecurityEventListener
 

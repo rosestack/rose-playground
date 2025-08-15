@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.boot.security.account.LoginLockoutService;
-import io.github.rosestack.spring.boot.security.account.SessionKickoutService;
+import io.github.rosestack.spring.boot.security.account.TokenKickoutService;
 import io.github.rosestack.spring.boot.security.core.RestAccessDeniedHandler;
 import io.github.rosestack.spring.boot.security.core.RestAuthenticationEntryPoint;
 import io.github.rosestack.spring.boot.security.core.filter.LoginAuthenticationFilter;
@@ -137,8 +137,8 @@ public class RoseSecurityAutoConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public SessionKickoutService sessionKickoutService(TokenService tokenService, RoseSecurityProperties props) {
-        return new SessionKickoutService(tokenService, props);
+    public TokenKickoutService sessionKickoutService(TokenService tokenService, RoseSecurityProperties props) {
+        return new TokenKickoutService(tokenService, props);
     }
 
     @Bean

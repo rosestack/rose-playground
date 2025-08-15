@@ -3,33 +3,38 @@ package io.github.rosestack.spring.boot.security.core.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.account.LoginLockoutService;
-import io.github.rosestack.spring.boot.security.account.SessionKickoutService;
+import io.github.rosestack.spring.boot.security.account.TokenKickoutService;
+import io.github.rosestack.spring.boot.security.core.event.LoginSuccessEvent;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels.AuthResponse;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TokenService tokenService;
     private final LoginLockoutService lockoutService;
-    private final SessionKickoutService sessionKickoutService;
+    private final TokenKickoutService tokenKickoutService;
+    private final ApplicationEventPublisher publisher;
 
-    public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService) {
-        this(tokenService, lockoutService, null);
+    public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService, TokenKickoutService tokenKickoutService) {
+        this(tokenService, lockoutService, tokenKickoutService, null);
     }
 
-    public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService, SessionKickoutService sessionKickoutService) {
+    public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService, TokenKickoutService tokenKickoutService, ApplicationEventPublisher publisher) {
         this.tokenService = tokenService;
         this.lockoutService = lockoutService;
-        this.sessionKickoutService = sessionKickoutService;
+        this.tokenKickoutService = tokenKickoutService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -40,8 +45,11 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             lockoutService.onSuccess(username);
         }
         String token = tokenService.issue(username);
-        if (sessionKickoutService != null) {
-            sessionKickoutService.enforceSingleSession(username, token);
+        if (tokenKickoutService != null) {
+            tokenKickoutService.enforceSingleSession(username, token);
+        }
+        if (publisher != null) {
+            publisher.publishEvent(new LoginSuccessEvent(username));
         }
         AuthResponse result = new AuthResponse(token, tokenService.getExpiresInSeconds());
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());

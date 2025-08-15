@@ -6,12 +6,12 @@ import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import java.util.Comparator;
 import java.util.Map;
 
-public class SessionKickoutService {
+public class TokenKickoutService {
 
     private final TokenService tokenService;
     private final RoseSecurityProperties properties;
 
-    public SessionKickoutService(TokenService tokenService, RoseSecurityProperties properties) {
+    public TokenKickoutService(TokenService tokenService, RoseSecurityProperties properties) {
         this.tokenService = tokenService;
         this.properties = properties;
     }
