@@ -4,14 +4,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
@@ -22,6 +14,15 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Servlet 工具类
@@ -622,6 +623,82 @@ public abstract class ServletUtils {
 
     public static String getRequestId() {
         return getValueFromRequestAndMdc(HEADER_REQUEST_ID, true);
+    }
+
+    /**
+     * 收集请求头（排除敏感头）
+     */
+    public static Map<String, String> collectRequestHeaders(HttpServletRequest request) {
+        String[] SENSITIVE_HEADERS = {
+            "authorization", "x-auth-token", "cookie", "set-cookie",
+            "x-api-key", "x-secret", "password", "passwd"
+        };
+
+        Map<String, String> headers = new HashMap<>();
+
+        if (request.getHeaderNames() != null) {
+            java.util.Enumeration<String> headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String headerName = headerNames.nextElement();
+                String headerNameLower = headerName.toLowerCase();
+
+                // 检查是否为敏感头
+                boolean isSensitive = false;
+                for (String sensitiveHeader : SENSITIVE_HEADERS) {
+                    if (headerNameLower.contains(sensitiveHeader)) {
+                        isSensitive = true;
+                        break;
+                    }
+                }
+
+                if (!isSensitive) {
+                    headers.put(headerName, request.getHeader(headerName));
+                } else {
+                    // 敏感头用 *** 替代
+                    headers.put(headerName, "***");
+                }
+            }
+        }
+
+        return headers;
+    }
+
+    /**
+     * 收集请求参数（排除敏感参数）
+     */
+    public static Map<String, String[]> collectRequestParameters(HttpServletRequest request) {
+        /**
+         * 敏感参数名，不记录
+         */
+        String[] SENSITIVE_PARAMS = {
+            "password", "passwd", "pwd", "secret", "token", "key", "credential", "auth", "authorization", "signature"
+        };
+
+        Map<String, String[]> parameters = new HashMap<>();
+
+        if (request.getParameterMap() != null) {
+            for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+                String paramName = entry.getKey().toLowerCase();
+
+                // 检查是否为敏感参数
+                boolean isSensitive = false;
+                for (String sensitiveParam : SENSITIVE_PARAMS) {
+                    if (paramName.contains(sensitiveParam)) {
+                        isSensitive = true;
+                        break;
+                    }
+                }
+
+                if (!isSensitive) {
+                    parameters.put(entry.getKey(), entry.getValue());
+                } else {
+                    // 敏感参数用 *** 替代
+                    parameters.put(entry.getKey(), new String[] {"***"});
+                }
+            }
+        }
+
+        return parameters;
     }
 
     private static String getValueFromRequestAndMdc(String name, boolean generate) {

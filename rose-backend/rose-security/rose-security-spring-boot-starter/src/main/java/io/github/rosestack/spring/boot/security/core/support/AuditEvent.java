@@ -39,58 +39,10 @@ public class AuditEvent {
     private String operation;
 
     /**
-     * 操作是否成功
-     */
-    private Boolean success;
-
-    /**
-     * 错误代码（失败时）
-     */
-    private String errorCode;
-
-    /**
-     * 错误消息（失败时）
-     */
-    private String errorMessage;
-
-    /**
-     * 风险评分（0-100）
-     */
-    private Integer riskScore;
-
-    /**
      * 扩展详情
      */
     @Builder.Default
     private Map<String, Object> details = new HashMap<>();
-
-    /**
-     * 标记操作成功
-     */
-    public AuditEvent markSuccess() {
-        this.success = true;
-        this.errorCode = null;
-        this.errorMessage = null;
-        return this;
-    }
-
-    /**
-     * 标记操作失败
-     */
-    public AuditEvent markFailure(String errorCode, String errorMessage) {
-        this.success = false;
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-        return this;
-    }
-
-    /**
-     * 设置风险评分
-     */
-    public AuditEvent withRiskScore(int score) {
-        this.riskScore = Math.max(0, Math.min(100, score));
-        return this;
-    }
 
     public static AuditEvent fromSecurityContext(
             AuditEventType eventType, RoseWebAuthenticationDetails context, Map<String, Object> details) {
