@@ -635,14 +635,38 @@ public abstract class ServletUtils {
     }
 
     /**
+     * 敏感字段模式（用于请求体脱敏）
+     */
+    private static final String[] SENSITIVE_BODY_PATTERNS = {
+        "password",
+        "passwd",
+        "pwd",
+        "secret",
+        "token",
+        "key",
+        "credential",
+        "auth",
+        "authorization",
+        "signature",
+        "apiKey",
+        "api_key",
+        "accessToken",
+        "access_token",
+        "x-auth-token",
+        "cookie",
+        "set-cookie",
+        "x-api-key",
+        "x-secret",
+        "refreshToken",
+        "refresh_token",
+        "sessionId",
+        "session_id"
+    };
+
+    /**
      * 收集请求头（排除敏感头）
      */
     public static Map<String, String> collectRequestHeaders(HttpServletRequest request) {
-        String[] SENSITIVE_HEADERS = {
-            "authorization", "x-auth-token", "cookie", "set-cookie",
-            "x-api-key", "x-secret", "password", "passwd"
-        };
-
         Map<String, String> headers = new HashMap<>();
 
         if (request.getHeaderNames() != null) {
@@ -653,7 +677,7 @@ public abstract class ServletUtils {
 
                 // 检查是否为敏感头
                 boolean isSensitive = false;
-                for (String sensitiveHeader : SENSITIVE_HEADERS) {
+                for (String sensitiveHeader : SENSITIVE_BODY_PATTERNS) {
                     if (headerNameLower.contains(sensitiveHeader)) {
                         isSensitive = true;
                         break;
@@ -676,13 +700,6 @@ public abstract class ServletUtils {
      * 收集请求参数（排除敏感参数）
      */
     public static Map<String, String[]> collectRequestParameters(HttpServletRequest request) {
-        /**
-         * 敏感参数名，不记录
-         */
-        String[] SENSITIVE_PARAMS = {
-            "password", "passwd", "pwd", "secret", "token", "key", "credential", "auth", "authorization", "signature"
-        };
-
         Map<String, String[]> parameters = new HashMap<>();
 
         if (request.getParameterMap() != null) {
@@ -691,7 +708,7 @@ public abstract class ServletUtils {
 
                 // 检查是否为敏感参数
                 boolean isSensitive = false;
-                for (String sensitiveParam : SENSITIVE_PARAMS) {
+                for (String sensitiveParam : SENSITIVE_BODY_PATTERNS) {
                     if (paramName.contains(sensitiveParam)) {
                         isSensitive = true;
                         break;
@@ -783,8 +800,7 @@ public abstract class ServletUtils {
      */
     private static String extractFromSpringContentCaching(HttpServletRequest request) {
         try {
-            org.springframework.web.util.ContentCachingRequestWrapper wrapper =
-                    (org.springframework.web.util.ContentCachingRequestWrapper) request;
+            ContentCachingRequestWrapper wrapper = (ContentCachingRequestWrapper) request;
             byte[] content = wrapper.getContentAsByteArray();
 
             if (content != null && content.length > 0) {
@@ -792,14 +808,87 @@ public abstract class ServletUtils {
                 if (encoding == null) {
                     encoding = "UTF-8";
                 }
-                return new String(content, encoding);
+                String bodyContent = new String(content, encoding);
+
+                // 对请求体进行脱敏处理
+                return sanitizeRequestBody(bodyContent);
             }
 
             return "Request body is empty";
-
         } catch (Exception e) {
             return "Failed to extract from ContentCachingRequestWrapper: " + e.getMessage();
         }
+    }
+
+    /**
+     * 对请求体进行脱敏处理
+     *
+     * @param bodyContent 原始请求体内容
+     * @return 脱敏后的请求体内容
+     */
+    private static String sanitizeRequestBody(String bodyContent) {
+        if (StringUtils.isBlank(bodyContent)) {
+            return bodyContent;
+        }
+
+        try {
+            String contentType =
+                    getCurrentRequest() != null ? getCurrentRequest().getContentType() : "";
+
+            if (contentType != null && contentType.startsWith("application/json")) {
+                // JSON 格式脱敏
+                return sanitizeJsonBody(bodyContent);
+            } else if (contentType != null && contentType.startsWith("application/x-www-form-urlencoded")) {
+                // 表单格式脱敏
+                return sanitizeFormBody(bodyContent);
+            } else {
+                // 其他格式使用通用脱敏
+                return sanitizeGenericBody(bodyContent);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to sanitize request body: {}", e.getMessage());
+            return "Request body sanitization failed";
+        }
+    }
+
+    /**
+     * JSON 格式请求体脱敏
+     */
+    private static String sanitizeJsonBody(String jsonBody) {
+        for (String pattern : SENSITIVE_BODY_PATTERNS) {
+            // JSON 字段模式：\"fieldName\"\s*:\s*\"value\"
+            String regex = "\"" + pattern + "\"\\s*:\\s*\"[^\"]*\"";
+            jsonBody = jsonBody.replaceAll("(?i)" + regex, "\"" + pattern + "\":\"****\"");
+
+            // 无引号值模式：\"fieldName\"\s*:\s*value
+            String regexNoQuotes = "\"" + pattern + "\"\\s*:\\s*[^,}\\]\\s]+";
+            jsonBody = jsonBody.replaceAll("(?i)" + regexNoQuotes, "\"" + pattern + "\":\"****\"");
+        }
+        return jsonBody;
+    }
+
+    /**
+     * 表单格式请求体脱敏
+     */
+    private static String sanitizeFormBody(String formBody) {
+        for (String pattern : SENSITIVE_BODY_PATTERNS) {
+            // 表单字段模式：fieldName=value&
+            String regex = pattern + "=[^&]*";
+            formBody = formBody.replaceAll("(?i)" + regex, pattern + "=****");
+        }
+        return formBody;
+    }
+
+    /**
+     * 通用格式请求体脱敏
+     */
+    private static String sanitizeGenericBody(String body) {
+        for (String pattern : SENSITIVE_BODY_PATTERNS) {
+            // 通用模式：查找敏感词并替换其后的值
+            String regex = "(?i)" + pattern + "\\s*[=:]\\s*\\S+";
+            body = body.replaceAll(regex, pattern + "=****");
+        }
+        return body;
     }
 
     private static String getValueFromRequestAndMdc(String name, boolean generate) {
@@ -819,6 +908,6 @@ public abstract class ServletUtils {
      * 生成请求ID
      */
     private static String generateId() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+        return UUID.randomUUID().toString().replace("-", "").toUpperCase();
     }
 }

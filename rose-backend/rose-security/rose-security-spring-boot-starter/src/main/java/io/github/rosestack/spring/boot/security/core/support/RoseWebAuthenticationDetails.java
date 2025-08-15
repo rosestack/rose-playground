@@ -11,12 +11,6 @@ import java.util.Map;
 
 import static io.github.rosestack.spring.boot.security.core.service.TokenService.HEADER_API_KEY;
 
-/**
- * TODO Comment
- *
- * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
- * @since TODO
- */
 @Data
 @Builder
 public class RoseWebAuthenticationDetails implements Serializable {
@@ -49,6 +43,28 @@ public class RoseWebAuthenticationDetails implements Serializable {
      * HTTP方法
      */
     private String httpMethod;
+
+    /**
+     * 请求参数（Query Parameters）
+     */
+    @Builder.Default
+    private Map<String, String[]> requestParameters = new HashMap<>();
+
+    /**
+     * 请求体内容（仅记录非敏感内容）
+     */
+    private String requestBody;
+
+    /**
+     * 请求头信息（排除敏感头）
+     */
+    @Builder.Default
+    private Map<String, String> requestHeaders = new HashMap<>();
+
+    /**
+     * 内容类型
+     */
+    private String contentType;
 
     // ========== 会话信息 ==========
 
@@ -106,30 +122,6 @@ public class RoseWebAuthenticationDetails implements Serializable {
      * 错误消息（认证失败时）
      */
     private String errorMessage;
-
-    // ========== 请求数据 ==========
-
-    /**
-     * 请求参数（Query Parameters）
-     */
-    @Builder.Default
-    private Map<String, String[]> requestParameters = new HashMap<>();
-
-    /**
-     * 请求体内容（仅记录非敏感内容）
-     */
-    private String requestBody;
-
-    /**
-     * 请求头信息（排除敏感头）
-     */
-    @Builder.Default
-    private Map<String, String> requestHeaders = new HashMap<>();
-
-    /**
-     * 内容类型
-     */
-    private String contentType;
 
     /**
      * 扩展属性

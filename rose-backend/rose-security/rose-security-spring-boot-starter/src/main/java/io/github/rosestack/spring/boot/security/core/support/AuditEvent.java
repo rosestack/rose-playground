@@ -34,11 +34,6 @@ public class AuditEvent {
     private RoseWebAuthenticationDetails context;
 
     /**
-     * 操作类型
-     */
-    private String operation;
-
-    /**
      * 扩展详情
      */
     @Builder.Default
@@ -51,7 +46,7 @@ public class AuditEvent {
                 .timestamp(Instant.now())
                 .eventId(context != null ? context.getRequestId() : null)
                 .context(context) // 直接设置整个上下文
-                .details(details)
+                .details(details == null ? new HashMap<>() : details)
                 .build();
     }
 
