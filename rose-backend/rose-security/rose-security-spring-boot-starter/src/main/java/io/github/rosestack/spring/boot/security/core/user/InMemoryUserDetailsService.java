@@ -11,8 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 /**
  * 仅用于开发环境的内存用户服务。业务侧可声明自己的 UserDetailsService 进行覆盖。
  */
-@Primary
-@ConditionalOnMissingBean(UserDetailsService.class)
 public class InMemoryUserDetailsService implements UserDetailsService {
 
     private final UserDetails defaultUser;

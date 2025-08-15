@@ -40,9 +40,6 @@ public class RoseSecurityProperties {
     @Getter
     @Setter
     public static class Token {
-        /** 是否启用 Token 功能（默认启用） */
-        private boolean enabled = true;
-
         /** Token 类型：LOCAL 或 JWT（默认 LOCAL） */
         private String type = "LOCAL";
 
@@ -98,5 +95,3 @@ public class RoseSecurityProperties {
         }
     }
 }
-
-

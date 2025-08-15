@@ -16,8 +16,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
@@ -27,9 +28,15 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     public LoginAuthenticationFilter(AuthenticationManager authenticationManager,
                                      RoseSecurityProperties props,
                                      TokenService tokenService) {
-        super(new AntPathRequestMatcher(props.getLoginPath(), "POST"));
+        super(regexPostMatcher(props.getLoginPath()));
         setAuthenticationManager(authenticationManager);
         this.tokenService = tokenService;
+    }
+
+    private static RequestMatcher regexPostMatcher(String path) {
+        // 简化：将明确的登录路径转为等效正则匹配，仅匹配 POST
+        String regex = "^" + java.util.regex.Pattern.quote(path) + "$";
+        return new RegexRequestMatcher(regex, "POST");
     }
 
     @Override

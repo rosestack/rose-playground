@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -65,5 +66,12 @@ public class RoseSecurityAutoConfiguration {
         http.addFilterBefore(new TokenAuthenticationFilter(tokenService, props),
                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TokenService.class)
+    @ConditionalOnProperty(prefix = "rose.security.token", name = "type", havingValue = "LOCAL", matchIfMissing = true)
+    public TokenService opaqueTokenService(RoseSecurityProperties props) {
+        return new io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService(props);
     }
 }
