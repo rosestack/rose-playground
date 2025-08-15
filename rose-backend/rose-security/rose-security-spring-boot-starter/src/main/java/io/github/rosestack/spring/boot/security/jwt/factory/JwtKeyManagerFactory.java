@@ -7,10 +7,9 @@ import io.github.rosestack.spring.boot.security.jwt.loader.JwksKeyLoader;
 import io.github.rosestack.spring.boot.security.jwt.loader.KeyLoader;
 import io.github.rosestack.spring.boot.security.jwt.loader.KeystoreKeyLoader;
 import io.github.rosestack.spring.boot.security.jwt.loader.SecretKeyLoader;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
-
-import java.time.Duration;
 
 /**
  * JWT密钥管理器工厂
@@ -64,17 +63,20 @@ public class JwtKeyManagerFactory {
      * @param refreshInterval  刷新间隔
      * @return JWT密钥管理器
      */
-    public static JwtKeyManager createKeystore(String algorithmName, String keystorePath,
-                                               String keystorePassword, String keyAlias,
-                                               Duration refreshInterval) {
+    public static JwtKeyManager createKeystore(
+            String algorithmName,
+            String keystorePath,
+            String keystorePassword,
+            String keyAlias,
+            Duration refreshInterval) {
         validateKeystoreParameters(algorithmName, keystorePath, keyAlias);
 
-        KeyLoader keyLoader = new KeystoreKeyLoader(
-                algorithmName, keystorePath, keystorePassword, keyAlias, refreshInterval);
+        KeyLoader keyLoader =
+                new KeystoreKeyLoader(algorithmName, keystorePath, keystorePassword, keyAlias, refreshInterval);
         return new JwtKeyManager(keyLoader);
     }
 
-        /**
+    /**
      * 创建JWKS密钥管理器
      *
      * @param algorithmName   算法名称
@@ -84,16 +86,14 @@ public class JwtKeyManagerFactory {
      * @param fallbackToCache 是否回退到缓存
      * @return JWT密钥管理器
      */
-    public static JwtKeyManager createJwks(String algorithmName, String jwkSetUri,
-                                            int maxRetries, Duration refreshInterval,
-                                            boolean fallbackToCache) {
+    public static JwtKeyManager createJwks(
+            String algorithmName, String jwkSetUri, int maxRetries, Duration refreshInterval, boolean fallbackToCache) {
         validateJwksParameters(algorithmName, jwkSetUri);
 
-        KeyLoader keyLoader = new JwksKeyLoader(
-                algorithmName, jwkSetUri, maxRetries, refreshInterval, fallbackToCache);
+        KeyLoader keyLoader = new JwksKeyLoader(algorithmName, jwkSetUri, maxRetries, refreshInterval, fallbackToCache);
         return new JwtKeyManager(keyLoader);
     }
-    
+
     /**
      * 创建简单的JWKS密钥管理器（使用默认参数）
      *
@@ -127,16 +127,14 @@ public class JwtKeyManagerFactory {
                     keyConfig.getJwkSetUri(),
                     keyConfig.getJwkMaxRetries(),
                     keyConfig.getRotationInterval(),
-                    keyConfig.isJwkFallbackToCache()
-            );
+                    keyConfig.isJwkFallbackToCache());
         } else if (keyConfig != null && keyConfig.getType() == RoseSecurityProperties.Jwt.Key.KeyType.KEYSTORE) {
             return new KeystoreKeyLoader(
                     algorithmName,
                     keyConfig.getKeystorePath(),
                     keyConfig.getKeystorePassword(),
                     keyConfig.getKeyAlias(),
-                    keyConfig.getRotationInterval()
-            );
+                    keyConfig.getRotationInterval());
         } else {
             String secret = properties.getJwt().getSecret();
             if (secret == null || secret.trim().isEmpty()) {
@@ -169,8 +167,7 @@ public class JwtKeyManagerFactory {
     }
 
     private static void validateKeystoreParameters(String algorithmName, String keystorePath, String keyAlias) {
-        if (!JwtAlgorithmFactory.isRsaAlgorithm(algorithmName) &&
-                !JwtAlgorithmFactory.isEcAlgorithm(algorithmName)) {
+        if (!JwtAlgorithmFactory.isRsaAlgorithm(algorithmName) && !JwtAlgorithmFactory.isEcAlgorithm(algorithmName)) {
             throw new IllegalArgumentException("Keystore仅支持RSA和ECDSA算法: " + algorithmName);
         }
         if (keystorePath == null || keystorePath.trim().isEmpty()) {
@@ -266,9 +263,8 @@ public class JwtKeyManagerFactory {
                             algorithmName, keystorePath, keystorePassword, keyAlias, refreshInterval);
                     break;
                 case "JWKS":
-                    JwksKeyLoader jwksLoader = new JwksKeyLoader(
-                            algorithmName, jwkSetUri,
-                            maxRetries, refreshInterval, fallbackToCache);
+                    JwksKeyLoader jwksLoader =
+                            new JwksKeyLoader(algorithmName, jwkSetUri, maxRetries, refreshInterval, fallbackToCache);
                     if (restTemplate != null) {
                         jwksLoader.setRestTemplate(restTemplate);
                     }

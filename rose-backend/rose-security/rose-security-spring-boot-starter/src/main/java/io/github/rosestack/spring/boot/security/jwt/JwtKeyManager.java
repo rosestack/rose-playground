@@ -3,6 +3,7 @@ package io.github.rosestack.spring.boot.security.jwt;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jwt.SignedJWT;
+import io.github.rosestack.spring.boot.security.jwt.loader.CacheableKeyLoader;
 import io.github.rosestack.spring.boot.security.jwt.loader.KeyLoader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,8 +26,7 @@ public class JwtKeyManager {
      */
     public JWSSigner createSigner() throws Exception {
         if (!keyLoader.supportsSigning()) {
-            throw new UnsupportedOperationException(
-                    keyLoader.getType() + " 密钥加载器不支持签名操作");
+            throw new UnsupportedOperationException(keyLoader.getType() + " 密钥加载器不支持签名操作");
         }
 
         try {
@@ -59,12 +59,14 @@ public class JwtKeyManager {
     public JWSVerifier createVerifierFor(SignedJWT jwt) throws Exception {
         try {
             JWSVerifier verifier = keyLoader.createVerifierFor(jwt);
-            log.debug("为JWT创建验证器成功，类型: {}, kid: {}",
-                    keyLoader.getType(), jwt.getHeader().getKeyID());
+            log.debug(
+                    "为JWT创建验证器成功，类型: {}, kid: {}",
+                    keyLoader.getType(),
+                    jwt.getHeader().getKeyID());
             return verifier;
         } catch (Exception e) {
             log.warn("为JWT创建验证器失败，类型: {}, 错误: {}", keyLoader.getType(), e.getMessage());
-            
+
             // 回退到通用验证器
             return createVerifier();
         }
@@ -80,13 +82,19 @@ public class JwtKeyManager {
     public void rotateKeys() {
         log.info("开始密钥轮换，密钥类型: {}", keyLoader.getType());
         try {
-            // 强制创建新的签名器和验证器来触发密钥重新加载
-            if (keyLoader.supportsSigning()) {
-                keyLoader.createSigner();
-                log.debug("签名密钥轮换成功");
+            // 如果KeyLoader实现了缓存刷新接口，则调用刷新方法
+            if (keyLoader instanceof CacheableKeyLoader) {
+                ((CacheableKeyLoader) keyLoader).refreshCache();
+                log.debug("缓存刷新成功");
+            } else {
+                // 对于不支持缓存的加载器（如HMAC），直接重新创建实例验证可用性
+                if (keyLoader.supportsSigning()) {
+                    keyLoader.createSigner();
+                    log.debug("签名密钥验证成功");
+                }
+                keyLoader.createVerifier();
+                log.debug("验证密钥验证成功");
             }
-            keyLoader.createVerifier();
-            log.debug("验证密钥轮换成功");
             log.info("密钥轮换完成");
         } catch (Exception e) {
             log.error("密钥轮换失败: {}", e.getMessage(), e);
@@ -98,7 +106,7 @@ public class JwtKeyManager {
      * 获取密钥加载器状态信息（用于监控和调试）
      */
     public String getKeyLoaderStatus() {
-        return String.format("KeyLoader{type=%s, supportsSigning=%s}",
-                keyLoader.getType(), keyLoader.supportsSigning());
+        return String.format(
+                "KeyLoader{type=%s, supportsSigning=%s}", keyLoader.getType(), keyLoader.supportsSigning());
     }
 }

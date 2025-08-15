@@ -33,7 +33,7 @@ public class RedisTokenService extends AbstractTokenService {
     private static final String USER_SESSIONS_PREFIX = "rose:user_sessions:";
 
     public RedisTokenService(
-            RoseSecurityProperties.Auth.Token properties,
+            RoseSecurityProperties.Token properties,
             AuthenticationHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook);
@@ -63,19 +63,19 @@ public class RedisTokenService extends AbstractTokenService {
             return null;
         });
 
-        log.debug("从Redis完全移除Token，refreshToken: {}, accessToken: {}, username: {}",
-                refreshToken, accessToken, username);
+        log.debug(
+                "从Redis完全移除Token，refreshToken: {}, accessToken: {}, username: {}", refreshToken, accessToken, username);
     }
 
     @Override
     protected TokenInfo findTokenInfoByAccessToken(String accessToken) {
         String accessIndexKey = ACCESS_INDEX_PREFIX + accessToken;
         String refreshToken = (String) redisTemplate.opsForValue().get(accessIndexKey);
-        
+
         if (refreshToken == null) {
             return null;
         }
-        
+
         return findTokenInfoByRefreshToken(refreshToken);
     }
 
@@ -89,7 +89,7 @@ public class RedisTokenService extends AbstractTokenService {
     @Override
     protected ConcurrentSkipListSet<TokenInfo> findTokenInfosByUsername(String username) {
         String userSessionsKey = USER_SESSIONS_PREFIX + username;
-        
+
         // 获取用户所有的refreshToken
         Set<Object> refreshTokenObjs = redisTemplate.opsForZSet().range(userSessionsKey, 0, -1);
         if (refreshTokenObjs == null || refreshTokenObjs.isEmpty()) {
@@ -107,7 +107,7 @@ public class RedisTokenService extends AbstractTokenService {
                 }
             }
         }
-        
+
         return tokenInfos;
     }
 
@@ -126,7 +126,7 @@ public class RedisTokenService extends AbstractTokenService {
                 allTokens.add((TokenInfo) tokenObj);
             }
         }
-        
+
         return allTokens;
     }
 
@@ -156,7 +156,8 @@ public class RedisTokenService extends AbstractTokenService {
 
             // 5. 添加到用户会话ZSet (按创建时间排序)
             String userSessionsKey = USER_SESSIONS_PREFIX + username;
-            double score = tokenInfo.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toEpochSecond();
+            double score =
+                    tokenInfo.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toEpochSecond();
             redisTemplate.opsForZSet().add(userSessionsKey, refreshToken, score);
 
             // 6. 设置用户会话集合过期时间（使用较长的时间）
@@ -165,15 +166,15 @@ public class RedisTokenService extends AbstractTokenService {
             return null;
         });
 
-        log.debug("存储Token到Redis，refreshToken: {}, accessToken: {}, username: {}",
-                refreshToken, accessToken, username);
+        log.debug("存储Token到Redis，refreshToken: {}, accessToken: {}, username: {}", refreshToken, accessToken, username);
     }
 
     /**
      * 计算Redis TTL（秒）
      */
     private long calculateRedisTtl(LocalDateTime expireTime) {
-        long seconds = java.time.Duration.between(LocalDateTime.now(), expireTime).getSeconds();
+        long seconds =
+                java.time.Duration.between(LocalDateTime.now(), expireTime).getSeconds();
         return Math.max(1, seconds); // 至少1秒
     }
 }

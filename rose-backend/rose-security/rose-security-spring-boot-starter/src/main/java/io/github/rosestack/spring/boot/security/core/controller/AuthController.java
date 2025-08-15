@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.security.auth", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuthController {
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
@@ -46,7 +46,7 @@ public class AuthController {
     /**
      * 用户登录
      */
-    @PostMapping("${rose.security.auth.login-path:/api/auth/login}")
+    @PostMapping("${rose.security.login-path:/api/auth/login}")
     public ResponseEntity<ApiResponse<TokenInfo>> login(@RequestBody LoginRequest request) {
         try {
             // 登录前钩子
@@ -101,7 +101,7 @@ public class AuthController {
     /**
      * 用户注销
      */
-    @PostMapping("${rose.security.auth.logout-path:/api/auth/logout}")
+    @PostMapping("${rose.security.logout-path:/api/auth/logout}")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         String token = TokenAuthenticationFilter.extractTokenFromRequest(request);
         String username = null;
@@ -131,7 +131,7 @@ public class AuthController {
     /**
      * 刷新Token
      */
-    @PostMapping("${rose.security.auth.refresh-path:/api/auth/refresh}")
+    @PostMapping("${rose.security.refresh-path:/api/auth/refresh}")
     public ResponseEntity<ApiResponse<TokenInfo>> refreshToken(@RequestBody RefreshTokenRequest request) {
         try {
             // 刷新前钩子

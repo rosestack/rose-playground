@@ -25,7 +25,7 @@ public class InMemoryLoginAttemptService implements LoginAttemptService {
 
     @Override
     public boolean isLocked(String username) {
-        if (!properties.getAuth().getAccount().getLockOut().isEnabled()) {
+        if (!properties.getAccount().getLockOut().isEnabled()) {
             return false;
         }
         State s = states.get(username);
@@ -46,8 +46,7 @@ public class InMemoryLoginAttemptService implements LoginAttemptService {
 
     @Override
     public void recordFailure(String username) {
-        RoseSecurityProperties.Auth.Account.LockOut cfg =
-                properties.getAuth().getAccount().getLockOut();
+        RoseSecurityProperties.Account.LockOut cfg = properties.getAccount().getLockOut();
         if (!cfg.isEnabled()) return;
         State s = states.computeIfAbsent(username, k -> new State());
         s.failures++;

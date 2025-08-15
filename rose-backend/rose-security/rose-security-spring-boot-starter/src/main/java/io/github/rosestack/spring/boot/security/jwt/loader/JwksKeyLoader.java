@@ -7,11 +7,10 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.jwt.algorithm.JwtAlgorithmFactory;
 import io.github.rosestack.spring.boot.security.jwt.cache.KeyCache;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-
-import java.time.Duration;
 
 /**
  * JWKS密钥加载器
@@ -44,9 +43,8 @@ public class JwksKeyLoader implements KeyLoader {
      * @param refreshInterval 缓存刷新间隔
      * @param fallbackToCache 是否回退到缓存
      */
-    public JwksKeyLoader(String algorithmName, String jwkSetUri,
-                         int maxRetries,
-                         Duration refreshInterval, boolean fallbackToCache) {
+    public JwksKeyLoader(
+            String algorithmName, String jwkSetUri, int maxRetries, Duration refreshInterval, boolean fallbackToCache) {
         this.algorithmName = algorithmName;
         this.jwkSetUri = jwkSetUri;
         this.maxRetries = maxRetries;
@@ -184,11 +182,11 @@ public class JwksKeyLoader implements KeyLoader {
      * 根据算法选择JWK
      */
     private JWK selectJwkByAlgorithm(JWKSet jwkSet) {
-        String algorithmNameForJwk = JwtAlgorithmFactory.getJwsAlgorithm(algorithmName).getName();
+        String algorithmNameForJwk =
+                JwtAlgorithmFactory.getJwsAlgorithm(algorithmName).getName();
 
         for (JWK jwk : jwkSet.getKeys()) {
-            if (jwk.getAlgorithm() != null &&
-                    jwk.getAlgorithm().getName().equals(algorithmNameForJwk)) {
+            if (jwk.getAlgorithm() != null && jwk.getAlgorithm().getName().equals(algorithmNameForJwk)) {
                 return jwk;
             }
         }

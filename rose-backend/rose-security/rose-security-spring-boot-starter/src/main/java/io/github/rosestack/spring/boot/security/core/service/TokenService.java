@@ -64,6 +64,4 @@ public interface TokenService {
     void revokeAllTokens(String username);
 
     Set<String> getActiveTokens(String username);
-
-
 }

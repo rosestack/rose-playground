@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * JWT算法工厂 - 负责算法映射和签名器/验证器创建
- * 
+ *
  * <p>职责：
  * <ul>
  *   <li>算法字符串到JWSAlgorithm的映射</li>
@@ -27,10 +27,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class JwtAlgorithmFactory {
-    
+
     /** 算法映射表 */
     private static final Map<String, JWSAlgorithm> ALGORITHM_MAP;
-    
+
     static {
         ALGORITHM_MAP = new HashMap<>();
         ALGORITHM_MAP.put("HS256", JWSAlgorithm.HS256);
@@ -43,7 +43,7 @@ public class JwtAlgorithmFactory {
         ALGORITHM_MAP.put("ES384", JWSAlgorithm.ES384);
         ALGORITHM_MAP.put("ES512", JWSAlgorithm.ES512);
     }
-    
+
     /**
      * 获取JWS算法
      * @param algorithmName 算法名称，如"HS256"、"RS256"等
@@ -55,7 +55,7 @@ public class JwtAlgorithmFactory {
         }
         return ALGORITHM_MAP.getOrDefault(algorithmName.toUpperCase(), JWSAlgorithm.HS256);
     }
-    
+
     /**
      * 创建HMAC签名器
      */
@@ -65,7 +65,7 @@ public class JwtAlgorithmFactory {
         }
         return new MACSigner(secret.getBytes());
     }
-    
+
     /**
      * 创建HMAC验证器
      */
@@ -75,7 +75,7 @@ public class JwtAlgorithmFactory {
         }
         return new MACVerifier(secret.getBytes());
     }
-    
+
     /**
      * 创建RSA签名器
      */
@@ -85,7 +85,7 @@ public class JwtAlgorithmFactory {
         }
         return new RSASSASigner(privateKey);
     }
-    
+
     /**
      * 创建RSA验证器
      */
@@ -95,7 +95,7 @@ public class JwtAlgorithmFactory {
         }
         return new RSASSAVerifier(publicKey);
     }
-    
+
     /**
      * 创建ECDSA签名器
      */
@@ -105,7 +105,7 @@ public class JwtAlgorithmFactory {
         }
         return new ECDSASigner(privateKey);
     }
-    
+
     /**
      * 创建ECDSA验证器
      */
@@ -115,7 +115,7 @@ public class JwtAlgorithmFactory {
         }
         return new ECDSAVerifier(publicKey);
     }
-    
+
     /**
      * 从JWK创建验证器
      */
@@ -123,7 +123,7 @@ public class JwtAlgorithmFactory {
         if (jwk == null) {
             throw new IllegalArgumentException("JWK不能为空");
         }
-        
+
         if (jwk instanceof RSAKey) {
             return createRsaVerifier(((RSAKey) jwk).toRSAPublicKey());
         } else if (jwk instanceof ECKey) {
@@ -131,10 +131,10 @@ public class JwtAlgorithmFactory {
         } else if (jwk instanceof OctetSequenceKey) {
             return new MACVerifier(((OctetSequenceKey) jwk).toByteArray());
         }
-        
+
         throw new IllegalArgumentException("不支持的JWK类型: " + jwk.getClass().getSimpleName());
     }
-    
+
     /**
      * 判断是否为HMAC算法
      * @param algorithmName 算法名称
@@ -145,7 +145,7 @@ public class JwtAlgorithmFactory {
         String upper = algorithmName.toUpperCase();
         return "HS256".equals(upper) || "HS384".equals(upper) || "HS512".equals(upper);
     }
-    
+
     /**
      * 判断是否为RSA算法
      * @param algorithmName 算法名称
@@ -156,7 +156,7 @@ public class JwtAlgorithmFactory {
         String upper = algorithmName.toUpperCase();
         return "RS256".equals(upper) || "RS384".equals(upper) || "RS512".equals(upper);
     }
-    
+
     /**
      * 判断是否为ECDSA算法
      * @param algorithmName 算法名称
@@ -167,7 +167,7 @@ public class JwtAlgorithmFactory {
         String upper = algorithmName.toUpperCase();
         return "ES256".equals(upper) || "ES384".equals(upper) || "ES512".equals(upper);
     }
-    
+
     /**
      * 获取支持的所有算法名称
      * @return 算法名称集合

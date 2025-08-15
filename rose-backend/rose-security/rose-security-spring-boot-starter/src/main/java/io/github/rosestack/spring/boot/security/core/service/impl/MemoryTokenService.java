@@ -4,11 +4,10 @@ import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.AbstractTokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 内存 Token 服务实现
@@ -24,7 +23,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 @Slf4j
 public class MemoryTokenService extends AbstractTokenService {
 
-    public MemoryTokenService(RoseSecurityProperties.Auth.Token properties, AuthenticationHook authenticationHook) {
+    public MemoryTokenService(RoseSecurityProperties.Token properties, AuthenticationHook authenticationHook) {
         super(properties, authenticationHook);
     }
 

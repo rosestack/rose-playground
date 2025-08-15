@@ -4,13 +4,12 @@ import com.nimbusds.jose.*;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.github.rosestack.spring.boot.security.jwt.algorithm.JwtAlgorithmFactory;
-import lombok.extern.slf4j.Slf4j;
-
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JWT 工具类
@@ -29,9 +28,30 @@ public class JwtHelper {
     private final JwtKeyManager keyManager;
     private final String algorithmName;
 
+    /**
+     * 构造 JWT 工具类
+     *
+     * @param keyManager 密钥管理器
+     * @param algorithmName 算法名称（如 HS256、RS256）
+     */
     public JwtHelper(JwtKeyManager keyManager, String algorithmName) {
+        if (keyManager == null) {
+            throw new IllegalArgumentException("密钥管理器不能为空");
+        }
+        if (algorithmName == null || algorithmName.trim().isEmpty()) {
+            throw new IllegalArgumentException("算法名称不能为空");
+        }
         this.keyManager = keyManager;
         this.algorithmName = algorithmName;
+    }
+
+    /**
+     * 构造 JWT 工具类（使用默认 HS256 算法）
+     *
+     * @param keyManager 密钥管理器
+     */
+    public JwtHelper(JwtKeyManager keyManager) {
+        this(keyManager, "HS256");
     }
 
     /**

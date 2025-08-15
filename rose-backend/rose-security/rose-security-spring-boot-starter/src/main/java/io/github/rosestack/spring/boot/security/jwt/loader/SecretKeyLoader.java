@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * HMAC密钥加载器
- * 
+ *
  * <p>特点：
  * <ul>
  *   <li>使用共享密钥进行签名和验证</li>
@@ -21,34 +21,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class SecretKeyLoader implements KeyLoader {
-    
+
     private final String secret;
-    
+
     @Override
     public JWSSigner createSigner() throws Exception {
         if (secret == null || secret.trim().isEmpty()) {
             throw new IllegalStateException("JWT密钥未配置");
         }
-        
+
         log.debug("创建HMAC签名器");
         return JwtAlgorithmFactory.createHmacSigner(secret);
     }
-    
+
     @Override
     public JWSVerifier createVerifier() throws Exception {
         if (secret == null || secret.trim().isEmpty()) {
             throw new IllegalStateException("JWT密钥未配置");
         }
-        
+
         log.debug("创建HMAC验证器");
         return JwtAlgorithmFactory.createHmacVerifier(secret);
     }
-    
+
     @Override
     public boolean supportsSigning() {
         return true;
     }
-    
+
     @Override
     public String getType() {
         return "HMAC";

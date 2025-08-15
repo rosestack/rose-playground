@@ -1,11 +1,10 @@
 package io.github.rosestack.spring.boot.security.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Rose Security 配置属性
@@ -27,9 +26,182 @@ public class RoseSecurityProperties {
     private boolean stateless = true;
 
     /**
-     * 基础认证配置
+     * 登录端点路径
      */
-    private Auth auth = new Auth();
+    private String loginPath = "/api/auth/login";
+
+    /**
+     * 注销端点路径
+     */
+    private String logoutPath = "/api/auth/logout";
+
+    /**
+     * 刷新端点路径
+     */
+    private String refreshPath = "/api/auth/refresh";
+
+    /**
+     * 受保护路径
+     */
+    private String bashPath = "/api/**";
+
+    /**
+     * 允许访问的路径
+     */
+    private String[] permitPaths = new String[] {};
+
+    /**
+     * Token 配置
+     */
+    private Token token = new Token();
+
+    /**
+     * 账号安全配置
+     */
+    private Account account = new Account();
+
+    /**
+     * Token 配置
+     */
+    @Data
+    public static class Token {
+        /**
+         * AccessToken 有效期
+         */
+        private Duration accessTokenExpiredTime = Duration.ofHours(24);
+
+        /**
+         * RefreshToken 有效期
+         */
+        private Duration refreshTokenExpiredTime = Duration.ofMinutes(30);
+
+        /**
+         * Token 刷新时间窗口
+         */
+        private Duration refreshWindow = Duration.ofMinutes(5);
+
+        /**
+         * 最大并发会话数
+         */
+        private int maximumSessions = 1;
+
+        /**
+         * 当达到最大会话数时是否阻止新登录
+         */
+        private boolean maxSessionsPreventsLogin = false;
+
+        /**
+         * Token 存储类型
+         */
+        private StorageType storageType = StorageType.MEMORY;
+
+        /**
+         * Token 存储类型枚举
+         */
+        public enum StorageType {
+            MEMORY,
+            REDIS
+        }
+    }
+
+    /**
+     * 账号安全配置
+     */
+    @Data
+    public static class Account {
+        /**
+         * 密码策略配置
+         */
+        private Password password = new Password();
+
+        /**
+         * 登录失败锁定配置
+         */
+        private LockOut lockOut = new LockOut();
+
+        /**
+         * 验证码配置
+         */
+        private Captcha captcha = new Captcha();
+
+        /**
+         * 密码策略配置
+         */
+        @Data
+        public static class Password {
+            /**
+             * 最小长度
+             */
+            private int minLength = 8;
+
+            /**
+             * 密码历史数量
+             */
+            private int history = 5;
+
+            /**
+             * 密码过期天数
+             */
+            private int expireDays = 90;
+
+            /**
+             * 是否需要大写字母
+             */
+            private boolean requireUppercase = true;
+
+            /**
+             * 是否需要小写字母
+             */
+            private boolean requireLowercase = true;
+
+            /**
+             * 是否需要数字
+             */
+            private boolean requireDigit = true;
+
+            /**
+             * 是否需要特殊字符
+             */
+            private boolean requireSpecialChar = true;
+        }
+
+        /**
+         * 登录失败锁定配置
+         */
+        @Data
+        public static class LockOut {
+            /**
+             * 是否启用锁定
+             */
+            private boolean enabled = true;
+
+            /**
+             * 最大失败次数
+             */
+            private int maxAttempts = 5;
+
+            /**
+             * 锁定时间（分钟）
+             */
+            private Duration lockDuration = Duration.ofMinutes(30);
+        }
+
+        /**
+         * 验证码配置
+         */
+        @Data
+        public static class Captcha {
+            /**
+             * 是否启用验证码
+             */
+            private boolean enabled = false;
+
+            /**
+             * 失败多少次后启用验证码
+             */
+            private int enableAfterFailures = 3;
+        }
+    }
 
     /**
      * JWT 配置
@@ -50,221 +222,6 @@ public class RoseSecurityProperties {
      * 安全防护配置
      */
     private Protection protection = new Protection();
-
-    /**
-     * 可观测性配置
-     */
-    private Observability observability = new Observability();
-
-    /**
-     * 基础认证配置
-     */
-    @Data
-    public static class Auth {
-        /**
-         * 是否启用基础认证
-         */
-        private boolean enabled = true;
-
-        /**
-         * 登录端点路径
-         */
-        private String loginPath = "/api/auth/login";
-
-        /**
-         * 注销端点路径
-         */
-        private String logoutPath = "/api/auth/logout";
-
-        /**
-         * 刷新端点路径
-         */
-        private String refreshPath = "/api/auth/refresh";
-
-        /**
-         * 受保护路径
-         */
-        private String bashPath = "/api/**";
-
-        /**
-         * 允许访问的路径
-         */
-        private String[] permitPaths = new String[]{};
-
-        /**
-         * Token 配置
-         */
-        private Token token = new Token();
-
-        /**
-         * 账号安全配置
-         */
-        private Account account = new Account();
-
-        /**
-         * Token 配置
-         */
-        @Data
-        public static class Token {
-            /**
-             * AccessToken 有效期
-             */
-            private Duration accessTokenExpiredTime = Duration.ofHours(24);
-
-            /**
-             * RefreshToken 有效期
-             */
-            private Duration refreshTokenExpiredTime = Duration.ofMinutes(30);
-
-            /**
-             * Token 刷新时间窗口
-             */
-            private Duration refreshWindow = Duration.ofMinutes(5);
-
-            /**
-             * 最大并发会话数
-             */
-            private int maximumSessions = 1;
-
-            /**
-             * 当达到最大会话数时是否阻止新登录
-             */
-            private boolean maxSessionsPreventsLogin = false;
-
-            /**
-             * Token 存储类型
-             */
-            private StorageType storageType = StorageType.MEMORY;
-
-            /**
-             * Redis 相关配置
-             */
-            private Redis redis = new Redis();
-
-            /**
-             * Token 存储类型枚举
-             */
-            public enum StorageType {
-                MEMORY,
-                REDIS
-            }
-
-            /**
-             * Redis 配置
-             */
-            @Data
-            public static class Redis {
-                /**
-                 * Redis Key 前缀
-                 */
-                private String keyPrefix = "rose:security:token:";
-
-                /**
-                 * 数据库索引
-                 */
-                private int database = 0;
-            }
-        }
-
-        /**
-         * 账号安全配置
-         */
-        @Data
-        public static class Account {
-            /**
-             * 密码策略配置
-             */
-            private Password password = new Password();
-
-            /**
-             * 登录失败锁定配置
-             */
-            private LockOut lockOut = new LockOut();
-
-            /**
-             * 验证码配置
-             */
-            private Captcha captcha = new Captcha();
-
-            /**
-             * 密码策略配置
-             */
-            @Data
-            public static class Password {
-                /**
-                 * 最小长度
-                 */
-                private int minLength = 8;
-
-                /**
-                 * 密码历史数量
-                 */
-                private int history = 5;
-
-                /**
-                 * 密码过期天数
-                 */
-                private int expireDays = 90;
-
-                /**
-                 * 是否需要大写字母
-                 */
-                private boolean requireUppercase = true;
-
-                /**
-                 * 是否需要小写字母
-                 */
-                private boolean requireLowercase = true;
-
-                /**
-                 * 是否需要数字
-                 */
-                private boolean requireDigit = true;
-
-                /**
-                 * 是否需要特殊字符
-                 */
-                private boolean requireSpecialChar = true;
-            }
-
-            /**
-             * 登录失败锁定配置
-             */
-            @Data
-            public static class LockOut {
-                /**
-                 * 是否启用锁定
-                 */
-                private boolean enabled = true;
-
-                /**
-                 * 最大失败次数
-                 */
-                private int maxAttempts = 5;
-
-                /**
-                 * 锁定时间（分钟）
-                 */
-                private Duration lockDuration = Duration.ofMinutes(30);
-            }
-
-            /**
-             * 验证码配置
-             */
-            @Data
-            public static class Captcha {
-                /**
-                 * 是否启用验证码
-                 */
-                private boolean enabled = false;
-
-                /**
-                 * 失败多少次后启用验证码
-                 */
-                private int enableAfterFailures = 3;
-            }
-        }
-    }
 
     /**
      * JWT 配置
@@ -374,7 +331,6 @@ public class RoseSecurityProperties {
         private List<String> audience = new ArrayList<>(); // aud
         private boolean requireIssuedAt = true; // 是否强制要求 iat
         private boolean requireNotBefore = false; // 是否强制要求 nbf
-
     }
 
     /**
@@ -533,26 +489,5 @@ public class RoseSecurityProperties {
              */
             private Duration windowSize = Duration.ofMinutes(5);
         }
-    }
-
-    /**
-     * 可观测性配置
-     */
-    @Data
-    public static class Observability {
-        /**
-         * 是否启用指标收集
-         */
-        private boolean metricsEnabled = true;
-
-        /**
-         * 是否启用结构化日志
-         */
-        private boolean structuredLoggingEnabled = true;
-
-        /**
-         * 是否启用链路追踪
-         */
-        private boolean tracingEnabled = false;
     }
 }

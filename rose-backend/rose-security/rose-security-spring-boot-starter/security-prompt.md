@@ -17,7 +17,7 @@
 
 **功能实现优先级（按顺序开发）：**
 
-1. **基础认证模块** (`rose.security.auth.*`)
+1. **基础认证模块** (`rose.security.*`)
     - 集成 Spring Security 拦截器
     - 可配置登录端点（默认 `/api/auth/login`）
     - 可配置登出端点（默认 `/api/auth/logout`）

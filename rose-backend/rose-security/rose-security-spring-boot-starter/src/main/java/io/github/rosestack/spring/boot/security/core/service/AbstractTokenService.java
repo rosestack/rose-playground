@@ -3,17 +3,16 @@ package io.github.rosestack.spring.boot.security.core.service;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Token服务抽象基类
@@ -37,7 +36,7 @@ public abstract class AbstractTokenService implements TokenService {
     /**
      * 配置属性
      */
-    protected final RoseSecurityProperties.Auth.Token properties;
+    protected final RoseSecurityProperties.Token properties;
 
     /**
      * 认证钩子
@@ -159,8 +158,7 @@ public abstract class AbstractTokenService implements TokenService {
         // 检查是否需要刷新（仅当accessToken临近过期或已过期时允许刷新）
         LocalDateTime accessTokenExpireTime = oldTokenInfo.getExpiresAt();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime refreshWindowStart =
-                accessTokenExpireTime.minus(properties.getRefreshWindow());
+        LocalDateTime refreshWindowStart = accessTokenExpireTime.minus(properties.getRefreshWindow());
 
         if (now.isBefore(refreshWindowStart) && !oldTokenInfo.isExpired()) {
             return oldTokenInfo; // 太早，不刷新
@@ -246,10 +244,8 @@ public abstract class AbstractTokenService implements TokenService {
 
         log.debug("创建 accessToken: {} for user: {}", accessToken, username);
 
-        LocalDateTime accessExpiresAt =
-                LocalDateTime.now().plus(properties.getAccessTokenExpiredTime());
-        LocalDateTime refreshExpiresAt =
-                LocalDateTime.now().plus(properties.getRefreshTokenExpiredTime());
+        LocalDateTime accessExpiresAt = LocalDateTime.now().plus(properties.getAccessTokenExpiredTime());
+        LocalDateTime refreshExpiresAt = LocalDateTime.now().plus(properties.getRefreshTokenExpiredTime());
 
         return TokenInfo.builder()
                 .accessToken(accessToken)

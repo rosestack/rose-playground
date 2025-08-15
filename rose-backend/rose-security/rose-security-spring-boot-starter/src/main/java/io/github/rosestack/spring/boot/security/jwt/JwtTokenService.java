@@ -13,7 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 @Slf4j
 public class JwtTokenService extends RedisTokenService {
     public JwtTokenService(
-            RoseSecurityProperties.Auth.Token properties,
+            RoseSecurityProperties.Token properties,
             AuthenticationHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook, redisTemplate);
@@ -21,7 +21,7 @@ public class JwtTokenService extends RedisTokenService {
 
     @Override
     protected String generateAccessToken() {
-        //TODO 实现JWT生成逻辑
+        // TODO 实现JWT生成逻辑
         return null;
     }
 

@@ -16,6 +16,9 @@ import io.github.rosestack.spring.boot.security.core.support.impl.LoggingAuditEv
 import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -41,10 +44,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -78,22 +77,21 @@ public class RoseSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "memory")
+    @ConditionalOnProperty(prefix = "rose.security.token", name = "storageType", havingValue = "memory")
     public TokenService tokenService(AuthenticationHook authenticationHook) {
-        return new MemoryTokenService(properties.getAuth().getToken(), authenticationHook);
+        return new MemoryTokenService(properties.getToken(), authenticationHook);
     }
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(RedisTemplate.class)
-    @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
+    @ConditionalOnProperty(prefix = "rose.security.token", name = "storageType", havingValue = "redis")
     public TokenService tokenService(
             RedisTemplate<String, Object> redisTemplate, AuthenticationHook authenticationHook) {
-        return new RedisTokenService(properties.getAuth().getToken(), authenticationHook, redisTemplate);
+        return new RedisTokenService(properties.getToken(), authenticationHook, redisTemplate);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "rose.security.auth", name = "enabled", havingValue = "true", matchIfMissing = true)
     public TokenAuthenticationFilter tokenAuthenticationFilter(TokenService tokenService) {
         return new TokenAuthenticationFilter(tokenService, properties);
     }
@@ -171,19 +169,18 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnBean(RedisTemplate.class)
     @Primary
     public TokenService jwtTokenService(
-            AuthenticationHook authenticationHook,
-            RedisTemplate<String, Object> redisTemplate) {
-        return new JwtTokenService(properties.getAuth().getToken(), authenticationHook, redisTemplate);
+            AuthenticationHook authenticationHook, RedisTemplate<String, Object> redisTemplate) {
+        return new JwtTokenService(properties.getToken(), authenticationHook, redisTemplate);
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter) throws Exception {
-        String loginPath = properties.getAuth().getLoginPath();
-        String logoutPath = properties.getAuth().getLogoutPath();
-        String refreshPath = properties.getAuth().getRefreshPath();
-        String basePath = properties.getAuth().getBashPath();
-        String[] permitPaths = properties.getAuth().getPermitPaths();
+        String loginPath = properties.getLoginPath();
+        String logoutPath = properties.getLogoutPath();
+        String refreshPath = properties.getRefreshPath();
+        String basePath = properties.getBashPath();
+        String[] permitPaths = properties.getPermitPaths();
 
         List<String> permits = new ArrayList<>();
         Collections.addAll(permits, permitPaths);
