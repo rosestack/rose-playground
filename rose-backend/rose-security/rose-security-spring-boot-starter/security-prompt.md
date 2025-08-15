@@ -53,8 +53,8 @@
     - 时钟偏移校正
     - 标准声明校验（exp/iat/nbf/aud/iss/sub）
     - 自定义 Claim 映射
-    - Token 撤销/黑名单 SPI
-5. **多因子认证模块** (`rose.security.mfa.*`)
+
+5**多因子认证模块** (`rose.security.mfa.*`)
     - TOTP 参考实现
     - MFA SPI 接口
 
@@ -65,13 +65,7 @@
     - 防重放攻击
     - 时间窗校验
 
-7. **可观测性模块** (`rose.security.observability.*`)
-    - 认证成功率指标
-    - 延迟监控
-    - 结构化日志
-    - Trace 上报
-
-8. **OAuth2 Client 模块** (`rose.security.oauth2.*`)
+7. **OAuth2 Client 模块** (`rose.security.oauth2.*`)
     - OAuth2 客户端登录
     - 多提供商支持
 
@@ -79,10 +73,10 @@
 
 - 配置前缀：`rose.security.*`
 - 子模块配置示例：
-    - `rose.security.jwt.enabled=true`
-    - `rose.security.mfa.enabled=false`
-    - `rose.security.oauth2.enabled=true`
-    - `rose.security.cors.enabled=true`
+  - `rose.security.token.enabled=true`
+  - `rose.security.token.jwt.enabled=true`
+  - `rose.security.mfa.enabled=false`
+  - `rose.security.oauth2.enabled=true`
 - 每个模块都有独立的开关控制
 - 支持通过 Spring Bean 替换默认实现
 
