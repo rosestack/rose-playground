@@ -20,9 +20,6 @@ import io.github.rosestack.spring.boot.security.jwt.TokenRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.impl.InMemoryRevocationStore;
 import io.github.rosestack.spring.boot.security.jwt.impl.RedisRevocationStore;
 import jakarta.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -49,6 +46,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Rose Security 自动配置类
@@ -84,7 +85,7 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "memory")
     public TokenService tokenService(AuthenticationHook authenticationHook) {
-        return new MemoryTokenService(properties, authenticationHook);
+        return new MemoryTokenService(properties.getAuth().getToken(), authenticationHook);
     }
 
     @Bean
@@ -93,7 +94,7 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnProperty(prefix = "rose.security.auth.token", name = "storageType", havingValue = "redis")
     public TokenService tokenService(
             RedisTemplate<String, Object> redisTemplate, AuthenticationHook authenticationHook) {
-        return new RedisTokenService(properties, authenticationHook, redisTemplate);
+        return new RedisTokenService(properties.getAuth().getToken(), authenticationHook, redisTemplate);
     }
 
     @Bean
@@ -187,7 +188,7 @@ public class RoseSecurityAutoConfiguration {
             RedisTemplate<String, Object> redisTemplate) {
         TokenRevocationStore revocationStore =
                 revocationStoreProvider.getIfAvailable(() -> new InMemoryRevocationStore());
-        return new JwtTokenService(revocationStore, properties, authenticationHook, redisTemplate);
+        return new JwtTokenService(revocationStore, properties.getAuth().getToken(), authenticationHook, redisTemplate);
     }
 
     @Bean

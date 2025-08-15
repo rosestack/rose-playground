@@ -24,15 +24,16 @@ public class JwtTokenService extends RedisTokenService {
 
     public JwtTokenService(
             TokenRevocationStore revocationStore,
-            RoseSecurityProperties properties,
+            RoseSecurityProperties.Auth.Token properties,
             AuthenticationHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook, redisTemplate);
         this.revocationStore = revocationStore;
     }
 
+
     @Override
-    protected TokenInfo buildTokenInfo(String username) {
-        return super.buildTokenInfo(username);
+    protected String generateAccessToken() {
+        return super.generateAccessToken();
     }
 }

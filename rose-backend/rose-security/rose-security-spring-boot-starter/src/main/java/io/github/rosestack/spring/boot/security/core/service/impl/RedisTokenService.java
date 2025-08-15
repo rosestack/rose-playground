@@ -29,7 +29,7 @@ public class RedisTokenService extends AbstractTokenService {
     private static final String USER_SESSIONS_PREFIX = "rose:user_sessions:";
 
     public RedisTokenService(
-            RoseSecurityProperties properties,
+            RoseSecurityProperties.Auth.Token properties,
             AuthenticationHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook);

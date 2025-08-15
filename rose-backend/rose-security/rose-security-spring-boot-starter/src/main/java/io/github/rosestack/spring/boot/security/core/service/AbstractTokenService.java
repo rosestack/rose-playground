@@ -3,17 +3,18 @@ package io.github.rosestack.spring.boot.security.core.service;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Token服务抽象基类
@@ -33,10 +34,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractTokenService implements TokenService {
+
     /**
      * 配置属性
      */
-    protected final RoseSecurityProperties properties;
+    protected final RoseSecurityProperties.Auth.Token properties;
 
     /**
      * 认证钩子
@@ -59,22 +61,24 @@ public abstract class AbstractTokenService implements TokenService {
         String username = userDetails.getUsername();
 
         // 会话数量控制
-        int max = properties.getAuth().getToken().getMaximumSessions();
+        int max = properties.getMaximumSessions();
         if (max > 0) {
             Set<String> activeTokens = getActiveTokens(username);
             int currentSessions = activeTokens.size();
 
             if (currentSessions >= max) {
-                if (properties.getAuth().getToken().isMaxSessionsPreventsLogin()) {
+                if (properties.isMaxSessionsPreventsLogin()) {
                     throw new IllegalStateException("超过最大并发会话数");
                 } else {
                     // 回收最早创建的会话
                     ConcurrentSkipListSet<TokenInfo> tokenInfos = findTokensByUsername(username);
-                    TokenInfo evicted = tokenInfos.pollFirst();
-                    if (evicted != null) {
-                        log.debug("为用户 {} 回收最早会话: {}", username, evicted.getAccessToken());
-                        completelyRemoveToken(evicted);
-                        authenticationHook.onTokenRevoked(username, evicted.getAccessToken());
+                    if (tokenInfos != null) {
+                        TokenInfo evicted = tokenInfos.pollFirst();
+                        if (evicted != null) {
+                            log.debug("为用户 {} 回收最早会话: {}", username, evicted.getAccessToken());
+                            completelyRemoveToken(evicted);
+                            authenticationHook.onTokenRevoked(evicted.getUsername(), evicted.getAccessToken());
+                        }
                     }
                 }
             }
@@ -157,7 +161,7 @@ public abstract class AbstractTokenService implements TokenService {
         LocalDateTime accessTokenExpireTime = oldTokenInfo.getExpiresAt();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime refreshWindowStart =
-                accessTokenExpireTime.minus(properties.getAuth().getToken().getRefreshWindow());
+                accessTokenExpireTime.minus(properties.getRefreshWindow());
 
         if (now.isBefore(refreshWindowStart) && !oldTokenInfo.isExpired()) {
             return oldTokenInfo; // 太早，不刷新
@@ -244,9 +248,9 @@ public abstract class AbstractTokenService implements TokenService {
         log.debug("创建 accessToken: {} for user: {}", accessToken, username);
 
         LocalDateTime accessExpiresAt =
-                LocalDateTime.now().plus(properties.getAuth().getToken().getAccessTokenExpiredTime());
+                LocalDateTime.now().plus(properties.getAccessTokenExpiredTime());
         LocalDateTime refreshExpiresAt =
-                LocalDateTime.now().plus(properties.getAuth().getToken().getRefreshTokenExpiredTime());
+                LocalDateTime.now().plus(properties.getRefreshTokenExpiredTime());
 
         return TokenInfo.builder()
                 .accessToken(accessToken)

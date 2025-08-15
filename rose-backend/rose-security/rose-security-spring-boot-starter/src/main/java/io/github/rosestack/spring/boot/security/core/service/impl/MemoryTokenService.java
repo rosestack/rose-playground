@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MemoryTokenService extends AbstractTokenService {
 
-    public MemoryTokenService(RoseSecurityProperties properties, AuthenticationHook authenticationHook) {
+    public MemoryTokenService(RoseSecurityProperties.Auth.Token properties, AuthenticationHook authenticationHook) {
         super(properties, authenticationHook);
     }
 
