@@ -1,8 +1,10 @@
 package io.github.rosestack.spring.boot.security.mfa;
 
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * MFA上下文信息
@@ -16,6 +18,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MfaContext {
 
     /** 用户ID */

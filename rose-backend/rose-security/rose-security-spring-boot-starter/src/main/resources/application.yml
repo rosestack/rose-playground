@@ -1,0 +1,39 @@
+# Rose Security 测试应用配置
+server:
+  port: 8082
+
+spring:
+  application:
+    name: rose-security-test
+
+# Rose Security 配置
+rose:
+  security:
+    enabled: true
+    # API 路径配置
+    login-path: /api/auth/login
+    logout-path: /api/auth/logout
+    refresh-path: /api/auth/refresh
+    # 公开访问路径（无需认证）
+    permit-paths:
+      - /api/test/public
+      - /api/status
+      - /actuator/**
+    # Token 配置
+    token:
+      storageType: memory
+      secret: "rose-security-test-secret-key-for-jwt-token-signature"
+      access-token-expire-minutes: 60     # 1小时
+      refresh-token-expire-minutes: 1440  # 24小时
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+debug: true

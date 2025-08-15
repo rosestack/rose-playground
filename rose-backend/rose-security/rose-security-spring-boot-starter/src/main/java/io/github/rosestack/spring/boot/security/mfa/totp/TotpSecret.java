@@ -1,8 +1,10 @@
 package io.github.rosestack.spring.boot.security.mfa.totp;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * TOTP密钥信息
@@ -16,6 +18,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class TotpSecret {
 
     /** 用户ID */

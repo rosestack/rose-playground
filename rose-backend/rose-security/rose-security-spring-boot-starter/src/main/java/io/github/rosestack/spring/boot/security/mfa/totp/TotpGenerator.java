@@ -1,14 +1,15 @@
 package io.github.rosestack.spring.boot.security.mfa.totp;
 
+import lombok.extern.slf4j.Slf4j;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base32;
+import java.util.Base64;
 
 /**
  * TOTP (Time-based One-Time Password) 生成器
@@ -34,9 +35,6 @@ public class TotpGenerator {
 
     /** 默认密钥长度（字节） */
     private static final int DEFAULT_KEY_LENGTH = 20;
-
-    /** Base32编码器 */
-    private static final Base32 BASE32 = new Base32();
 
     /** 时间步长（秒） */
     private final int timeStep;
@@ -76,7 +74,7 @@ public class TotpGenerator {
         SecureRandom random = new SecureRandom();
         byte[] keyBytes = new byte[DEFAULT_KEY_LENGTH];
         random.nextBytes(keyBytes);
-        return BASE32.encodeToString(keyBytes);
+        return Base64.getEncoder().encodeToString(keyBytes);
     }
 
     /**
@@ -164,7 +162,7 @@ public class TotpGenerator {
     private String generateCodeForCounter(String secret, long counter) {
         try {
             // 解码密钥
-            byte[] keyBytes = BASE32.decode(secret);
+            byte[] keyBytes = Base64.getDecoder().decode(secret);
 
             // 转换计数器为字节数组
             ByteBuffer buffer = ByteBuffer.allocate(8);

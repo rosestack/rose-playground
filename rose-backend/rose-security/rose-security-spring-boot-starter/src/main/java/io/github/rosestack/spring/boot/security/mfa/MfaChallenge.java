@@ -2,8 +2,10 @@ package io.github.rosestack.spring.boot.security.mfa;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * MFA挑战信息
@@ -17,6 +19,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MfaChallenge {
 
     /** 挑战ID */

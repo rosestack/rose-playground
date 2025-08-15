@@ -3,8 +3,10 @@ package io.github.rosestack.spring.boot.security.mfa;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * MFA验证结果
@@ -18,6 +20,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MfaResult {
 
     /** 操作是否成功 */

@@ -2,8 +2,10 @@ package io.github.rosestack.spring.boot.security.core.support;
 
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -13,6 +15,8 @@ import static io.github.rosestack.spring.boot.security.core.service.TokenService
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoseWebAuthenticationDetails implements Serializable {
     /**
      * 客户端IP地址

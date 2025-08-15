@@ -6,7 +6,6 @@ import io.github.rosestack.spring.boot.security.account.PasswordChangeService;
 import io.github.rosestack.spring.boot.security.account.PasswordPolicyService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +13,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 密码管理控制器
@@ -27,11 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth/password")
 @RequiredArgsConstructor
-@ConditionalOnProperty(
-        prefix = "rose.security.account.password",
-        name = "enabled",
-        havingValue = "true",
-        matchIfMissing = true)
+@ConditionalOnProperty(prefix = "rose.security.account.password", name = "enabled", havingValue = "true")
 public class PasswordController {
 
     private final PasswordChangeService passwordChangeService;

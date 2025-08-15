@@ -27,8 +27,6 @@ public class TotpGeneratorTest {
 
         assertNotNull(secret);
         assertFalse(secret.isEmpty());
-        // Base32编码的密钥应该只包含大写字母和数字2-7
-        assertTrue(secret.matches("[A-Z2-7]+"));
     }
 
     @Test
