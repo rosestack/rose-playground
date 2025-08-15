@@ -10,7 +10,7 @@ public interface AuthenticationLifecycleHook {
 
     default void onLoginSuccess(String username, Authentication authentication) {}
 
-    default void onLoginFailure(String username, AuthenticationException exception) {}
+    default void onLoginFailure(String username, Exception exception) {}
 
     default boolean beforeLogout(String username) {
         return true;

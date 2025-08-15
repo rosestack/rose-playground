@@ -4,9 +4,7 @@ import io.github.rosestack.core.exception.BusinessException;
 import io.github.rosestack.spring.boot.security.account.CaptchaService;
 import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
-import io.github.rosestack.spring.boot.security.core.support.AuditEventType;
-import io.github.rosestack.spring.boot.security.core.support.AuthenticationLifecycleHook;
+import io.github.rosestack.spring.boot.security.core.support.*;
 import io.github.rosestack.spring.util.ServletUtils;
 import io.github.rosestack.spring.util.SpringContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +14,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static io.github.rosestack.spring.boot.security.core.service.TokenService.HEADER_API_KEY;
@@ -52,6 +50,9 @@ public class LoginService {
             }
         }
 
+        RoseWebAuthenticationDetails authDetails =
+                new RoseAuthenticationDetailsSource().buildDetails(ServletUtils.getCurrentRequest());
+
         try {
             // 验证用户凭证
             Authentication authentication =
@@ -67,16 +68,18 @@ public class LoginService {
                 loginAttemptService.recordSuccess(userDetails.getUsername());
             }
             authenticationHook.onLoginSuccess(userDetails.getUsername(), authentication);
+
             SpringContextUtils.publishEvent(AuditEvent.create(
-                    AuditEventType.LOGIN_SUCCESS, Map.of("authorities", userDetails.getAuthorities())));
+                    AuditEventType.LOGIN_SUCCESS, authDetails, Map.of("authorities", userDetails.getAuthorities())));
             return tokenInfo;
-        } catch (AuthenticationException e) {
+        } catch (Exception e) {
             log.warn("用户 {} 登录失败: {}", username, e.getMessage());
             authenticationHook.onLoginFailure(username, e);
             if (loginAttemptService != null) {
                 loginAttemptService.recordFailure(username);
             }
-            SpringContextUtils.publishEvent(AuditEvent.create(AuditEventType.LOGIN_FAILURE));
+            SpringContextUtils.publishEvent(
+                    AuditEvent.create(AuditEventType.LOGIN_FAILURE, authDetails, new HashMap<>()));
             throw new BusinessException("用户名或密码错误");
         }
     }
@@ -100,8 +103,8 @@ public class LoginService {
                 authenticationHook.onLogoutSuccess(username);
             }
         } finally {
-            SpringContextUtils.publishEvent(AuditEvent.create(
-                    AuditEventType.LOGOUT, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
+            SpringContextUtils.publishEvent(
+                    AuditEvent.create(AuditEventType.LOGOUT, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
         }
     }
 }

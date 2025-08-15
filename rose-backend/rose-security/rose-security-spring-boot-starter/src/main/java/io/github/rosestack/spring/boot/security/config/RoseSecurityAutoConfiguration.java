@@ -147,7 +147,7 @@ public class RoseSecurityAutoConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
+    public SecurityFilterChain apiSecurityFilterChain(
             HttpSecurity http, TokenAuthenticationFilter tokenAuthenticationFilter) throws Exception {
         String loginPath = properties.getLoginPath();
         String logoutPath = properties.getLogoutPath();
@@ -161,11 +161,12 @@ public class RoseSecurityAutoConfiguration {
         permits.add(logoutPath);
         permits.add(refreshPath);
 
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.securityMatcher(basePath) // 限制只匹配 API 路径
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(permits.toArray(new String[0]))
                         .permitAll()
-                        .requestMatchers(basePath)
+                        .anyRequest()
                         .authenticated())
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

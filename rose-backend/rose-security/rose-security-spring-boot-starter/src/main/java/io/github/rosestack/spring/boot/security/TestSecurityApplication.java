@@ -51,7 +51,9 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 1.0.0
  */
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
 public class TestSecurityApplication {
     @Bean
     public MemoryUserDetailsService inMemoryUserDetailsService(PasswordEncoder passwordEncoder) {
