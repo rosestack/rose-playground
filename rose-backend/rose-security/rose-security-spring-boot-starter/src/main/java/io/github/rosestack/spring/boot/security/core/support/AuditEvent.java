@@ -1,9 +1,10 @@
 package io.github.rosestack.spring.boot.security.core.support;
 
 import io.github.rosestack.spring.util.ServletUtils;
+import lombok.Data;
+
 import java.time.Instant;
 import java.util.Map;
-import lombok.Data;
 
 /**
  * 审计事件
@@ -12,13 +13,13 @@ import lombok.Data;
 public class AuditEvent {
     private String type; // LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT, TOKEN_REFRESH
     private String username;
-    private String ip;
+    private String ipAddress;
     private Instant timestamp;
     private Map<String, Object> details;
 
     private AuditEvent(String type, String username, Map<String, Object> details) {
         this.details = details;
-        this.ip = ServletUtils.getClientIpAddress();
+        this.ipAddress = ServletUtils.getClientIpAddress();
         this.timestamp = Instant.now();
         this.type = type;
         this.username = username;

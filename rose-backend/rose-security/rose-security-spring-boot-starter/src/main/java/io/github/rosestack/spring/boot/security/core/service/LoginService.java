@@ -4,13 +4,10 @@ import io.github.rosestack.core.exception.BusinessException;
 import io.github.rosestack.spring.boot.security.account.CaptchaService;
 import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationLifecycleHook;
 import io.github.rosestack.spring.util.ServletUtils;
 import io.github.rosestack.spring.util.SpringContextUtils;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +17,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Map;
 
 import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
 
@@ -81,27 +80,27 @@ public class LoginService {
         }
     }
 
-    public void logout(HttpServletRequest request) {
+    public void logout() {
         String token = ServletUtils.getRequestHeader(TOKEN_HEADER);
-        String username = null;
+        if (token == null) {
+            return;
+        }
 
-        if (token != null) {
+        String username = null;
+        try {
             UserDetails userDetails = tokenService.getUserDetails(token);
             if (userDetails != null) {
                 username = userDetails.getUsername();
-                // 注销前钩子
                 authenticationHook.beforeLogout(username);
-            }
 
-            tokenService.revokeToken(token);
-            log.info("Token已撤销: {}", StringUtils.abbreviate(token, 8));
+                tokenService.revokeToken(token);
+                log.info("Token已撤销: {}", StringUtils.abbreviate(token, 8));
 
-            // 注销成功钩子 + 审计
-            if (username != null) {
                 authenticationHook.onLogoutSuccess(username);
-                SpringContextUtils.publishEvent(
-                        AuditEvent.logout(username, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
             }
+        } finally {
+            SpringContextUtils.publishEvent(
+                    AuditEvent.logout(username, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
         }
     }
 }
