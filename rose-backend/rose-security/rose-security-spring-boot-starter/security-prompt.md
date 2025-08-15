@@ -14,31 +14,29 @@
 - 面向 Servlet 堆栈（Spring MVC）
 - 支持前后端分离架构
 - 无状态认证（基于 token）
+- 参考 https://github.com/thingsboard/thingsboard
 
 **功能实现优先级（按顺序开发）：**
 
-1. **基础认证模块** (`rose.security.*`)
-    - 集成 Spring Security 拦截器
-    - 可配置登录端点（默认 `/api/auth/login`）
-    - 可配置登出端点（默认 `/api/auth/logout`）
-    - 可配置刷新端点（默认 `/api/auth/refresh`）
+1. **基础认证模块**
+    - 集成 Spring Security 过滤器
+    - 登录过滤器，用户名/密码认证，可配置登录路径（默认 `/api/auth/login`）
+    - 可配置登出路径（默认 `/api/auth/logout`）
     - 可配置基础路径（默认 `/api/**`）
     - 可配置放行路径
-    - 用户名/密码认证
-    - 默认提供基于内存的 UserDetailsService 实现
-    - 短 token 生成与管理
+    - 默认提供基于内存的 UserDetailsService 实现用于测试
+    - Token 生成与管理
     - Token 超时配置
     - Token 并发控制
     - 主动下线功能
     - 可选 Redis 分布式存储
 
-2. **扩展机制模块** (`rose.security.extension.*`)
+2. **扩展机制模块**
     - SPI 接口定义
-    - 认证流程钩子（登录前后、成功失败）
-    - 审计事件接口
-    - 日志 Hook 机制
+    - 认证流程钩子（登录前后、成功失败、登出、踢出）
+    - 审计事件接口（登录、登出、踢出、锁定、解锁）
 
-3. **账号安全模块** (`rose.security.account.*`)
+3. **账号安全模块**
     - 密码复杂度策略
     - 密码历史记录
     - 密码过期策略
@@ -46,7 +44,13 @@
     - 防暴力破解
     - 可插拔验证码机制
 
-4. **JWT 模块** (`rose.security.jwt.*`)
+4. **安全防护模块** 
+    - 白/黑名单（IP、用户名、设备）
+    - 速率限制
+    - 防重放攻击
+    - 时间窗校验
+
+5. **JWT 模块** 
     - 支持 HS256/RS256/ES256 算法
     - JWK/Keystore 密钥管理
     - 密钥轮换机制
@@ -54,29 +58,16 @@
     - 标准声明校验（exp/iat/nbf/aud/iss/sub）
     - 自定义 Claim 映射
 
-5**多因子认证模块** (`rose.security.mfa.*`)
-    - TOTP 参考实现
+6. **多因子认证模块**
     - MFA SPI 接口
 
-6. **安全防护模块** (`rose.security.protection.*`)
-    - CORS 配置
-    - IP 白/黑名单
-    - 速率限制
-    - 防重放攻击
-    - 时间窗校验
-
-7. **OAuth2 Client 模块** (`rose.security.oauth2.*`)
+7. **OAuth2 Client 模块** 
     - OAuth2 客户端登录
     - 多提供商支持
 
 **配置规范：**
 
 - 配置前缀：`rose.security.*`
-- 子模块配置示例：
-  - `rose.security.token.enabled=true`
-  - `rose.security.token.jwt.enabled=true`
-  - `rose.security.mfa.enabled=false`
-  - `rose.security.oauth2.enabled=true`
 - 每个模块都有独立的开关控制
 - 支持通过 Spring Bean 替换默认实现
 
