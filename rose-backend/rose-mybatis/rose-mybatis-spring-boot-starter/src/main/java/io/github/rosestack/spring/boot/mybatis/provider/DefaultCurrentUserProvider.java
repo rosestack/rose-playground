@@ -6,6 +6,6 @@ import io.github.rosestack.spring.util.ServletUtils;
 public class DefaultCurrentUserProvider implements CurrentUserProvider {
     @Override
     public String getCurrentUserId() {
-        return ServletUtils.getCurrentUserId();
+        return ServletUtils.getUserId();
     }
 }

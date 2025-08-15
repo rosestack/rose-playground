@@ -2,11 +2,12 @@ package io.github.rosestack.spring.boot.security.core.service;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
-import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
 import io.github.rosestack.spring.boot.security.jwt.TokenManagementHook;
-import io.github.rosestack.spring.util.SpringContextUtils;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

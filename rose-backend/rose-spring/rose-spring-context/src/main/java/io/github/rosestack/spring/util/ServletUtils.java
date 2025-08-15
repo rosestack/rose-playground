@@ -1,6 +1,5 @@
 package io.github.rosestack.spring.util;
 
-import io.github.rosestack.core.Constants;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,12 +13,12 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -65,6 +64,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  */
 @Slf4j
 public abstract class ServletUtils {
+    public static final String HEADER_REQUEST_ID = "X-Request-ID";
+    public static final String HEADER_USER_ID = "X-User-ID";
+
     private static final Map<String, String> URL_DECODE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, String> URL_ENCODE_CACHE = new ConcurrentHashMap<>();
     private static final String UNKNOWN = "unknown";
@@ -74,11 +76,11 @@ public abstract class ServletUtils {
      */
     private static final List<String> DEFAULT_IP_HEADERS = Arrays.asList(
             "X-Forwarded-For",
+            "X-Real-IP",
             "Proxy-Client-IP",
             "WL-Proxy-Client-IP",
             "HTTP_CLIENT_IP",
-            "HTTP_X_FORWARDED_FOR",
-            "X-Real-IP");
+            "HTTP_X_FORWARDED_FOR");
 
     /**
      * 私有构造函数，防止实例化
@@ -102,7 +104,7 @@ public abstract class ServletUtils {
             return defaultValue;
         }
         String value = request.getParameter(name);
-        return StringUtils.hasLength(value) ? value : defaultValue;
+        return StringUtils.isNotBlank(value) ? value : defaultValue;
     }
 
     public static Map<String, String[]> getRequestParams(ServletRequest request) {
@@ -165,7 +167,7 @@ public abstract class ServletUtils {
 
     public static String getRequestHeader(String name, String defaultValue) {
         String value = getRequestHeader(name);
-        return StringUtils.hasLength(value) ? value : defaultValue;
+        return StringUtils.isNotBlank(value) ? value : defaultValue;
     }
 
     public static Map<String, String> getRequestHeaders() {
@@ -280,7 +282,7 @@ public abstract class ServletUtils {
      * @throws UnsupportedEncodingException 编码异常
      */
     public static String urlEncode(String str) throws UnsupportedEncodingException {
-        if (!StringUtils.hasLength(str)) {
+        if (StringUtils.isBlank(str)) {
             return str;
         }
 
@@ -303,7 +305,7 @@ public abstract class ServletUtils {
      * @throws UnsupportedEncodingException 解码异常
      */
     public static String urlDecode(String str) throws UnsupportedEncodingException {
-        if (!StringUtils.hasLength(str)) {
+        if (StringUtils.isBlank(str)) {
             return str;
         }
 
@@ -348,7 +350,7 @@ public abstract class ServletUtils {
         }
     }
 
-    public static String getClientIpAddress(HttpServletRequest request, String... otherHeaderNames) {
+    public static String getClientIp(HttpServletRequest request, String... otherHeaderNames) {
         if (request == null) {
             return null;
         }
@@ -401,7 +403,7 @@ public abstract class ServletUtils {
         if (ip != null && ip.contains(",")) {
             for (String subIp : ip.split(",")) {
                 String trimmedIp = subIp.trim();
-                if (StringUtils.hasLength(trimmedIp) && !"unknown".equalsIgnoreCase(trimmedIp)) {
+                if (StringUtils.isNotBlank(trimmedIp) && !"unknown".equalsIgnoreCase(trimmedIp)) {
                     return trimmedIp;
                 }
             }
@@ -416,9 +418,9 @@ public abstract class ServletUtils {
      *
      * @return 客户端 IP 地址，获取失败返回 null
      */
-    public static String getClientIpAddress() {
+    public static String getClientIp() {
         HttpServletRequest request = getCurrentRequest();
-        String ip = getClientIpAddress(request);
+        String ip = getClientIp(request);
         return normalizeIpAddress(ip);
     }
 
@@ -537,7 +539,7 @@ public abstract class ServletUtils {
         String queryString = request.getQueryString();
         String requestURI = request.getRequestURI();
 
-        if (StringUtils.hasLength(queryString)) {
+        if (StringUtils.isNotBlank(queryString)) {
             return requestURI + "?" + queryString;
         }
         return requestURI;
@@ -553,37 +555,9 @@ public abstract class ServletUtils {
         return request != null ? request.getHeader(HttpHeaders.USER_AGENT) : null;
     }
 
-    /**
-     * 获取请求的详细信息（用于调试）
-     *
-     * @return 请求详细信息
-     */
-    public static String getRequestDetails() {
+    public static String getReferer() {
         HttpServletRequest request = getCurrentRequest();
-
-        if (request == null) {
-            return "Request is null";
-        }
-
-        StringBuilder details = new StringBuilder();
-        details.append("Method: ").append(request.getMethod()).append("\n");
-        details.append("URL: ").append(getFullUrl()).append("\n");
-        details.append("Protocol: ").append(request.getScheme()).append("\n");
-        details.append("Server: ")
-                .append(request.getServerName())
-                .append(":")
-                .append(request.getServerPort())
-                .append("\n");
-        details.append("Context Path: ").append(request.getContextPath()).append("\n");
-        details.append("Servlet Path: ").append(request.getServletPath()).append("\n");
-        details.append("Path Info: ").append(request.getPathInfo()).append("\n");
-        details.append("Query String: ").append(request.getQueryString()).append("\n");
-        details.append("Remote Address: ").append(request.getRemoteAddr()).append("\n");
-        details.append("Remote Host: ").append(request.getRemoteHost()).append("\n");
-        details.append("Remote Port: ").append(request.getRemotePort()).append("\n");
-        details.append("User Agent: ").append(getUserAgent()).append("\n");
-
-        return details.toString();
+        return request != null ? request.getHeader(HttpHeaders.REFERER) : null;
     }
 
     /**
@@ -642,42 +616,35 @@ public abstract class ServletUtils {
     /**
      * 获取当前用户ID
      */
-    public static String getCurrentUserId() {
-        HttpServletRequest request = getCurrentRequest();
-        if (request == null) {
-            return null;
-        }
-        Integer userId = request.getIntHeader(Constants.HeaderName.HEADER_USER_ID);
-        if (userId != null) {
-            return null;
-        }
-
-        userId = Integer.valueOf(MDC.get(Constants.MdcName.MDC_USER_ID));
-        if (userId != null) {
-            return String.valueOf(userId);
-        }
-        return null;
+    public static String getUserId() {
+        return getValueFromRequestAndMdc(HEADER_USER_ID, false);
     }
 
-    public static String getTraceId() {
+    public static String getRequestId() {
+        return getValueFromRequestAndMdc(HEADER_REQUEST_ID, true);
+    }
+
+    private static String getValueFromRequestAndMdc(String name, boolean generate) {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
             return null;
         }
 
-        String requestId = request.getHeader(Constants.HeaderName.HEADER_TRACE_ID);
-        if (StringUtils.hasLength(requestId)) {
-            return requestId;
-        }
-
-        requestId = MDC.get(Constants.MdcName.MDC_REQUEST_ID);
-        if (StringUtils.hasLength(requestId)) {
-            return requestId;
+        String requestId = StringUtils.defaultString(request.getHeader(name), MDC.get(name));
+        if (StringUtils.isBlank(requestId) && generate) {
+            requestId = generateId();
         }
         return requestId;
     }
 
-    public static String getCurrentUsername() {
+    /**
+     * 生成请求ID
+     */
+    private static String generateId() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+    }
+
+    public static String getUsername() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
             return null;

@@ -1,13 +1,17 @@
 package io.github.rosestack.spring.boot.security.core.service;
 
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
+
 import io.github.rosestack.core.exception.BusinessException;
 import io.github.rosestack.spring.boot.security.account.CaptchaService;
 import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
+import io.github.rosestack.spring.boot.security.core.support.AuditEventType;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationLifecycleHook;
 import io.github.rosestack.spring.util.ServletUtils;
 import io.github.rosestack.spring.util.SpringContextUtils;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,10 +21,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Map;
-
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -66,8 +66,8 @@ public class LoginService {
                 loginAttemptService.recordSuccess(userDetails.getUsername());
             }
             authenticationHook.onLoginSuccess(userDetails.getUsername(), authentication);
-            SpringContextUtils.publishEvent(AuditEvent.loginSuccess(
-                    userDetails.getUsername(), Map.of("authorities", userDetails.getAuthorities())));
+            SpringContextUtils.publishEvent(AuditEvent.fromSecurityContext(
+                    AuditEventType.LOGIN_SUCCESS, Map.of("authorities", userDetails.getAuthorities())));
             return tokenInfo;
         } catch (AuthenticationException e) {
             log.warn("用户 {} 登录失败: {}", username, e.getMessage());
@@ -75,7 +75,8 @@ public class LoginService {
             if (loginAttemptService != null) {
                 loginAttemptService.recordFailure(username);
             }
-            SpringContextUtils.publishEvent(AuditEvent.loginFailure(username, Map.of("error", e.getMessage())));
+            SpringContextUtils.publishEvent(
+                    AuditEvent.fromSecurityContext(AuditEventType.LOGIN_FAILURE, Map.of("error", e.getMessage())));
             throw new BusinessException("用户名或密码错误");
         }
     }
@@ -99,8 +100,8 @@ public class LoginService {
                 authenticationHook.onLogoutSuccess(username);
             }
         } finally {
-            SpringContextUtils.publishEvent(
-                    AuditEvent.logout(username, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
+            SpringContextUtils.publishEvent(AuditEvent.fromSecurityContext(
+                    AuditEventType.LOGOUT, Map.of("tokenPrefix", StringUtils.abbreviate(token, 8))));
         }
     }
 }

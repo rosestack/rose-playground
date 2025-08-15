@@ -272,7 +272,7 @@ public class AuditEventBuilder {
         if (request != null) {
             auditLog.setRequestUri(request.getRequestURI());
             auditLog.setHttpMethod(request.getMethod());
-            auditLog.setClientIp(ServletUtils.getClientIpAddress());
+            auditLog.setClientIp(ServletUtils.getClientIp());
             auditLog.setUserAgent(ServletUtils.getUserAgent());
             auditLog.setSessionId(ServletUtils.getCurrentRequest().getSession().getId());
         }

@@ -14,16 +14,6 @@ public final class Constants {
         // 工具类，禁止实例化
     }
 
-    public static final class HeaderName {
-        public static final String HEADER_TRACE_ID = "X-Trace-ID";
-        public static final String HEADER_USER_ID = "X-User-ID";
-    }
-
-    public static final class MdcName {
-        public static final String MDC_REQUEST_ID = "traceId";
-        public static final String MDC_USER_ID = "userId";
-    }
-
     public static final class FilterOrder {
         public static final int CORS_FILTER_ORDER = Integer.MIN_VALUE;
         public static final int CACHING_REQUEST_FILTER_ORDER = CORS_FILTER_ORDER + 1;

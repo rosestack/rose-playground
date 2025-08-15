@@ -1,16 +1,13 @@
 package io.github.rosestack.spring.filter;
 
-import static io.github.rosestack.core.Constants.HeaderName.HEADER_TRACE_ID;
-import static io.github.rosestack.core.Constants.MdcName.MDC_REQUEST_ID;
+import static io.github.rosestack.spring.util.ServletUtils.HEADER_REQUEST_ID;
 
-import io.github.rosestack.core.Constants;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.UUID;
 import org.slf4j.MDC;
 
 /**
@@ -27,25 +24,17 @@ public class TraceIdFilter extends AbstractBaseFilter {
         super(excludePaths);
     }
 
-    protected static String generateRequestId() {
-        return UUID.randomUUID().toString().replace("-", "");
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String requestId = ServletUtils.getTraceId();
-        if (requestId == null) {
-            requestId = generateRequestId();
-            MDC.put(Constants.MdcName.MDC_REQUEST_ID, requestId);
-        }
-        // 设置响应头
-        response.setHeader(HEADER_TRACE_ID, requestId);
+        String requestId = ServletUtils.getRequestId();
+        MDC.put(HEADER_REQUEST_ID, requestId);
+        response.setHeader(HEADER_REQUEST_ID, requestId);
 
         try {
             filterChain.doFilter(request, response);
         } finally {
-            MDC.remove(MDC_REQUEST_ID);
+            MDC.remove(HEADER_REQUEST_ID);
         }
     }
 }
