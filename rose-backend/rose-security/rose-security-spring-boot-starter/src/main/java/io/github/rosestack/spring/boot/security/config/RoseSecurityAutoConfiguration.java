@@ -2,18 +2,24 @@ package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.boot.security.core.RestAccessDeniedHandler;
 import io.github.rosestack.spring.boot.security.core.RestAuthenticationEntryPoint;
-import java.util.List;
+import io.github.rosestack.spring.boot.security.core.filter.LoginAuthenticationFilter;
+import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
+import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.List;
+
 @AutoConfiguration
 @EnableConfigurationProperties(RoseSecurityProperties.class)
+@Import(AuthenticationConfiguration.class)
 @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseSecurityAutoConfiguration {
 
@@ -31,7 +37,9 @@ public class RoseSecurityAutoConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    RoseSecurityProperties props,
                                                    RestAuthenticationEntryPoint entryPoint,
-                                                   RestAccessDeniedHandler accessDeniedHandler) throws Exception {
+                                                   RestAccessDeniedHandler accessDeniedHandler,
+                                                   TokenService tokenService,
+                                                   org.springframework.security.authentication.AuthenticationManager authenticationManager) throws Exception {
         // 基础放行路径
         List<String> permit = props.getPermitAll();
 
@@ -51,7 +59,11 @@ public class RoseSecurityAutoConfiguration {
                         .accessDeniedHandler(accessDeniedHandler)
                 )
                 .httpBasic(Customizer.withDefaults());
-
+        // Filters
+        http.addFilterBefore(new LoginAuthenticationFilter(authenticationManager, props, tokenService),
+                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new TokenAuthenticationFilter(tokenService, props),
+                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

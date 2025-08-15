@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.user;
+package io.github.rosestack.spring.boot.security.core.user;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Primary;
