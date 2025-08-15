@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.core.support;
+package io.github.rosestack.spring.boot.security.account;
 
 import java.time.Duration;
 

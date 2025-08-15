@@ -1,6 +1,6 @@
-package io.github.rosestack.spring.boot.security.core.support.impl;
+package io.github.rosestack.spring.boot.security.account.impl;
 
-import io.github.rosestack.spring.boot.security.core.support.CaptchaService;
+import io.github.rosestack.spring.boot.security.account.CaptchaService;
 
 public class NoopCaptchaService implements CaptchaService {
     @Override

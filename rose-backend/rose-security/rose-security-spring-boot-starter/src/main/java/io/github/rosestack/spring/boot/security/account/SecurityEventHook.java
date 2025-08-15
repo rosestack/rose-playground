@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.security.core.support;
+package io.github.rosestack.spring.boot.security.account;
 
 public interface SecurityEventHook {
     default void onLockOut(String username) {}

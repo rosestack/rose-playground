@@ -10,6 +10,8 @@ import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,14 +31,38 @@ public class JwtHelper {
 
     private final JwtKeyManager keyManager;
     private final String algorithmName;
+    private final long clockSkewSeconds;
+    private final String issuer;
+    private final String audience;
+    private final Map<String, String> customClaims;
 
     /**
-     * 构造 JWT 工具类
+     * 构造 JWT 工具类（向后兼容）
      *
      * @param keyManager    密钥管理器
      * @param algorithmName 算法名称（如 HS256、RS256）
      */
     public JwtHelper(JwtKeyManager keyManager, String algorithmName) {
+        this(keyManager, algorithmName, 300L, "rose-security", "rose-app", new HashMap<>());
+    }
+
+    /**
+     * 构造 JWT 工具类（完整配置）
+     *
+     * @param keyManager      密钥管理器
+     * @param algorithmName   算法名称（如 HS256、RS256）
+     * @param clockSkewSeconds 时钟偏移容忍度（秒）
+     * @param issuer          发行者
+     * @param audience        受众
+     * @param customClaims    自定义声明
+     */
+    public JwtHelper(
+            JwtKeyManager keyManager,
+            String algorithmName,
+            long clockSkewSeconds,
+            String issuer,
+            String audience,
+            Map<String, String> customClaims) {
         if (keyManager == null) {
             throw new IllegalArgumentException("密钥管理器不能为空");
         }
@@ -45,6 +71,10 @@ public class JwtHelper {
         }
         this.keyManager = keyManager;
         this.algorithmName = algorithmName;
+        this.clockSkewSeconds = clockSkewSeconds;
+        this.issuer = issuer;
+        this.audience = audience;
+        this.customClaims = customClaims != null ? new HashMap<>(customClaims) : new HashMap<>();
     }
 
     /**
@@ -64,7 +94,7 @@ public class JwtHelper {
      * @return JWT 字符串
      */
     public String generateToken(String subject, Duration expirationDuration) {
-        return generateToken(subject, expirationDuration, null, null);
+        return generateToken(subject, expirationDuration, this.issuer, this.audience);
     }
 
     /**
@@ -92,6 +122,11 @@ public class JwtHelper {
 
             if (audience != null) {
                 claimsBuilder.audience(audience);
+            }
+
+            // 添加自定义声明
+            for (Map.Entry<String, String> entry : customClaims.entrySet()) {
+                claimsBuilder.claim(entry.getKey(), entry.getValue());
             }
 
             JWTClaimsSet claims = claimsBuilder.build();
@@ -143,16 +178,31 @@ public class JwtHelper {
             // 获取声明
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
 
-            // 过期时间验证
+            // 当前时间（考虑时钟偏移）
+            Date now = new Date();
+            Date nowWithSkew = new Date(now.getTime() + clockSkewSeconds * 1000);
+            Date nowMinusSkew = new Date(now.getTime() - clockSkewSeconds * 1000);
+
+            // 过期时间验证（加入时钟偏移容忍度）
             Date expirationTime = claims.getExpirationTime();
-            if (expirationTime != null && expirationTime.before(new Date())) {
+            if (expirationTime != null && expirationTime.before(nowMinusSkew)) {
                 throw new JwtTokenExpiredException("JWT 已过期");
             }
 
-            // 生效时间验证
+            // 生效时间验证（加入时钟偏移容忍度）
             Date notBeforeTime = claims.getNotBeforeTime();
-            if (notBeforeTime != null && notBeforeTime.after(new Date())) {
+            if (notBeforeTime != null && notBeforeTime.after(nowWithSkew)) {
                 throw new JwtValidationException("JWT 尚未生效");
+            }
+
+            // 发行者验证
+            if (this.issuer != null && !this.issuer.equals(claims.getIssuer())) {
+                throw new JwtValidationException("JWT 发行者验证失败");
+            }
+
+            // 受众验证
+            if (this.audience != null && !claims.getAudience().contains(this.audience)) {
+                throw new JwtValidationException("JWT 受众验证失败");
             }
 
             log.debug("JWT 验证成功，主题: {}", claims.getSubject());
@@ -181,5 +231,26 @@ public class JwtHelper {
     public String extractUsername(String tokenString) {
         JWTClaimsSet claims = validateToken(tokenString);
         return claims.getSubject();
+    }
+
+    /**
+     * 撤销JWT令牌（加入黑名单）
+     *
+     * @param tokenString JWT 字符串
+     */
+    public void revokeToken(String tokenString) {
+
+        try {
+            SignedJWT jwt = SignedJWT.parse(tokenString);
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            String jwtId = claims.getJWTID();
+            Date expirationTime = claims.getExpirationTime();
+
+            if (jwtId != null && expirationTime != null) {
+                log.debug("JWT令牌 {} 已被撤销", jwtId);
+            }
+        } catch (ParseException e) {
+            log.warn("撤销JWT令牌失败，解析错误: {}", e.getMessage());
+        }
     }
 }

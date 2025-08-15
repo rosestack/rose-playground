@@ -1,8 +1,8 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -52,6 +52,11 @@ public class RoseSecurityProperties {
      * Token 配置
      */
     private Token token = new Token();
+
+    /**
+     * 多因子认证配置
+     */
+    private Mfa mfa = new Mfa();
 
     /**
      * 账号安全配置
@@ -132,6 +137,26 @@ public class RoseSecurityProperties {
             private Key key = new Key();
 
             /**
+             * 时钟偏移容忍度（秒）
+             */
+            private long clockSkewSeconds = 300L; // 5分钟
+
+            /**
+             * 是否启用密钥轮换
+             */
+            private boolean keyRotationEnabled = false;
+
+            /**
+             * 密钥轮换间隔（小时）
+             */
+            private long keyRotationInterval = 24L;
+
+            /**
+             * 自定义声明配置
+             */
+            private Claims claims = new Claims();
+
+            /**
              * JWT 算法枚举
              */
             public enum Algorithm {
@@ -200,6 +225,89 @@ public class RoseSecurityProperties {
                     KEYSTORE
                 }
             }
+
+            /**
+             * 自定义声明配置
+             */
+            @Data
+            public static class Claims {
+                /**
+                 * 发行者
+                 */
+                private String issuer = "rose-security";
+
+                /**
+                 * 受众
+                 */
+                private String audience = "rose-app";
+
+                /**
+                 * 自定义声明映射
+                 */
+                private Map<String, String> custom = new HashMap<>();
+            }
+        }
+    }
+
+    /**
+     * 多因子认证配置
+     */
+    @Data
+    public static class Mfa {
+        /**
+         * 是否启用MFA
+         */
+        private boolean enabled = false;
+
+        /**
+         * 是否强制要求MFA
+         */
+        private boolean required = false;
+
+        /**
+         * TOTP配置
+         */
+        private Totp totp = new Totp();
+
+        /**
+         * TOTP配置
+         */
+        @Data
+        public static class Totp {
+            /**
+             * 是否启用TOTP
+             */
+            private boolean enabled = true;
+
+            /**
+             * 时间步长（秒）
+             */
+            private int timeStep = 30;
+
+            /**
+             * 密码位数
+             */
+            private int digits = 6;
+
+            /**
+             * 时间窗容忍度
+             */
+            private int windowSize = 1;
+
+            /**
+             * 默认发行者名称
+             */
+            private String issuer = "Rose Security";
+
+            /**
+             * 最大失败次数
+             */
+            private int maxFailureAttempts = 5;
+
+            /**
+             * 锁定时间（分钟）
+             */
+            private int lockoutMinutes = 15;
         }
     }
 
@@ -308,11 +416,6 @@ public class RoseSecurityProperties {
     private OAuth2 oauth2 = new OAuth2();
 
     /**
-     * MFA 配置
-     */
-    private Mfa mfa = new Mfa();
-
-    /**
      * 安全防护配置
      */
     private Protection protection = new Protection();
@@ -355,57 +458,10 @@ public class RoseSecurityProperties {
     }
 
     /**
-     * MFA 配置
-     */
-    @Data
-    public static class Mfa {
-        /**
-         * 是否启用 MFA
-         */
-        private boolean enabled = false;
-
-        /**
-         * TOTP 配置
-         */
-        private Totp totp = new Totp();
-
-        /**
-         * TOTP 配置
-         */
-        @Data
-        public static class Totp {
-            /**
-             * 是否启用 TOTP
-             */
-            private boolean enabled = true;
-
-            /**
-             * 应用名称
-             */
-            private String applicationName = "Rose Security";
-
-            /**
-             * 时间步长（秒）
-             */
-            private int timeStep = 30;
-
-            /**
-             * 代码长度
-             */
-            private int codeLength = 6;
-        }
-    }
-
-    /**
      * 安全防护配置
      */
     @Data
     public static class Protection {
-        /**
-         * IP 限制配置
-         */
-        private Ip ip = new Ip();
-
         /**
          * 速率限制配置
          */
@@ -415,27 +471,6 @@ public class RoseSecurityProperties {
          * 防重放配置
          */
         private AntiReplay antiReplay = new AntiReplay();
-
-        /**
-         * IP 限制配置
-         */
-        @Data
-        public static class Ip {
-            /**
-             * 是否启用 IP 限制
-             */
-            private boolean enabled = false;
-
-            /**
-             * IP 白名单
-             */
-            private List<String> whitelist = new ArrayList<>();
-
-            /**
-             * IP 黑名单
-             */
-            private List<String> blacklist = new ArrayList<>();
-        }
 
         /**
          * 速率限制配置

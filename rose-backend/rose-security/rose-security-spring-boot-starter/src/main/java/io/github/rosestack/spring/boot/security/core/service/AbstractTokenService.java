@@ -5,13 +5,14 @@ import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.support.AuditEvent;
 import io.github.rosestack.spring.boot.security.jwt.TokenManagementHook;
 import io.github.rosestack.spring.util.SpringContextUtils;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Token服务抽象基类
@@ -31,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractTokenService implements TokenService {
+    String TOKEN_TYPE_SIMPLE = "simple";
 
     /**
      * 配置属性

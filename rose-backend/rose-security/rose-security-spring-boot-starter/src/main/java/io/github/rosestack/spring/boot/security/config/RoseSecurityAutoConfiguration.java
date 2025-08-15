@@ -1,6 +1,10 @@
 package io.github.rosestack.spring.boot.security.config;
 
 import io.github.rosestack.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.boot.security.account.PasswordChangeService;
+import io.github.rosestack.spring.boot.security.account.PasswordPolicyService;
+import io.github.rosestack.spring.boot.security.account.impl.DefaultPasswordChangeService;
+import io.github.rosestack.spring.boot.security.account.impl.DefaultPasswordPolicyService;
 import io.github.rosestack.spring.boot.security.core.controller.AuthController;
 import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationFilter;
 import io.github.rosestack.spring.boot.security.core.service.LoginService;
@@ -8,12 +12,16 @@ import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.boot.security.core.service.impl.MemoryTokenService;
 import io.github.rosestack.spring.boot.security.core.service.impl.RedisTokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationLifecycleHook;
-import io.github.rosestack.spring.boot.security.core.support.CaptchaService;
-import io.github.rosestack.spring.boot.security.core.support.LoginAttemptService;
-import io.github.rosestack.spring.boot.security.core.support.impl.InMemoryLoginAttemptService;
-import io.github.rosestack.spring.boot.security.core.support.impl.NoopCaptchaService;
+import io.github.rosestack.spring.boot.security.account.CaptchaService;
+import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.account.impl.InMemoryLoginAttemptService;
+import io.github.rosestack.spring.boot.security.account.impl.NoopCaptchaService;
 import io.github.rosestack.spring.boot.security.jwt.JwtTokenService;
 import io.github.rosestack.spring.boot.security.jwt.TokenManagementHook;
+import io.github.rosestack.spring.boot.security.mfa.MfaRegistry;
+import io.github.rosestack.spring.boot.security.mfa.MfaService;
+import io.github.rosestack.spring.boot.security.mfa.totp.TotpGenerator;
+import io.github.rosestack.spring.boot.security.mfa.totp.TotpProvider;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -158,6 +166,62 @@ public class RoseSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public LoginAttemptService loginAttemptService() {
         return new InMemoryLoginAttemptService(properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PasswordPolicyService passwordPolicyService(PasswordEncoder passwordEncoder) {
+        return new DefaultPasswordPolicyService(properties.getAccount().getPassword(), passwordEncoder);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PasswordChangeService passwordChangeService(
+            PasswordPolicyService passwordPolicyService,
+            PasswordEncoder passwordEncoder,
+            UserDetailsService userDetailsService) {
+        return new DefaultPasswordChangeService(passwordPolicyService, passwordEncoder, userDetailsService);
+    }
+
+    // ========== MFA 相关配置 ==========
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "rose.security.mfa.enabled", havingValue = "true")
+    public MfaRegistry mfaRegistry() {
+        return new MfaRegistry();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "rose.security.mfa.enabled", havingValue = "true")
+    public MfaService mfaService(MfaRegistry mfaRegistry) {
+        return new MfaService(mfaRegistry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "rose.security.mfa.totp.enabled", havingValue = "true")
+    public TotpGenerator totpGenerator() {
+        RoseSecurityProperties.Mfa.Totp totpConfig = properties.getMfa().getTotp();
+        return new TotpGenerator(totpConfig.getTimeStep(), totpConfig.getDigits(), totpConfig.getWindowSize());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "rose.security.mfa.totp.enabled", havingValue = "true")
+    public TotpProvider totpProvider(TotpGenerator totpGenerator, MfaRegistry mfaRegistry) {
+        RoseSecurityProperties.Mfa.Totp totpConfig = properties.getMfa().getTotp();
+        TotpProvider provider = new TotpProvider(
+                totpGenerator,
+                totpConfig.getIssuer(),
+                totpConfig.getMaxFailureAttempts(),
+                totpConfig.getLockoutMinutes());
+
+        // 自动注册到MFA注册表
+        mfaRegistry.registerProvider(provider);
+
+        return provider;
     }
 
     // JWT 开关：开启时注册 JwtTokenService 作为首选 TokenService

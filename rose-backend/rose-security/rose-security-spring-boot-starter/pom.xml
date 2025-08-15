@@ -73,6 +73,12 @@
             <version>${uap-java.version}</version>
         </dependency>
 
+        <!-- Apache Commons Codec for Base32 encoding -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>

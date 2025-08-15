@@ -24,6 +24,7 @@ import org.springframework.data.redis.core.RedisTemplate;
  */
 @Slf4j
 public class JwtTokenService extends RedisTokenService {
+    String TOKEN_TYPE_JWT = "jwt";
 
     private final JwtHelper jwtHelper;
 
@@ -34,8 +35,14 @@ public class JwtTokenService extends RedisTokenService {
         super(properties, authenticationHook, redisTemplate);
 
         JwtKeyManager keyManager = JwtKeyManagerFactory.create(properties);
-        String algorithmName = properties.getJwt().getAlgorithm().name();
-        this.jwtHelper = new JwtHelper(keyManager, algorithmName);
+        RoseSecurityProperties.Token.Jwt jwtConfig = properties.getJwt();
+        this.jwtHelper = new JwtHelper(
+                keyManager,
+                jwtConfig.getAlgorithm().name(),
+                jwtConfig.getClockSkewSeconds(),
+                jwtConfig.getClaims().getIssuer(),
+                jwtConfig.getClaims().getAudience(),
+                jwtConfig.getClaims().getCustom());
     }
 
     @Override
