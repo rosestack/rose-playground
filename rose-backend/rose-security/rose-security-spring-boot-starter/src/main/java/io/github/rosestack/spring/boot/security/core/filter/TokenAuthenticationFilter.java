@@ -20,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.HEADER_API_KEY;
 
 /**
  * Token 认证过滤器
@@ -73,7 +73,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
      * @param request 请求对象
      */
     private void processTokenAuthentication(HttpServletRequest request) {
-        String token = ServletUtils.getRequestHeader(TOKEN_HEADER);
+        String token = ServletUtils.getRequestHeader(HEADER_API_KEY);
 
         // 创建认证详细信息对象，用于记录整个认证过程
         RoseWebAuthenticationDetails authDetails = new RoseAuthenticationDetailsSource().buildDetails(request);

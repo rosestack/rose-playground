@@ -44,7 +44,7 @@ public class AuditEvent {
     @Builder.Default
     private Map<String, Object> details = new HashMap<>();
 
-    public static AuditEvent fromSecurityContext(
+    public static AuditEvent create(
             AuditEventType eventType, RoseWebAuthenticationDetails context, Map<String, Object> details) {
         return AuditEvent.builder()
                 .eventType(eventType)
@@ -55,12 +55,16 @@ public class AuditEvent {
                 .build();
     }
 
-    public static AuditEvent fromSecurityContext(AuditEventType eventType, Map<String, Object> details) {
-        return fromSecurityContext(
+    public static AuditEvent create(AuditEventType eventType, Map<String, Object> details) {
+        return create(
                 eventType,
                 (RoseWebAuthenticationDetails)
                         SecurityContextHolder.getContext().getAuthentication().getDetails(),
                 details);
+    }
+
+    public static AuditEvent create(AuditEventType eventType) {
+        return create(eventType, new HashMap<>());
     }
 
     public AuditEvent addDetail(String key, Object value) {

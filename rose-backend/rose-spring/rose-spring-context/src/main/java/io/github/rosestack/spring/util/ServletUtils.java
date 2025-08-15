@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -625,6 +626,14 @@ public abstract class ServletUtils {
         return getValueFromRequestAndMdc(HEADER_REQUEST_ID, true);
     }
 
+    public static String getUsername() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+        return request.getUserPrincipal().getName();
+    }
+
     /**
      * 收集请求头（排除敏感头）
      */
@@ -692,13 +701,105 @@ public abstract class ServletUtils {
                 if (!isSensitive) {
                     parameters.put(entry.getKey(), entry.getValue());
                 } else {
-                    // 敏感参数用 *** 替代
-                    parameters.put(entry.getKey(), new String[] {"***"});
+                    // 敏感参数用 **** 替代
+                    parameters.put(entry.getKey(), new String[] {"****"});
                 }
             }
         }
 
         return parameters;
+    }
+
+    /**
+     * 提取请求体（仅对小文件和文本类型）
+     */
+    public static String extractRequestBody(HttpServletRequest request) {
+        String contentType = request.getContentType();
+
+        // 只处理文本类型的请求体
+        if (contentType == null
+                || (!contentType.startsWith("application/json")
+                        && !contentType.startsWith("application/xml")
+                        && !contentType.startsWith("text/"))) {
+            return null;
+        }
+
+        // 限制请求体大小，避免记录过大的内容
+        int contentLength = request.getContentLength();
+        if (contentLength > 10240) { // 10KB 限制
+            return "Request body too large (" + contentLength + " bytes)";
+        }
+
+        // 只记录 POST/PUT 等方法的请求体
+        if (!("POST".equalsIgnoreCase(request.getMethod())
+                || "PUT".equalsIgnoreCase(request.getMethod())
+                || "PATCH".equalsIgnoreCase(request.getMethod()))) {
+            return null;
+        }
+
+        try {
+            // 优先尝试 Spring 的 ContentCachingRequestWrapper（高性能，直接类型检查）
+            if (request instanceof ContentCachingRequestWrapper) {
+                return extractFromSpringContentCaching(request);
+            }
+
+            // 对于其他请求，不尝试读取流以保证性能和安全
+            return "Request body available (not extracted for performance and stream safety)";
+
+        } catch (NoClassDefFoundError e) {
+            // Spring Web 类不存在时
+            return "Request body available (Spring Web not available)";
+        } catch (Exception e) {
+            return "Failed to extract request body: " + e.getMessage();
+        }
+    }
+
+    public static String generateDeviceFingerprint(HttpServletRequest request) {
+        StringBuilder fingerprint = new StringBuilder();
+
+        // User-Agent
+        String userAgent = getUserAgent();
+        if (userAgent != null) {
+            fingerprint.append(userAgent.hashCode());
+        }
+
+        // Accept-Language
+        String acceptLanguage = request.getHeader("Accept-Language");
+        if (acceptLanguage != null) {
+            fingerprint.append("-").append(acceptLanguage.hashCode());
+        }
+
+        // Accept-Encoding
+        String acceptEncoding = request.getHeader("Accept-Encoding");
+        if (acceptEncoding != null) {
+            fingerprint.append("-").append(acceptEncoding.hashCode());
+        }
+
+        return "FP-" + Math.abs(fingerprint.toString().hashCode());
+    }
+
+    /**
+     * 从 Spring ContentCachingRequestWrapper 提取请求体（高性能）
+     */
+    private static String extractFromSpringContentCaching(HttpServletRequest request) {
+        try {
+            org.springframework.web.util.ContentCachingRequestWrapper wrapper =
+                    (org.springframework.web.util.ContentCachingRequestWrapper) request;
+            byte[] content = wrapper.getContentAsByteArray();
+
+            if (content != null && content.length > 0) {
+                String encoding = request.getCharacterEncoding();
+                if (encoding == null) {
+                    encoding = "UTF-8";
+                }
+                return new String(content, encoding);
+            }
+
+            return "Request body is empty";
+
+        } catch (Exception e) {
+            return "Failed to extract from ContentCachingRequestWrapper: " + e.getMessage();
+        }
     }
 
     private static String getValueFromRequestAndMdc(String name, boolean generate) {
@@ -719,13 +820,5 @@ public abstract class ServletUtils {
      */
     private static String generateId() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
-    }
-
-    public static String getUsername() {
-        HttpServletRequest request = getCurrentRequest();
-        if (request == null) {
-            return null;
-        }
-        return request.getUserPrincipal().getName();
     }
 }

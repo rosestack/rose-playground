@@ -13,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @since 1.0.0
  */
 public interface TokenService {
-    String TOKEN_HEADER = "X-Token";
+    String HEADER_API_KEY = "X-API-Key";
 
     /**
      * 创建 TokenInfo

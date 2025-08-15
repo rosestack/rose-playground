@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.HEADER_API_KEY;
 
 /**
  * TODO Comment
@@ -107,11 +107,6 @@ public class RoseWebAuthenticationDetails implements Serializable {
      */
     private String errorMessage;
 
-    /**
-     * 异常堆栈信息（发生异常时）
-     */
-    private String stackTrace;
-
     // ========== 请求数据 ==========
 
     /**
@@ -170,7 +165,6 @@ public class RoseWebAuthenticationDetails implements Serializable {
         this.authSuccess = true;
         this.errorCode = null;
         this.errorMessage = null;
-        this.stackTrace = null;
         return this;
     }
 
@@ -194,33 +188,11 @@ public class RoseWebAuthenticationDetails implements Serializable {
      */
     public RoseWebAuthenticationDetails withException(Throwable throwable) {
         if (throwable != null) {
-            this.stackTrace = getStackTraceAsString(throwable);
             if (this.errorMessage == null) {
                 this.errorMessage = throwable.getMessage();
             }
         }
         return this;
-    }
-
-    /**
-     * 获取异常堆栈字符串
-     */
-    private String getStackTraceAsString(Throwable throwable) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(throwable.getClass().getSimpleName()).append(": ").append(throwable.getMessage());
-
-        StackTraceElement[] elements = throwable.getStackTrace();
-        // 只保留前5行堆栈信息，避免过长
-        int limit = Math.min(5, elements.length);
-        for (int i = 0; i < limit; i++) {
-            sb.append("\n\tat ").append(elements[i].toString());
-        }
-
-        if (elements.length > limit) {
-            sb.append("\n\t... ").append(elements.length - limit).append(" more");
-        }
-
-        return sb.toString();
     }
 
     /**
@@ -245,7 +217,6 @@ public class RoseWebAuthenticationDetails implements Serializable {
                 .authSuccess(this.authSuccess)
                 .errorCode(this.errorCode)
                 .errorMessage(this.errorMessage)
-                .stackTrace(this.stackTrace)
                 .requestParameters(
                         this.requestParameters != null ? new HashMap<>(this.requestParameters) : new HashMap<>())
                 .requestBody(this.requestBody)
@@ -253,30 +224,6 @@ public class RoseWebAuthenticationDetails implements Serializable {
                 .contentType(this.contentType)
                 .attributes(this.attributes != null ? new HashMap<>(this.attributes) : new HashMap<>())
                 .build();
-    }
-
-    private static String generateDeviceFingerprint(HttpServletRequest request) {
-        StringBuilder fingerprint = new StringBuilder();
-
-        // User-Agent
-        String userAgent = request.getHeader("User-Agent");
-        if (userAgent != null) {
-            fingerprint.append(userAgent.hashCode());
-        }
-
-        // Accept-Language
-        String acceptLanguage = request.getHeader("Accept-Language");
-        if (acceptLanguage != null) {
-            fingerprint.append("-").append(acceptLanguage.hashCode());
-        }
-
-        // Accept-Encoding
-        String acceptEncoding = request.getHeader("Accept-Encoding");
-        if (acceptEncoding != null) {
-            fingerprint.append("-").append(acceptEncoding.hashCode());
-        }
-
-        return "FP-" + Math.abs(fingerprint.toString().hashCode());
     }
 
     public static RoseWebAuthenticationDetails fromRequest(HttpServletRequest request) {
@@ -293,49 +240,12 @@ public class RoseWebAuthenticationDetails implements Serializable {
                 .httpMethod(request.getMethod())
                 .requestId(ServletUtils.getRequestId())
                 .sessionId(ServletUtils.getSessionId())
-                .token(ServletUtils.getRequestHeader(TOKEN_HEADER))
-                .deviceFingerprint(generateDeviceFingerprint(request))
+                .token(ServletUtils.getRequestHeader(HEADER_API_KEY))
+                .deviceFingerprint(ServletUtils.generateDeviceFingerprint(request))
                 .requestParameters(ServletUtils.collectRequestParameters(request))
                 .requestHeaders(ServletUtils.collectRequestHeaders(request))
-                .requestBody(extractRequestBody(request))
+                .requestBody(ServletUtils.extractRequestBody(request))
                 .contentType(request.getContentType())
                 .build();
-    }
-
-    /**
-     * 提取请求体（仅对小文件和文本类型）
-     */
-    private static String extractRequestBody(HttpServletRequest request) {
-        String contentType = request.getContentType();
-
-        // 只处理文本类型的请求体
-        if (contentType == null
-                || (!contentType.startsWith("application/json")
-                        && !contentType.startsWith("application/xml")
-                        && !contentType.startsWith("text/"))) {
-            return null;
-        }
-
-        // 限制请求体大小，避免记录过大的内容
-        int contentLength = request.getContentLength();
-        if (contentLength > 10240) { // 10KB 限制
-            return "Request body too large (" + contentLength + " bytes)";
-        }
-
-        try {
-            // 这里只记录 POST/PUT 等方法的请求体
-            if ("POST".equalsIgnoreCase(request.getMethod())
-                    || "PUT".equalsIgnoreCase(request.getMethod())
-                    || "PATCH".equalsIgnoreCase(request.getMethod())) {
-
-                // 注意：实际项目中，读取请求体需要小心处理
-                // 因为 InputStream 只能读取一次，需要使用包装器或缓存
-                return "Request body available (not extracted to avoid stream issues)";
-            }
-        } catch (Exception e) {
-            return "Failed to extract request body: " + e.getMessage();
-        }
-
-        return null;
     }
 }

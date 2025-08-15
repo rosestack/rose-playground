@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.security.core.controller;
 
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.HEADER_API_KEY;
 
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
@@ -66,7 +66,7 @@ public class AuthController {
      */
     @GetMapping("/api/auth/me")
     public ApiResponse<Map<String, Object>> getCurrentUser(HttpServletRequest request) {
-        String token = ServletUtils.getRequestHeader(TOKEN_HEADER);
+        String token = ServletUtils.getRequestHeader(HEADER_API_KEY);
         if (token != null) {
             UserDetails userDetails = tokenService.getUserDetails(token);
             if (userDetails != null) {
