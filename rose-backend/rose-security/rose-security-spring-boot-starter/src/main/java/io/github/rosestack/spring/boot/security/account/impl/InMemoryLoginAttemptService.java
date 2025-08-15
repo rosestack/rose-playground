@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.security.account.impl;
 
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.account.LoginAttemptService;
+import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
