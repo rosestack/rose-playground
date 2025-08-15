@@ -2,7 +2,7 @@ package io.github.rosestack.spring.boot.security.jwt.factory;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.jwt.JwtKeyManager;
-import io.github.rosestack.spring.boot.security.jwt.exception.JwtConfigurationException;
+import io.github.rosestack.spring.boot.security.jwt.exception.JwtException;
 import io.github.rosestack.spring.boot.security.jwt.loader.JwksKeyLoader;
 import io.github.rosestack.spring.boot.security.jwt.loader.KeyLoader;
 import io.github.rosestack.spring.boot.security.jwt.loader.KeystoreKeyLoader;
@@ -25,7 +25,7 @@ public class JwtKeyManagerFactory {
      */
     public static JwtKeyManager create(RoseSecurityProperties.Token properties) {
         if (properties == null || properties.getJwt() == null) {
-            throw new JwtConfigurationException("JWT配置不能为空");
+            throw new JwtException("JWT配置不能为空");
         }
 
         KeyLoader keyLoader = createKeyLoader(properties);
@@ -44,7 +44,7 @@ public class JwtKeyManagerFactory {
             case JWK:
                 if (keyConfig.getJwkSetUri() == null
                         || keyConfig.getJwkSetUri().trim().isEmpty()) {
-                    throw new JwtConfigurationException("JWK类型需要配置jwkSetUri");
+                    throw new JwtException("JWK类型需要配置jwkSetUri");
                 }
                 return new JwksKeyLoader(
                         algorithmName,
@@ -56,11 +56,11 @@ public class JwtKeyManagerFactory {
             case KEYSTORE:
                 if (keyConfig.getKeystorePath() == null
                         || keyConfig.getKeystorePath().trim().isEmpty()) {
-                    throw new JwtConfigurationException("KEYSTORE类型需要配置keystorePath");
+                    throw new JwtException("KEYSTORE类型需要配置keystorePath");
                 }
                 if (keyConfig.getKeyAlias() == null
                         || keyConfig.getKeyAlias().trim().isEmpty()) {
-                    throw new JwtConfigurationException("KEYSTORE类型需要配置keyAlias");
+                    throw new JwtException("KEYSTORE类型需要配置keyAlias");
                 }
                 return new KeystoreKeyLoader(
                         algorithmName,
@@ -73,7 +73,7 @@ public class JwtKeyManagerFactory {
             default:
                 String secret = jwtConfig.getSecret();
                 if (secret == null || secret.trim().isEmpty()) {
-                    throw new JwtConfigurationException("SECRET类型需要配置secret");
+                    throw new JwtException("SECRET类型需要配置secret");
                 }
                 return new SecretKeyLoader(secret);
         }

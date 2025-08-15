@@ -9,26 +9,21 @@ import io.github.rosestack.spring.boot.security.core.support.CaptchaService;
 import io.github.rosestack.spring.boot.security.core.support.LoginAttemptService;
 import io.github.rosestack.spring.util.SpringContextUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
-/**
- * TODO Comment
- *
- * @author <a href="mailto:ichensoul@gmail.com">chensoul</a>
- * @since TODO
- */
+import java.util.Map;
+
 @Slf4j
-@Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class LoginService {
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
