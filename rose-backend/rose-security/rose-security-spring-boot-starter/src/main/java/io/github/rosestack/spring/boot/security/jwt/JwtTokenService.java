@@ -9,31 +9,26 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 基于JWT + Redis的混合Token服务
- *
- * <p>结合JWT和Redis的优势：
- * <ul>
- *   <li>AccessToken使用JWT格式，无状态验证</li>
- *   <li>RefreshToken存储在Redis中，支持撤销和会话管理</li>
- *   <li>用户会话信息存储在Redis中，支持并发会话限制</li>
- * </ul>
- * </p>
  */
 @Slf4j
 public class JwtTokenService extends RedisTokenService {
-    private final TokenRevocationStore revocationStore;
-
     public JwtTokenService(
-            TokenRevocationStore revocationStore,
             RoseSecurityProperties.Auth.Token properties,
             AuthenticationHook authenticationHook,
             RedisTemplate<String, Object> redisTemplate) {
         super(properties, authenticationHook, redisTemplate);
-        this.revocationStore = revocationStore;
     }
-
 
     @Override
     protected String generateAccessToken() {
-        return super.generateAccessToken();
+        //TODO 实现JWT生成逻辑
+        return null;
+    }
+
+    @Override
+    protected TokenInfo buildTokenInfo(String username) {
+        TokenInfo baseTokenInfo = super.buildTokenInfo(username);
+        baseTokenInfo.setTokenType(TOKEN_TYPE_JWT);
+        return baseTokenInfo;
     }
 }

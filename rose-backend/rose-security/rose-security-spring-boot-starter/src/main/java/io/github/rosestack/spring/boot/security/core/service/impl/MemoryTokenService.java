@@ -4,10 +4,11 @@ import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.AbstractTokenService;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 内存 Token 服务实现
@@ -61,7 +62,7 @@ public class MemoryTokenService extends AbstractTokenService {
     }
 
     @Override
-    protected void completelyRemoveToken(TokenInfo tokenInfo) {
+    protected void removeTokenInfo(TokenInfo tokenInfo) {
         String refreshToken = tokenInfo.getRefreshToken();
         String accessToken = tokenInfo.getAccessToken();
         String username = tokenInfo.getUsername();
@@ -84,26 +85,29 @@ public class MemoryTokenService extends AbstractTokenService {
     }
 
     @Override
-    protected TokenInfo findTokenByRefreshToken(String refreshToken) {
+    protected TokenInfo findTokenInfoByRefreshToken(String refreshToken) {
         return tokenStore.get(refreshToken);
     }
 
     @Override
-    protected TokenInfo findTokenByAccessToken(String accessToken) {
+    protected TokenInfo findTokenInfoByAccessToken(String accessToken) {
         String refreshToken = accessToRefreshIndex.get(accessToken);
         if (refreshToken == null) {
             return null;
         }
-        return findTokenByRefreshToken(refreshToken);
+        return findTokenInfoByRefreshToken(refreshToken);
     }
 
     @Override
-    protected ConcurrentSkipListSet<TokenInfo> findTokensByUsername(String username) {
+    protected ConcurrentSkipListSet<TokenInfo> findTokenInfosByUsername(String username) {
+        if (username == null) {
+            return null;
+        }
         return userSessionsIndex.get(username);
     }
 
     @Override
-    protected ConcurrentSkipListSet<TokenInfo> findAllTokens() {
+    protected ConcurrentSkipListSet<TokenInfo> findAllTokenInfos() {
         return new ConcurrentSkipListSet<>(tokenStore.values());
     }
 }

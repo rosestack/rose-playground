@@ -5,7 +5,6 @@ import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.support.AuthenticationHook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -71,12 +70,12 @@ public abstract class AbstractTokenService implements TokenService {
                     throw new IllegalStateException("超过最大并发会话数");
                 } else {
                     // 回收最早创建的会话
-                    ConcurrentSkipListSet<TokenInfo> tokenInfos = findTokensByUsername(username);
+                    ConcurrentSkipListSet<TokenInfo> tokenInfos = findTokenInfosByUsername(username);
                     if (tokenInfos != null) {
                         TokenInfo evicted = tokenInfos.pollFirst();
                         if (evicted != null) {
                             log.debug("为用户 {} 回收最早会话: {}", username, evicted.getAccessToken());
-                            completelyRemoveToken(evicted);
+                            removeTokenInfo(evicted);
                             authenticationHook.onTokenRevoked(evicted.getUsername(), evicted.getAccessToken());
                         }
                     }
@@ -93,7 +92,7 @@ public abstract class AbstractTokenService implements TokenService {
 
     @Override
     public UserDetails getUserDetails(String accessToken) {
-        TokenInfo tokenInfo = findTokenByAccessToken(accessToken);
+        TokenInfo tokenInfo = findTokenInfoByAccessToken(accessToken);
         if (tokenInfo == null) {
             return null;
         }
@@ -119,7 +118,7 @@ public abstract class AbstractTokenService implements TokenService {
             throw new IllegalArgumentException("accessToken不能为空");
         }
 
-        TokenInfo tokenInfo = this.findTokenByAccessToken(accessToken);
+        TokenInfo tokenInfo = this.findTokenInfoByAccessToken(accessToken);
         if (tokenInfo == null) {
             return false;
         }
@@ -147,7 +146,7 @@ public abstract class AbstractTokenService implements TokenService {
             throw new IllegalStateException("Token刷新被拦截");
         }
 
-        TokenInfo oldTokenInfo = findTokenByRefreshToken(refreshToken);
+        TokenInfo oldTokenInfo = findTokenInfoByRefreshToken(refreshToken);
         if (oldTokenInfo == null) {
             throw new IllegalArgumentException("refreshToken 不存在");
         }
@@ -172,7 +171,7 @@ public abstract class AbstractTokenService implements TokenService {
         TokenInfo newTokenInfo = buildTokenInfo(username);
 
         // 原子替换Token：先移除旧Token，再存储新Token
-        completelyRemoveToken(oldTokenInfo);
+        removeTokenInfo(oldTokenInfo);
         storeTokenInfo(newTokenInfo);
 
         authenticationHook.onTokenRefreshSuccess(newTokenInfo.getUsername(), newTokenInfo.getAccessToken());
@@ -182,19 +181,19 @@ public abstract class AbstractTokenService implements TokenService {
 
     @Override
     public void revokeToken(String accessToken) {
-        TokenInfo tokenInfo = findTokenByAccessToken(accessToken);
+        TokenInfo tokenInfo = findTokenInfoByAccessToken(accessToken);
         if (tokenInfo != null) {
-            completelyRemoveToken(tokenInfo);
+            removeTokenInfo(tokenInfo);
         }
     }
 
     @Override
     public void revokeAllTokens(String username) {
-        Set<TokenInfo> tokenInfos = findTokensByUsername(username);
+        Set<TokenInfo> tokenInfos = findTokenInfosByUsername(username);
 
         if (tokenInfos != null && !tokenInfos.isEmpty()) {
             for (TokenInfo tokenInfo : tokenInfos) {
-                completelyRemoveToken(tokenInfo);
+                removeTokenInfo(tokenInfo);
                 authenticationHook.onTokenRevoked(username, tokenInfo.getAccessToken());
             }
         }
@@ -202,7 +201,7 @@ public abstract class AbstractTokenService implements TokenService {
 
     @Override
     public Set<String> getActiveTokens(String username) {
-        Set<TokenInfo> tokenInfos = findTokensByUsername(username);
+        Set<TokenInfo> tokenInfos = findTokenInfosByUsername(username);
 
         if (tokenInfos == null || tokenInfos.isEmpty()) {
             return Collections.emptySet();
@@ -211,7 +210,7 @@ public abstract class AbstractTokenService implements TokenService {
         Set<String> actives = new HashSet<>();
         for (TokenInfo tokenInfo : tokenInfos) {
             if (tokenInfo.isExpired()) {
-                completelyRemoveToken(tokenInfo);
+                removeTokenInfo(tokenInfo);
                 authenticationHook.onTokenRevoked(username, tokenInfo.getAccessToken());
             } else {
                 actives.add(tokenInfo.getAccessToken());
@@ -263,23 +262,22 @@ public abstract class AbstractTokenService implements TokenService {
                 .build();
     }
 
-    @Scheduled(fixedRate = 5 * 60 * 1000) // 5分钟
     public void cleanupExpiredTokens() {
-        ConcurrentSkipListSet<TokenInfo> allTokens = findAllTokens();
+        ConcurrentSkipListSet<TokenInfo> allTokens = findAllTokenInfos();
         for (TokenInfo tokenInfo : allTokens) {
             if (tokenInfo.isExpired()) {
-                completelyRemoveToken(tokenInfo);
+                removeTokenInfo(tokenInfo);
             }
         }
     }
 
-    protected abstract TokenInfo findTokenByAccessToken(String accessToken);
+    protected abstract TokenInfo findTokenInfoByAccessToken(String accessToken);
 
-    protected abstract TokenInfo findTokenByRefreshToken(String refreshToken);
+    protected abstract TokenInfo findTokenInfoByRefreshToken(String refreshToken);
 
-    protected abstract ConcurrentSkipListSet<TokenInfo> findTokensByUsername(String username);
+    protected abstract ConcurrentSkipListSet<TokenInfo> findTokenInfosByUsername(String username);
 
-    protected abstract ConcurrentSkipListSet<TokenInfo> findAllTokens();
+    protected abstract ConcurrentSkipListSet<TokenInfo> findAllTokenInfos();
 
     /**
      * 存储TokenInfo到具体的存储介质
@@ -289,5 +287,5 @@ public abstract class AbstractTokenService implements TokenService {
     /**
      * 从存储中完全移除Token
      */
-    protected abstract void completelyRemoveToken(TokenInfo tokenInfo);
+    protected abstract void removeTokenInfo(TokenInfo tokenInfo);
 }

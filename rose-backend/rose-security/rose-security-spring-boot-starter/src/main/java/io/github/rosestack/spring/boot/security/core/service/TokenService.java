@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public interface TokenService {
     String TOKEN_HEADER = "X-Token";
     String TOKEN_TYPE_SIMPLE = "simple";
+    String TOKEN_TYPE_JWT = "jwt";
 
     /**
      * 创建 TokenInfo
@@ -63,4 +64,6 @@ public interface TokenService {
     void revokeAllTokens(String username);
 
     Set<String> getActiveTokens(String username);
+
+
 }

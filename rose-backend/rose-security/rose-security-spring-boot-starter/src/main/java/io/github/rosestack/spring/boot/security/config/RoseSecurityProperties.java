@@ -1,10 +1,11 @@
 package io.github.rosestack.spring.boot.security.config;
 
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Rose Security 配置属性
@@ -88,7 +89,7 @@ public class RoseSecurityProperties {
         /**
          * 允许访问的路径
          */
-        private String[] permitPaths = new String[] {};
+        private String[] permitPaths = new String[]{};
 
         /**
          * Token 配置
@@ -286,11 +287,6 @@ public class RoseSecurityProperties {
         private Algorithm algorithm = Algorithm.HS256;
 
         /**
-         * JWT Token 有效期
-         */
-        private Duration expiration = Duration.ofHours(24);
-
-        /**
          * 时钟偏移容错时间
          */
         private Duration clockSkew = Duration.ofMinutes(5);
@@ -351,16 +347,6 @@ public class RoseSecurityProperties {
             private Duration rotationInterval = Duration.ofDays(30);
 
             /**
-             * JWKS 拉取连接超时（毫秒）
-             */
-            private int jwkConnectTimeoutMillis = 2000;
-
-            /**
-             * JWKS 拉取读取超时（毫秒）
-             */
-            private int jwkReadTimeoutMillis = 3000;
-
-            /**
              * JWKS 拉取最大重试次数（含首次），最小为1
              */
             private int jwkMaxRetries = 1;
@@ -389,10 +375,6 @@ public class RoseSecurityProperties {
         private boolean requireIssuedAt = true; // 是否强制要求 iat
         private boolean requireNotBefore = false; // 是否强制要求 nbf
 
-        /**
-         * 验证器创建失败时是否回退到 HS Secret 验证
-         */
-        private boolean fallbackToSecretForVerify = false;
     }
 
     /**

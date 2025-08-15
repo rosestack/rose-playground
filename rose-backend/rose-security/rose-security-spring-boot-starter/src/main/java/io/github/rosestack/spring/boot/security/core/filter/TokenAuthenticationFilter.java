@@ -1,14 +1,11 @@
 package io.github.rosestack.spring.boot.security.core.filter;
 
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
-
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +13,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
 
 /**
  * Token 认证过滤器
@@ -78,15 +80,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String loginPath = properties.getAuth().getLoginPath();
         String logoutPath = properties.getAuth().getLogoutPath();
         String refreshPath = properties.getAuth().getRefreshPath();
-        String[] permitPaths = properties.getAuth().getPermitPaths();
 
         if (path.equals(loginPath) || path.equals(logoutPath) || path.equals(refreshPath)) {
             return true;
         }
 
         // 配置化的公共端点放行
+        String[] permitPaths = properties.getAuth().getPermitPaths();
         if (permitPaths != null && permitPaths.length > 0) {
-            org.springframework.util.AntPathMatcher matcher = new org.springframework.util.AntPathMatcher();
+            AntPathMatcher matcher = new AntPathMatcher();
             for (String pattern : permitPaths) {
                 if (matcher.match(pattern, path)) {
                     return true;
