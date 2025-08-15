@@ -1,0 +1,57 @@
+package io.github.rosestack.spring.boot.security.config;
+
+import io.github.rosestack.spring.boot.security.core.RestAccessDeniedHandler;
+import io.github.rosestack.spring.boot.security.core.RestAuthenticationEntryPoint;
+import java.util.List;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@AutoConfiguration
+@EnableConfigurationProperties(RoseSecurityProperties.class)
+@ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
+public class RoseSecurityAutoConfiguration {
+
+    @Bean
+    public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
+        return new RestAuthenticationEntryPoint();
+    }
+
+    @Bean
+    public RestAccessDeniedHandler restAccessDeniedHandler() {
+        return new RestAccessDeniedHandler();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   RoseSecurityProperties props,
+                                                   RestAuthenticationEntryPoint entryPoint,
+                                                   RestAccessDeniedHandler accessDeniedHandler) throws Exception {
+        // 基础放行路径
+        List<String> permit = props.getPermitAll();
+
+        http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(reg -> {
+                    if (permit != null && !permit.isEmpty()) {
+                        reg.requestMatchers(permit.toArray(new String[0])).permitAll();
+                    }
+                    reg.requestMatchers(props.getLoginPath(), props.getLogoutPath()).permitAll();
+                    reg.requestMatchers(props.getBasePath()).authenticated();
+                    reg.anyRequest().permitAll();
+                })
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
+                .httpBasic(Customizer.withDefaults());
+
+        return http.build();
+    }
+}
