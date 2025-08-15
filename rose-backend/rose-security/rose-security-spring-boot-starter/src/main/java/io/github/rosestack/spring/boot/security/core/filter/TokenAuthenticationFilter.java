@@ -2,6 +2,8 @@ package io.github.rosestack.spring.boot.security.core.filter;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
+import io.github.rosestack.spring.boot.security.core.support.RoseAuthenticationDetailsSource;
+import io.github.rosestack.spring.boot.security.core.support.RoseWebAuthenticationDetails;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -48,7 +50,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    RoseWebAuthenticationDetails roseWebAuthenticationDetails = new RoseAuthenticationDetailsSource().buildDetails(request);
+                    roseWebAuthenticationDetails.setUserId(userDetails.getUsername());
+                    authToken.setDetails(roseWebAuthenticationDetails);
 
                     // 设置到Spring Security上下文
                     SecurityContextHolder.getContext().setAuthentication(authToken);

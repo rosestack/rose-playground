@@ -1,11 +1,14 @@
 package io.github.rosestack.spring.boot.security.core.controller;
 
+import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
+
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.boot.security.core.domain.TokenInfo;
 import io.github.rosestack.spring.boot.security.core.service.LoginService;
 import io.github.rosestack.spring.boot.security.core.service.TokenService;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
-
-import static io.github.rosestack.spring.boot.security.core.service.TokenService.TOKEN_HEADER;
 
 /**
  * 认证控制器
