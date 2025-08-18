@@ -48,6 +48,7 @@
   - 优先使用 `LambdaQueryWrapper`/`LambdaUpdateWrapper` 构建条件
   - 不要使用@Select、@Update 等注解定义 sql 语句
   - 不要定义 Mapper xml 文件
+  - 已启用逻辑删除时（@TableLogic 或全局配置），禁止在 Wrapper/SQL 中手动追加 `deleted = 0/1` 或 `is_deleted = 0/1` 条件；由 MyBatis-Plus 自动拼接，避免条件冲突与索引回退
 - **禁止**
   - 多表 JOIN / 递归查询 / 存储过程 / 触发器 / 窗口函数
   - 复杂动态 SQL、数据库特有函数（保持数据库无关）
@@ -118,5 +119,23 @@
   - 在 PR 明确说明原因、替代方案、回滚计划与时限
   - 添加 `// FIXME(dd/MM) 临时方案` 并创建追踪任务
   - 不得绕过安全/合规底线
+
+## 十四、MySQL 规范（开发侧必读）
+- 表与字段
+  - 表名小写下划线、单数，如 user；主键统一 id；时间字段 created_time/updated_time
+  - 字符集 utf8mb4，排序规则 utf8mb4_general_ci；金额用 DECIMAL(18,2)，布尔用 TINYINT(1)
+  - 重要字段 NOT NULL；合理默认值；字段和表必须有 COMMENT
+- 索引
+  - 命名：idx_表_字段（复合：idx_表_字段1_字段2），唯一：uk_表_字段
+  - WHERE/ORDER BY/GROUP BY 涉及字段要有索引；避免重复/冗余索引
+- SQL 规范
+  - 禁止在 WHERE 中使用函数/隐式转换/前缀模糊；禁止 SELECT *
+  - 分页统一使用插件/Wrapper；避免手写 limit 偏移导致全表扫描
+  - 慢 SQL 基线：>1s 需优化；上线前使用 EXPLAIN 校验执行计划
+- 事务与一致性
+  - 事务范围最小化；避免长事务；高并发使用乐观锁(@Version)或分布式锁
+  - 隔离级别 REPEATABLE READ；统一时区 UTC；binlog_format=ROW
+- 外键与约束
+  - 禁用数据库外键约束，应用端保证引用完整性；外键列必须建索引
 
 —— 以上规则作为代码质量门禁，自动化校验与人工评审共同执行。若发现坏味道（僵化/冗余/循环依赖/脆弱/晦涩/数据泥团/不必要复杂），应立即提出优化建议并评估改造计划。

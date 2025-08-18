@@ -56,6 +56,7 @@ alwaysApply: true
 ### C. 查询与分页
 - [ ] 分页统一使用 MyBatis-Plus 分页插件；禁止手写 limit 偏移造成全表扫描。
 - [ ] 条件构造统一使用 LambdaQueryWrapper/LambdaUpdateWrapper；避免字符串拼 SQL 与注入风险。
+- [ ] 逻辑删除已开启时，严禁在条件构造中手动添加 deleted/is_deleted 等逻辑删除字段条件；框架自动处理。
 - [ ] 大结果集采用游标/流式处理或分片拉取；查询超时与最大行数限制已配置。
 
 ### D. 写入与批处理
