@@ -1,5 +1,6 @@
 package io.github.rosestack.notification.infrastructure.mybatis.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.notification.domain.entity.NotificationTemplate;
 import io.github.rosestack.notification.domain.repository.NotificationTemplateRepository;
@@ -7,8 +8,6 @@ import io.github.rosestack.notification.infrastructure.mybatis.convert.Notificat
 import io.github.rosestack.notification.infrastructure.mybatis.entity.NotificationTemplateEntity;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface NotificationTemplateMapper
@@ -18,11 +17,12 @@ public interface NotificationTemplateMapper
         return entity != null ? Optional.of(NotificationTemplateConvert.toDomain(entity)) : Optional.empty();
     }
 
-    @Select("SELECT * FROM notification_template WHERE id = #{id} AND lang = #{lang} LIMIT 1")
-    NotificationTemplateEntity selectByIdAndLang(@Param("id") String id, @Param("lang") String lang);
-
     default Optional<NotificationTemplate> findByIdAndLang(String id, String lang) {
-        NotificationTemplateEntity entity = selectByIdAndLang(id, lang);
+        LambdaQueryWrapper<NotificationTemplateEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NotificationTemplateEntity::getId, id)
+               .eq(NotificationTemplateEntity::getLang, lang)
+               .last("LIMIT 1");
+        NotificationTemplateEntity entity = selectOne(wrapper);
         return entity != null ? Optional.of(NotificationTemplateConvert.toDomain(entity)) : Optional.empty();
     }
 

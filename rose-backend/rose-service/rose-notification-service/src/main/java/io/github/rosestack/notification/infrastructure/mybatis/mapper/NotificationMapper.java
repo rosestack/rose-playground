@@ -1,5 +1,6 @@
 package io.github.rosestack.notification.infrastructure.mybatis.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.notification.domain.entity.Notification;
 import io.github.rosestack.notification.domain.repository.NotificationRepository;
@@ -9,8 +10,6 @@ import io.github.rosestack.notification.infrastructure.mybatis.entity.Notificati
 import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface NotificationMapper extends BaseMapper<NotificationEntity>, NotificationRepository {
@@ -31,37 +30,34 @@ public interface NotificationMapper extends BaseMapper<NotificationEntity>, Noti
         deleteById(id);
     }
 
-    @Select("SELECT * FROM notification WHERE request_id = #{requestId} LIMIT 1")
-    NotificationEntity selectByRequestId(@Param("requestId") String requestId);
-
     default Optional<Notification> findByRequestId(String requestId) {
-        NotificationEntity entity = selectByRequestId(requestId);
+        LambdaQueryWrapper<NotificationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NotificationEntity::getRequestId, requestId)
+               .last("LIMIT 1");
+        NotificationEntity entity = selectOne(wrapper);
         return entity != null ? Optional.of(NotificationConvert.toDomain(entity)) : Optional.empty();
     }
 
-    @Select("SELECT * FROM notification WHERE tenant_id = #{tenantId}")
-    List<NotificationEntity> selectByTenantId(@Param("tenantId") String tenantId);
-
     default List<Notification> findByTenantId(String tenantId) {
-        return selectByTenantId(tenantId).stream()
+        LambdaQueryWrapper<NotificationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NotificationEntity::getTenantId, tenantId);
+        return selectList(wrapper).stream()
                 .map(NotificationConvert::toDomain)
                 .toList();
     }
-
-    @Select("SELECT * FROM notification WHERE target = #{target}")
-    List<NotificationEntity> selectByTarget(@Param("target") String target);
 
     default List<Notification> findByTarget(String target) {
-        return selectByTarget(target).stream()
+        LambdaQueryWrapper<NotificationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NotificationEntity::getTarget, target);
+        return selectList(wrapper).stream()
                 .map(NotificationConvert::toDomain)
                 .toList();
     }
 
-    @Select("SELECT * FROM notification WHERE status = #{status}")
-    List<NotificationEntity> selectByStatus(@Param("status") String status);
-
     default List<Notification> findByStatus(NotificationStatus status) {
-        return selectByStatus(status.name()).stream()
+        LambdaQueryWrapper<NotificationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NotificationEntity::getStatus, status);
+        return selectList(wrapper).stream()
                 .map(NotificationConvert::toDomain)
                 .toList();
     }

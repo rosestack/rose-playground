@@ -1,0 +1,122 @@
+# Cursor 规则：代码质量（Java/Spring/MyBatis Plus）
+
+- **目标**：统一团队代码质量标准，提升可靠性、可维护性与安全性
+- **适用范围**：本仓库所有 Java 后端代码（含 Spring Boot、MyBatis Plus、Starter 模块）
+- **优先级**：强制遵循；代码评审与 CI 按此规则执行
+
+## 一、通用工程原则
+- **SOLID/DRY/KISS/YAGNI/关注点分离**：严格遵循，避免过度设计与重复实现
+- **模块边界清晰**：控制器仅处理 HTTP/校验/响应封装；业务在服务层；数据访问在 Mapper
+- **向后兼容**：新增面向扩展，禁止破坏既有对外契约（DTO、API、配置键）
+- **失败即早**：非法参数立即校验并抛出；避免静默失败
+
+## 二、代码风格与复杂度门禁
+- **命名**
+  - 包：`com.company.project.module`
+  - 类：`XXService/XXServiceImpl/XXController/XXMapper/XXEntity`
+  - 方法：查询 `get/find/list/page/count`；判断 `is/exists/has`；操作 `create/update/delete`
+  - 变量：语义化、用完整单词；常量全大写下划线
+- **结构**
+  - 单文件 ≤ 500 行；单方法 ≤ 50 行；圈复杂度 ≤ 10；方法参数 ≤ 5 个
+  - 优先早返回；避免 3 层以上深度嵌套
+  - 代码块需要添加花括号
+- **注释**
+  - 复杂业务/非直观逻辑必须中文注释，写“为什么”不是“怎么做”
+  - 公共接口/DTO/异常类添加 Javadoc
+- **格式化**
+  - 由 Spotless 管控；提交前必须通过 `mvn spotless:apply`
+
+## 三、Java/Spring 规范
+- **依赖注入**：构造器注入，成员 `final`，不使用字段注入
+- **事务边界**
+  - 读：`@Transactional(readOnly = true)`
+  - 写：`@Transactional(rollbackFor = Exception.class)`
+  - 将事务范围限制在最小必要代码块
+- **异常处理**
+  - 仅异常场景才抛出异常，禁止用异常做流程控制
+  - 自定义异常继承统一基类，包含消息键与参数
+  - 控制器统一异常处理（`@RestControllerAdvice`），返回统一 `ApiResponse`
+- **日志**
+  - 使用 SLF4J，严禁 `System.out`
+  - 日志分级：ERROR/WARN/INFO/DEBUG；异常日志必须含上下文与堆栈
+  - 严禁打印敏感信息；必要时脱敏（手机号、邮箱、证件号等）
+
+## 四、MyBatis Plus 规范
+- **Mapper**
+  - 必须继承 `BaseMapper<T>`，并添加 `@Mapper`
+  - 方法命名：`selectBy*/findBy*/listBy*/page*/countBy*/updateBy*/deleteBy*`
+  - 优先使用 `LambdaQueryWrapper`/`LambdaUpdateWrapper` 构建条件
+  - 不要使用@Select、@Update 等注解定义 sql 语句
+  - 不要定义 Mapper xml 文件
+- **禁止**
+  - 多表 JOIN / 递归查询 / 存储过程 / 触发器 / 窗口函数
+  - 复杂动态 SQL、数据库特有函数（保持数据库无关）
+- **分页与批量**
+  - 分页使用插件与 `Page<T>`
+  - 批处理使用 `saveBatch/updateBatchById`，合理设置批大小（如 500/1000）
+
+## 五、安全规范
+- 所有入口参数使用 Jakarta Validation + `@Validated` 校验
+- 仅使用参数化查询，严格防 SQL 注入
+- 严禁硬编码凭据/密钥，敏感信息外置化
+- JSON 仅使用 Jackson；禁用 fastjson/gson
+- 统一脱敏策略：日志、错误信息、审计中不出现 PII/凭据
+
+## 六、API 设计与 DTO
+- 控制器不暴露实体类；请求/响应均用 DTO/Record
+- 统一响应：`ApiResponse<T>`；错误码与消息可国际化
+- DTO 校验规则明确，边界条件（空、极限、非法组合）必须覆盖
+
+## 七、测试与质量门禁
+- 单元测试：核心业务必须有；命名 `should_xxx_when_yyy`
+- 覆盖率：核心模块 80%+，边缘模块 60%+（以 Jacoco 报告为准）；新增代码不得降低阈值
+- 集成测试：数据库类使用 Testcontainers；随机端口启动
+- 测试数据独立、可重复运行；避免对外部依赖的真实调用
+
+## 八、性能与资源
+- 数据库：避免 N+1；命中索引；分页有序；只查必要字段
+- 缓存：读多写少使用 Redis/Caffeine；明确过期策略
+- 批处理：分批大小可配置；避免一次性加载全量内存
+- I/O：使用连接池（Hikari）；外部调用使用超时/重试/熔断
+
+## 九、CI 门禁与工具命令
+- 提交前本地必须通过：
+  - `mvn spotless:apply`
+  - `mvn -q -DskipTests=false test`
+  - `mvn -q -Pquality verify`（含 SpotBugs/Jacoco/Sonar 配置时）
+- 变更包含：必要的单元测试与更新文档（README/配置说明）
+
+## 十、代码评审清单（PR 自查）
+- 功能正确：边界与异常路径已覆盖；没有隐藏副作用
+- 可读可维护：命名清晰、方法短小、注释说明“原因”
+- 异常/日志：上下文充分、无敏感信息、无吞异常
+- 安全合规：校验完整、无注入风险、凭据不落地
+- 性能：无 N+1、分页/批次合理、无不必要全量扫描
+- 测试：新增/修改处有测试；覆盖率未下降
+- 兼容性：无破坏性更改；配置项有默认与说明
+- 规范：通过 Spotless/SpotBugs/Jacoco；无 TODO/临时代码
+
+## 十一、禁用项（看到即退回）
+- 字段注入、静态状态持久化、线程不安全单例
+- 捕获后忽略异常或仅打印不处理
+- 直接打印控制台、生产代码中 `System.exit`
+- 硬编码密钥/账号/连接串
+- 复杂 SQL 与数据库特性绑定
+- fastjson/gson、JPA（与 MyBatis Plus 冲突）、Hutool、PowerMock、Hamcrest、Log4j 1.x
+
+## 十二、AI 协作（在 Cursor 中提示模型的固定格式）
+- 变更目标：一句话说明本次要改什么、影响范围
+- 约束与风格：引用本规则关键约束（事务、异常、DTO、日志、复杂度）
+- 接口契约：输入/输出/错误码/幂等性
+- 测试要求：必须新增哪些测试点
+- 验收标准：本地命令需全部通过（见“CI 门禁与工具命令”）
+- 示例 Prompt 片段：
+  - “请在 `user/internal/UserServiceImpl` 中新增 `pageUsers`，遵循本仓库代码质量规则：构造器注入、只在服务层含业务、读事务、MP 分页、DTO 收敛、ApiResponse 返回、必要中文注释、方法 ≤ 50 行，并补充单测（覆盖边界: 空条件/超页码/非法 size）。”
+
+## 十三、例外与风险
+- 如确需使用被禁止特性（紧急修复/短期权衡），需：
+  - 在 PR 明确说明原因、替代方案、回滚计划与时限
+  - 添加 `// FIXME(dd/MM) 临时方案` 并创建追踪任务
+  - 不得绕过安全/合规底线
+
+—— 以上规则作为代码质量门禁，自动化校验与人工评审共同执行。若发现坏味道（僵化/冗余/循环依赖/脆弱/晦涩/数据泥团/不必要复杂），应立即提出优化建议并评估改造计划。

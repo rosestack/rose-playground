@@ -1,5 +1,6 @@
 package io.github.rosestack.notification.infrastructure.mybatis.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.notification.domain.entity.NotificationChannel;
 import io.github.rosestack.notification.domain.repository.NotificationChannelRepository;
@@ -9,8 +10,6 @@ import io.github.rosestack.notification.infrastructure.mybatis.entity.Notificati
 import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface NotificationChannelMapper
@@ -20,12 +19,11 @@ public interface NotificationChannelMapper
         return entity != null ? Optional.of(NotificationChannelConvert.toDomain(entity)) : Optional.empty();
     }
 
-    @Select("SELECT * FROM notification_channel WHERE channel_type = #{channelType} AND tenant_id = #{tenantId}")
-    List<NotificationChannelEntity> selectByTypeAndTenantId(
-            @Param("channelType") String channelType, @Param("tenantId") String tenantId);
-
     default List<NotificationChannel> findByTypeAndTenantId(NotificationChannelType channelType, String tenantId) {
-        return selectByTypeAndTenantId(channelType.name(), tenantId).stream()
+        LambdaQueryWrapper<NotificationChannelEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(NotificationChannelEntity::getChannelType, channelType)
+               .eq(NotificationChannelEntity::getTenantId, tenantId);
+        return selectList(wrapper).stream()
                 .map(NotificationChannelConvert::toDomain)
                 .toList();
     }
