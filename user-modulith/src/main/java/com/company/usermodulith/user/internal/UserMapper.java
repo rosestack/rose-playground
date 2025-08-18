@@ -1,10 +1,9 @@
 package com.company.usermodulith.user.internal;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.mybatis.annotation.DataPermission;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 /**
  * 用户数据访问接口
@@ -26,8 +25,12 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @param username 用户名
      * @return 用户实体，如果不存在返回 null
      */
-    @Select("SELECT * FROM user WHERE username = #{username} AND deleted = 0")
-    UserEntity selectByUsername(@Param("username") String username);
+    default UserEntity selectByUsername(String username) {
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserEntity::getUsername, username)
+               .last("LIMIT 1");
+        return selectOne(wrapper);
+    }
 
     /**
      * 根据邮箱查询用户
@@ -35,8 +38,12 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @param email 邮箱
      * @return 用户实体，如果不存在返回 null
      */
-    @Select("SELECT * FROM user WHERE email = #{email} AND deleted = 0")
-    UserEntity selectByEmail(@Param("email") String email);
+    default UserEntity selectByEmail(String email) {
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserEntity::getEmail, email)
+               .last("LIMIT 1");
+        return selectOne(wrapper);
+    }
 
     /**
      * 检查用户名是否存在
@@ -44,8 +51,12 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @param username 用户名
      * @return 是否存在
      */
-    @Select("SELECT COUNT(*) > 0 FROM user WHERE username = #{username} AND deleted = 0")
-    boolean existsByUsername(@Param("username") String username);
+    default boolean existsByUsername(String username) {
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserEntity::getUsername, username)
+               .last("LIMIT 1");
+        return selectCount(wrapper) > 0;
+    }
 
     /**
      * 检查邮箱是否存在
@@ -53,6 +64,10 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @param email 邮箱
      * @return 是否存在
      */
-    @Select("SELECT COUNT(*) > 0 FROM user WHERE email = #{email} AND deleted = 0")
-    boolean existsByEmail(@Param("email") String email);
+    default boolean existsByEmail(String email) {
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserEntity::getEmail, email)
+               .last("LIMIT 1");
+        return selectCount(wrapper) > 0;
+    }
 } 
