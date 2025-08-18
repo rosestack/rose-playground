@@ -10,12 +10,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 在登录认证之前检查账户是否被锁定。
@@ -26,9 +28,9 @@ public class LoginPreCheckFilter extends OncePerRequestFilter {
     private final LoginLockoutService lockoutService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public LoginPreCheckFilter(RoseSecurityProperties properties, LoginLockoutService lockoutService) {
+    public LoginPreCheckFilter(RoseSecurityProperties properties, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
         this.properties = properties;
-        this.lockoutService = lockoutService;
+        this.lockoutService = loginLockoutServiceProvider.getIfAvailable();
     }
 
     @Override

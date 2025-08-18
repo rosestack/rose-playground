@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +28,7 @@ public class RoseSecurityProperties {
     private String logoutPath = "/api/auth/logout";
 
     /** 放行路径列表（支持通配符） */
-    private List<String> permitAll = new ArrayList<>();
+    private String[] permitAll = new String[]{};
 
     /** Token 相关配置 */
     private final Token token = new Token();

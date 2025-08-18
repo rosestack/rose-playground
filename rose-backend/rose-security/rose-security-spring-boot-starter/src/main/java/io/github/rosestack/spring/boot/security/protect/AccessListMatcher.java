@@ -2,14 +2,17 @@ package io.github.rosestack.spring.boot.security.protect;
 
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.ObjectProvider;
+
 import java.util.Set;
 
 public class AccessListMatcher {
     private final AccessListStore store;
     private final RoseSecurityProperties.Protect.AccessList props;
 
-    public AccessListMatcher(AccessListStore store, RoseSecurityProperties properties) {
-        this.store = store;
+    public AccessListMatcher(
+            ObjectProvider<AccessListStore> accessListStoreProvider, RoseSecurityProperties properties) {
+        this.store = accessListStoreProvider.getIfAvailable();
         this.props = properties.getProtect().getAccessList();
     }
 

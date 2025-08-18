@@ -10,11 +10,13 @@ import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationF
 import io.github.rosestack.spring.boot.security.core.handler.LoginFailureHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LoginSuccessHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LogoutSuccessHandler;
-import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
-import io.github.rosestack.spring.boot.security.protect.*;
+import io.github.rosestack.spring.boot.security.protect.AccessListFilter;
+import io.github.rosestack.spring.boot.security.protect.RateLimitFilter;
+import io.github.rosestack.spring.boot.security.protect.ReplayFilter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,13 +29,87 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.List;
-
+@RequiredArgsConstructor
 @AutoConfiguration
 @EnableConfigurationProperties(RoseSecurityProperties.class)
-@Import(AuthenticationConfiguration.class)
+@Import({RoseAuthenticationConfiguration.class, RoseAccountConfiguration.class, RoseProtectConfiguration.class})
 @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseSecurityAutoConfiguration {
+    private static final String[] PUBLIC_RESOURCES = {
+        "/favicon.ico", "/actuator/**", "/error",
+    };
+
+    private final RoseSecurityProperties props;
+    private final ObjectProvider<AccessListFilter> accessListFilterProvider;
+    private final ObjectProvider<ReplayFilter> replayFilterObjectProvider;
+    private final ObjectProvider<RateLimitFilter> rateLimitFilterObjectProvider;
+    private final ObjectProvider<LoginPreCheckFilter> loginPreCheckFilterObjectProvider;
+
+    private final AuthenticationManager authenticationManager;
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+    private final LogoutSuccessHandler logoutSuccessHandler;
+    private final TokenService tokenService;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http, RestAuthenticationEntryPoint entryPoint, RestAccessDeniedHandler accessDeniedHandler)
+            throws Exception {
+
+        http.csrf(csrf -> csrf.disable())
+                .httpBasic(Customizer.withDefaults())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http.securityMatcher(props.getBasePath()).authorizeHttpRequests(reg -> reg.requestMatchers(PUBLIC_RESOURCES)
+                .permitAll()
+                .requestMatchers(props.getPermitAll())
+                .permitAll()
+                .requestMatchers(props.getLoginPath(), props.getLogoutPath())
+                .permitAll()
+                .anyRequest()
+                .permitAll());
+
+        http.exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler));
+
+        http.logout(logout -> logout.logoutUrl(props.getLogoutPath()).addLogoutHandler(logoutSuccessHandler));
+
+        // Login pre-check (account locked)
+        if (loginPreCheckFilterObjectProvider.getIfAvailable() != null) {
+            http.addFilterBefore(
+                    loginPreCheckFilterObjectProvider.getIfAvailable(), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        http.addFilterBefore(loginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        // Access list filter placed after TokenAuthenticationFilter to get username
+        if (accessListFilterProvider.getIfAvailable() != null) {
+            http.addFilterAfter(accessListFilterProvider.getIfAvailable(), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        // Replay protection (before rate limit)
+        if (replayFilterObjectProvider.getIfAvailable() != null) {
+            http.addFilterAfter(
+                    replayFilterObjectProvider.getIfAvailable(), UsernamePasswordAuthenticationFilter.class);
+        }
+        // Rate limiting
+        if (rateLimitFilterObjectProvider.getIfAvailable() != null) {
+            http.addFilterAfter(
+                    rateLimitFilterObjectProvider.getIfAvailable(), UsernamePasswordAuthenticationFilter.class);
+        }
+
+        return http.build();
+    }
+
+    @Bean
+    public LoginAuthenticationFilter loginAuthenticationFilter() {
+        return new LoginAuthenticationFilter(authenticationManager, props, loginSuccessHandler, loginFailureHandler);
+    }
+
+    @Bean
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
+        return new TokenAuthenticationFilter(tokenService, props);
+    }
 
     @Bean
     public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
@@ -44,114 +120,4 @@ public class RoseSecurityAutoConfiguration {
     public RestAccessDeniedHandler restAccessDeniedHandler() {
         return new RestAccessDeniedHandler();
     }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            RoseSecurityProperties props,
-            RestAuthenticationEntryPoint entryPoint,
-            RestAccessDeniedHandler accessDeniedHandler,
-            TokenService tokenService,
-            AuthenticationManager authenticationManager,
-            ApplicationEventPublisher eventPublisher)
-            throws Exception {
-        // 基础放行路径
-        List<String> permit = props.getPermitAll();
-
-        http.csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(reg -> {
-                    if (permit != null && !permit.isEmpty()) {
-                        reg.requestMatchers(permit.toArray(new String[0])).permitAll();
-                    }
-                    reg.requestMatchers(props.getLoginPath(), props.getLogoutPath())
-                            .permitAll();
-                    reg.requestMatchers(props.getBasePath()).authenticated();
-                    reg.anyRequest().permitAll();
-                })
-                .exceptionHandling(
-                        ex -> ex.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler))
-                .httpBasic(Customizer.withDefaults())
-                .logout(logout -> logout.logoutUrl(props.getLogoutPath())
-                        .addLogoutHandler(new LogoutSuccessHandler(tokenService, props, eventPublisher)));
-
-        // Login pre-check (account locked)
-        if (props.getAccount().getLoginLock().isEnabled()) {
-            http.addFilterBefore(
-                    new LoginPreCheckFilter(props, loginLockoutService(props)),
-                    UsernamePasswordAuthenticationFilter.class);
-        }
-
-        http.addFilterBefore(
-                new LoginAuthenticationFilter(
-                        authenticationManager,
-                        props,
-                        new LoginSuccessHandler(
-                                tokenService, loginLockoutService(props), tokenKickoutService(tokenService, props),eventPublisher),
-                        new LoginFailureHandler(loginLockoutService(props))),
-                UsernamePasswordAuthenticationFilter.class);
-
-        http.addFilterBefore(
-                new TokenAuthenticationFilter(tokenService, props), UsernamePasswordAuthenticationFilter.class);
-
-        // Access list filter placed after TokenAuthenticationFilter to get username
-        if (props.getProtect().getAccessList().isEnabled()) {
-            AccessListMatcher matcher = new AccessListMatcher(accessListStore(props), props);
-            http.addFilterAfter(new AccessListFilter(matcher, props), UsernamePasswordAuthenticationFilter.class);
-        }
-
-        // Replay protection (before rate limit)
-        if (props.getProtect().getReplay().isEnabled()) {
-            http.addFilterAfter(
-                    new ReplayFilter(new ReplayProtection(props), props), UsernamePasswordAuthenticationFilter.class);
-        }
-        // Rate limiting
-        if (props.getProtect().getRateLimit().isEnabled()) {
-            http.addFilterAfter(
-                    new RateLimitFilter(new RateLimiter(props), props), UsernamePasswordAuthenticationFilter.class);
-        }
-
-        return http.build();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(TokenService.class)
-    @ConditionalOnProperty(prefix = "rose.security.token", name = "type", havingValue = "LOCAL", matchIfMissing = true)
-    public TokenService opaqueTokenService(RoseSecurityProperties props) {
-        return new OpaqueTokenService(props);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.account.loginLock",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public LoginLockoutService loginLockoutService(RoseSecurityProperties props) {
-        return new LoginLockoutService(props);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.account.kickout",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public TokenKickoutService tokenKickoutService(TokenService tokenService, RoseSecurityProperties props) {
-        return new TokenKickoutService(tokenService, props);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.protect.access-list",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public AccessListStore accessListStore(RoseSecurityProperties props) {
-        return new MemoryAccessListStore();
-    }
-
 }

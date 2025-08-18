@@ -10,6 +10,7 @@ import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -26,15 +27,20 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final TokenKickoutService tokenKickoutService;
     private final ApplicationEventPublisher publisher;
 
-    public LoginSuccessHandler(TokenService tokenService, LoginLockoutService lockoutService, TokenKickoutService tokenKickoutService, ApplicationEventPublisher publisher) {
+    public LoginSuccessHandler(
+            TokenService tokenService,
+            ObjectProvider<LoginLockoutService> loginLockoutServiceProvider,
+            ObjectProvider<TokenKickoutService> tokenKickoutServiceProvider,
+            ApplicationEventPublisher publisher) {
         this.tokenService = tokenService;
-        this.lockoutService = lockoutService;
-        this.tokenKickoutService = tokenKickoutService;
+        this.lockoutService = loginLockoutServiceProvider.getIfAvailable();
+        this.tokenKickoutService = tokenKickoutServiceProvider.getIfAvailable();
         this.publisher = publisher;
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+    public void onAuthenticationSuccess(
+            HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
         String username = authentication.getName();
         if (lockoutService != null) {
@@ -53,5 +59,3 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.getWriter().write(objectMapper.writeValueAsString(ApiResponse.success(result)));
     }
 }
-
-

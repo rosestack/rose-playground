@@ -7,20 +7,22 @@ import io.github.rosestack.spring.boot.security.core.model.AuthModels;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LoginFailureHandler implements AuthenticationFailureHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final LoginLockoutService lockoutService;
 
-    public LoginFailureHandler(LoginLockoutService lockoutService) {
-        this.lockoutService = lockoutService;
+    public LoginFailureHandler(ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
+        this.lockoutService = loginLockoutServiceProvider.getIfAvailable();
     }
 
     @Override
