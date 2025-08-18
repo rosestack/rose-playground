@@ -10,6 +10,7 @@ import io.github.rosestack.spring.boot.security.core.filter.TokenAuthenticationF
 import io.github.rosestack.spring.boot.security.core.handler.LoginFailureHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LoginSuccessHandler;
 import io.github.rosestack.spring.boot.security.core.handler.LogoutSuccessHandler;
+import io.github.rosestack.spring.boot.security.core.token.OpaqueTokenService;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import io.github.rosestack.spring.boot.security.protect.AccessListFilter;
 import io.github.rosestack.spring.boot.security.protect.RateLimitFilter;
@@ -17,6 +18,7 @@ import io.github.rosestack.spring.boot.security.protect.ReplayFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,15 +26,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @AutoConfiguration
 @EnableConfigurationProperties(RoseSecurityProperties.class)
-@Import({RoseAuthenticationConfiguration.class, RoseAccountConfiguration.class, RoseProtectConfiguration.class})
+@Import({
+    RoseSecurityAutoConfiguration.RoseAuthenticationConfiguration.class,
+    RoseAccountConfiguration.class,
+    RoseProtectConfiguration.class
+})
 @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseSecurityAutoConfiguration {
     private static final String[] PUBLIC_RESOURCES = {
@@ -119,5 +128,51 @@ public class RoseSecurityAutoConfiguration {
     @Bean
     public RestAccessDeniedHandler restAccessDeniedHandler() {
         return new RestAccessDeniedHandler();
+    }
+
+    @RequiredArgsConstructor
+    public static class RoseAuthenticationConfiguration {
+        private final ApplicationEventPublisher eventPublisher;
+        private final ObjectProvider<LoginLockoutService> loginLockoutServiceProvider;
+        private final ObjectProvider<TokenKickoutService> tokenKickoutServiceProvider;
+
+        @Bean
+        @ConditionalOnMissingBean
+        public PasswordEncoder passwordEncoder() {
+            return new BCryptPasswordEncoder();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+            return configuration.getAuthenticationManager();
+        }
+
+        @Bean
+        public LoginSuccessHandler loginSuccessHandler(TokenService tokenService) {
+            return new LoginSuccessHandler(
+                    tokenService, loginLockoutServiceProvider, tokenKickoutServiceProvider, eventPublisher);
+        }
+
+        @Bean
+        public LogoutSuccessHandler logoutSuccessHandler(TokenService tokenService, RoseSecurityProperties props) {
+            return new LogoutSuccessHandler(tokenService, props, eventPublisher);
+        }
+
+        @Bean
+        public LoginFailureHandler loginFailureHandler() {
+            return new LoginFailureHandler(loginLockoutServiceProvider);
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(TokenService.class)
+        @ConditionalOnProperty(
+                prefix = "rose.security.token",
+                name = "type",
+                havingValue = "LOCAL",
+                matchIfMissing = true)
+        public TokenService opaqueTokenService(RoseSecurityProperties props) {
+            return new OpaqueTokenService(props);
+        }
     }
 }

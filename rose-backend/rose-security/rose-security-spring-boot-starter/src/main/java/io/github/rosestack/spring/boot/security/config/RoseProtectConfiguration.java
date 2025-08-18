@@ -21,10 +21,15 @@ public class RoseProtectConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(
+            prefix = "rose.security.protect.access-list",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
     AccessListFilter accessListFilter(
             RoseSecurityProperties props, ObjectProvider<AccessListStore> accessListStoreProvider) {
         AccessListMatcher matcher = new AccessListMatcher(accessListStoreProvider, props);
-
         return new AccessListFilter(matcher, props);
     }
 
