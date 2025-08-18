@@ -30,14 +30,14 @@ public class UserController {
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
         log.info("创建用户请求: {}", request.getUsername());
         UserResponse response = userService.createUser(request);
-        return ApiResponse.success(response);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{id}")
     public ApiResponse<UserResponse> getUserById(@PathVariable @Min(1) Long id) {
         log.debug("查询用户，ID: {}", id);
         UserResponse response = userService.getUserById(id);
-        return ApiResponse.success(response);
+        return ApiResponse.ok(response);
     }
 
     @PutMapping("/{id}")
@@ -46,14 +46,14 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequest request) {
         log.info("更新用户，ID: {}", id);
         UserResponse response = userService.updateUser(id, request);
-        return ApiResponse.success(response);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteUser(@PathVariable @Min(1) Long id) {
         log.info("删除用户，ID: {}", id);
         userService.deleteUser(id);
-        return ApiResponse.success();
+        return ApiResponse.ok();
     }
 
     @GetMapping
@@ -67,13 +67,13 @@ public class UserController {
         PageRequest pageRequest = PageRequest.of(page, size);
 
         PageResponse<UserResponse> response = userService.pageUsers(pageRequest, userQuery);
-        return ApiResponse.success(response);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/list")
     public ApiResponse<java.util.List<UserResponse>> getAllUsers() {
         log.info("获取所有用户列表");
         java.util.List<UserResponse> response = userService.getAllUsers();
-        return ApiResponse.success(response);
+        return ApiResponse.ok(response);
     }
 }

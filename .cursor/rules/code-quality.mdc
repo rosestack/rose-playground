@@ -9,12 +9,14 @@
 - **模块边界清晰**：控制器仅处理 HTTP/校验/响应封装；业务在服务层；数据访问在 Mapper
 - **向后兼容**：新增面向扩展，禁止破坏既有对外契约（DTO、API、配置键）
 - **失败即早**：非法参数立即校验并抛出；避免静默失败
+- **版本策略**：通过父 POM/BOM 与 properties 统一管理 Spring Boot（3.5.x）、Spring Cloud（2025.0.x）、MyBatis-Plus（3.5.12+）版本，并建立持续升级机制
+- **本地编排**：在仓库根提供 docker-compose.yaml 与 .env.example，标准化 MySQL/Redis/RabbitMQ 本地环境
 
 ## 二、代码风格与复杂度门禁
 - **命名**
   - 包：`com.company.project.module`
   - 类：`XXService/XXServiceImpl/XXController/XXMapper/XXEntity`
-  - 方法：查询 `get/find/list/page/count`；判断 `is/exists/has`；操作 `create/update/delete`
+  - 方法：查询 `getBy*/findBy*/list*/page*/countBy*`；判断 `is/exists/has`；操作 `create*/update*/delete*`
   - 变量：语义化、用完整单词；常量全大写下划线
 - **结构**
   - 单文件 ≤ 500 行；单方法 ≤ 50 行；圈复杂度 ≤ 10；方法参数 ≤ 5 个
@@ -24,13 +26,14 @@
   - 复杂业务/非直观逻辑必须中文注释，写“为什么”不是“怎么做”
   - 公共接口/DTO/异常类添加 Javadoc
 - **格式化**
-  - 由 Spotless 管控；提交前必须通过 `mvn spotless:apply`
+  - 由 Spotless 管控；提交前必须通过 `mvn spotless:apply`；在 `-Pquality` 下强制执行
 
 ## 三、Java/Spring 规范
 - **依赖注入**：构造器注入，成员 `final`，不使用字段注入
 - **事务边界**
   - 读：`@Transactional(readOnly = true)`
   - 写：`@Transactional(rollbackFor = Exception.class)`
+  - 只在 Service 层定义事务；避免事务内远程调用
   - 将事务范围限制在最小必要代码块
 - **异常处理**
   - 仅异常场景才抛出异常，禁止用异常做流程控制
@@ -53,7 +56,7 @@
   - 多表 JOIN / 递归查询 / 存储过程 / 触发器 / 窗口函数
   - 复杂动态 SQL、数据库特有函数（保持数据库无关）
 - **分页与批量**
-  - 分页使用插件与 `Page<T>`
+  - 分页入参统一使用 MyBatis-Plus 的 `Page<?>` 对象，返回 `Page<T>`；自 v3.5.9 起需引入 `mybatis-plus-jsqlparser` 以启用 `PaginationInnerInterceptor`
   - 批处理使用 `saveBatch/updateBatchById`，合理设置批大小（如 500/1000）
 
 ## 五、安全规范
@@ -65,13 +68,13 @@
 
 ## 六、API 设计与 DTO
 - 控制器不暴露实体类；请求/响应均用 DTO/Record
-- 统一响应：`ApiResponse<T>`；错误码与消息可国际化
+- 统一响应：`ApiResponse<T>`，字段包括 code（Integer）、message（String）、data（泛型）、success（boolean）；消息可国际化
 - DTO 校验规则明确，边界条件（空、极限、非法组合）必须覆盖
 
 ## 七、测试与质量门禁
 - 单元测试：核心业务必须有；命名 `should_xxx_when_yyy`
-- 覆盖率：核心模块 80%+，边缘模块 60%+（以 Jacoco 报告为准）；新增代码不得降低阈值
-- 集成测试：数据库类使用 Testcontainers；随机端口启动
+- 覆盖率：核心模块 80%+，边缘模块 60%+（以 JaCoCo 报告为准）；新增代码不得降低阈值；`-Pquality` 自动收集报告
+- 集成测试：数据库类使用 Testcontainers（MySQL/Redis）；随机端口启动；主路径禁用 H2
 - 测试数据独立、可重复运行；避免对外部依赖的真实调用
 
 ## 八、性能与资源
@@ -84,7 +87,7 @@
 - 提交前本地必须通过：
   - `mvn spotless:apply`
   - `mvn -q -DskipTests=false test`
-  - `mvn -q -Pquality verify`（含 SpotBugs/Jacoco/Sonar 配置时）
+  - `mvn -q -Pquality verify`（含 Spotless/Jacoco/Sonar 配置时）
 - 变更包含：必要的单元测试与更新文档（README/配置说明）
 
 ## 十、代码评审清单（PR 自查）
@@ -95,7 +98,7 @@
 - 性能：无 N+1、分页/批次合理、无不必要全量扫描
 - 测试：新增/修改处有测试；覆盖率未下降
 - 兼容性：无破坏性更改；配置项有默认与说明
-- 规范：通过 Spotless/SpotBugs/Jacoco；无 TODO/临时代码
+- 规范：通过 Spotless/Sonar/Jacoco；无 TODO/临时代码
 
 ## 十一、禁用项（看到即退回）
 - 字段注入、静态状态持久化、线程不安全单例
@@ -121,21 +124,35 @@
   - 不得绕过安全/合规底线
 
 ## 十四、MySQL 规范（开发侧必读）
-- 表与字段
-  - 表名小写下划线、单数，如 user；主键统一 id；时间字段 created_time/updated_time
-  - 字符集 utf8mb4，排序规则 utf8mb4_general_ci；金额用 DECIMAL(18,2)，布尔用 TINYINT(1)
-  - 重要字段 NOT NULL；合理默认值；字段和表必须有 COMMENT
-- 索引
-  - 命名：idx_表_字段（复合：idx_表_字段1_字段2），唯一：uk_表_字段
-  - WHERE/ORDER BY/GROUP BY 涉及字段要有索引；避免重复/冗余索引
-- SQL 规范
-  - 禁止在 WHERE 中使用函数/隐式转换/前缀模糊；禁止 SELECT *
-  - 分页统一使用插件/Wrapper；避免手写 limit 偏移导致全表扫描
-  - 慢 SQL 基线：>1s 需优化；上线前使用 EXPLAIN 校验执行计划
-- 事务与一致性
-  - 事务范围最小化；避免长事务；高并发使用乐观锁(@Version)或分布式锁
-  - 隔离级别 REPEATABLE READ；统一时区 UTC；binlog_format=ROW
-- 外键与约束
-  - 禁用数据库外键约束，应用端保证引用完整性；外键列必须建索引
+
+适用范围：MySQL 5.7 + InnoDB 存储引擎，数据库设计与性能优化。
+
+- 表与字段设计
+  - 表名使用英文小写+下划线，单数形式（如 user 非 users）；避免 MySQL 保留字；每个表有主键
+  - 字段命名简洁明了，使用英文小写+下划线；避免冗余前缀；主键统一 id；时间字段 created_time/updated_time
+  - 字符集统一 utf8mb4；排序规则统一 utf8mb4_general_ci；根据数据范围选择合适类型（TINYINT/SMALLINT/INT/BIGINT）；金额字段使用 DECIMAL
+  - 重要字段 NOT NULL 约束；表和字段有 COMMENT 注释；遵循第三范式避免数据冗余
+  - 运行参数：binlog_format=ROW，sql_mode=STRICT_TRANS_TABLES；统一时区 UTC；隔离级别 REPEATABLE READ
+- 索引设计与优化
+  - 索引命名规范：idx_表名_字段名（单字段）、idx_表名_字段1_字段2（复合）、uk_表名_字段名（唯一）
+  - 复合索引字段顺序考虑查询频率与选择性；避免创建重复索引
+  - 禁用外键约束，但保留外键列与相应索引以保障查询性能与数据治理
+  - 查询覆盖索引使用；长字段前缀索引；避免 SELECT *；WHERE/ORDER BY/GROUP BY 字段有索引支撑
+- SQL 性能与规范
+  - 慢 SQL 监控与优化：查询时间超过 1s 告警；使用 EXPLAIN 分析执行计划；避免全表扫描
+  - 禁止在 WHERE 中使用函数、隐式类型转换、前缀模糊查询；合理使用 LIMIT 分页
+  - 批量操作控制大小（如 500-1000 行）；大表 DDL 变更使用在线工具（gh-ost/pt-online-schema-change）
+- 事务与并发控制
+  - 事务范围最小化；避免长事务锁表；读写分离场景注意主从延迟一致性
+  - 死锁检测与重试机制；高并发场景使用乐观锁（版本号）或分布式锁
+  - 事务隔离级别与业务场景匹配；避免幻读与不可重复读问题
+- 容量规划与监控
+  - 表容量预估与分片策略（垂直/水平）；单表行数控制在合理范围（建议 < 500w）
+  - 监控指标：QPS/TPS、慢查询数量、连接数、锁等待、主从延迟；设置告警阈值
+  - 定期备份与恢复演练；binlog 保留策略；数据归档与清理机制
+- 安全与合规
+  - 数据库权限最小化；敏感字段加密存储；访问审计日志完备
+  - SQL 注入防护；输入参数化查询；避免动态 SQL 拼接
+  - 生产环境禁止 DDL 直接操作；变更通过工单与审核流程
 
 —— 以上规则作为代码质量门禁，自动化校验与人工评审共同执行。若发现坏味道（僵化/冗余/循环依赖/脆弱/晦涩/数据泥团/不必要复杂），应立即提出优化建议并评估改造计划。

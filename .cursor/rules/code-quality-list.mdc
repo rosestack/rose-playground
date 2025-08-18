@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 1. Spring Boot 质量清单
 ### A. 配置管理清单
-- [ ] application.yml 按环境分层；敏感配置通过环境变量/密钥管理器注入；禁写入仓库与日志。
+- [ ] application.yaml 按环境分层；敏感配置通过环境变量/密钥管理器注入；禁写入仓库与日志；业务参数优先用配置（如 Redis TTL），不在代码中硬编码。
 - [ ] 所有自定义配置绑定到 @ConfigurationProperties，使用 @Validated 进行约束校验，提供默认值。
 - [ ] 禁止零散 @Value 注入；统一前缀分组，文档化配置项与默认值。
 
@@ -19,12 +19,13 @@ alwaysApply: true
 ### C. 事务边界
 - [ ] 读操作显式 @Transactional(readOnly = true)；写操作 @Transactional(rollbackFor = Exception.class)。
 - [ ] 事务范围最小化；禁止在单事务内发起远程调用；必要时采用补偿/Saga。
-- [ ] 只在 Service 层定义事务；Controller/DAO 层不直接控制事务。
+- [ ] 只在 Service 层定义事务；Controller/DAO 层不直接控制事务；避免事务内远程调用。
 
 ### D. Web 层一致性
 - [ ] Controller 保持瘦身：无业务逻辑；DTO + Jakarta Validation。
 - [ ] 全局异常处理（@RestControllerAdvice）+ 统一响应模型 ApiResponse<T>。
-- [ ] 分页统一 PageRequest/PageResponse；禁止直接返回实体。
+- [ ] 分页统一使用 MyBatis-Plus 的 `Page` 模型：Controller/Service 入参采用 `Page<?>`对象，返回 `Page<T>`；禁止直接返回实体。
+- [ ] 推荐启用 Swagger（springdoc）文档。
 
 ### E. 安全与运维
 - [ ] Actuator 仅开放 /health /info /metrics；其余需鉴权。
@@ -38,7 +39,16 @@ alwaysApply: true
 
 ### G. 测试与门禁
 - [ ] 单元/集成/契约测试覆盖率符合项目阈值；使用 Testcontainers 启动真实依赖。
-- [ ] 构建中开启 Checkstyle、SpotBugs、PMD、Spotless，违规即失败；不降低阈值。
+- [ ] 构建中开启 Sonar（SonarQube/SonarCloud）、Spotless、JaCoCo，违规即失败；不降低阈值。
+
+### H. 版本与依赖管理
+- [ ] 使用父 POM/BOM 锁定版本：Spring Boot 3.5.x、Spring Cloud 2025.0.x、MyBatis-Plus 3.5.12+。
+- [ ] 根 POM 统一 properties 管理版本（如 spring-boot.version、spring-cloud.version、mybatis-plus.version）。
+- [ ] 建立依赖升级机制：优先使用 Renovate（或月度人工巡检），禁止长期滞后。
+
+### I. 本地依赖与编排
+- [ ] 仓库根提供 docker-compose.yaml 与 .env.example，包含 MySQL/Redis/RabbitMQ 的默认配置与持久化卷。
+- [ ] 禁止提交生产凭据；敏感变量通过环境注入。
 
 ## 2. MyBatis Plus 质量清单
 适用范围：rose-backend 持久层（Mapper/Service/Entity/XML）。用于开发自检、CR 审查与 CI 门禁。
@@ -54,7 +64,7 @@ alwaysApply: true
 - [ ] 严禁编写 Mapper XML 与动态 SQL；保持持久层简单、可维护、与数据库弱绑定。
 
 ### C. 查询与分页
-- [ ] 分页统一使用 MyBatis-Plus 分页插件；禁止手写 limit 偏移造成全表扫描。
+- [ ] 分页统一使用 MyBatis-Plus 分页插件；禁止手写 limit 偏移造成全表扫描。（自 v3.5.9 起需引入 `mybatis-plus-jsqlparser` 依赖以启用 `PaginationInnerInterceptor`）。
 - [ ] 条件构造统一使用 LambdaQueryWrapper/LambdaUpdateWrapper；避免字符串拼 SQL 与注入风险。
 - [ ] 逻辑删除已开启时，严禁在条件构造中手动添加 deleted/is_deleted 等逻辑删除字段条件；框架自动处理。
 - [ ] 大结果集采用游标/流式处理或分片拉取；查询超时与最大行数限制已配置。
@@ -81,7 +91,7 @@ alwaysApply: true
 - [ ] JSON 序列化字段显式版本控制（@JsonTypeInfo 禁用）；兼容性升级策略明确。
 
 ### B. TTL 与容量管理
-- [ ] 所有缓存写入设置 TTL，默认不超过 7 天；不同类型数据有独立 TTL 策略与随机抖动。
+- [ ] 所有缓存写入设置 TTL，默认不超过 7 天；不同类型数据有独立 TTL 策略与随机抖动；TTL 应通过 `application.yaml` 配置（如 `spring.cache.redis.time-to-live`），禁止在代码中硬编码。
 - [ ] 内存水位监控与淘汰策略配置（建议 allkeys-lru/lfu）；超阈值报警。
 - [ ] 禁止在生产路径使用 KEYS/SCAN 大范围遍历；后台工具类库进行维护操作。
 
@@ -131,6 +141,7 @@ alwaysApply: true
 - [ ] 指标：成功率、延迟分位（TP90/TP99）、熔断打开率、重试次数、降级次数；异常比率告警。
 
 ## 5. MySQL 数据库质量清单
+
 适用范围：MySQL 5.7 + InnoDB 存储引擎，数据库设计与性能优化。
 
 ### A. 表与字段设计
@@ -167,7 +178,7 @@ alwaysApply: true
 - [ ] 生产环境禁止 DDL 直接操作；变更通过工单与审核流程。
 
 ## 6. 质量门禁与集成
-- 静态检查：Checkstyle（Google Style）、SpotBugs、PMD、Spotless（统一格式）已在 CI 启用；失败即阻断。
+- 静态检查：Sonar、Spotless（统一格式）已在 CI 启用；失败即阻断。
 - 单元/集成/契约测试覆盖率门槛：核心模块 80%+，边缘模块 60%+；新增代码不得降低全局阈值。
 - 性能基线：关键接口具备基准压测报告（TP90/TP99、错误率、CPU/内存），上线前回归。
 - 文档与变更：面向用户/API 的变更已在文档与变更日志中更新；运维手册同步。

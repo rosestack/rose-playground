@@ -50,7 +50,7 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
         // 如果返回值为 null，包装为成功响应
         if (body == null) {
-            return ApiResponse.success();
+            return ApiResponse.ok();
         }
 
         // 如果返回值已经是 ApiResponse 类型，直接返回
@@ -59,7 +59,7 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
         }
 
         // 包装为成功响应
-        ApiResponse<Object> apiResponse = ApiResponse.success(body);
+        ApiResponse<Object> apiResponse = ApiResponse.ok(body);
 
         log.debug("响应体包装完成，路径: {}, 数据类型: {}", requestPath, body.getClass().getSimpleName());
 

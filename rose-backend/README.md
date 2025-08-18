@@ -75,7 +75,6 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 - 依赖管理：Spring Boot 3.5.x Parent + Spring Cloud 2025.0.0 + MyBatis Plus 3.5.12
 - 插件建议：
     - `spotless:apply` 统一格式
-    - `spotbugs:check` 静态扫描
     - `jacoco:report` 覆盖率
     - `sonar:sonar` 质量门禁（可选）
 
@@ -96,13 +95,6 @@ mvn spotless:apply -Pquality
 # 只检查不修复
 mvn spotless:check -Pquality
 ```
-
-- 静态代码分析（SpotBugs）
-
-```bash
-mvn spotbugs:check -Pquality
-```
-
 - 覆盖率报告（JaCoCo）
 
 ```bash
@@ -122,7 +114,6 @@ mvn -Pquality sonar:sonar \
 ```bash
 mvn clean verify -Pquality \
   -Dspotless.skip=true \
-  -Dspotbugs.skip=true \
   -Djacoco.skip=true \
   -Dsonar.skip=true
 ```

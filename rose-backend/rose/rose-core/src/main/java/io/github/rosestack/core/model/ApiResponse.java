@@ -9,50 +9,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import lombok.Data;
 
-/**
- * 不可变的API响应结果包装器，用于一致的响应处理。
- *
- * <p>该类提供了一种标准化的方式来包装API响应，包含成功/失败状态、错误消息和数据负载。 它遵循函数式编程模式，采用不可变设计，并提供流畅的API方法进行结果处理。
- *
- * <h3>设计原则：</h3>
- *
- * <ul>
- *   <li><strong>不可变性：</strong> 所有实例在创建后都是不可变的
- *   <li><strong>类型安全：</strong> 泛型类型参数确保类型安全的数据处理
- *   <li><strong>函数式风格：</strong> 提供map、flatMap、filter操作
- *   <li><strong>一致的API：</strong> 所有端点的标准化响应格式
- * </ul>
- *
- * <h3>使用示例：</h3>
- *
- * <pre>{@code
- * // 成功响应带数据
- * ApiResponse<User> userResult = ApiResponse.success(user);
- *
- * // 失败响应带消息
- * ApiResponse<User> errorResult = ApiResponse.error("用户未找到");
- *
- * // 函数式处理
- * ApiResponse<String> nameResult = userResult
- *     .map(User::getName)
- *     .filter(name -> name.length() > 0, "姓名不能为空");
- *
- * // 安全数据提取
- * String userName = nameResult.getOrElse("匿名");
- * }</pre>
- *
- * <h3>响应结构：</h3>
- *
- * <ul>
- *   <li><strong>code:</strong> 类HTTP状态码（200表示成功，500表示失败）
- *   <li><strong>message:</strong> 人类可读的消息或错误描述
- *   <li><strong>data:</strong> 实际的负载数据（可以为null）
- * </ul>
- *
- * @param <T> 此结果中包含的数据类型
- * @author chensoul
- * @since 1.0.0
- */
 @Data
 public class ApiResponse<T> {
 
@@ -97,8 +53,8 @@ public class ApiResponse<T> {
      * @param <T> The type parameter for the result
      * @return A successful ApiResponse instance with no data
      */
-    public static <T> ApiResponse<T> success() {
-        return success(null);
+    public static <T> ApiResponse<T> ok() {
+        return ok(null);
     }
 
     /**
@@ -108,7 +64,7 @@ public class ApiResponse<T> {
      * @param data The data to include in the successful result
      * @return A successful ApiResponse instance containing the provided data
      */
-    public static <T> ApiResponse<T> success(T data) {
+    public static <T> ApiResponse<T> ok(T data) {
         ApiResponse<T> result = new ApiResponse<>();
         result.setCode(SUCCESS);
         result.setMessage("Success");
@@ -140,28 +96,6 @@ public class ApiResponse<T> {
      */
     public static <T> ApiResponse<T> error(String message) {
         return error(ERROR, message);
-    }
-
-    /**
-     * Checks if the given result represents a failure.
-     *
-     * @param <T> The type parameter for the result
-     * @param ret The result to check
-     * @return true if the result is a failure, false otherwise
-     */
-    public static <T> Boolean isError(ApiResponse<T> ret) {
-        return !isSuccess(ret);
-    }
-
-    /**
-     * Checks if the given result represents a success.
-     *
-     * @param <T> The type parameter for the result
-     * @param ret The result to check
-     * @return true if the result is successful, false otherwise
-     */
-    public static <T> Boolean isSuccess(ApiResponse<T> ret) {
-        return ApiResponse.SUCCESS == ret.getCode();
     }
 
     /**
@@ -199,7 +133,7 @@ public class ApiResponse<T> {
         if (isSuccess()) {
             try {
                 R newData = mapper.apply(data);
-                return success(newData);
+                return ok(newData);
             } catch (Exception e) {
                 return error("Data transformation failed: " + e.getMessage());
             }

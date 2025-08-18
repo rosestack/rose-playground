@@ -56,6 +56,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         AuthResponse result = new AuthResponse(token, tokenService.getExpiresInSeconds());
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write(objectMapper.writeValueAsString(ApiResponse.success(result)));
+        response.getWriter().write(objectMapper.writeValueAsString(ApiResponse.ok(result)));
     }
 }
