@@ -27,11 +27,7 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> error(String message) {
-        ApiResponse<T> r = new ApiResponse<>();
-        r.success = false;
-        r.code = 500;
-        r.message = message;
-        return r;
+        return error(500, message);
     }
 
     public boolean isSuccess() {

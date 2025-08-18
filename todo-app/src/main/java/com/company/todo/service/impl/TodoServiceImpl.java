@@ -3,6 +3,7 @@ package com.company.todo.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.company.todo.domain.Todo;
+import com.company.todo.exception.GlobalExceptionHandler.OptimisticLockException;
 import com.company.todo.mapper.TodoMapper;
 import com.company.todo.service.TodoService;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,16 @@ public class TodoServiceImpl implements TodoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Todo updateTodo(Todo todo) {
-        todoMapper.updateById(todo);
+        // 先判断记录是否存在
+        Todo existing = todoMapper.selectById(todo.getId());
+        if (existing == null) {
+            throw new com.company.todo.exception.GlobalExceptionHandler.NotFoundException(
+                    "Todo not found: " + todo.getId());
+        }
+        int rows = todoMapper.updateById(todo);
+        if (rows == 0) {
+            throw new OptimisticLockException("Todo update failed - optimistic lock conflict");
+        }
         return todoMapper.selectById(todo.getId());
     }
 

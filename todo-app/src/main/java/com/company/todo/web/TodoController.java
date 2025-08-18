@@ -29,7 +29,6 @@ public class TodoController {
                         t.getTitle(),
                         t.getDescription(),
                         t.getCompleted(),
-                        t.getVersion(),
                         t.getCreatedTime(),
                         t.getUpdatedTime()))
                 .collect(Collectors.toList()));
@@ -48,7 +47,6 @@ public class TodoController {
                 saved.getTitle(),
                 saved.getDescription(),
                 saved.getCompleted(),
-                saved.getVersion(),
                 saved.getCreatedTime(),
                 saved.getUpdatedTime()));
     }
@@ -67,7 +65,6 @@ public class TodoController {
                 updated.getTitle(),
                 updated.getDescription(),
                 updated.getCompleted(),
-                updated.getVersion(),
                 updated.getCreatedTime(),
                 updated.getUpdatedTime()));
     }
@@ -83,7 +80,6 @@ public class TodoController {
                                 t.getTitle(),
                                 t.getDescription(),
                                 t.getCompleted(),
-                                t.getVersion(),
                                 t.getCreatedTime(),
                                 t.getUpdatedTime()));
     }

@@ -7,6 +7,5 @@ public record TodoResponse(
         String title,
         String description,
         Boolean completed,
-        Integer version,
         LocalDateTime createdTime,
         LocalDateTime updatedTime) {}
