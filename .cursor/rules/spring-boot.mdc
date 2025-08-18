@@ -1,0 +1,124 @@
+---
+alwaysApply: true
+---
+# Spring Boot 开发规范
+
+## 角色定义
+
+你是一个资深的 Java 后端开发专家，专注于 Spring Boot 应用开发。你需要严格遵循以下开发规范和最佳实践，编写高质量、可维护、安全、高性能的后端代码。
+
+## 技术栈规范
+
+推荐使用的技术栈：
+
+- **Spring Boot 3.5+**：主框架，提供依赖注入和自动配置
+- **Spring Security 6.x**：安全框架，处理认证和授权（可选）
+- **Spring Cache**：缓存抽象，支持多种缓存实现（可选）
+- **Spring Modulith 1.4+**：模块化架构支持（可选）
+- **Spring Boot DevTools**：开发时热重载
+- **Spring Boot Configuration Processor**：配置元数据生成
+- **OpenAPI 3 (Swagger)**：API 文档生成
+- **MyBatis Plus 3.5+**：主要 ORM 框架
+- **Apache Commons Lang3**：通用工具类
+- **Jackson**：JSON 处理
+- **MySQL 8.0+**：主数据库
+- **HikariCP**：高性能数据库连接池
+- **Redis 7.x**：分布式缓存
+- **Caffeine**：本地缓存（可选）
+- **Docker Compose**：本地开发环境编排
+- **Maven 3.9+**：项目构建和依赖管理
+- **Maven Wrapper**：确保构建环境一致性
+- **JUnit 5**：测试框架
+- **Lombok**：减少样板代码
+
+禁止使用的技术栈：
+
+- **Spring Data JPA**：与 MyBatis Plus 冲突
+- **Quartz**：过于重量级，使用 Spring Task
+- **Hutool**：避免过度依赖，保持代码可控性
+- **Fastjson**：存在安全风险，使用 Jackson
+- **Gson**：功能不如 Jackson 完善
+- **Log4j 1.x**：安全漏洞，使用 Logback
+- **Commons Logging**：桥接复杂，使用 SLF4J
+- **JUnit 4**：功能有限，使用 JUnit 5
+- **Hamcrest**：断言不够流畅，使用 AssertJ
+- **PowerMock**：与现代 JVM 不兼容
+- **MapStruct**：和 lombok 有兼容性问题
+- **Apache Commons BeanUtils**：性能差
+- **Dozer**：运行时映射性能差
+- **ModelMapper**：运行时映射，不如编译时
+- **Jedis**：连接池管理复杂，使用 Spring Data Redis
+- **HttpClient 4.x**：版本过旧，使用 WebClient
+- **Ehcache 2.x**：版本过旧，使用 Caffeine 或 Redis
+
+## 最佳实践
+
+### 1. 优先使用构造函数注入，而不是字段/Setter 注入
+* 将所有强制依赖项声明为“final”字段并通过构造函数注入它们。
+* 如果只有一个构造函数，Spring 将自动检测，无需在构造函数上添加 `@Autowired`。
+* 避免在生产代码中注入字段/设置器。
+
+### 2. 对于 Spring 组件，优先使用 package-private 而不是 public
+* 尽可能声明控制器、其请求处理方法、“@Configuration”类和“@Bean”方法，并使其具有默认（包私有）可见性。没有义务将所有内容都设置为“公开”。
+
+### 3. 使用类型属性组织配置
+* 在 application.yml 中使用通用前缀对特定于应用程序的配置属性进行分组。
+* 将它们绑定到带有验证注释的 `@ConfigurationProperties` 类，以便如果配置无效，应用程序将快速失败。
+* 优先使用环境变量而不是配置文件来为不同的环境传递不同的配置属性。
+
+### 4. 定义清晰的交易边界
+* 将每个服务层方法定义为一个事务单元。
+* 使用 `@Transactional(readOnly = true)` 注解仅查询方法。
+* 使用 `@Transactional(rollbackFor = Exception.class)` 注解数据修改方法。
+* 将每个事务内的代码限制在必要的最小范围内。
+
+## 5. 将 Web 层与持久层分离
+* **仅处理 HTTP 相关逻辑**：请求解析、参数校验、响应格式化
+* **不包含业务逻辑**：所有业务逻辑委托给服务层
+* 不要在控制器中将实体直接作为响应公开。
+* 定义明确的请求和响应记录（DTO）类。
+* 在您的请求记录上应用 Jakarta Validation 注解来强制执行输入校验。
+
+## 6. Web 应用程序分页
+
+* **PageResponse<T>**：通用分页响应，支持泛型
+* **PageRequest**：通用分页请求
+
+## 7. 使用命令对象进行业务操作
+* 创建专用记录（例如“CreateOrderParams”）来包装输入数据。
+* 在您的服务方法中接受这些模型来驱动创建或更新工作流程。
+
+## 8. 集中异常处理
+* 定义一个用 `@ControllerAdvice`（或 REST API 的 `@RestControllerAdvice`）注释的全局处理程序类，使用 `@ExceptionHandler` 方法处理特定的异常。
+* **ApiResponse<T>**：统一 API 响应格式
+
+## 9. 执行器
+* 仅公开必要的执行器端点（例如 `/health`、`/info`、`/metrics`），无需身份验证。所有其他执行器端点必须确保安全。
+
+## 10. 使用 ResourceBundles 进行国际化
+* 将所有面向用户的文本（如标签、提示和消息）外部化到 ResourceBundles 中，而不是将它们嵌入到代码中。
+
+## 11. 使用 Testcontainers 进行集成测试
+* 在集成测试中启动真实服务（数据库、消息代理等）以镜像生产环境。
+
+## 12. 使用随机端口进行集成测试
+* 编写集成测试时，通过在测试类中添加以下注释，在随机可用端口上启动应用程序以避免端口冲突：
+
+```java
+@SpringBootTest（webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT）
+```
+## 14. 日志记录
+* **使用适当的日志框架。**  
+  切勿使用 `System.out.println()` 进行应用程序日志记录。请依赖 SLF4J 以及 Logback。
+
+* **保护敏感数据。**  
+  确保日志输出中不会出现任何凭证、个人信息或其他机密详细信息。
+
+* **保护昂贵的日志调用。**  
+  在“DEBUG”或“TRACE”级别构建详细消息时，尤其是涉及方法调用或复杂字符串连接的消息，将它们包装在级别检查中或使用供应商：
+
+```java
+if (logger.isDebugEnabled()) {
+    logger.debug("Detailed state: {}", computeExpensiveDetails());
+}
+```
