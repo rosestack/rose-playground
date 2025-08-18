@@ -76,7 +76,7 @@ public class RoseSecurityAutoConfiguration {
                 .requestMatchers(props.getLoginPath(), props.getLogoutPath())
                 .permitAll()
                 .anyRequest()
-                .permitAll());
+                .authenticated());
 
         http.exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler));
 
