@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "timezone": "Asia/Shanghai",
+  "schedule": [
+    "after 19:00 and before 23:00 on every weekday"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["maven"],
+      "groupName": "maven-dependencies",
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"]
+    }
+  ]
+}

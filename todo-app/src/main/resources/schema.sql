@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS todo (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(100) NOT NULL,
+  description VARCHAR(500),
+  completed TINYINT(1) NOT NULL DEFAULT 0,
+  version INT DEFAULT 0,
+  deleted TINYINT(1) NOT NULL DEFAULT 0,
+  created_time TIMESTAMP NULL,
+  updated_time TIMESTAMP NULL
+);
+CREATE INDEX IF NOT EXISTS idx_todo_title ON todo(title);

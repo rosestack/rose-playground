@@ -15,7 +15,7 @@
 ## 二、代码风格与复杂度门禁
 - **命名**
   - 包：`com.company.project.module`
-  - 类：`XXService/XXServiceImpl/XXController/XXMapper/XXEntity`
+  - 类：`XXService/XXServiceImpl/XXController/XXMapper/XXEntity`。类名使用单数，不要使用复数。
   - 方法：查询 `getBy*/findBy*/list*/page*/countBy*`；判断 `is/exists/has`；操作 `create*/update*/delete*`
   - 变量：语义化、用完整单词；常量全大写下划线
 - **结构**

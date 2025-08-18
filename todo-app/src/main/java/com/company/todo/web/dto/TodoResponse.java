@@ -1,0 +1,12 @@
+package com.company.todo.web.dto;
+
+import java.time.LocalDateTime;
+
+public record TodoResponse(
+        Long id,
+        String title,
+        String description,
+        Boolean completed,
+        Integer version,
+        LocalDateTime createdTime,
+        LocalDateTime updatedTime) {}
