@@ -13,4 +13,6 @@ public interface TodoService {
     void deleteById(Long id);
 
     Todo getById(Long id);
+
+    boolean existsTitle(String value);
 }

@@ -11,7 +11,7 @@ Rose 平台旨在构建一个功能完整、架构清晰、可扩展的企业级
 
 ### 核心技术栈
 
-- **Java 17+** - 现代化 Java 特性
+- **Java 21+** - 现代化 Java 特性
 - **Spring Boot 3.x** - 主框架
 - **Spring Security** - 安全认证和授权
 - **MyBatis Plus** - 数据访问层

@@ -12,7 +12,7 @@
   - 使用方可自定义并替换任何默认实现。
 
 ## 2. 技术栈与总体约束
-- Java 17+、Spring Boot 3.x、Spring Security 6+、Servlet (Spring MVC)。
+- Java 21+、Spring Boot 3.x、Spring Security 6+、Servlet (Spring MVC)。
 - 包名前缀：`io.github.rosestack.spring.boot.security`。
 - 参考实现：https://github.com/thingsboard/thingsboard（参考设计理念，也可以参考代码）。
 - 配置前缀统一：`rose.security.*`，模块化开关控制，支持通过 Spring Bean 覆盖默认实现。

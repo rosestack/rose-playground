@@ -1,8 +1,18 @@
+server:
+  shutdown: graceful
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
+    min-response-size: 1024
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:${MYSQL_PORT:3306}/${MYSQL_DATABASE:todo}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
     username: root
     password: ${MYSQL_ROOT_PASSWORD:password}
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
   cache:
     type: redis
     redis:
@@ -16,9 +26,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: [health, info, metrics]
+        include: [ health, info, metrics ]
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
 
 mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       logic-delete-field: deleted

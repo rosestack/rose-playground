@@ -66,7 +66,7 @@ user-modulith/
 
 ### 环境要求
 
-- Java 17+
+- Java 21+
 - Maven 3.9+
 - Docker & Docker Compose（推荐）
 - MySQL 8.0+（可选，可使用 Docker）

@@ -1,7 +1,6 @@
 # Rose Backend
 
-多租户 SaaS 平台后端（Java 17 + Spring Boot
-3.5）。本目录聚合了基础组件（Core、Starter）与领域服务（Billing、IAM、Notification），支持国际化、字段加密、数据权限、租户隔离、审计日志、认证授权、Web
+多租户 SaaS 平台后端（Java 21 + Spring Boot 3.5）。本目录聚合了基础组件（Core、Starter）与领域服务（Billing、IAM、Notification），支持国际化、字段加密、数据权限、租户隔离、审计日志、认证授权、Web
 基础能力等。
 
 - 代码根仓库：`rose-monolithic`
@@ -44,7 +43,7 @@ cd rose-monolithic/rose-backend
 docker compose up -d
 ```
 
-3) 构建 & 运行（Java 17, Maven 3.9+）
+3) 构建 & 运行（Java 21, Maven 3.9+）
 
 ```bash
 mvn -v

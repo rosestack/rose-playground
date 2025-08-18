@@ -59,4 +59,9 @@ public class TodoServiceImpl implements TodoService {
     public Todo getById(Long id) {
         return todoMapper.selectById(id);
     }
+
+    @Override
+    public boolean existsTitle(String title) {
+        return todoMapper.existsTitle(title);
+    }
 }

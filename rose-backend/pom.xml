@@ -17,6 +17,8 @@
     <description>Rose 多租户 SaaS 平台</description>
 
     <properties>
+        <java.version>21</java.version>
+
         <!-- 依赖版本管理 -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <mybatis-plus.version>3.5.12</mybatis-plus.version>

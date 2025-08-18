@@ -1,10 +1,7 @@
 package com.company.todo.config;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -19,14 +16,13 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableCaching
+@RequiredArgsConstructor
 public class RedisConfig {
-    private static GenericJackson2JsonRedisSerializer jsonSerializer() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+    private final ObjectMapper objectMapper;
+
+    private GenericJackson2JsonRedisSerializer jsonSerializer() {
         // 禁用默认多态：不启用activateDefaultTyping，避免反序列化远程类型带来的安全风险
-        return new GenericJackson2JsonRedisSerializer(mapper);
+        return new GenericJackson2JsonRedisSerializer(objectMapper);
     }
 
     @Bean

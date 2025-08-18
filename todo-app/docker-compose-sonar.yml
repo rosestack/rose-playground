@@ -1,0 +1,8 @@
+services:
+  sonar:
+    image: sonarqube:10.7.0-community
+    environment:
+      - SONAR_FORCEAUTHENTICATION=false
+    ports:
+      - "9001:9000"
+      - "9000:9000"

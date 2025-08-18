@@ -1,0 +1,40 @@
+services:
+  grafana:
+    image: grafana/grafana:11.6.0
+    extra_hosts: ['host.docker.internal:host-gateway']
+    ports:
+    - "3000:3000"
+    volumes:
+    - grafana_data:/var/lib/grafana
+    - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+    - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+    - prometheus
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    extra_hosts: ['host.docker.internal:host-gateway']
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - --enable-feature=exemplar-storage
+      - --config.file=/etc/prometheus/prometheus.yml
+
+  tempo:
+    image: grafana/tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./docker/tempo/tempo.yml:/etc/tempo.yaml:ro
+    ports:
+      - "3200:3200"  # Tempo
+      - "9411:9411" # zipkin
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
