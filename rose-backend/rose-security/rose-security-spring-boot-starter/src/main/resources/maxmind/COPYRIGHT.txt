@@ -1,0 +1,1 @@
+GeoLite2-City.mmdbDatabase and Contents Copyright (c) 2020 MaxMind, Inc.

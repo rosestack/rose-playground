@@ -1,5 +1,6 @@
 package io.github.rosestack.spring.boot.security.config;
 
+import com.maxmind.geoip2.DatabaseReader;
 import io.github.rosestack.spring.boot.security.account.LoginLockoutService;
 import io.github.rosestack.spring.boot.security.account.TokenKickoutService;
 import io.github.rosestack.spring.boot.security.core.RestAccessDeniedHandler;
@@ -33,6 +34,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.util.ResourceUtils;
+import ua_parser.Parser;
+
+import java.io.File;
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @AutoConfiguration
@@ -174,5 +180,16 @@ public class RoseSecurityAutoConfiguration {
         public TokenService opaqueTokenService(RoseSecurityProperties props) {
             return new OpaqueTokenService(props);
         }
+    }
+
+    @Bean
+    public Parser uaParser() throws IOException {
+        return new Parser();
+    }
+
+    @Bean(name = "GeoIPCity")
+    public DatabaseReader databaseReader() throws IOException {
+        File database = ResourceUtils.getFile("classpath:maxmind/GeoLite2-City.mmdb");
+        return new DatabaseReader.Builder(database).build();
     }
 }
