@@ -3,9 +3,6 @@ package com.company.todo;
 import com.company.todo.mapper.TodoMapper;
 import io.restassured.RestAssured;
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -16,6 +13,10 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.util.StreamUtils;
 import org.testcontainers.containers.MySQLContainer;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Abstract base class to be extended by every IT test. Starts the Spring Boot context with a
  * Datasource connected to the Testcontainers Docker instance. The instance is reused for all tests,
@@ -23,7 +24,7 @@ import org.testcontainers.containers.MySQLContainer;
  */
 @SpringBootTest(classes = TodoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("it")
-@Sql({"/data/clearAll.sql", "/data/userData.sql"})
+@Sql({"/data/clear.sql", "/data/data.sql"})
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 public abstract class BaseIT {
 

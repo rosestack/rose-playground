@@ -8,13 +8,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @Configuration
-@EnableSpringDataWebSupport
 public class JacksonConfig {
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
         return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
                 .featuresToDisable(
                         DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
