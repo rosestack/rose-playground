@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/rose?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
-    username: ${MYSQL_USER:rose}
-    password: ${MYSQL_PASSWORD:rose}
+    url: jdbc:mysql://localhost:${MYSQL_PORT:3306}/${MYSQL_DATABASE:todo}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD:password}
   cache:
     type: redis
     redis:

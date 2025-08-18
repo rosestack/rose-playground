@@ -1,8 +1,9 @@
 package com.company.todo.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 @TableName("todo")
@@ -11,7 +12,10 @@ public class Todo {
     private Long id;
 
     private String title;
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private String description;
+
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private Boolean completed;
 
     @TableLogic
