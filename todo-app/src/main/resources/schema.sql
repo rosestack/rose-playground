@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS todo (
   created_time TIMESTAMP NULL,
   updated_time TIMESTAMP NULL
 );
-CREATE UNIQUE INDEX IF NOT EXISTS uk_todo_title ON todo(title);
+CREATE UNIQUE INDEX uk_todo_title ON todo(title);

@@ -18,3 +18,39 @@ spring:
           auth: true
           starttls:
             enable: true
+
+
+  # Redis: Lettuce 连接池与超时时间（示例）
+  data:
+    redis:
+      timeout: 2s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 1
+
+  # 缓存 TTL 示例（单位毫秒），建议结合 5%-10% 抖动
+  cache:
+    redis:
+      time-to-live: 3600000
+
+# Actuator 暴露最小化（示例）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+# OpenFeign（如启用 Feign 客户端）
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 500
+        readTimeout: 2000
+        loggerLevel: BASIC

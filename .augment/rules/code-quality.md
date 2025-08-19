@@ -16,7 +16,7 @@ type: "always_apply"
 - **失败即早**：非法参数立即校验并抛出；避免静默失败
 - **版本策略**：通过父 POM/BOM 与 properties 统一管理 Spring Boot（3.5.x）、Spring
   Cloud（2025.0.x）、MyBatis-Plus（3.5.12+）版本，并建立持续升级机制
-- **本地编排**：在仓库根提供 docker-compose.yaml 与 .env.example，标准化 MySQL/Redis/RabbitMQ 本地环境
+- **本地编排**：在仓库根提供 docker-compose.yaml 与 .env.example，标准化 MySQL/Redis/RabbitMQ 本地环境；支持使用 spring-boot-maven-plugin 的 build-image（Paketo Buildpacks）构建镜像。
 
 ## 二、代码风格与复杂度门禁
 
@@ -47,10 +47,11 @@ type: "always_apply"
     - 仅异常场景才抛出异常，禁止用异常做流程控制
     - 自定义异常继承统一基类，包含消息键与参数
     - 控制器统一异常处理（`@RestControllerAdvice`），返回统一 `ApiResponse`
-- **日志**
+- **日志与可观测性**
     - 使用 SLF4J，严禁 `System.out`
     - 日志分级：ERROR/WARN/INFO/DEBUG；异常日志必须含上下文与堆栈
     - 严禁打印敏感信息；必要时脱敏（手机号、邮箱、证件号等）
+    - TraceId 贯穿；Micrometer + Spring Boot Actuator 暴露业务/系统指标；MDC 透传校验（启用虚拟线程需验证）。
 
 ## 四、MyBatis Plus 规范
 
@@ -68,6 +69,7 @@ type: "always_apply"
 - **分页与批量**
     - 分页入参统一使用 MyBatis-Plus 的 `Page<?>` 对象，返回 `Page<T>`；自 v3.5.9 起需引入 `mybatis-plus-jsqlparser` 以启用
       `PaginationInnerInterceptor`
+    - 必须注册 MybatisPlusInterceptor：包含 PaginationInnerInterceptor、OptimisticLockerInnerInterceptor（@Version）、BlockAttackInnerInterceptor（防止全表更新/删除）。
     - 批处理使用 `saveBatch/updateBatchById`，合理设置批大小（如 500/1000）
 
 ## 五、安全规范
@@ -77,6 +79,7 @@ type: "always_apply"
 - 严禁硬编码凭据/密钥，敏感信息外置化
 - JSON 仅使用 Jackson；禁用 fastjson/gson
 - 统一脱敏策略：日志、错误信息、审计中不出现 PII/凭据
+- Redis：统一序列化（StringRedisSerializer + GenericJackson2JsonRedisSerializer），TTL 通过配置管理并加 5%-10% 抖动；Lettuce 显式配置 command timeout、连接池（max-active/max-idle/min-idle）。
 
 ## 六、API 设计与 DTO
 
@@ -104,6 +107,7 @@ type: "always_apply"
     - `mvn spotless:apply`
     - `mvn -q -DskipTests=false test`
     - `mvn -q -Pquality verify`（含 Spotless/Jacoco/Sonar 配置时）
+    - 启用 Maven Enforcer（Java 21、禁止 SNAPSHOT、依赖收敛）与 OWASP Dependency-Check（高危 CVE 失败）
 - 变更包含：必要的单元测试与更新文档（README/配置说明）
 
 ## 十、代码评审清单（PR 自查）

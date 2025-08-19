@@ -1,21 +1,4 @@
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:${MYSQL_PORT:3306}/${MYSQL_DATABASE:todo}?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
-    username: root
-    password: ${MYSQL_ROOT_PASSWORD:password}
-
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    map-underscore-to-camel-case: true
-  global-config:
-    db-config:
-      logic-delete-field: deleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
-
-app:
-  mybatis:
-    pagination:
-      max-page-size: 100
 

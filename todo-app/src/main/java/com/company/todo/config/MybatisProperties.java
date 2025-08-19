@@ -24,9 +24,7 @@ public class MybatisProperties {
         /**
          * Maximum allowed page size for MyBatis-Plus PaginationInnerInterceptor.
          */
-        @Min(1)
-        @Max(10000)
-        private long maxPageSize = 100L;
+        @Min(1) @Max(10000) private long maxPageSize = 100L;
 
         public long getMaxPageSize() {
             return maxPageSize;

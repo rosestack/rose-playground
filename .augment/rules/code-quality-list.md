@@ -44,7 +44,7 @@ alwaysApply: true
 ### F. 日志与可观测性
 
 - [ ] 使用 SLF4J + Logback；避免敏感信息；调试日志包装 isDebugEnabled。
-- [ ] TraceId 贯穿；为关键操作添加业务埋点、指标与告警阈值。
+- [ ] TraceId 贯穿；为关键操作添加业务埋点、指标与告警阈值。建议使用 Micrometer + Spring Boot Actuator 暴露指标；日志中透传 MDC/traceId；可选启用虚拟线程需验证 MDC 透传。
 
 ### G. 测试与门禁
 
@@ -60,6 +60,7 @@ alwaysApply: true
 ### I. 本地依赖与编排
 
 - [ ] 仓库根提供 docker-compose.yaml 与 .env.example，包含 MySQL/Redis/RabbitMQ 的默认配置与持久化卷。
+- [ ] 构建镜像可使用 spring-boot-maven-plugin 的 build-image（Paketo Buildpacks），无需 Dockerfile；如需高级定制可保留 Dockerfile。
 - [ ] 禁止提交生产凭据；敏感变量通过环境注入。
 
 ## 2. MyBatis Plus 质量清单
@@ -82,6 +83,7 @@ alwaysApply: true
 
 - [ ] 分页统一使用 MyBatis-Plus 分页插件；禁止手写 limit 偏移造成全表扫描。（自 v3.5.9 起需引入 `mybatis-plus-jsqlparser`
   依赖以启用 `PaginationInnerInterceptor`）。
+- [ ] 必须注册 MybatisPlusInterceptor：包含 PaginationInnerInterceptor、OptimisticLockerInnerInterceptor（@Version）、BlockAttackInnerInterceptor（防止全表更新/删除）。
 - [ ] 条件构造统一使用 LambdaQueryWrapper/LambdaUpdateWrapper；避免字符串拼 SQL 与注入风险。
 - [ ] 逻辑删除已开启时，严禁在条件构造中手动添加 deleted/is_deleted 等逻辑删除字段条件；框架自动处理。
 - [ ] 大结果集采用游标/流式处理或分片拉取；查询超时与最大行数限制已配置。
@@ -116,6 +118,7 @@ alwaysApply: true
 
 - [ ] 所有缓存写入设置 TTL，默认不超过 7 天；不同类型数据有独立 TTL 策略与随机抖动；TTL 应通过 `application.yaml` 配置（如
   `spring.cache.redis.time-to-live`），禁止在代码中硬编码。
+- [ ] 缓存 TTL 建议增加 5%-10% 随机抖动；Lettuce 客户端应配置 command timeout、连接池（max-active/max-idle/min-idle）。
 - [ ] 内存水位监控与淘汰策略配置（建议 allkeys-lru/lfu）；超阈值报警。
 - [ ] 禁止在生产路径使用 KEYS/SCAN 大范围遍历；后台工具类库进行维护操作。
 
@@ -146,7 +149,7 @@ alwaysApply: true
 
 ### A. 客户端超时与重试
 
-- [ ] 为每个 FeignClient 设置连接/读超时（例如 500ms/2s，视业务调整）；禁用全局无限超时。
+- [ ] 为每个 FeignClient 设置连接/读超时（例如 500ms/2s，视业务调整）；禁用全局无限超时。明确 HTTP 客户端（OkHttp 或 Apache HttpClient5）与连接池参数。
 - [ ] 重试仅用于幂等 GET/HEAD；限制重试次数与退避策略；对 POST/PUT 默认不重试。
 
 ### B. 熔断、隔离与降级

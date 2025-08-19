@@ -3,6 +3,7 @@ package com.company.todo.config;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import java.time.LocalDateTime;
@@ -31,6 +32,8 @@ public class MybatisPlusConfig {
         interceptor.addInnerInterceptor(paginationInterceptor);
         // 启用乐观锁插件，配合实体的 @Version 字段生效
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
+
         return interceptor;
     }
 
