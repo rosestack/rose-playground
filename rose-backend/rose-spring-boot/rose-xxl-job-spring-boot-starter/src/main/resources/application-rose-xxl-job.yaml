@@ -1,0 +1,12 @@
+# XXL-Job 默认配置示例（可在业务服务中覆盖）
+rose:
+  xxl-job:
+    enabled: true
+    admin-addresses: http://127.0.0.1:8080/xxl-job-admin
+    # appname: ''
+    # address: ''
+    # ip: ''
+    port: 9999
+    # access-token: ''
+    log-path: logs/xxl-job/
+    log-retention-days: 30

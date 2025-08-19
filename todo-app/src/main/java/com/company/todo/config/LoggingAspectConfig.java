@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Profile;
 @Slf4j
 @Configuration
 @EnableAspectJAutoProxy
-@Profile({"dev","test"})
+@Profile({"dev", "test"})
 public class LoggingAspectConfig {
 
     @Bean
