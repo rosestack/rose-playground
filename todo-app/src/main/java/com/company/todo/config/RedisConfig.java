@@ -21,7 +21,7 @@ public class RedisConfig {
     private final ObjectMapper objectMapper;
 
     private GenericJackson2JsonRedisSerializer jsonSerializer() {
-        // 禁用默认多态：不启用activateDefaultTyping，避免反序列化远程类型带来的安全风险
+        // 使用 GenericJackson2JsonRedisSerializer 并注入统一 ObjectMapper；不启用默认多态
         return new GenericJackson2JsonRedisSerializer(objectMapper);
     }
 
