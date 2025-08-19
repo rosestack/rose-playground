@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.0
+    image: mysql:9.4
     container_name: user-modulith-mysql
     restart: unless-stopped
     environment:
