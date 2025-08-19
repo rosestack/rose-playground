@@ -9,49 +9,49 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnProperty(prefix = "rose.security.protect", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseProtectConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.protect.access-list",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public AccessListStore accessListStore() {
-        return new MemoryAccessListStore();
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.protect.access-list",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public AccessListStore accessListStore() {
+		return new MemoryAccessListStore();
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.protect.access-list",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    AccessListFilter accessListFilter(
-            RoseSecurityProperties props, ObjectProvider<AccessListStore> accessListStoreProvider) {
-        AccessListMatcher matcher = new AccessListMatcher(accessListStoreProvider, props);
-        return new AccessListFilter(matcher, props);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.protect.access-list",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	AccessListFilter accessListFilter(
+		RoseSecurityProperties props, ObjectProvider<AccessListStore> accessListStoreProvider) {
+		AccessListMatcher matcher = new AccessListMatcher(accessListStoreProvider, props);
+		return new AccessListFilter(matcher, props);
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.protect.replay",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public ReplayFilter replayFilter(RoseSecurityProperties props) {
-        return new ReplayFilter(new ReplayProtection(props), props);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.protect.replay",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public ReplayFilter replayFilter(RoseSecurityProperties props) {
+		return new ReplayFilter(new ReplayProtection(props), props);
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.protect.rate-limit",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public RateLimitFilter rateLimitFilter(RoseSecurityProperties props) {
-        return new RateLimitFilter(new RateLimiter(props), props);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.protect.rate-limit",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public RateLimitFilter rateLimitFilter(RoseSecurityProperties props) {
+		return new RateLimitFilter(new RateLimiter(props), props);
+	}
 }

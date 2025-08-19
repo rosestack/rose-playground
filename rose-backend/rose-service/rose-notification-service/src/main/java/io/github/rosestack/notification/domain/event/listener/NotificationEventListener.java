@@ -9,5 +9,5 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class NotificationEventListener {
-    private final NotificationRepository notificationRepository;
+	private final NotificationRepository notificationRepository;
 }

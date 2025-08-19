@@ -14,20 +14,20 @@ import lombok.Data;
 @Data
 public class UserQuery {
 
-    /**
-     * 用户名（可选，支持模糊查询）
-     */
-    private String username;
+	/**
+	 * 用户名（可选，支持模糊查询）
+	 */
+	private String username;
 
-    /**
-     * 邮箱（可选，支持模糊查询）
-     */
-    private String email;
+	/**
+	 * 邮箱（可选，支持模糊查询）
+	 */
+	private String email;
 
-    private String phone;
+	private String phone;
 
-    /**
-     * 状态（可选）
-     */
-    private String status;
-} 
+	/**
+	 * 状态（可选）
+	 */
+	private String status;
+}

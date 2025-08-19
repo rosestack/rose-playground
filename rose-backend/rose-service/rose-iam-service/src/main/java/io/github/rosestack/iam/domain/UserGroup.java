@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class UserGroup extends BaseEntity {
 
-    private String groupId;
+	private String groupId;
 
-    private String userId;
+	private String userId;
 }

@@ -15,15 +15,15 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class RabbitNotificationSendConsumer implements NotificationSendConsumer {
-    private final NoticeService noticeService;
+	private final NoticeService noticeService;
 
-    @RabbitListener(queues = RabbitNotificationSendProducer.QUEUE)
-    public void consume(SendRequest sendRequest) {
-        try {
-            noticeService.send(sendRequest, null);
-        } catch (Exception e) {
-            log.error("[通知异步发送] 失败, requestId={},error={}", sendRequest.getRequestId(), e.getMessage(), e);
-            // 可扩展：失败重试、死信队列等
-        }
-    }
+	@RabbitListener(queues = RabbitNotificationSendProducer.QUEUE)
+	public void consume(SendRequest sendRequest) {
+		try {
+			noticeService.send(sendRequest, null);
+		} catch (Exception e) {
+			log.error("[通知异步发送] 失败, requestId={},error={}", sendRequest.getRequestId(), e.getMessage(), e);
+			// 可扩展：失败重试、死信队列等
+		}
+	}
 }

@@ -81,6 +81,7 @@ value_scope 功能范围说明：
 ```
 
 ## 1.2 套餐
+
 ```sql
 -- 原设计：bill_plan + bill_plan_version
 -- 简化为：1个套餐表（版本作为字段）
@@ -217,6 +218,7 @@ feature_value 功能值配置说明：
 ```
 
 ## 1.3 试用记录表
+
 ```sql
 -- 试用记录表（跟踪用户试用历史）
 CREATE TABLE `bill_trial_record` (
@@ -267,6 +269,7 @@ status 试用状态说明：
 ```
 
 ## 1.4 统一定价表
+
 ```sql
 CREATE TABLE `bill_price` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -437,6 +440,7 @@ pricing_config JSON配置详细说明（统一格式）：
 ```
 
 ## 1.5 订阅表
+
 ```sql
 CREATE TABLE `bill_subscription` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -614,6 +618,7 @@ quantity 字段的重要作用：
 ```
 
 ## 1.6 使用量记录表
+
 ```sql
 CREATE TABLE `bill_usage` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -722,6 +727,7 @@ GROUP BY f.id, f.name;
 ```
 
 ## 1.7 账单表
+
 ```sql
 CREATE TABLE `bill_invoice` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -806,6 +812,7 @@ status 账单状态说明：
 ```
 
 ## 1.8 账单明细表
+
 ```sql
 CREATE TABLE `bill_invoice_item` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -889,6 +896,7 @@ metadata 元数据示例：
 ```
 
 ## 1.9 支付记录表
+
 ```sql
 CREATE TABLE `bill_payment` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,

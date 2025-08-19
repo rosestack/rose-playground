@@ -14,5 +14,5 @@ public interface TodoService {
 
     Todo getById(Long id);
 
-    boolean existsTitle(String value);
+    boolean existsTitleExcludeId(String title, Long id);
 }

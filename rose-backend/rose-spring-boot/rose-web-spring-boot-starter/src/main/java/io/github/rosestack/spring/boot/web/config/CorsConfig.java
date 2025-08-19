@@ -17,19 +17,19 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  */
 @Slf4j
 public class CorsConfig {
-    private final RoseWebProperties roseWebProperties;
+	private final RoseWebProperties roseWebProperties;
 
-    public CorsConfig(RoseWebProperties roseWebProperties) {
-        this.roseWebProperties = roseWebProperties;
-    }
+	public CorsConfig(RoseWebProperties roseWebProperties) {
+		this.roseWebProperties = roseWebProperties;
+	}
 
-    @Bean
-    @ConditionalOnProperty(prefix = "rose.web.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public CorsConfigurationSource corsConfigurationSource() {
-        log.info("启用跨域资源共享配置");
-        CorsConfiguration cors = roseWebProperties.getCors();
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cors);
-        return source;
-    }
+	@Bean
+	@ConditionalOnProperty(prefix = "rose.web.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
+	public CorsConfigurationSource corsConfigurationSource() {
+		log.info("启用跨域资源共享配置");
+		CorsConfiguration cors = roseWebProperties.getCors();
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", cors);
+		return source;
+	}
 }

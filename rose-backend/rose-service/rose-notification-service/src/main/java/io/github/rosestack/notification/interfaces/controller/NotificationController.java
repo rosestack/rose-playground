@@ -23,38 +23,38 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class NotificationController {
 
-    /**
-     * 通知应用服务
-     */
-    private final NotificationApplicationService notificationApplicationService;
+	/**
+	 * 通知应用服务
+	 */
+	private final NotificationApplicationService notificationApplicationService;
 
-    /**
-     * 通知装配器
-     */
-    private final NotificationAssembler notificationAssembler;
+	/**
+	 * 通知装配器
+	 */
+	private final NotificationAssembler notificationAssembler;
 
-    /**
-     * 发送通知
-     *
-     * @param request 发送通知请求
-     * @return 响应结果
-     */
-    @PostMapping("/send")
-    public ResponseEntity<Void> sendNotification(@Valid @RequestBody SendNotificationRequest request) {
-        SendNotificationCommand command = notificationAssembler.toCommand(request);
-        notificationApplicationService.sendNotification(command);
-        return ResponseEntity.ok().build();
-    }
+	/**
+	 * 发送通知
+	 *
+	 * @param request 发送通知请求
+	 * @return 响应结果
+	 */
+	@PostMapping("/send")
+	public ResponseEntity<Void> sendNotification(@Valid @RequestBody SendNotificationRequest request) {
+		SendNotificationCommand command = notificationAssembler.toCommand(request);
+		notificationApplicationService.sendNotification(command);
+		return ResponseEntity.ok().build();
+	}
 
-    /**
-     * 根据ID查询通知
-     *
-     * @param id 通知ID
-     * @return 通知信息
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<NotificationDTO> getNotification(@PathVariable String id) {
-        // TODO: 实现查询逻辑
-        return ResponseEntity.ok().build();
-    }
+	/**
+	 * 根据ID查询通知
+	 *
+	 * @param id 通知ID
+	 * @return 通知信息
+	 */
+	@GetMapping("/{id}")
+	public ResponseEntity<NotificationDTO> getNotification(@PathVariable String id) {
+		// TODO: 实现查询逻辑
+		return ResponseEntity.ok().build();
+	}
 }

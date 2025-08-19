@@ -4,13 +4,11 @@ import java.util.Set;
 
 public interface AccessListStore {
 
-    Set<String> allowedIps();
+	Set<String> allowedIps();
 
-    Set<String> deniedIps();
+	Set<String> deniedIps();
 
-    Set<String> allowedUsernames();
+	Set<String> allowedUsernames();
 
-    Set<String> deniedUsernames();
+	Set<String> deniedUsernames();
 }
-
-

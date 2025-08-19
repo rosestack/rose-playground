@@ -7,8 +7,8 @@ package io.github.rosestack.mybatis;
  * @since TODO
  */
 public class MybatisConstants {
-    public static final String HEADER_TENANT_ID = "X-Tenant-ID";
-    public static final String MDC_TENANT_ID = "tenantId";
+	public static final String HEADER_TENANT_ID = "X-Tenant-ID";
+	public static final String MDC_TENANT_ID = "tenantId";
 
-    public static final int TENANT_ID_FILTER_ORDER = Integer.MIN_VALUE + 5;
+	public static final int TENANT_ID_FILTER_ORDER = Integer.MIN_VALUE + 5;
 }

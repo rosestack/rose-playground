@@ -8,12 +8,14 @@ import io.github.rosestack.notice.spi.BlacklistChecker;
  */
 public class NoopBlacklistChecker implements BlacklistChecker {
 
-    public void add(String target) {}
+	public void add(String target) {
+	}
 
-    public void remove(String target) {}
+	public void remove(String target) {
+	}
 
-    @Override
-    public boolean isBlacklisted(SendRequest request) {
-        return false;
-    }
+	@Override
+	public boolean isBlacklisted(SendRequest request) {
+		return false;
+	}
 }

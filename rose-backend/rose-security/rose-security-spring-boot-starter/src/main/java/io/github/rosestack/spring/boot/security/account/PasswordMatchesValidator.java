@@ -5,13 +5,13 @@ import jakarta.validation.ConstraintValidatorContext;
 
 public class PasswordMatchesValidator implements ConstraintValidator<PasswordMatches, PasswordMatchable> {
 
-    @Override
-    public void initialize(final PasswordMatches constraintAnnotation) {
-        //
-    }
+	@Override
+	public void initialize(final PasswordMatches constraintAnnotation) {
+		//
+	}
 
-    @Override
-    public boolean isValid(final PasswordMatchable passwordMatchable, final ConstraintValidatorContext context) {
-        return passwordMatchable.getPassword().equals(passwordMatchable.getPasswordAgain());
-    }
+	@Override
+	public boolean isValid(final PasswordMatchable passwordMatchable, final ConstraintValidatorContext context) {
+		return passwordMatchable.getPassword().equals(passwordMatchable.getPasswordAgain());
+	}
 }

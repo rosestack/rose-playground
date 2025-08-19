@@ -11,37 +11,37 @@ import org.springframework.context.annotation.Bean;
 
 @ConditionalOnProperty(prefix = "rose.security.account", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RoseAccountConfiguration {
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.account.loginLock",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public LoginLockoutService loginLockoutService(RoseSecurityProperties props) {
-        return new LoginLockoutService(props);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.account.loginLock",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public LoginLockoutService loginLockoutService(RoseSecurityProperties props) {
+		return new LoginLockoutService(props);
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.account.loginLock",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public LoginPreCheckFilter loginPreCheckFilter(
-            RoseSecurityProperties props, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
-        return new LoginPreCheckFilter(props, loginLockoutServiceProvider);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.account.loginLock",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public LoginPreCheckFilter loginPreCheckFilter(
+		RoseSecurityProperties props, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
+		return new LoginPreCheckFilter(props, loginLockoutServiceProvider);
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(
-            prefix = "rose.security.account.kickout",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public TokenKickoutService tokenKickoutService(TokenService tokenService, RoseSecurityProperties props) {
-        return new TokenKickoutService(tokenService, props);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(
+		prefix = "rose.security.account.kickout",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public TokenKickoutService tokenKickoutService(TokenService tokenService, RoseSecurityProperties props) {
+		return new TokenKickoutService(tokenService, props);
+	}
 }

@@ -8,16 +8,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthModels {
-    private String username;
-    private String password;
+	private String username;
+	private String password;
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class AuthResponse {
-        private String token;
-        private long expiresIn;
-    }
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class AuthResponse {
+		private String token;
+		private long expiresIn;
+	}
 }
-
-

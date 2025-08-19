@@ -21,7 +21,9 @@ public class MybatisProperties {
     }
 
     public static class Pagination {
-        /** Maximum allowed page size for MyBatis-Plus PaginationInnerInterceptor. */
+        /**
+         * Maximum allowed page size for MyBatis-Plus PaginationInnerInterceptor.
+         */
         @Min(1)
         @Max(10000)
         private long maxPageSize = 100L;
@@ -35,4 +37,3 @@ public class MybatisProperties {
         }
     }
 }
-

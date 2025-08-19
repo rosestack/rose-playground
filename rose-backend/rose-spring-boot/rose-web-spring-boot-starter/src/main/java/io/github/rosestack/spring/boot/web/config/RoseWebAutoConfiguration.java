@@ -22,16 +22,16 @@ import org.springframework.context.annotation.PropertySource;
  * @since 1.0.0
  */
 @Import({
-    CorsConfig.class,
-    AsyncConfig.class,
-    MessageConfig.class,
-    MetricConfig.class,
-    WebMvcConfig.class,
-    SwaggerConfig.class,
-    // 精准引入组件（替代包扫描）
-    ApiResponseBodyAdvice.class,
-    GlobalExceptionHandler.class,
-    ExceptionHandlerHelper.class
+	CorsConfig.class,
+	AsyncConfig.class,
+	MessageConfig.class,
+	MetricConfig.class,
+	WebMvcConfig.class,
+	SwaggerConfig.class,
+	// 精准引入组件（替代包扫描）
+	ApiResponseBodyAdvice.class,
+	GlobalExceptionHandler.class,
+	ExceptionHandlerHelper.class
 })
 @Slf4j
 @AutoConfiguration
@@ -41,8 +41,8 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource(value = "classpath:application-rose-web.yml", factory = YmlPropertySourceFactory.class)
 public class RoseWebAutoConfiguration {
 
-    @PostConstruct
-    public void init() {
-        log.info("Rose Web 自动配置已启用");
-    }
+	@PostConstruct
+	public void init() {
+		log.info("Rose Web 自动配置已启用");
+	}
 }

@@ -1,6 +1,7 @@
 # Outbox 模式技术文档
 
 ## 目录
+
 1. [什么是 Outbox 模式](#1-什么是-outbox-模式)
 2. [优缺点分析](#2-优缺点分析)
 3. [核心原理](#3-核心原理)
@@ -17,9 +18,11 @@
 
 ### 1.1 定义与核心概念
 
-Outbox 模式是一种分布式系统设计模式，用于确保**业务操作**和**消息发布**的原子性。它通过将待发送的消息存储在与业务数据相同的数据库中，利用数据库事务的 ACID 特性来保证数据一致性。
+Outbox 模式是一种分布式系统设计模式，用于确保**业务操作**和**消息发布**的原子性。它通过将待发送的消息存储在与业务数据相同的数据库中，利用数据库事务的
+ACID 特性来保证数据一致性。
 
 **核心思想：**
+
 - 在同一个数据库事务中完成业务数据更新和消息记录
 - 通过异步机制将消息从 Outbox 表发布到消息队列
 - 实现最终一致性，避免分布式事务的复杂性
@@ -50,6 +53,7 @@ public class OrderService {
 ```
 
 **问题分析：**
+
 - 数据库操作成功，消息发送失败 → 订单已创建，但其他服务未收到通知
 - 消息发送成功，数据库事务回滚 → 消息已发送，但订单实际未创建
 - 无法保证两个操作的原子性
@@ -57,17 +61,20 @@ public class OrderService {
 #### 传统解决方案的局限性
 
 1. **分布式事务（2PC/3PC）**
-  - 性能开销大
-  - 系统复杂度高
-  - 可用性差
+
+- 性能开销大
+- 系统复杂度高
+- 可用性差
 
 2. **消息事务**
-  - 依赖特定的消息中间件
-  - 增加系统耦合度
+
+- 依赖特定的消息中间件
+- 增加系统耦合度
 
 3. **补偿机制**
-  - 业务逻辑复杂
-  - 难以处理所有异常情况
+
+- 业务逻辑复杂
+- 难以处理所有异常情况
 
 ### 1.3 与事务性消息发送的关系
 
@@ -84,10 +91,10 @@ graph TB
 ```
 
 **与传统事务性消息的区别：**
+
 - 不依赖特定的消息中间件
 - 使用标准的数据库事务机制
 - 更容易理解和实现
-
 
 ## 2. 优缺点分析
 
@@ -96,6 +103,7 @@ graph TB
 #### 2.1.1 数据一致性保证
 
 **强一致性：**
+
 ```java
 @Service
 @Transactional
@@ -122,23 +130,27 @@ public class OrderService {
 ```
 
 **最终一致性：**
+
 - 即使消息发布暂时失败，也会通过重试机制最终发布
 - 保证业务数据和消息的最终一致性
 
 #### 2.1.2 高可靠性
 
 **消息不丢失：**
+
 - 所有消息都持久化存储在数据库中
 - 支持重试机制和故障恢复
 - 可以手动重新发布失败的消息
 
 **At-Least-Once 语义：**
+
 - 保证消息至少被发送一次
 - 通过幂等性处理避免重复消息的影响
 
 #### 2.1.3 系统解耦
 
 **业务逻辑与消息发布分离：**
+
 ```java
 // 业务服务专注于业务逻辑
 @Service
@@ -164,6 +176,7 @@ public class OutboxPublisher {
 #### 2.1.4 可观测性
 
 **完整的事件记录：**
+
 ```sql
 -- 可以查看所有事件的状态和历史
 SELECT
@@ -179,6 +192,7 @@ ORDER BY created_time;
 #### 2.2.1 复杂性增加
 
 **额外的组件和代码：**
+
 - 需要设计和维护 Outbox 表
 - 需要开发消息发布器组件
 - 需要实现事件清理机制
@@ -187,6 +201,7 @@ ORDER BY created_time;
 #### 2.2.2 存储开销
 
 **额外的存储空间：**
+
 ```java
 // 每个业务操作都会产生额外的存储开销
 public void createOrder(CreateOrderRequest request) {
@@ -199,6 +214,7 @@ public void createOrder(CreateOrderRequest request) {
 ```
 
 **存储增长问题：**
+
 - Outbox 表会持续增长
 - 需要定期清理已发布的事件
 - 可能影响数据库性能
@@ -206,6 +222,7 @@ public void createOrder(CreateOrderRequest request) {
 #### 2.2.3 消息延迟
 
 **非实时发布：**
+
 ```java
 @Scheduled(fixedDelay = 5000) // 最多5秒延迟
 public void publishEvents() {
@@ -216,6 +233,7 @@ public void publishEvents() {
 #### 2.2.4 消息重复
 
 **At-Least-Once 语义的副作用：**
+
 - 消息可能被重复发送
 - 消费者必须实现幂等性处理
 - 增加了消费者的复杂度
@@ -225,37 +243,42 @@ public void publishEvents() {
 #### 2.3.1 必须使用的场景
 
 1. **强一致性要求**
-  - 金融交易系统
-  - 订单处理系统
-  - 账户管理系统
+
+- 金融交易系统
+- 订单处理系统
+- 账户管理系统
 
 2. **业务流程依赖**
-  - 电商下单流程
-  - 工作流系统
-  - 审批流程
+
+- 电商下单流程
+- 工作流系统
+- 审批流程
 
 3. **审计合规要求**
-  - 操作日志记录
-  - 合规性报告
-  - 数据变更追踪
+
+- 操作日志记录
+- 合规性报告
+- 数据变更追踪
 
 #### 2.3.2 不适用的场景
 
 1. **可容忍数据不一致**
-  - 日志统计
-  - 用户行为分析
-  - 推荐系统
+
+- 日志统计
+- 用户行为分析
+- 推荐系统
 
 2. **极高性能要求**
-  - 高频交易
-  - 实时游戏
-  - 物联网数据采集
+
+- 高频交易
+- 实时游戏
+- 物联网数据采集
 
 3. **简单单体应用**
-  - 无微服务架构
-  - 单一数据库
-  - 简单业务逻辑
 
+- 无微服务架构
+- 单一数据库
+- 简单业务逻辑
 
 ## 3. 核心原理
 
@@ -320,6 +343,7 @@ sequenceDiagram
 ### 3.3 关键组件说明
 
 #### 3.3.1 业务表
+
 存储核心业务数据的表，如订单表、用户表等。
 
 ```sql
@@ -335,6 +359,7 @@ CREATE TABLE orders (
 ```
 
 #### 3.3.2 Outbox 表
+
 存储待发布事件的表，是 Outbox 模式的核心。
 
 ```sql
@@ -357,6 +382,7 @@ CREATE TABLE outbox_events (
 ```
 
 **字段说明：**
+
 - `aggregate_id`: 业务聚合的唯一标识
 - `aggregate_type`: 聚合类型，如 "order", "user"
 - `event_type`: 事件类型，如 "order.created", "user.updated"
@@ -365,6 +391,7 @@ CREATE TABLE outbox_events (
 - `retry_count`: 重试次数，用于失败重试控制
 
 #### 3.3.3 消息发布器
+
 负责从 Outbox 表中读取事件并发布到消息队列的组件。
 
 ```java
@@ -401,9 +428,11 @@ public class OutboxPublisher {
 ```
 
 #### 3.3.4 消息队列
+
 用于传递消息的中间件，如 Kafka、RabbitMQ、RocketMQ 等。
 
 #### 3.3.5 消费者服务
+
 接收和处理消息的下游服务。
 
 ```java
@@ -434,6 +463,7 @@ public class OrderEventHandler {
 #### 4.1.1 事务内写入方式
 
 **基本实现：**
+
 ```java
 @Service
 @Transactional
@@ -497,6 +527,7 @@ config:
 ```
 
 **CDC 方式的优势：**
+
 - 实时性更好，无需轮询
 - 减少应用层复杂度
 - 更好的性能表现
@@ -606,6 +637,7 @@ public class EventDrivenOutboxPublisher {
 #### 4.3.1 Spring Boot + MySQL 5.7 + Kafka
 
 **项目依赖：**
+
 ```xml
 <dependencies>
     <dependency>
@@ -628,6 +660,7 @@ public class EventDrivenOutboxPublisher {
 ```
 
 **配置文件：**
+
 ```yaml
 spring:
   datasource:
@@ -661,6 +694,7 @@ outbox:
 ```
 
 **实体类定义：**
+
 ```java
 @Entity
 @Table(name = "outbox_events")
@@ -722,6 +756,7 @@ enum EventStatus {
 ```
 
 **Repository 接口：**
+
 ```java
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
@@ -743,6 +778,7 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
 ```
 
 **Kafka 消息生产者：**
+
 ```java
 @Component
 @Slf4j
@@ -1024,7 +1060,6 @@ PARTITION BY RANGE (TO_DAYS(created_time)) (
   PARTITION pmax VALUES LESS THAN MAXVALUE
 );
 ```
-
 
 #### 5.3.3 异步处理
 
@@ -1609,6 +1644,7 @@ public class MonitoringEventHandler {
 #### 7.1.1 2PC/3PC 特点
 
 **2PC 流程：**
+
 ```mermaid
 sequenceDiagram
     participant C as 协调者
@@ -1630,15 +1666,15 @@ sequenceDiagram
 
 #### 7.1.2 对比分析
 
-| 特性 | Outbox 模式 | 2PC/3PC |
-|------|-------------|---------|
-| **一致性** | 最终一致性 | 强一致性 |
-| **性能** | 高（异步） | 低（同步阻塞） |
-| **可用性** | 高 | 低（单点故障） |
-| **复杂度** | 中等 | 高 |
-| **网络开销** | 低 | 高（多轮通信） |
-| **锁定时间** | 短 | 长 |
-| **故障恢复** | 简单 | 复杂 |
+| 特性       | Outbox 模式 | 2PC/3PC |
+|----------|-----------|---------|
+| **一致性**  | 最终一致性     | 强一致性    |
+| **性能**   | 高（异步）     | 低（同步阻塞） |
+| **可用性**  | 高         | 低（单点故障） |
+| **复杂度**  | 中等        | 高       |
+| **网络开销** | 低         | 高（多轮通信） |
+| **锁定时间** | 短         | 长       |
+| **故障恢复** | 简单        | 复杂      |
 
 **代码对比：**
 
@@ -1677,6 +1713,7 @@ public void createOrderWithOutbox(CreateOrderRequest request) {
 #### 7.2.1 Saga 模式特点
 
 **编排式 Saga：**
+
 ```java
 @Component
 public class OrderSagaOrchestrator {
@@ -1708,14 +1745,14 @@ public class OrderSagaOrchestrator {
 
 #### 7.2.2 对比分析
 
-| 特性 | Outbox 模式 | Saga 模式 |
-|------|-------------|-----------|
-| **适用场景** | 事件驱动 | 业务流程 |
-| **编程模型** | 事件发布/订阅 | 流程编排/协调 |
-| **补偿机制** | 不需要 | 必需 |
-| **业务逻辑** | 分散在各服务 | 集中在协调器 |
-| **耦合度** | 低 | 中等 |
-| **实现复杂度** | 中等 | 高 |
+| 特性        | Outbox 模式 | Saga 模式 |
+|-----------|-----------|---------|
+| **适用场景**  | 事件驱动      | 业务流程    |
+| **编程模型**  | 事件发布/订阅   | 流程编排/协调 |
+| **补偿机制**  | 不需要       | 必需      |
+| **业务逻辑**  | 分散在各服务    | 集中在协调器  |
+| **耦合度**   | 低         | 中等      |
+| **实现复杂度** | 中等        | 高       |
 
 **结合使用示例：**
 
@@ -1759,6 +1796,7 @@ public class OrderSagaWithOutbox {
 #### 7.3.1 事务性消息特点
 
 **RocketMQ 事务消息：**
+
 ```java
 @Component
 public class TransactionalMessageProducer {
@@ -1802,28 +1840,28 @@ public class TransactionalMessageProducer {
 
 #### 7.3.2 对比分析
 
-| 特性 | Outbox 模式 | 事务性消息 |
-|------|-------------|------------|
-| **中间件依赖** | 无特殊要求 | 特定中间件 |
-| **实现复杂度** | 中等 | 低 |
-| **可移植性** | 高 | 低 |
-| **性能** | 中等 | 高 |
-| **事务保证** | 最终一致性 | 强一致性 |
-| **消息顺序** | 需要额外处理 | 天然支持 |
-| **监控调试** | 容易 | 依赖中间件 |
+| 特性        | Outbox 模式 | 事务性消息 |
+|-----------|-----------|-------|
+| **中间件依赖** | 无特殊要求     | 特定中间件 |
+| **实现复杂度** | 中等        | 低     |
+| **可移植性**  | 高         | 低     |
+| **性能**    | 中等        | 高     |
+| **事务保证**  | 最终一致性     | 强一致性  |
+| **消息顺序**  | 需要额外处理    | 天然支持  |
+| **监控调试**  | 容易        | 依赖中间件 |
 
 ### 7.4 各方案适用场景对比表
 
-| 场景 | Outbox | 2PC/3PC | Saga | 事务性消息 | 推荐方案 |
-|------|--------|---------|------|------------|----------|
-| **微服务事件通知** | ✅ | ❌ | ❌ | ✅ | Outbox |
-| **分布式事务** | ✅ | ✅ | ✅ | ✅ | Saga + Outbox |
-| **高性能要求** | ✅ | ❌ | ✅ | ✅ | 事务性消息 |
-| **强一致性要求** | ❌ | ✅ | ❌ | ✅ | 2PC 或事务性消息 |
-| **复杂业务流程** | ❌ | ❌ | ✅ | ❌ | Saga |
-| **简单消息发送** | ✅ | ❌ | ❌ | ✅ | Outbox 或事务性消息 |
-| **跨多个数据库** | ❌ | ✅ | ✅ | ❌ | 2PC 或 Saga |
-| **事件溯源** | ✅ | ❌ | ✅ | ❌ | Outbox |
+| 场景          | Outbox | 2PC/3PC | Saga | 事务性消息 | 推荐方案          |
+|-------------|--------|---------|------|-------|---------------|
+| **微服务事件通知** | ✅      | ❌       | ❌    | ✅     | Outbox        |
+| **分布式事务**   | ✅      | ✅       | ✅    | ✅     | Saga + Outbox |
+| **高性能要求**   | ✅      | ❌       | ✅    | ✅     | 事务性消息         |
+| **强一致性要求**  | ❌      | ✅       | ❌    | ✅     | 2PC 或事务性消息    |
+| **复杂业务流程**  | ❌      | ❌       | ✅    | ❌     | Saga          |
+| **简单消息发送**  | ✅      | ❌       | ❌    | ✅     | Outbox 或事务性消息 |
+| **跨多个数据库**  | ❌      | ✅       | ✅    | ❌     | 2PC 或 Saga    |
+| **事件溯源**    | ✅      | ❌       | ✅    | ❌     | Outbox        |
 
 ### 7.5 方案选择决策树
 
@@ -2099,71 +2137,79 @@ class OutboxIntegrationTest {
 ## 9. 落地实施步骤
 
 ### 9.1 评估与设计阶段
+
 - 明确一致性边界与延迟目标；识别聚合边界与事件清单，定义事件 Schema 与版本策略（新增字段向后兼容）
-- 选择发布通道：轮询（MySQL 5.7 可通过 SELECT ... FOR UPDATE + 应用层并发控制；无 SKIP LOCKED，可用批量领取+状态标记避免抢占）或 CDC（Debezium/Kafka Connect，MySQL 5.7）
+- 选择发布通道：轮询（MySQL 5.7 可通过 SELECT ... FOR UPDATE + 应用层并发控制；无 SKIP LOCKED，可用批量领取+状态标记避免抢占）或
+  CDC（Debezium/Kafka Connect，MySQL 5.7）
 - 规划主题与分区键（如 aggregate_id），结合顺序需求与吞吐目标确定分区数
 - 设计幂等策略：幂等键/去重表（consumer_group + event_id）、业务 UPSERT、状态机忽略重复变迁
 - Outbox 表结构、索引与分区策略（status, available/created_at, key_hash）；归档/TTL/冷热分离方案
 - 监控与告警指标定义：
-  - pending_count、failed_count、retry_rate
-  - outbox_lag_seconds（最老 PENDING 年龄）
-  - publish_latency/尾延迟P95/P99、CDC 延迟
-  - 消费堆积、死信率
+    - pending_count、failed_count、retry_rate
+    - outbox_lag_seconds（最老 PENDING 年龄）
+    - publish_latency/尾延迟P95/P99、CDC 延迟
+    - 消费堆积、死信率
 
 ### 9.2 开发实现阶段
+
 - 在同一事务中写业务表与 Outbox 表；封装统一 Outbox 写入 API（领域事件发布器）
 - 发布器实现：
-  - 批量读取与锁定（MySQL 5.7 无 SKIP LOCKED，推荐基于状态字段“领取”+乐观更新防并发；示例：先挑选 PENDING，更新为 PROCESSING 并携带 workerId，再发布后置为 SENT/FAILED），指数退避 + 抖动
-  - 生产端参数：acks=all、enable.idempotence=true、retries、压缩（zstd/lz4）
-  - 失败入库（保留 last_error/attempt），支持手动/自动重放与 DLQ
+    - 批量读取与锁定（MySQL 5.7 无 SKIP LOCKED，推荐基于状态字段“领取”+乐观更新防并发；示例：先挑选 PENDING，更新为
+      PROCESSING 并携带 workerId，再发布后置为 SENT/FAILED），指数退避 + 抖动
+    - 生产端参数：acks=all、enable.idempotence=true、retries、压缩（zstd/lz4）
+    - 失败入库（保留 last_error/attempt），支持手动/自动重放与 DLQ
 - CDC（可选）：配置 Debezium Outbox Event Router（路由字段、主题命名、消息 key）
 - 清理与归档：
-  - 定期清理已发布历史（按时间阈值），或迁移至归档表/分区
-  - Schema 演进留后门（headers JSON 承载扩展）
+    - 定期清理已发布历史（按时间阈值），或迁移至归档表/分区
+    - Schema 演进留后门（headers JSON 承载扩展）
 - 可观测性：日志链路追踪（traceId 贯穿）、指标埋点、错误事件审计
 
 ### 9.3 测试验证阶段
+
 - 正常路径：事务提交后 Outbox 可见，发布器按预期发布，消费者幂等
 - 异常路径与失败注入：
-  - MQ 不可用/超时、发布器宕机/重启、数据库重启/连接池耗尽
-  - 重复消息、乱序、背压与退避
+    - MQ 不可用/超时、发布器宕机/重启、数据库重启/连接池耗尽
+    - 重复消息、乱序、背压与退避
 - 性能与容量：批量大小、并发度、分区数量、payload 大小；端到端延迟与吞吐
 - 对账与一致性：来源业务表 vs 目标投影/读模型的校验工具；回放与补偿流程演练
 
 ### 9.4 上线与运维阶段
+
 - 蓝绿/灰度：
-  - 影子发布器只读比对，验证无副作用后切换为正式发布
-  - 轮询与 CDC 可在灰度阶段切换评估
+    - 影子发布器只读比对，验证无副作用后切换为正式发布
+    - 轮询与 CDC 可在灰度阶段切换评估
 - 仪表盘与告警生效：阈值合理、趋势检测；预案演练（MQ 宕机、DB 慢查询、热点分区）
 - 日常巡检：索引健康、表体量增长、延迟与堆积、失败与重试占比
 - 数据治理：按周期归档/删除已发布历史；容量巡检与热点调整
 - 故障恢复手册：
-  - 如何定位堆积（pending_count/outbox_lag_seconds）
-  - 如何重放失败/DLQ 事件（按时间/聚合ID）
-  - 如何快速降级与回滚（关闭发布器/限流、切换容灾）
+    - 如何定位堆积（pending_count/outbox_lag_seconds）
+    - 如何重放失败/DLQ 事件（按时间/聚合ID）
+    - 如何快速降级与回滚（关闭发布器/限流、切换容灾）
 
 ### 9.5 每阶段关键检查点（清单）
+
 - 评估与设计
-  - [ ] 聚合边界、事件清单、Schema 与版本策略评审
-  - [ ] 发布通道（轮询/CDC）与消息中间件选型评审
-  - [ ] 分区键策略（顺序/吞吐）与主题规划评审
-  - [ ] 幂等策略设计（去重表/UPSERT/状态机）
-  - [ ] 监控指标与告警阈值定义
+    - [ ] 聚合边界、事件清单、Schema 与版本策略评审
+    - [ ] 发布通道（轮询/CDC）与消息中间件选型评审
+    - [ ] 分区键策略（顺序/吞吐）与主题规划评审
+    - [ ] 幂等策略设计（去重表/UPSERT/状态机）
+    - [ ] 监控指标与告警阈值定义
 - 开发实现
-  - [ ] 同事务写入业务与 Outbox（原子性用例覆盖）
-  - [ ] 发布器批处理、退避、失败入库与 DLQ 路径
-  - [ ] 配置化路由与分区；生产端可靠参数
-  - [ ] 清理/归档任务上线；Schema 扩展预留
-  - [ ] 可观测性（traceId/metrics/log）就绪
+    - [ ] 同事务写入业务与 Outbox（原子性用例覆盖）
+    - [ ] 发布器批处理、退避、失败入库与 DLQ 路径
+    - [ ] 配置化路由与分区；生产端可靠参数
+    - [ ] 清理/归档任务上线；Schema 扩展预留
+    - [ ] 可观测性（traceId/metrics/log）就绪
 - 测试验证
-  - [ ] 正常/异常/性能/回放场景覆盖
-  - [ ] 一致性对账与基线延迟/吞吐达标
+    - [ ] 正常/异常/性能/回放场景覆盖
+    - [ ] 一致性对账与基线延迟/吞吐达标
 - 上线与运维
-  - [ ] 灰度与回滚预案验证
-  - [ ] 仪表盘与告警上线且演练通过
-  - [ ] 归档与容量策略生效且不影响发布
+    - [ ] 灰度与回滚预案验证
+    - [ ] 仪表盘与告警上线且演练通过
+    - [ ] 归档与容量策略生效且不影响发布
 
 ### 附录：常用 SQL 片段
+
 ```sql
 -- 读取待发布批次，避免锁冲突（PostgreSQL）
 -- MySQL 5.7 示例：先领取后发布，避免并发冲突
@@ -2205,9 +2251,12 @@ ON DUPLICATE KEY UPDATE
 ```
 
 ## 参考资料与延伸阅读
+
 - Outbox Pattern — Chris Richardson（microservices.io）：https://microservices.io/patterns/data/transactional-outbox.html
-- Debezium Outbox Event Router 指南：https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html
+- Debezium Outbox Event Router
+  指南：https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html
 - Kafka Exactly-Once/Idempotency 文档：https://kafka.apache.org/documentation/#semantics
-- MySQL 5.7 二级索引与锁：推荐按 status, occurred_at 建索引；避免长事务；UPDATE 领取采用小批次+顺序键；参考 InnoDB 锁行为文档：https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html
+- MySQL 5.7 二级索引与锁：推荐按 status, occurred_at 建索引；避免长事务；UPDATE 领取采用小批次+顺序键；参考 InnoDB
+  锁行为文档：https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html
 - Designing Data-Intensive Applications（DDIA）：https://dataintensive.net/
 - Spring for Apache Kafka 参考文档：https://docs.spring.io/spring-kafka/reference/

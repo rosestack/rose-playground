@@ -15,23 +15,23 @@ import lombok.Value;
 @Value
 public class UserCreatedEvent {
 
-    /**
-     * 用户ID
-     */
-    Long userId;
+	/**
+	 * 用户ID
+	 */
+	Long userId;
 
-    /**
-     * 用户名
-     */
-    String username;
+	/**
+	 * 用户名
+	 */
+	String username;
 
-    /**
-     * 邮箱
-     */
-    String email;
+	/**
+	 * 邮箱
+	 */
+	String email;
 
-    /**
-     * 创建时间
-     */
-    java.time.LocalDateTime createdAt;
-} 
+	/**
+	 * 创建时间
+	 */
+	java.time.LocalDateTime createdAt;
+}

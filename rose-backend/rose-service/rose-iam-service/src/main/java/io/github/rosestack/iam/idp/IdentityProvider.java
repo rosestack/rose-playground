@@ -4,124 +4,124 @@ import lombok.Data;
 
 @Data
 public class IdentityProvider {
-    private String id;
-    private String name;
-    private String description;
+	private String id;
+	private String name;
+	private String description;
 
-    private String type;
-    private String authType;
+	private String type;
+	private String authType;
 
-    private String bindUrl;
+	private String bindUrl;
 
-    private Boolean allowMultiple;
+	private Boolean allowMultiple;
 
-    private Boolean allowMultipleConn;
+	private Boolean allowMultipleConn;
 
-    public enum Type {
-        OIDC("oidc"),
+	public enum Type {
+		OIDC("oidc"),
 
-        OAUTH2("oauth2"),
+		OAUTH2("oauth2"),
 
-        SAML("saml"),
+		SAML("saml"),
 
-        LDAP("ldap"),
+		LDAP("ldap"),
 
-        AD("ad"),
+		AD("ad"),
 
-        CAS("cas"),
+		CAS("cas"),
 
-        AZURE_AD("azure-ad"),
+		AZURE_AD("azure-ad"),
 
-        WECHAT("wechat"),
+		WECHAT("wechat"),
 
-        GOOGLE("google"),
+		GOOGLE("google"),
 
-        QQ("qq"),
+		QQ("qq"),
 
-        WECHATWORK("wechatwork"),
+		WECHATWORK("wechatwork"),
 
-        DINGTALK("dingtalk"),
+		DINGTALK("dingtalk"),
 
-        WEIBO("weibo"),
+		WEIBO("weibo"),
 
-        GITHUB("github"),
+		GITHUB("github"),
 
-        ALIPAY("alipay"),
+		ALIPAY("alipay"),
 
-        APPLE("apple"),
+		APPLE("apple"),
 
-        BAIDU("baidu"),
+		BAIDU("baidu"),
 
-        LARK("lark"),
+		LARK("lark"),
 
-        GITLAB("gitlab"),
+		GITLAB("gitlab"),
 
-        TWITTER("twitter"),
+		TWITTER("twitter"),
 
-        FACEBOOK("facebook"),
+		FACEBOOK("facebook"),
 
-        SLACK("slack"),
+		SLACK("slack"),
 
-        LINKEDIN("linkedin"),
+		LINKEDIN("linkedin"),
 
-        YIDUN("yidun"),
+		YIDUN("yidun"),
 
-        QINGCLOUD("qingcloud"),
+		QINGCLOUD("qingcloud"),
 
-        GITEE("gitee"),
+		GITEE("gitee"),
 
-        INSTAGRAM("instagram"),
+		INSTAGRAM("instagram"),
 
-        WELINK("welink"),
+		WELINK("welink"),
 
-        HUAWEI("huawei"),
+		HUAWEI("huawei"),
 
-        HONOR("honor"),
+		HONOR("honor"),
 
-        XIAOMI("xiaomi"),
+		XIAOMI("xiaomi"),
 
-        OPPO("oppo"),
+		OPPO("oppo"),
 
-        AWS("aws"),
+		AWS("aws"),
 
-        AMAZON("amazon"),
+		AMAZON("amazon"),
 
-        DOUYIN("douyin"),
+		DOUYIN("douyin"),
 
-        KUAISHOU("kuaishou"),
+		KUAISHOU("kuaishou"),
 
-        LINE("line"),
+		LINE("line"),
 
-        SDBZ("sdbz"),
-        ;
+		SDBZ("sdbz"),
+		;
 
-        private String value;
+		private String value;
 
-        Type(String value) {
-            this.value = value;
-        }
+		Type(String value) {
+			this.value = value;
+		}
 
-        public String getValue() {
-            return value;
-        }
-    }
+		public String getValue() {
+			return value;
+		}
+	}
 
-    /**
-     * 认证类型
-     */
-    public static enum AuthType {
-        SOCIAL("social"),
-        ENTERPRISE("enterprise"),
-        ;
+	/**
+	 * 认证类型
+	 */
+	public static enum AuthType {
+		SOCIAL("social"),
+		ENTERPRISE("enterprise"),
+		;
 
-        private String value;
+		private String value;
 
-        AuthType(String value) {
-            this.value = value;
-        }
+		AuthType(String value) {
+			this.value = value;
+		}
 
-        public String getValue() {
-            return value;
-        }
-    }
+		public String getValue() {
+			return value;
+		}
+	}
 }

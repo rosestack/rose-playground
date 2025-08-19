@@ -1,6 +1,7 @@
 package io.github.rosestack.notification.domain.repository;
 
 import io.github.rosestack.notification.domain.entity.NotificationTemplate;
+
 import java.util.Optional;
 
 /**
@@ -13,41 +14,41 @@ import java.util.Optional;
  */
 public interface NotificationTemplateRepository {
 
-    /**
-     * 根据ID查找通知模板
-     *
-     * @param id 模板ID
-     * @return 通知模板
-     */
-    Optional<NotificationTemplate> findById(String id);
+	/**
+	 * 根据ID查找通知模板
+	 *
+	 * @param id 模板ID
+	 * @return 通知模板
+	 */
+	Optional<NotificationTemplate> findById(String id);
 
-    /**
-     * 保存通知模板
-     *
-     * @param template 通知模板
-     */
-    void save(NotificationTemplate template);
+	/**
+	 * 保存通知模板
+	 *
+	 * @param template 通知模板
+	 */
+	void save(NotificationTemplate template);
 
-    /**
-     * 更新通知模板
-     *
-     * @param template 通知模板
-     */
-    void update(NotificationTemplate template);
+	/**
+	 * 更新通知模板
+	 *
+	 * @param template 通知模板
+	 */
+	void update(NotificationTemplate template);
 
-    /**
-     * 删除通知模板
-     *
-     * @param id 模板ID
-     */
-    void delete(String id);
+	/**
+	 * 删除通知模板
+	 *
+	 * @param id 模板ID
+	 */
+	void delete(String id);
 
-    /**
-     * 根据ID和语言查找通知模板
-     *
-     * @param id   模板ID
-     * @param lang 语言
-     * @return 通知模板
-     */
-    Optional<NotificationTemplate> findByIdAndLang(String id, String lang);
+	/**
+	 * 根据ID和语言查找通知模板
+	 *
+	 * @param id   模板ID
+	 * @param lang 语言
+	 * @return 通知模板
+	 */
+	Optional<NotificationTemplate> findByIdAndLang(String id, String lang);
 }

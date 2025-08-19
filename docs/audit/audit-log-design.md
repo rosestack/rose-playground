@@ -205,6 +205,7 @@ ROW_FORMAT=COMPRESSED;  -- 启用压缩存储
 **详情类型枚举（AuditDetailType）**：
 
 ```java
+
 @Getter
 public enum AuditDetailType {
     HTTP_REQUEST("HTTP请求相关"),
@@ -224,6 +225,7 @@ public enum AuditDetailType {
 **详情键枚举（AuditDetailKey）**：
 
 ```java
+
 @Getter
 public enum AuditDetailKey {
     // HTTP请求相关
@@ -285,21 +287,21 @@ public enum AuditDetailKey {
 
 ```java
 // 主表：简洁的错误代码
-audit_log.error_code = "VALIDATION_FAILED";
+audit_log.error_code ="VALIDATION_FAILED";
 
 // 详情表：完整的错误详情
-{
-  "ERROR_DETAIL": {
-    "errorMessage": "用户名不能为空，密码长度不能少于8位",
-    "errorCode": "VALIDATION_FAILED",
-    "fieldErrors": [
-      {"field": "username", "message": "用户名不能为空"},
-      {"field": "password", "message": "密码长度不能少于8位"}
+    {
+    "ERROR_DETAIL":{
+    "errorMessage":"用户名不能为空，密码长度不能少于8位",
+    "errorCode":"VALIDATION_FAILED",
+    "fieldErrors":[
+    {"field":"username","message":"用户名不能为空"},
+    {"field":"password","message":"密码长度不能少于8位"}
     ],
-    "stackTrace": "com.example.ValidationException: ...",
-    "timestamp": "2024-01-31T10:30:45.123Z"
-  }
-}
+    "stackTrace":"com.example.ValidationException: ...",
+    "timestamp":"2024-01-31T10:30:45.123Z"
+    }
+    }
 ```
 
 **与 RESPONSE_RESULT 的区别**：
@@ -310,25 +312,30 @@ audit_log.error_code = "VALIDATION_FAILED";
 ```json
 // 成功响应
 {
-  "RESPONSE_RESULT": {
-    "statusCode": 200,
-    "data": {"userId": 123, "userName": "张三"},
-    "message": "操作成功"
-  }
+    "RESPONSE_RESULT": {
+        "statusCode": 200,
+        "data": {
+            "userId": 123,
+            "userName": "张三"
+        },
+        "message": "操作成功"
+    }
 }
 
 // 失败响应
 {
-  "RESPONSE_RESULT": {
-    "statusCode": 400,
-    "message": "请求参数错误"
-  },
-  "ERROR_DETAIL": {
-    "errorMessage": "用户名不能为空，密码长度不能少于8位",
-    "errorCode": "VALIDATION_FAILED",
-    "fieldErrors": [...],
-    "stackTrace": "..."
-  }
+    "RESPONSE_RESULT": {
+        "statusCode": 400,
+        "message": "请求参数错误"
+    },
+    "ERROR_DETAIL": {
+        "errorMessage": "用户名不能为空，密码长度不能少于8位",
+        "errorCode": "VALIDATION_FAILED",
+        "fieldErrors": [
+            ...
+        ],
+        "stackTrace": "..."
+    }
 }
 ```
 
@@ -384,13 +391,13 @@ WHERE detail_key = 'REQUEST_PARAMS'
 ```java
 // 常见敏感字段脱敏
 private static final Map<String, String> MASK_PATTERNS = Map.of(
-    "password", "**MASKED**",
-    "token", "**MASKED**",
-    "authorization", "Bearer **MASKED**",
-    "phone", "138****5678",
-    "idCard", "110101****1234",
-    "bankCard", "6222****1234"
-);
+        "password", "**MASKED**",
+        "token", "**MASKED**",
+        "authorization", "Bearer **MASKED**",
+        "phone", "138****5678",
+        "idCard", "110101****1234",
+        "bankCard", "6222****1234"
+    );
 ```
 
 **加密存储**：
@@ -445,6 +452,7 @@ public String getDetailValue(AuditLogDetail detail) {
 ### 4.1 事件类型（AuditEventType）
 
 ```java
+
 @Getter
 public enum AuditEventType {
 
@@ -527,10 +535,10 @@ public enum AuditOperationResult {
      */
     public boolean isHighRiskEvent() {
         return this.isSecurityEvent() ||
-               this == DATA_SENSITIVE_ACCESS ||
-               this == DATA_DELETE ||
-               this == SYS_CONFIG_CHANGE ||
-               this == AUTHZ_PRIVILEGE_ESCALATION;
+            this == DATA_SENSITIVE_ACCESS ||
+            this == DATA_DELETE ||
+            this == SYS_CONFIG_CHANGE ||
+            this == AUTHZ_PRIVILEGE_ESCALATION;
     }
 }
 ```
@@ -608,28 +616,51 @@ public enum AuditOperationResult {
 ```java
 // 记录订单状态修改
 AuditEventType.DATA_UPDATE.getEventType();    // "数据"
-AuditEventType.DATA_UPDATE.getEventSubType()  // "数据更新"
-operationName = "订单状态修改"                   // 具体业务操作
+AuditEventType.DATA_UPDATE.
+
+getEventSubType()  // "数据更新"
+
+operationName ="订单状态修改"                   // 具体业务操作
 
 // 记录用户密码重置
-AuditEventType.AUTH_PASSWORD_CHANGE.getEventType()     // "认证"
-AuditEventType.AUTH_PASSWORD_CHANGE.getEventSubType()  // "密码修改"
-operationName = "管理员重置用户密码"                      // 具体业务操作
+    AuditEventType.AUTH_PASSWORD_CHANGE.
+
+getEventType()     // "认证"
+AuditEventType.AUTH_PASSWORD_CHANGE.
+
+getEventSubType()  // "密码修改"
+
+operationName ="管理员重置用户密码"                      // 具体业务操作
 
 // 记录权限拒绝
-AuditEventType.AUTHZ_PERMISSION_DENIED.getEventType()     // "授权"
-AuditEventType.AUTHZ_PERMISSION_DENIED.getEventSubType()  // "权限拒绝"
-operationName = "访问用户管理页面被拒绝"                    // 具体业务操作
+    AuditEventType.AUTHZ_PERMISSION_DENIED.
+
+getEventType()     // "授权"
+AuditEventType.AUTHZ_PERMISSION_DENIED.
+
+getEventSubType()  // "权限拒绝"
+
+operationName ="访问用户管理页面被拒绝"                    // 具体业务操作
 
 // 记录角色分配
-AuditEventType.AUTHZ_CHANGE.getEventType()     // "授权"
-AuditEventType.AUTHZ_CHANGE.getEventSubType()  // "授权变更"
-operationName = "为用户分配管理员角色"             // 具体业务操作
+    AuditEventType.AUTHZ_CHANGE.
+
+getEventType()     // "授权"
+AuditEventType.AUTHZ_CHANGE.
+
+getEventSubType()  // "授权变更"
+
+operationName ="为用户分配管理员角色"             // 具体业务操作
 
 // 记录新增角色（归类为数据操作）
-AuditEventType.DATA_CREATE.getEventType()     // "数据"
-AuditEventType.DATA_CREATE.getEventSubType()  // "数据创建"
-operationName = "创建财务管理员角色"             // 具体业务操作
+    AuditEventType.DATA_CREATE.
+
+getEventType()     // "数据"
+AuditEventType.DATA_CREATE.
+
+getEventSubType()  // "数据创建"
+
+operationName ="创建财务管理员角色"             // 具体业务操作
 ```
 
 #### 4.2.5 查询场景

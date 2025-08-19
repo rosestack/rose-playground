@@ -10,19 +10,19 @@ import java.util.List;
 
 public class ClassPathPropertiesResourceMessageSource extends AbstractPropertiesResourceMessageSource {
 
-    public ClassPathPropertiesResourceMessageSource(String source) {
-        super(source);
-    }
+	public ClassPathPropertiesResourceMessageSource(String source) {
+		super(source);
+	}
 
-    @Override
-    protected List<Reader> loadAllPropertiesResources(String resource) throws IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        Enumeration<URL> resources = classLoader.getResources(resource);
-        List<Reader> propertiesResources = new LinkedList<>();
-        while (resources.hasMoreElements()) {
-            URL url = resources.nextElement();
-            propertiesResources.add(new InputStreamReader(url.openStream(), getEncoding()));
-        }
-        return propertiesResources;
-    }
+	@Override
+	protected List<Reader> loadAllPropertiesResources(String resource) throws IOException {
+		ClassLoader classLoader = getClass().getClassLoader();
+		Enumeration<URL> resources = classLoader.getResources(resource);
+		List<Reader> propertiesResources = new LinkedList<>();
+		while (resources.hasMoreElements()) {
+			URL url = resources.nextElement();
+			propertiesResources.add(new InputStreamReader(url.openStream(), getEncoding()));
+		}
+		return propertiesResources;
+	}
 }

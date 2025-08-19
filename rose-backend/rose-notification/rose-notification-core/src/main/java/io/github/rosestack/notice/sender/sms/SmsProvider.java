@@ -16,31 +16,31 @@ import io.github.rosestack.notice.spi.Configurable;
  * </ul>
  */
 public interface SmsProvider extends Configurable {
-    /**
-     * 常用服务商类型 key
-     */
-    String TENCENT = "tencent";
+	/**
+	 * 常用服务商类型 key
+	 */
+	String TENCENT = "tencent";
 
-    String ALIYUN = "aliyun";
+	String ALIYUN = "aliyun";
 
-    /**
-     * 服务商唯一标识（如 "tencent"、"aliyun"）
-     */
-    String getProviderType();
+	/**
+	 * 服务商唯一标识（如 "tencent"、"aliyun"）
+	 */
+	String getProviderType();
 
-    /**
-     * 发送短信，成功返回 requestId，失败抛出 NoticeException/NoticeRetryableException
-     */
-    String send(SendRequest request) throws Exception;
+	/**
+	 * 发送短信，成功返回 requestId，失败抛出 NoticeException/NoticeRetryableException
+	 */
+	String send(SendRequest request) throws Exception;
 
-    default boolean isAnyBlank(String... args) {
-        for (String arg : args) {
-            if (arg == null || arg.trim().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
-    }
+	default boolean isAnyBlank(String... args) {
+		for (String arg : args) {
+			if (arg == null || arg.trim().isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    void destroy();
+	void destroy();
 }

@@ -32,104 +32,104 @@ import java.util.List;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    private final UserMapper userMapper;
-    private final UserConverter userConverter;
-    private final ApplicationEventPublisher eventPublisher;
+	private final UserMapper userMapper;
+	private final UserConverter userConverter;
+	private final ApplicationEventPublisher eventPublisher;
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public UserResponse createUser(UserCreateRequest request) {
-        // 业务校验
-        if (userMapper.existsByUsername(request.getUsername())) {
-            throw UserException.usernameAlreadyExists(request.getUsername());
-        }
-        if (userMapper.existsByEmail(request.getEmail())) {
-            throw UserException.emailAlreadyExists(request.getEmail());
-        }
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public UserResponse createUser(UserCreateRequest request) {
+		// 业务校验
+		if (userMapper.existsByUsername(request.getUsername())) {
+			throw UserException.usernameAlreadyExists(request.getUsername());
+		}
+		if (userMapper.existsByEmail(request.getEmail())) {
+			throw UserException.emailAlreadyExists(request.getEmail());
+		}
 
-        // 创建用户实体
-        UserEntity user = userConverter.toEntity(request);
-        user.setStatus(UserStatus.ACTIVE);
-        userMapper.insert(user);
+		// 创建用户实体
+		UserEntity user = userConverter.toEntity(request);
+		user.setStatus(UserStatus.ACTIVE);
+		userMapper.insert(user);
 
-        // 发布用户创建事件
-        UserCreatedEvent event = new UserCreatedEvent(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getCreatedTime()
-        );
-        eventPublisher.publishEvent(event);
+		// 发布用户创建事件
+		UserCreatedEvent event = new UserCreatedEvent(
+			user.getId(),
+			user.getUsername(),
+			user.getEmail(),
+			user.getCreatedTime()
+		);
+		eventPublisher.publishEvent(event);
 
-        return userConverter.toResponse(user);
-    }
+		return userConverter.toResponse(user);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserResponse getUserById(Long id) {
-        UserEntity user = userMapper.selectById(id);
-        if (user == null) {
-            throw UserException.userNotFound(id);
-        }
-        return userConverter.toResponse(user);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public UserResponse getUserById(Long id) {
+		UserEntity user = userMapper.selectById(id);
+		if (user == null) {
+			throw UserException.userNotFound(id);
+		}
+		return userConverter.toResponse(user);
+	}
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public UserResponse updateUser(Long id, UserUpdateRequest request) {
-        UserEntity user = userMapper.selectById(id);
-        if (user == null) {
-            throw UserException.userNotFound(id);
-        }
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public UserResponse updateUser(Long id, UserUpdateRequest request) {
+		UserEntity user = userMapper.selectById(id);
+		if (user == null) {
+			throw UserException.userNotFound(id);
+		}
 
-        // 更新字段
-        userConverter.updateEntity(user, request);
-        userMapper.updateById(user);
+		// 更新字段
+		userConverter.updateEntity(user, request);
+		userMapper.updateById(user);
 
-        // 发布用户更新事件
-        UserUpdatedEvent event = new UserUpdatedEvent(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getUpdatedTime()
-        );
-        eventPublisher.publishEvent(event);
+		// 发布用户更新事件
+		UserUpdatedEvent event = new UserUpdatedEvent(
+			user.getId(),
+			user.getUsername(),
+			user.getEmail(),
+			user.getUpdatedTime()
+		);
+		eventPublisher.publishEvent(event);
 
-        return userConverter.toResponse(user);
-    }
+		return userConverter.toResponse(user);
+	}
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void deleteUser(Long id) {
-        UserEntity user = userMapper.selectById(id);
-        if (user == null) {
-            throw UserException.userNotFound(id);
-        }
-        userMapper.deleteById(id);
-    }
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void deleteUser(Long id) {
+		UserEntity user = userMapper.selectById(id);
+		if (user == null) {
+			throw UserException.userNotFound(id);
+		}
+		userMapper.deleteById(id);
+	}
 
-    @Override
-    public PageResponse<UserResponse> pageUsers(PageRequest pageRequest, UserQuery userQuery) {
-        Page<UserEntity> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
+	@Override
+	public PageResponse<UserResponse> pageUsers(PageRequest pageRequest, UserQuery userQuery) {
+		Page<UserEntity> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
 
-        // 构建查询条件
-        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.hasText(userQuery.getUsername()), UserEntity::getUsername, userQuery.getUsername())
-                .like(StringUtils.hasText(userQuery.getEmail()), UserEntity::getEmail, userQuery.getEmail())
-                .eq(StringUtils.hasText(userQuery.getStatus()), UserEntity::getStatus, userQuery.getStatus())
-                .orderByDesc(UserEntity::getCreatedTime);
+		// 构建查询条件
+		LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+		wrapper.like(StringUtils.hasText(userQuery.getUsername()), UserEntity::getUsername, userQuery.getUsername())
+			.like(StringUtils.hasText(userQuery.getEmail()), UserEntity::getEmail, userQuery.getEmail())
+			.eq(StringUtils.hasText(userQuery.getStatus()), UserEntity::getStatus, userQuery.getStatus())
+			.orderByDesc(UserEntity::getCreatedTime);
 
-        IPage<UserEntity> userPage = userMapper.selectPage(page, wrapper);
+		IPage<UserEntity> userPage = userMapper.selectPage(page, wrapper);
 
-        return userConverter.toPageResponse(userPage);
-    }
+		return userConverter.toPageResponse(userPage);
+	}
 
-    @Override
-    public List<UserResponse> getAllUsers() {
-        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.orderByDesc(UserEntity::getCreatedTime);
+	@Override
+	public List<UserResponse> getAllUsers() {
+		LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+		wrapper.orderByDesc(UserEntity::getCreatedTime);
 
-        List<UserEntity> users = userMapper.selectList(wrapper);
-        return userConverter.toListResponse(users);
-    }
+		List<UserEntity> users = userMapper.selectList(wrapper);
+		return userConverter.toListResponse(users);
+	}
 }

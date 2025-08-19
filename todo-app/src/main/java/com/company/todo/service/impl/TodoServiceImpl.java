@@ -61,7 +61,7 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public boolean existsTitle(String title) {
-        return todoMapper.existsTitle(title);
+    public boolean existsTitleExcludeId(String title, Long id) {
+        return todoMapper.existsTitleExcludeId(title, id);
     }
 }

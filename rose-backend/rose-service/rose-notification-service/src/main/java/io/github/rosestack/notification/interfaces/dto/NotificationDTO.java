@@ -1,7 +1,8 @@
 package io.github.rosestack.notification.interfaces.dto;
 
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * 通知信息 DTO
@@ -14,78 +15,78 @@ import lombok.Data;
 @Data
 public class NotificationDTO {
 
-    /**
-     * 通知ID
-     */
-    private String id;
+	/**
+	 * 通知ID
+	 */
+	private String id;
 
-    /**
-     * 租户ID
-     */
-    private String tenantId;
+	/**
+	 * 租户ID
+	 */
+	private String tenantId;
 
-    /**
-     * 通道ID
-     */
-    private String channelId;
+	/**
+	 * 通道ID
+	 */
+	private String channelId;
 
-    /**
-     * 模板ID
-     */
-    private String templateId;
+	/**
+	 * 模板ID
+	 */
+	private String templateId;
 
-    /**
-     * 通知目标
-     */
-    private String target;
+	/**
+	 * 通知目标
+	 */
+	private String target;
 
-    /**
-     * 目标类型
-     */
-    private String targetType;
+	/**
+	 * 目标类型
+	 */
+	private String targetType;
 
-    /**
-     * 通知内容
-     */
-    private String content;
+	/**
+	 * 通知内容
+	 */
+	private String content;
 
-    /**
-     * 通道类型
-     */
-    private String channelType;
+	/**
+	 * 通道类型
+	 */
+	private String channelType;
 
-    /**
-     * 请求ID
-     */
-    private String requestId;
+	/**
+	 * 请求ID
+	 */
+	private String requestId;
 
-    /**
-     * 通知状态
-     */
-    private String status;
+	/**
+	 * 通知状态
+	 */
+	private String status;
 
-    /**
-     * 失败原因
-     */
-    private String failReason;
+	/**
+	 * 失败原因
+	 */
+	private String failReason;
 
-    /**
-     * 发送时间
-     */
-    private LocalDateTime sendTime;
+	/**
+	 * 发送时间
+	 */
+	private LocalDateTime sendTime;
 
-    /**
-     * 阅读时间
-     */
-    private LocalDateTime readTime;
+	/**
+	 * 阅读时间
+	 */
+	private LocalDateTime readTime;
 
-    /**
-     * 撤回时间
-     */
-    private LocalDateTime recallTime;
+	/**
+	 * 撤回时间
+	 */
+	private LocalDateTime recallTime;
 
-    /**
-     * 追踪ID
-     */
-    private String traceId;
+	/**
+	 * 追踪ID
+	 */
+	private String traceId;
 }

@@ -14,12 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @SpringBootApplication
 public class TestSecurityApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(TestSecurityApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(TestSecurityApplication.class, args);
+	}
 
-    @Bean
-    public InMemoryUserDetailsService inMemoryUserDetailsService(PasswordEncoder passwordEncoder) {
-        return new InMemoryUserDetailsService(passwordEncoder);
-    }
+	@Bean
+	public InMemoryUserDetailsService inMemoryUserDetailsService(PasswordEncoder passwordEncoder) {
+		return new InMemoryUserDetailsService(passwordEncoder);
+	}
 }

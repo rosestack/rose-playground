@@ -15,20 +15,20 @@ import io.github.rosestack.notice.SendRequest;
  * <b>扩展方式：</b> 实现本接口并配置 SPI 文件，无需手动注册。
  */
 public interface Sender extends Configurable {
-    /**
-     * 常用渠道类型 key
-     */
-    String EMAIL = "email";
+	/**
+	 * 常用渠道类型 key
+	 */
+	String EMAIL = "email";
 
-    String SMS = "sms";
-    String CONSOLE = "console";
+	String SMS = "sms";
+	String CONSOLE = "console";
 
-    /**
-     * 渠道唯一标识（如 "email"、"sms"、"dingtalk"）
-     */
-    String getChannelType();
+	/**
+	 * 渠道唯一标识（如 "email"、"sms"、"dingtalk"）
+	 */
+	String getChannelType();
 
-    String send(SendRequest sendRequest);
+	String send(SendRequest sendRequest);
 
-    void destroy();
+	void destroy();
 }

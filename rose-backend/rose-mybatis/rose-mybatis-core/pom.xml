@@ -2,28 +2,28 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>io.github.rosestack</groupId>
-        <artifactId>rose-mybatis</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <artifactId>rose-mybatis-core</artifactId>
-    <name>rose-mybatis</name>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.github.rosestack</groupId>
+    <artifactId>rose-mybatis</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>rose-mybatis-core</artifactId>
+  <name>rose-mybatis</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>io.github.rosestack</groupId>
+      <artifactId>rose-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-core</artifactId>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>com.baomidou</groupId>
+      <artifactId>mybatis-plus-core</artifactId>
+    </dependency>
+  </dependencies>
 </project>
 
 

@@ -15,8 +15,6 @@ import io.github.rosestack.notification.domain.repository.NotificationTemplateCh
 import io.github.rosestack.notification.domain.repository.NotificationTemplateRepository;
 import io.github.rosestack.notification.shared.constant.NotificationConstants;
 import io.github.rosestack.notification.shared.exception.NotificationException;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +22,9 @@ import org.slf4j.MDC;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 通知应用服务（Application Service）
@@ -46,66 +47,66 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class NotificationApplicationService {
-    private static final Logger log = LoggerFactory.getLogger(NotificationApplicationService.class);
+	private static final Logger log = LoggerFactory.getLogger(NotificationApplicationService.class);
 
-    private final NotificationRepository notificationRepository;
-    private final NotificationTemplateRepository templateRepository;
-    private final NotificationTemplateChannelRepository notificationTemplateChannelRepository;
-    private final NotificationChannelRepository notificationChannelRepository;
-    private final NoticeService noticeService;
+	private final NotificationRepository notificationRepository;
+	private final NotificationTemplateRepository templateRepository;
+	private final NotificationTemplateChannelRepository notificationTemplateChannelRepository;
+	private final NotificationChannelRepository notificationChannelRepository;
+	private final NoticeService noticeService;
 
-    @Transactional(rollbackFor = Exception.class)
-    public void sendNotification(SendNotificationCommand cmd) {
-        NotificationTemplate template = templateRepository
-                .findByIdAndLang(
-                        cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage())
-                .orElseThrow(() -> {
-                    log.warn(
-                            "模板不存在，templateId={}, lang={}",
-                            cmd.getTemplateId(),
-                            LocaleContextHolder.getLocale().getLanguage());
-                    throw new NotificationException(NotificationConstants.ErrorCode.TEMPLATE_NOT_FOUND);
-                });
+	@Transactional(rollbackFor = Exception.class)
+	public void sendNotification(SendNotificationCommand cmd) {
+		NotificationTemplate template = templateRepository
+			.findByIdAndLang(
+				cmd.getTemplateId(), LocaleContextHolder.getLocale().getLanguage())
+			.orElseThrow(() -> {
+				log.warn(
+					"模板不存在，templateId={}, lang={}",
+					cmd.getTemplateId(),
+					LocaleContextHolder.getLocale().getLanguage());
+				throw new NotificationException(NotificationConstants.ErrorCode.TEMPLATE_NOT_FOUND);
+			});
 
-        List<NotificationTemplateChannel> notificationTemplateChannels =
-                notificationTemplateChannelRepository.findByTemplateId(cmd.getTemplateId());
-        if (notificationTemplateChannels == null || notificationTemplateChannels.isEmpty()) {
-            log.warn("模板未配置任何渠道，templateId={}", cmd.getTemplateId());
-            throw new NotificationException(NotificationConstants.ErrorCode.CHANNEL_NOT_FOUND);
-        }
+		List<NotificationTemplateChannel> notificationTemplateChannels =
+			notificationTemplateChannelRepository.findByTemplateId(cmd.getTemplateId());
+		if (notificationTemplateChannels == null || notificationTemplateChannels.isEmpty()) {
+			log.warn("模板未配置任何渠道，templateId={}", cmd.getTemplateId());
+			throw new NotificationException(NotificationConstants.ErrorCode.CHANNEL_NOT_FOUND);
+		}
 
-        for (NotificationTemplateChannel notificationTemplateChannel : notificationTemplateChannels) {
-            String channelId = notificationTemplateChannel.getChannelId();
-            NotificationChannel channel = notificationChannelRepository
-                    .findById(channelId)
-                    .orElseThrow(() -> {
-                        log.warn("渠道不存在，channelId={}", channelId);
-                        throw new NotificationException(NotificationConstants.ErrorCode.CHANNEL_NOT_FOUND);
-                    });
+		for (NotificationTemplateChannel notificationTemplateChannel : notificationTemplateChannels) {
+			String channelId = notificationTemplateChannel.getChannelId();
+			NotificationChannel channel = notificationChannelRepository
+				.findById(channelId)
+				.orElseThrow(() -> {
+					log.warn("渠道不存在，channelId={}", channelId);
+					throw new NotificationException(NotificationConstants.ErrorCode.CHANNEL_NOT_FOUND);
+				});
 
-            SendRequest sendRequest = SendRequest.builder()
-                    .target(cmd.getTarget())
-                    .requestId(cmd.getRequestId())
-                    .templateContent(template.getContent())
-                    .build();
-            SenderConfiguration configuration = SenderConfiguration.builder()
-                    .channelType(channel.getChannelType().name())
-                    .config(channel.getConfig())
-                    .templateType(template.getType())
-                    .build();
-            SendResult sendResult = noticeService.send(sendRequest, configuration);
+			SendRequest sendRequest = SendRequest.builder()
+				.target(cmd.getTarget())
+				.requestId(cmd.getRequestId())
+				.templateContent(template.getContent())
+				.build();
+			SenderConfiguration configuration = SenderConfiguration.builder()
+				.channelType(channel.getChannelType().name())
+				.config(channel.getConfig())
+				.templateType(template.getType())
+				.build();
+			SendResult sendResult = noticeService.send(sendRequest, configuration);
 
-            Notification notification = new Notification();
-            notification.setChannelId(channelId);
-            notification.setTemplateId(cmd.getTemplateId());
-            notification.setTarget(cmd.getTarget());
-            notification.setChannelType(channel.getChannelType());
-            notification.setSendTime(LocalDateTime.now());
-            notification.setRequestId(sendRequest.getRequestId());
-            notification.setFailReason(sendResult.getMessage());
-            notification.setTraceId(MDC.get("traceId"));
+			Notification notification = new Notification();
+			notification.setChannelId(channelId);
+			notification.setTemplateId(cmd.getTemplateId());
+			notification.setTarget(cmd.getTarget());
+			notification.setChannelType(channel.getChannelType());
+			notification.setSendTime(LocalDateTime.now());
+			notification.setRequestId(sendRequest.getRequestId());
+			notification.setFailReason(sendResult.getMessage());
+			notification.setTraceId(MDC.get("traceId"));
 
-            notificationRepository.save(notification);
-        }
-    }
+			notificationRepository.save(notification);
+		}
+	}
 }

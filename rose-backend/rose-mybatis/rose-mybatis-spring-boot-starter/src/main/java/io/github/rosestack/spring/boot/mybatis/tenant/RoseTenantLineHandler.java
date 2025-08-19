@@ -16,26 +16,26 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoseTenantLineHandler extends AbstractTenantLineHandler {
 
-    private final RoseMybatisProperties properties;
+	private final RoseMybatisProperties properties;
 
-    @Override
-    protected String getTenantIdColumnInternal() {
-        return properties.getTenant().getColumn();
-    }
+	@Override
+	protected String getTenantIdColumnInternal() {
+		return properties.getTenant().getColumn();
+	}
 
-    @Override
-    protected boolean isIgnoreTableInternal(String tableName) {
-        if (tableName == null) {
-            return false;
-        }
-        if (properties.getTenant().getIgnoreTables().contains(tableName)) {
-            return true;
-        }
-        for (String prefix : properties.getTenant().getIgnoreTablePrefixes()) {
-            if (tableName.startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	@Override
+	protected boolean isIgnoreTableInternal(String tableName) {
+		if (tableName == null) {
+			return false;
+		}
+		if (properties.getTenant().getIgnoreTables().contains(tableName)) {
+			return true;
+		}
+		for (String prefix : properties.getTenant().getIgnoreTablePrefixes()) {
+			if (tableName.startsWith(prefix)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

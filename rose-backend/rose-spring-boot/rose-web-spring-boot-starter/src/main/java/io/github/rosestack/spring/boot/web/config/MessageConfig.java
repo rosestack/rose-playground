@@ -18,20 +18,20 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 @Slf4j
 @RequiredArgsConstructor
 public class MessageConfig {
-    private final MessageSource messageSource;
+	private final MessageSource messageSource;
 
-    @PostConstruct
-    public void init() {
-        log.info("启用 MessageSource 资源国际化: {}", messageSource);
-    }
+	@PostConstruct
+	public void init() {
+		log.info("启用 MessageSource 资源国际化: {}", messageSource);
+	}
 
-    /**
-     * 配置 LocaleChangeInterceptor
-     */
-    @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor() {
-        LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
-        interceptor.setParamName("lang");
-        return interceptor;
-    }
+	/**
+	 * 配置 LocaleChangeInterceptor
+	 */
+	@Bean
+	public LocaleChangeInterceptor localeChangeInterceptor() {
+		LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
+		interceptor.setParamName("lang");
+		return interceptor;
+	}
 }

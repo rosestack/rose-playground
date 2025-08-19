@@ -2,42 +2,42 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>io.github.rosestack</groupId>
-        <artifactId>rose-i18n</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-i18n-openfeign</artifactId>
+    <artifactId>rose-i18n</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <dependencies>
-        <dependency>
-            <groupId>io.github.rosestack</groupId>
-            <artifactId>rose-i18n-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+  <groupId>io.github.rosestack</groupId>
+  <artifactId>rose-i18n-openfeign</artifactId>
 
-        <!-- Spring -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <optional>true</optional>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>io.github.rosestack</groupId>
+      <artifactId>rose-i18n-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <!-- Feign -->
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-        </dependency>
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <optional>true</optional>
+    </dependency>
 
-        <!-- Servlet API -->
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+    <!-- Feign -->
+    <dependency>
+      <groupId>io.github.openfeign</groupId>
+      <artifactId>feign-core</artifactId>
+    </dependency>
+
+    <!-- Servlet API -->
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 </project>

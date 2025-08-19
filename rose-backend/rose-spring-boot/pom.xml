@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>io.github.rosestack</groupId>
-        <artifactId>rose-backend</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>io.github.rosestack</groupId>
-    <artifactId>rose-spring-boot</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>rose-backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-    <modules>
-        <module>rose-spring-boot-core</module>
-        <module>rose-audit-spring-boot-starter</module>
-        <module>rose-web-spring-boot-starter</module>
-    </modules>
+  <groupId>io.github.rosestack</groupId>
+  <artifactId>rose-spring-boot</artifactId>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>rose-spring-boot-core</module>
+    <module>rose-audit-spring-boot-starter</module>
+    <module>rose-web-spring-boot-starter</module>
+  </modules>
 
 </project>

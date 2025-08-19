@@ -8,28 +8,28 @@ import lombok.Data;
 
 @Data
 public class Group extends BaseTenantEntity implements HasCodeNameDescription {
-    @TableId(type = IdType.AUTO)
-    private Long id;
+	@TableId(type = IdType.AUTO)
+	private Long id;
 
-    /**
-     * 名称
-     */
-    private String name;
+	/**
+	 * 名称
+	 */
+	private String name;
 
-    /**
-     * 识别码
-     */
-    private String code;
+	/**
+	 * 识别码
+	 */
+	private String code;
 
-    /**
-     * 描述
-     */
-    private String description;
+	/**
+	 * 描述
+	 */
+	private String description;
 
-    private String userPoolId;
+	private String userPoolId;
 
-    /**
-     * 状态
-     */
-    private Boolean status;
+	/**
+	 * 状态
+	 */
+	private Boolean status;
 }

@@ -17,32 +17,30 @@ import java.nio.charset.StandardCharsets;
 
 public class AccessListFilter extends OncePerRequestFilter {
 
-    private final AccessListMatcher matcher;
-    private final RoseSecurityProperties properties;
+	private final AccessListMatcher matcher;
+	private final RoseSecurityProperties properties;
 
-    public AccessListFilter(AccessListMatcher matcher, RoseSecurityProperties properties) {
-        this.matcher = matcher;
-        this.properties = properties;
-    }
+	public AccessListFilter(AccessListMatcher matcher, RoseSecurityProperties properties) {
+		this.matcher = matcher;
+		this.properties = properties;
+	}
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        if (!properties.getProtect().getAccessList().isEnabled()) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth != null ? auth.getName() : null;
-        if (!matcher.isAllowed(request, username)) {
-            response.setStatus(403);
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(JsonUtils.toString(ApiResponse.error(40300, "forbidden by access list")));
-            return;
-        }
-        filterChain.doFilter(request, response);
-    }
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+		throws ServletException, IOException {
+		if (!properties.getProtect().getAccessList().isEnabled()) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String username = auth != null ? auth.getName() : null;
+		if (!matcher.isAllowed(request, username)) {
+			response.setStatus(403);
+			response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+			response.getWriter().write(JsonUtils.toString(ApiResponse.error(40300, "forbidden by access list")));
+			return;
+		}
+		filterChain.doFilter(request, response);
+	}
 }
-
-

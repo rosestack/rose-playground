@@ -7,16 +7,16 @@ import lombok.Data;
  */
 @Data
 public class TenantApp {
-    private Long id;
+	private Long id;
 
-    private String tenantId;
+	private String tenantId;
 
-    private String appId;
+	private String appId;
 
-    private String userPoolId;
+	private String userPoolId;
 
-    /**
-     * 创建时间
-     */
-    private String createdAt;
+	/**
+	 * 创建时间
+	 */
+	private String createdAt;
 }

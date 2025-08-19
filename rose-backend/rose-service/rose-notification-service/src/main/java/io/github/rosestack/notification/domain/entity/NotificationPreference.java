@@ -9,29 +9,29 @@ import lombok.Data;
  */
 @Data
 public class NotificationPreference {
-    private String id;
-    private String tenantId;
-    private String userId;
-    private String type;
+	private String id;
+	private String tenantId;
+	private String userId;
+	private String type;
 
-    private NotificationChannelType channelType;
+	private NotificationChannelType channelType;
 
-    private boolean enabled;
+	private boolean enabled;
 
-    private TimeWindow quietPeriod;
+	private TimeWindow quietPeriod;
 
-    /**
-     * 通道黑名单（JSON）
-     */
-    private String channelBlacklist;
+	/**
+	 * 通道黑名单（JSON）
+	 */
+	private String channelBlacklist;
 
-    /**
-     * 通道白名单（JSON）
-     */
-    private String channelWhitelist;
+	/**
+	 * 通道白名单（JSON）
+	 */
+	private String channelWhitelist;
 
-    /**
-     * 频率限制（如每小时最多 N 条）
-     */
-    private Integer frequencyLimit;
+	/**
+	 * 频率限制（如每小时最多 N 条）
+	 */
+	private Integer frequencyLimit;
 }

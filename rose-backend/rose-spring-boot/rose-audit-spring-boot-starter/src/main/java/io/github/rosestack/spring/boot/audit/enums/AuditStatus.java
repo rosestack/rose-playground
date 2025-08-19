@@ -13,81 +13,81 @@ import lombok.Getter;
 @Getter
 public enum AuditStatus {
 
-    /**
-     * 成功
-     */
-    SUCCESS("SUCCESS", "成功"),
+	/**
+	 * 成功
+	 */
+	SUCCESS("SUCCESS", "成功"),
 
-    /**
-     * 失败
-     */
-    FAILURE("FAILURE", "失败"),
+	/**
+	 * 失败
+	 */
+	FAILURE("FAILURE", "失败"),
 
-    /**
-     * 进行中
-     */
-    PENDING("PENDING", "进行中"),
+	/**
+	 * 进行中
+	 */
+	PENDING("PENDING", "进行中"),
 
-    /**
-     * 超时
-     */
-    TIMEOUT("TIMEOUT", "超时"),
+	/**
+	 * 超时
+	 */
+	TIMEOUT("TIMEOUT", "超时"),
 
-    /**
-     * 取消
-     */
-    CANCELLED("CANCELLED", "取消"),
+	/**
+	 * 取消
+	 */
+	CANCELLED("CANCELLED", "取消"),
 
-    /**
-     * 拒绝
-     */
-    DENIED("DENIED", "拒绝");
+	/**
+	 * 拒绝
+	 */
+	DENIED("DENIED", "拒绝");
 
-    /**
-     * 状态代码
-     */
-    private final String code;
+	/**
+	 * 状态代码
+	 */
+	private final String code;
 
-    /**
-     * 状态描述
-     */
-    private final String description;
+	/**
+	 * 状态描述
+	 */
+	private final String description;
 
-    AuditStatus(String code, String description) {
-        this.code = code;
-        this.description = description;
-    }
+	AuditStatus(String code, String description) {
+		this.code = code;
+		this.description = description;
+	}
 
-    /**
-     * 根据代码获取枚举
-     *
-     * @param code 状态代码
-     * @return 对应的枚举，如果不存在则返回 null
-     */
-    public static AuditStatus fromCode(String code) {
-        for (AuditStatus status : values()) {
-            if (status.getCode().equals(code)) {
-                return status;
-            }
-        }
-        return null;
-    }
+	/**
+	 * 根据代码获取枚举
+	 *
+	 * @param code 状态代码
+	 * @return 对应的枚举，如果不存在则返回 null
+	 */
+	public static AuditStatus fromCode(String code) {
+		for (AuditStatus status : values()) {
+			if (status.getCode().equals(code)) {
+				return status;
+			}
+		}
+		return null;
+	}
 
-    /**
-     * 判断是否为成功状态
-     *
-     * @return 是否为成功状态
-     */
-    public boolean isSuccess() {
-        return this == SUCCESS;
-    }
+	/**
+	 * 判断是否为成功状态
+	 *
+	 * @return 是否为成功状态
+	 */
+	public boolean isSuccess() {
+		return this == SUCCESS;
+	}
 
-    /**
-     * 判断是否为失败状态
-     *
-     * @return 是否为失败状态
-     */
-    public boolean isFailure() {
-        return this == FAILURE || this == TIMEOUT || this == CANCELLED || this == DENIED;
-    }
+	/**
+	 * 判断是否为失败状态
+	 *
+	 * @return 是否为失败状态
+	 */
+	public boolean isFailure() {
+		return this == FAILURE || this == TIMEOUT || this == CANCELLED || this == DENIED;
+	}
 }

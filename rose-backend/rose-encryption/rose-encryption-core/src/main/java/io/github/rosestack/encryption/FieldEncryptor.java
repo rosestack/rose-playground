@@ -12,21 +12,21 @@ import io.github.rosestack.encryption.enums.EncryptType;
  */
 public interface FieldEncryptor {
 
-  /**
-   * 加密字段值
-   *
-   * @param plainText 明文
-   * @param encryptType 加密类型
-   * @return 密文
-   */
-  String encrypt(String plainText, EncryptType encryptType);
+	/**
+	 * 加密字段值
+	 *
+	 * @param plainText   明文
+	 * @param encryptType 加密类型
+	 * @return 密文
+	 */
+	String encrypt(String plainText, EncryptType encryptType);
 
-  /**
-   * 解密字段值
-   *
-   * @param cipherText 密文
-   * @param encryptType 加密类型
-   * @return 明文
-   */
-  String decrypt(String cipherText, EncryptType encryptType);
+	/**
+	 * 解密字段值
+	 *
+	 * @param cipherText  密文
+	 * @param encryptType 加密类型
+	 * @return 明文
+	 */
+	String decrypt(String cipherText, EncryptType encryptType);
 }

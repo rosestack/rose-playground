@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class RabbitNotificationSendProducer implements NotificationSendProducer {
-    public static final String QUEUE = "notification.send.queue";
-    private final RabbitTemplate rabbitTemplate;
+	public static final String QUEUE = "notification.send.queue";
+	private final RabbitTemplate rabbitTemplate;
 
-    public void send(SendRequest sendRequest) {
-        rabbitTemplate.convertAndSend(QUEUE, sendRequest);
-    }
+	public void send(SendRequest sendRequest) {
+		rabbitTemplate.convertAndSend(QUEUE, sendRequest);
+	}
 }

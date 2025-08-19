@@ -1,22 +1,22 @@
 services:
   grafana:
     image: grafana/grafana:11.6.0
-    extra_hosts: ['host.docker.internal:host-gateway']
+    extra_hosts: [ 'host.docker.internal:host-gateway' ]
     ports:
-    - "3000:3000"
+      - "3000:3000"
     volumes:
-    - grafana_data:/var/lib/grafana
-    - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
     environment:
-    - GF_SECURITY_ADMIN_PASSWORD=admin
-    - GF_SECURITY_ADMIN_USER=admin
-    - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
-    - prometheus
+      - prometheus
 
   prometheus:
     image: prom/prometheus:v3.2.1
-    extra_hosts: ['host.docker.internal:host-gateway']
+    extra_hosts: [ 'host.docker.internal:host-gateway' ]
     ports:
       - "9090:9090"
     volumes:
@@ -35,6 +35,6 @@ services:
       - "3200:3200"  # Tempo
       - "9411:9411" # zipkin
 volumes:
-  prometheus_data: {}
-  grafana_data: {}
+  prometheus_data: { }
+  grafana_data: { }
 

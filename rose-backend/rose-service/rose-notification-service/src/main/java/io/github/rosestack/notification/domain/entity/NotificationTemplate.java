@@ -7,14 +7,14 @@ import lombok.Data;
  */
 @Data
 public class NotificationTemplate {
-    private String id;
-    private String tenantId;
-    private String name;
-    private String code;
-    private String description;
-    private String type;
-    private String content;
-    private boolean enabled;
-    private int version;
-    private String lang;
+	private String id;
+	private String tenantId;
+	private String name;
+	private String code;
+	private String description;
+	private String type;
+	private String content;
+	private boolean enabled;
+	private int version;
+	private String lang;
 }

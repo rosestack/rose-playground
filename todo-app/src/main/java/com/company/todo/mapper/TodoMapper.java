@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface TodoMapper extends BaseMapper<Todo> {
-    default boolean existsTitle(String title) {
-        return exists(Wrappers.<Todo>lambdaQuery().eq(Todo::getTitle, title));
+    default boolean existsTitleExcludeId(String title, Long id) {
+        return exists(Wrappers.<Todo>lambdaQuery().eq(Todo::getTitle, title).ne(id != null, Todo::getId, id));
     }
 }

@@ -35,39 +35,39 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @MapperScan(basePackages = "io.github.rosestack.spring.boot.audit.mapper")
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AuditAutoConfiguration {
-    private final AuditProperties auditProperties;
+	private final AuditProperties auditProperties;
 
-    @PostConstruct
-    public void init() {
-        log.info("审计配置: 存储类型={}", auditProperties.getStorage().getType());
-    }
+	@PostConstruct
+	public void init() {
+		log.info("审计配置: 存储类型={}", auditProperties.getStorage().getType());
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "rose.audit.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
-    public AuditAspect auditAspect(ApplicationEventPublisher eventPublisher, FieldEncryptor fieldEncryptor) {
-        log.debug("注册 AuditAspect Bean");
-        return new AuditAspect(eventPublisher, fieldEncryptor);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnProperty(prefix = "rose.audit.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
+	public AuditAspect auditAspect(ApplicationEventPublisher eventPublisher, FieldEncryptor fieldEncryptor) {
+		log.debug("注册 AuditAspect Bean");
+		return new AuditAspect(eventPublisher, fieldEncryptor);
+	}
 
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "rose.audit.storage",
-            name = "type",
-            havingValue = "database",
-            matchIfMissing = true)
-    public AuditStorage jdbcAuditStorage(Validator validator, AuditLogDetailMapper auditLogDetailMapper) {
-        return new AuditLogServiceImpl(validator, auditLogDetailMapper);
-    }
+	@Bean
+	@ConditionalOnProperty(
+		prefix = "rose.audit.storage",
+		name = "type",
+		havingValue = "database",
+		matchIfMissing = true)
+	public AuditStorage jdbcAuditStorage(Validator validator, AuditLogDetailMapper auditLogDetailMapper) {
+		return new AuditLogServiceImpl(validator, auditLogDetailMapper);
+	}
 
-    @Bean
-    @ConditionalOnMissingBean
-    public AuditStorage noopAuditLogService() {
-        return (auditLog, auditLogDetails) -> null;
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	public AuditStorage noopAuditLogService() {
+		return (auditLog, auditLogDetails) -> null;
+	}
 
-    @Bean
-    public AuditEventListener auditEventListener(AuditStorage auditStorage) {
-        return new AuditEventListener(auditStorage);
-    }
+	@Bean
+	public AuditEventListener auditEventListener(AuditStorage auditStorage) {
+		return new AuditEventListener(auditStorage);
+	}
 }

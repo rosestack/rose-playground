@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class TestSecurityController {
 
-    @GetMapping("/me")
-    public String me(Authentication authentication) {
-        return authentication != null ? authentication.getName() : "anonymous";
-    }
+	@GetMapping("/me")
+	public String me(Authentication authentication) {
+		return authentication != null ? authentication.getName() : "anonymous";
+	}
 }
-
-

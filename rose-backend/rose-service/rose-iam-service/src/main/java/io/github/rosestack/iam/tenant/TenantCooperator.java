@@ -7,17 +7,17 @@ import lombok.Data;
  */
 @Data
 public class TenantCooperator {
-    private Long id;
+	private Long id;
 
-    // 租户用户
-    private String tenantUserId;
+	// 租户用户
+	private String tenantUserId;
 
-    // 用户池用户
-    private String userId;
+	// 用户池用户
+	private String userId;
 
-    // 为外部用户时，userId不为空；内部用户时，tenantUserId不为空
-    private Boolean external;
+	// 为外部用户时，userId不为空；内部用户时，tenantUserId不为空
+	private Boolean external;
 
-    // creatorUser、tenantUser、externalUser
-    private String type;
+	// creatorUser、tenantUser、externalUser
+	private String type;
 }

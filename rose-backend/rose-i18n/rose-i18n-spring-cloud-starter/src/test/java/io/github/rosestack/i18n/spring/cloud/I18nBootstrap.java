@@ -31,10 +31,10 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource(value = "classpath:/i18n-bootstrap.properties")
 public class I18nBootstrap {
 
-    public static void main(String[] args) {
-        new SpringApplicationBuilder(I18nBootstrap.class)
-                .web(WebApplicationType.SERVLET)
-                .properties("common.i18n_messages_en.properties=a = common-a-2024")
-                .run(args);
-    }
+	public static void main(String[] args) {
+		new SpringApplicationBuilder(I18nBootstrap.class)
+			.web(WebApplicationType.SERVLET)
+			.properties("common.i18n_messages_en.properties=a = common-a-2024")
+			.run(args);
+	}
 }

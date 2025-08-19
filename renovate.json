@@ -9,11 +9,16 @@
   ],
   "packageRules": [
     {
-      "matchManagers": ["maven"],
+      "matchManagers": [
+        "maven"
+      ],
       "groupName": "maven-dependencies",
       "automerge": true,
       "automergeType": "pr",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
     }
   ]
 }

@@ -26,30 +26,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
         super();
     }
 
-    @Bean
-    @ConditionalOnMissingBean(RequestContextListener.class)
-    public RequestContextListener requestContextListener() {
-        return new RequestContextListener();
-    }
-
-    @Bean
-    public MessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("messages");
-        messageSource.setDefaultEncoding("UTF-8");
-        return messageSource;
-    }
-
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(new LocaleChangeInterceptor());
-    }
-
-    @Bean
-    public LocaleResolver localeResolver() {
-        final CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-        cookieLocaleResolver.setDefaultLocale(Locale.ENGLISH);
-        return cookieLocaleResolver;
     }
 
     @Override
@@ -57,6 +36,27 @@ public class WebMvcConfig implements WebMvcConfigurer {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.setValidationMessageSource(messageSource());
         return validator;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(RequestContextListener.class)
+    RequestContextListener requestContextListener() {
+        return new RequestContextListener();
+    }
+
+    @Bean
+    MessageSource messageSource() {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        messageSource.setBasename("messages");
+        messageSource.setDefaultEncoding("UTF-8");
+        return messageSource;
+    }
+
+    @Bean
+    LocaleResolver localeResolver() {
+        final CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
+        cookieLocaleResolver.setDefaultLocale(Locale.ENGLISH);
+        return cookieLocaleResolver;
     }
 
     @Bean

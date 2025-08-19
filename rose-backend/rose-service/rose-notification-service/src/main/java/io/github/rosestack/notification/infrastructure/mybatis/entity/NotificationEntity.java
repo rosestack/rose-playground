@@ -8,8 +8,9 @@ import io.github.rosestack.notification.domain.value.TargetType;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.NotificationChannelTypeHandler;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.NotificationStatusTypeHandler;
 import io.github.rosestack.notification.infrastructure.mybatis.typehandler.TargetTypeTypeHandler;
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * Notification 持久化对象
@@ -17,27 +18,27 @@ import lombok.Data;
 @Data
 @TableName("notification")
 public class NotificationEntity {
-    private String id;
-    private String tenantId;
-    private String channelId;
-    private String templateId;
-    private String target;
+	private String id;
+	private String tenantId;
+	private String channelId;
+	private String templateId;
+	private String target;
 
-    @TableField(typeHandler = TargetTypeTypeHandler.class)
-    private TargetType targetType;
+	@TableField(typeHandler = TargetTypeTypeHandler.class)
+	private TargetType targetType;
 
-    private String content;
+	private String content;
 
-    @TableField(typeHandler = NotificationStatusTypeHandler.class)
-    private NotificationStatus status;
+	@TableField(typeHandler = NotificationStatusTypeHandler.class)
+	private NotificationStatus status;
 
-    @TableField(typeHandler = NotificationChannelTypeHandler.class)
-    private NotificationChannelType channelType;
+	@TableField(typeHandler = NotificationChannelTypeHandler.class)
+	private NotificationChannelType channelType;
 
-    private String failReason;
-    private LocalDateTime sendTime;
-    private LocalDateTime readTime;
-    private int retryCount;
-    private String traceId;
-    private String requestId;
+	private String failReason;
+	private LocalDateTime sendTime;
+	private LocalDateTime readTime;
+	private int retryCount;
+	private String traceId;
+	private String requestId;
 }

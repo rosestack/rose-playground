@@ -28,7 +28,7 @@ import org.testcontainers.containers.MySQLContainer;
 public abstract class BaseIT {
 
     @ServiceConnection
-    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:9.2");
+    private static final MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.4");
 
     static {
         mySQLContainer

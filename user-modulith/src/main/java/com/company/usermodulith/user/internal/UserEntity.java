@@ -20,22 +20,22 @@ import lombok.EqualsAndHashCode;
 @TableName("user")
 public class UserEntity extends BaseEntity {
 
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private Long id;
+	@TableId(value = "id", type = IdType.ASSIGN_ID)
+	private Long id;
 
-    @TableField("username")
-    private String username;
+	@TableField("username")
+	private String username;
 
-    @TableField("email")
-    private String email;
+	@TableField("email")
+	private String email;
 
-    @TableField("phone")
-    private String phone;
+	@TableField("phone")
+	private String phone;
 
-    @TableField("password")
-    private String password;
+	@TableField("password")
+	private String password;
 
-    @TableField("status")
-    @EnumValue
-    private UserStatus status;
+	@TableField("status")
+	@EnumValue
+	private UserStatus status;
 }

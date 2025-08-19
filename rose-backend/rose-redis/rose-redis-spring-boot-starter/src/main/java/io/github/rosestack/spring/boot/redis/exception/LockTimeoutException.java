@@ -10,19 +10,19 @@ package io.github.rosestack.spring.boot.redis.exception;
  */
 public class LockTimeoutException extends LockException {
 
-    public LockTimeoutException() {
-        super();
-    }
+	public LockTimeoutException() {
+		super();
+	}
 
-    public LockTimeoutException(String message) {
-        super(message);
-    }
+	public LockTimeoutException(String message) {
+		super(message);
+	}
 
-    public LockTimeoutException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public LockTimeoutException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public LockTimeoutException(Throwable cause) {
-        super(cause);
-    }
+	public LockTimeoutException(Throwable cause) {
+		super(cause);
+	}
 }

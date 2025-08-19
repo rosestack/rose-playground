@@ -11,22 +11,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 public class InMemoryUserDetailsService implements UserDetailsService {
 
-    private final UserDetails defaultUser;
+	private final UserDetails defaultUser;
 
-    public InMemoryUserDetailsService(PasswordEncoder passwordEncoder) {
-        this.defaultUser = User.withUsername("user")
-                .password(passwordEncoder.encode("123"))
-                .roles("USER")
-                .build();
-    }
+	public InMemoryUserDetailsService(PasswordEncoder passwordEncoder) {
+		this.defaultUser = User.withUsername("user")
+			.password(passwordEncoder.encode("123"))
+			.roles("USER")
+			.build();
+	}
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if (defaultUser.getUsername().equals(username)) {
-            return defaultUser;
-        }
-        throw new UsernameNotFoundException("User not found: " + username);
-    }
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		if (defaultUser.getUsername().equals(username)) {
+			return defaultUser;
+		}
+		throw new UsernameNotFoundException("User not found: " + username);
+	}
 }
-
-

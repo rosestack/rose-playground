@@ -10,19 +10,19 @@ package io.github.rosestack.spring.boot.redis.exception;
  */
 public class LockException extends RuntimeException {
 
-    public LockException() {
-        super();
-    }
+	public LockException() {
+		super();
+	}
 
-    public LockException(String message) {
-        super(message);
-    }
+	public LockException(String message) {
+		super(message);
+	}
 
-    public LockException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public LockException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public LockException(Throwable cause) {
-        super(cause);
-    }
+	public LockException(Throwable cause) {
+		super(cause);
+	}
 }

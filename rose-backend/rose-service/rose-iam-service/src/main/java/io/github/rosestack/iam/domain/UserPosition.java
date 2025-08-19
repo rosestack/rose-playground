@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class UserPosition extends BaseEntity {
-    private String positionId;
+	private String positionId;
 
-    private String userId;
+	private String userId;
 }

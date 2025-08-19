@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class NotificationTemplateChannel {
-    private Long id;
-    private String templateId;
-    private String channelId;
+	private Long id;
+	private String templateId;
+	private String channelId;
 }

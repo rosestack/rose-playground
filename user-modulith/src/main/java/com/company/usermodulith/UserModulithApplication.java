@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class UserModulithApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(UserModulithApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(UserModulithApplication.class, args);
+	}
 }
