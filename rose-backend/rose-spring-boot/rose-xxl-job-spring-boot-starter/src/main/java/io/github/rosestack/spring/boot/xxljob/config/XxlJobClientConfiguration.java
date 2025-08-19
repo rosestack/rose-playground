@@ -2,6 +2,7 @@ package io.github.rosestack.spring.boot.xxljob.config;
 
 import io.github.rosestack.spring.boot.xxljob.client.XxlJobClient;
 import io.github.rosestack.spring.boot.xxljob.client.XxlJobClientAuthInterceptor;
+import io.github.rosestack.spring.boot.xxljob.client.registry.XxlJobRegistrar;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -31,6 +32,13 @@ public class XxlJobClientConfiguration {
 		RestTemplate restTemplate = restTemplateObjectProvider.getIfAvailable(() -> new RestTemplate());
 		restTemplate.getInterceptors().add(xxlJobClientAuthInterceptor);
 		return new XxlJobClient(restTemplate, properties);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnBean(XxlJobClient.class)
+	XxlJobRegistrar xxlJobRegistrar(XxlJobClient xxlJobClient, XxlJobProperties properties) {
+		return new XxlJobRegistrar(xxlJobClient, properties);
 	}
 }
 

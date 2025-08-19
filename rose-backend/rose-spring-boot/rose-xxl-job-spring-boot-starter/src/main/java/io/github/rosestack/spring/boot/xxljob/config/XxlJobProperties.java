@@ -87,10 +87,7 @@ public class XxlJobProperties {
 		 * 登录路径（默认 /login，不同版本可能不同）
 		 */
 		private String loginPath = "/login";
-		/**
-		 * 登出路径（默认 /logout）
-		 */
-		private String logoutPath = "/logout";
+
 		/**
 		 * 用户名参数名（默认 userName）
 		 */
@@ -110,6 +107,8 @@ public class XxlJobProperties {
 		public static class Defaults {
 			private String author = "admin";
 
+			private String alarmEmail;
+
 			private String scheduleType = "CRON";
 
 			private String glueType = "BEAN";
@@ -119,6 +118,11 @@ public class XxlJobProperties {
 			private String misfireStrategy = "DO_NOTHING";
 
 			private String executorBlockStrategy = "SERIAL_EXECUTION";
+
+			private int executorTimeout = 0;
+
+			private int executorFailRetryCount = 0;
+
 		}
 	}
 }

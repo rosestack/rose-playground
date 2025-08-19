@@ -1,16 +1,13 @@
 package io.github.rosestack.spring.boot.xxljob.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JavaType;
 
 import io.github.rosestack.core.util.JsonUtils;
 import io.github.rosestack.spring.boot.xxljob.client.model.*;
 import lombok.RequiredArgsConstructor;
 import io.github.rosestack.spring.boot.xxljob.config.XxlJobProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.http.*;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -19,10 +16,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * 极简 XXL-Job Admin 客户端（任务 CRUD）
- * 说明：XXL-Job Admin 公开的是基于表单的管理接口，此处仅封装最小能力
- */
 @RequiredArgsConstructor
 public class XxlJobClient {
 	private final RestTemplate restTemplate;
@@ -38,81 +31,93 @@ public class XxlJobClient {
 		return base;
 	}
 
-	public XxlRestResponse<?> addJob(XxlJobInfo job) {
-		Objects.requireNonNull(job, "job");
-		return postForXxlResponse(baseUrl() + "/jobinfo/add", JsonUtils.toString(job));
+	public XxlJobInfo addJob(XxlJobInfo job) {
+		Objects.requireNonNull(job, "参数不能为空");
+		return postForXxlContent(baseUrl() + "/jobinfo/add", toForm(job), XxlJobInfo.class);
 	}
 
-	public XxlRestResponse<?> updateJob(XxlJobInfo job) {
-		Objects.requireNonNull(job, "job");
-		return postForXxlResponse(baseUrl() + "/jobinfo/update", JsonUtils.toString(job));
+	public XxlJobInfo updateJob(XxlJobInfo job) {
+		Objects.requireNonNull(job, "参数不能为空");
+		return postForXxlContent(baseUrl() + "/jobinfo/update", toForm(job), XxlJobInfo.class);
 	}
 
-	public XxlRestResponse<?> removeJob(long id) {
+	public void removeJob(long id) {
 		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
 		f.add("id", String.valueOf(id));
-		return postForXxlResponse(baseUrl() + "/jobinfo/remove", JsonUtils.toString(f));
+		postForXxlContent(baseUrl() + "/jobinfo/remove", f, Void.class);
 	}
 
-	public XxlRestResponse<?> startJob(long id) {
+	public void startJob(long id) {
 		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
 		f.add("id", String.valueOf(id));
-		return postForXxlResponse(baseUrl() + "/jobinfo/start", JsonUtils.toString(f));
+		postForXxlContent(baseUrl() + "/jobinfo/start", f, Void.class);
 	}
 
-	public XxlRestResponse<?> stopJob(long id) {
+	public void stopJob(long id) {
 		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
 		f.add("id", String.valueOf(id));
-		return postForXxlResponse(baseUrl() + "/jobinfo/stop", JsonUtils.toString(f));
+		postForXxlContent(baseUrl() + "/jobinfo/stop", f, Void.class);
 	}
 
-	public XxlJobInfoPage pageJobList(int start, int length, Integer jobGroup, String executorHandler, String filterTime) {
-		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
-		f.add("start", String.valueOf(start));
-		f.add("length", String.valueOf(length));
-		if (jobGroup != null) f.add("jobGroup", String.valueOf(jobGroup));
+	public XxlJobInfoPage pageJobInfo(long jobGroupId, String executorHandler) {
+		LinkedMultiValueMap<String, String> f = new LinkedMultiValueMap<>();
+		f.add("jobGroup", String.valueOf(jobGroupId));
 		if (executorHandler != null) f.add("executorHandler", executorHandler);
-		if (filterTime != null) f.add("filterTime", filterTime);
-		return postFor(baseUrl() + "/jobinfo/pageList", JsonUtils.toString(f), XxlJobInfoPage.class);
+		return postForXxlContent(baseUrl() + "/jobinfo/pageList", f, XxlJobInfoPage.class);
 	}
 
 	public XxlJobInfo getJob(long id) {
-		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
+		LinkedMultiValueMap<String, String> f = new LinkedMultiValueMap<>();
 		f.add("id", String.valueOf(id));
-		return postFor(baseUrl() + "/jobinfo/loadById", JsonUtils.toString(f), XxlJobInfo.class);
+		return postForXxlContent(baseUrl() + "/jobinfo/loadById", f, XxlJobInfo.class);
 	}
 
-	// job group create
-	public XxlRestResponse<?> addJobGroup(String appname) {
-		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
-		if (appname != null) {
-			f.add("appname", appname);
-		}
-		return postForXxlResponse(baseUrl() + "/jobgroup/save", JsonUtils.toString(f));
+	public XxlJobGroup addJobGroup(String appname) {
+		LinkedMultiValueMap<String, String> f = new LinkedMultiValueMap<>();
+		f.add("appname", appname);
+		return postForXxlContent(baseUrl() + "/jobgroup/save", f, XxlJobGroup.class);
 	}
 
-	public XxlJobGroupPage pageJobGroupList(String appName) {
+	public XxlJobGroupPage pageJobGroup(String appName) {
 		MultiValueMap<String, String> f = new LinkedMultiValueMap<>();
 		if (appName != null) f.add("appname", appName);
-		return postFor(baseUrl() + "/jobgroup/pageList", JsonUtils.toString(f), XxlJobGroupPage.class);
+		return postForXxlContent(baseUrl() + "/jobgroup/pageList", f, XxlJobGroupPage.class);
 	}
 
-	private XxlRestResponse<?> postForXxlResponse(String url, String form) {
-		RequestEntity<String> req = RequestEntity
+	// 新增：带内容泛型的解析，返回完整响应（表单提交）
+	private <T> XxlRestResponse<T> postForXxlResponse(String url, MultiValueMap<String, String> form, Class<T> contentClass) {
+		RequestEntity<MultiValueMap<String, String>> req = RequestEntity
 			.post(URI.create(url))
 			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.accept(MediaType.APPLICATION_JSON)
 			.body(form);
-		var resp = restTemplate.exchange(req, String.class);
-		return JsonUtils.fromString(resp.getBody(), XxlRestResponse.class);
+		ResponseEntity<String> respEntity = restTemplate.exchange(req, String.class);
+
+		ObjectMapper mapper = JsonUtils.getObjectMapper();
+		try {
+			JavaType type = mapper.getTypeFactory().constructParametricType(XxlRestResponse.class, contentClass);
+			XxlRestResponse<T> resp = mapper.readValue(respEntity.getBody(), type);
+			if (resp == null) {
+				throw new IllegalStateException("XXL-Job 调用返回空: " + url);
+			}
+			Integer code = resp.getCode();
+			if (code == null || code != 200) {
+				throw new IllegalStateException("XXL-Job 调用失败: " + resp.getMsg());
+			}
+			return resp;
+		} catch (Exception e) {
+			throw new IllegalArgumentException("The given string value cannot be transformed to Json object: " + respEntity.getBody(), e);
+		}
 	}
 
-	private <T> T postFor(String url, String form, Class<T> clazz) {
-		RequestEntity<String> req = RequestEntity
-			.post(URI.create(url))
-			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-			.body(form);
-		var resp = restTemplate.exchange(req, String.class);
-		return JsonUtils.fromString(resp.getBody(), clazz);
+	// 新增：直接返回 content 内容（表单提交）
+	private <T> T postForXxlContent(String url, MultiValueMap<String, String> form, Class<T> contentClass) {
+		XxlRestResponse<T> r = postForXxlResponse(url, form, contentClass);
+		return r.getContent();
+	}
+
+	private static MultiValueMap<String, String> toForm(XxlJobInfo obj) {
+		return JsonUtils.fromString(JsonUtils.toString(obj), MultiValueMap.class);
 	}
 }
 
