@@ -1,5 +1,6 @@
 package io.github.rosestack.notice.sender;
 
+import io.github.rosestack.core.util.StringPool;
 import io.github.rosestack.notice.NoticeException;
 import io.github.rosestack.notice.NoticeRetryableException;
 import io.github.rosestack.notice.SendRequest;
@@ -32,7 +33,7 @@ public class EmailSender extends AbstractConfigure implements Sender {
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(request.getTarget()));
         List<String> ccList = request.getCc();
         if (ccList != null && !ccList.isEmpty()) {
-            message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(String.join(",", ccList)));
+            message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(String.join(StringPool.COMMA, ccList)));
         }
         Object subjObj = config.get("mail.smtp.subject");
         String subject = subjObj != null ? subjObj.toString() : "通知";

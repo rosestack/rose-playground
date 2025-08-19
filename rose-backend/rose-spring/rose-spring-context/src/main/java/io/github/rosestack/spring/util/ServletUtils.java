@@ -1,5 +1,6 @@
 package io.github.rosestack.spring.util;
 
+import io.github.rosestack.core.util.StringPool;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -155,7 +156,7 @@ public abstract class ServletUtils {
         for (Map.Entry<String, String[]> entry : getRequestParams(request).entrySet()) {
             String[] values = entry.getValue();
             if (values != null && values.length > 0) {
-                params.put(entry.getKey(), String.join(",", values));
+                params.put(entry.getKey(), String.join(StringPool.COMMA, values));
             }
         }
         return params;
@@ -443,8 +444,8 @@ public abstract class ServletUtils {
      * @return The first valid IP address found, or the original string if no processing needed
      */
     public static String getReverseProxyIp(String ip) {
-        if (ip != null && ip.contains(",")) {
-            for (String subIp : ip.split(",")) {
+        if (ip != null && ip.contains(StringPool.COMMA)) {
+            for (String subIp : ip.split(StringPool.COMMA)) {
                 String trimmedIp = subIp.trim();
                 if (StringUtils.isNotBlank(trimmedIp) && !"unknown".equalsIgnoreCase(trimmedIp)) {
                     return trimmedIp;

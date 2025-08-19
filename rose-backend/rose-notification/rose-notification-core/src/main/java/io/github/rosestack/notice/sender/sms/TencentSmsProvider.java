@@ -5,6 +5,7 @@ import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.sms.v20210111.SmsClient;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
+import io.github.rosestack.core.util.StringPool;
 import io.github.rosestack.notice.NoticeException;
 import io.github.rosestack.notice.SendRequest;
 import io.github.rosestack.notice.SenderConfiguration;
@@ -37,7 +38,7 @@ public class TencentSmsProvider extends AbstractConfigure implements SmsProvider
         String signName = config.getConfig().get("tencent.sms.signName").toString();
         String templateId = config.getConfig().get("tencent.sms.templateId").toString();
         String[] templateParams = request.getTemplateContent() != null
-                ? request.getTemplateContent().split(",")
+                ? request.getTemplateContent().split(StringPool.COMMA)
                 : new String[] {};
         String phoneNumber = request.getTarget();
         if (isAnyBlank(sdkAppId, signName, templateId, phoneNumber)) {

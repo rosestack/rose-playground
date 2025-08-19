@@ -1,5 +1,6 @@
 package io.github.rosestack.spring.boot.security.account;
 
+import io.github.rosestack.core.util.StringPool;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.Arrays;
@@ -20,7 +21,7 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
             return true;
         }
         context.disableDefaultConstraintViolation();
-        context.buildConstraintViolationWithTemplate(String.join(",", validator.getMessages(result)))
+        context.buildConstraintViolationWithTemplate(String.join(StringPool.COMMA, validator.getMessages(result)))
                 .addConstraintViolation();
         return false;
     }

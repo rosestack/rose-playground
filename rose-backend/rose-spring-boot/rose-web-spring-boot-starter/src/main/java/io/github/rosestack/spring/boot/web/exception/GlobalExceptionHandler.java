@@ -1,85 +1,100 @@
 package io.github.rosestack.spring.boot.web.exception;
 
 import io.github.rosestack.core.exception.BusinessException;
-import io.github.rosestack.core.exception.RateLimitException;
-import io.github.rosestack.core.model.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import io.github.rosestack.core.util.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
-import java.util.Locale;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
-/**
- * 优化的全局异常处理器
- *
- * <p>使用 ExceptionHandlerHelper 统一处理各种异常，减少重复代码
- *
- * @author Rose Team
- * @since 1.0.0
- */
-@Slf4j
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    private final ExceptionHandlerHelper exceptionHelper;
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
+	public ApiResponse<Void> handleValidation(Exception ex) {
+		log.warn("Validation failed", ex);
+		String message = "validation failed";
+		if (ex instanceof MethodArgumentNotValidException manv) {
+			FieldError fe = manv.getBindingResult().getFieldErrors().stream()
+				.findFirst()
+				.orElse(null);
+			if (fe != null) {
+				message = fe.getField() + ": " + fe.getDefaultMessage();
+			}
+		} else if (ex instanceof BindException be) {
+			FieldError fe =
+				be.getBindingResult().getFieldErrors().stream().findFirst().orElse(null);
+			if (fe != null) {
+				message = fe.getField() + ": " + fe.getDefaultMessage();
+			}
+		}
+		return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), message);
+	}
 
-    /**
-     * 处理业务异常
-     */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
-            BusinessException e, HttpServletRequest request, Locale locale) {
-        return exceptionHelper.handleBusinessException(e, request, locale);
-    }
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler({ConstraintViolationException.class})
+	public ApiResponse<Void> handleConstraint(ConstraintViolationException ex) {
+		log.warn("Constraint violation: {}", ex.getMessage());
+		String message = ex.getConstraintViolations().stream()
+			.findFirst()
+			.map(v -> v.getPropertyPath() + ": " + v.getMessage())
+			.orElse("constraint violation");
+		return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), message);
+	}
 
-    /**
-     * 处理限流异常
-     */
-    @ExceptionHandler(RateLimitException.class)
-    public ResponseEntity<ApiResponse<Void>> handleRateLimitException(
-            RateLimitException e, HttpServletRequest request, Locale locale) {
-        return exceptionHelper.handleRateLimitException(e, request, locale);
-    }
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler({HttpMessageNotReadableException.class})
+	public ApiResponse<Void> handleBadBody(HttpMessageNotReadableException ex) {
+		log.warn("Bad request body", ex);
+		return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "request body error");
+	}
 
-    /**
-     * 处理参数验证异常
-     */
-    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class, ConstraintViolationException.class})
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(
-            Exception e, HttpServletRequest request, Locale locale) {
-        return exceptionHelper.handleValidationException(e, request, locale);
-    }
+	@ResponseStatus(HttpStatus.CONFLICT)
+	@ExceptionHandler({OptimisticLockException.class})
+	public ApiResponse<Void> handleOptimisticLock(OptimisticLockException ex) {
+		log.warn("Optimistic lock conflict: {}", ex.getMessage());
+		return ApiResponse.error(HttpStatus.CONFLICT.value(), "conflict");
+	}
 
-    /** 处理认证和授权异常 注意：需要在项目中添加 Spring Security 依赖后才能使用具体的异常类型 */
-    // @ExceptionHandler({AuthenticationException.class, AccessDeniedException.class})
-    // public ResponseEntity<ApiResponse<Void>> handleSecurityException(
-    //         Exception e, HttpServletRequest request, Locale locale) {
-    //     return exceptionHelper.handleAuthenticationException(e, request, locale);
-    // }
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ExceptionHandler({NotFoundException.class})
+	public ApiResponse<Void> handleNotFound(NotFoundException ex) {
+		log.warn("Not found: {}", ex.getMessage());
+		return ApiResponse.error(HttpStatus.NOT_FOUND.value(), "not found");
+	}
 
-    /**
-     * 处理资源未找到异常
-     */
-    @ExceptionHandler({NoHandlerFoundException.class, HttpRequestMethodNotSupportedException.class})
-    public ResponseEntity<ApiResponse<Void>> handleNotFoundException(
-            Exception e, HttpServletRequest request, Locale locale) {
-        return exceptionHelper.handleNotFoundException(e, request, locale);
-    }
+	@ResponseStatus(HttpStatus.OK)
+	@ExceptionHandler(BusinessException.class)
+	public ApiResponse handleBusiness(BusinessException ex) {
+		log.error("Business error", ex);
+		return ApiResponse.ok(ex.getMessageArgs());
+	}
 
-    /**
-     * 处理其他未捕获的异常
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(
-            Exception e, HttpServletRequest request, Locale locale) {
-        return exceptionHelper.handleInternalServerError(e, request, locale);
-    }
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(Exception.class)
+	public ApiResponse<Void> handleOthers(Exception ex) {
+		log.error("Internal server error", ex);
+		return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "internal error");
+	}
+
+	public static class OptimisticLockException extends RuntimeException {
+		public OptimisticLockException(String message) {
+			super(message);
+		}
+	}
+
+	public static class NotFoundException extends RuntimeException {
+		public NotFoundException(String message) {
+			super(message);
+		}
+	}
 }

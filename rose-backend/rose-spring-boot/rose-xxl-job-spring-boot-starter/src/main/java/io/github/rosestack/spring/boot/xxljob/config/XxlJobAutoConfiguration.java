@@ -3,6 +3,7 @@ package io.github.rosestack.spring.boot.xxljob.config;
 import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import com.xxl.job.core.handler.annotation.XxlJob;
+import io.github.rosestack.core.util.StringPool;
 import io.github.rosestack.spring.boot.xxljob.aspect.XxlJobMetricAspect;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Locale;
@@ -64,7 +65,7 @@ public class XxlJobAutoConfiguration {
                     .filter(s -> s.contains(XXL_JOB_ADMIN))
                     .flatMap(s -> discoveryClient.getInstances(s).stream())
                     .map(XxlJobAutoConfiguration::getServiceUrl)
-                    .collect(Collectors.joining(","));
+                    .collect(Collectors.joining(StringPool.COMMA));
             executor.setAdminAddresses(serverList);
         } else {
             if (StringUtils.isBlank(props.getAdminAddresses())) {

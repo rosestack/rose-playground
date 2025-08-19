@@ -1,7 +1,7 @@
 package com.company.usermodulith.user.controller;
 
 import com.company.usermodulith.user.*;
-import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.core.model.PageRequest;
 import io.github.rosestack.core.model.PageResponse;
 import jakarta.validation.Valid;

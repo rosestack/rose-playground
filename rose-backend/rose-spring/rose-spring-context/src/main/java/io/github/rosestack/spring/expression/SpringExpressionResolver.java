@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.rosestack.spring.el;
+package io.github.rosestack.spring.expression;
 
 import io.github.rosestack.core.util.date.DateUtils;
 import io.github.rosestack.spring.util.SpringContextUtils;

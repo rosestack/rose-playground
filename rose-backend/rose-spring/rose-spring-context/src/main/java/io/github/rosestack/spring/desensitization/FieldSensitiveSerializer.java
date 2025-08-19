@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import io.github.rosestack.spring.annotation.FieldSensitive;
-import io.github.rosestack.spring.el.SpringExpressionResolver;
+import io.github.rosestack.spring.expression.SpringExpressionResolver;
 import java.io.IOException;
 import java.util.Objects;
 

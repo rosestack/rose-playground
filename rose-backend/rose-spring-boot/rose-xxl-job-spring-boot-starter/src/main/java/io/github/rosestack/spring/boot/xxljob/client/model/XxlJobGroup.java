@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import io.github.rosestack.core.util.StringPool;
 import lombok.Data;
 
 @Data
@@ -26,7 +28,7 @@ public class XxlJobGroup implements Serializable {
 
     public List<String> getRegistryList() {
         if (addressList != null && addressList.trim().length() > 0) {
-            registryList = new ArrayList<String>(Arrays.asList(addressList.split(",")));
+            registryList = new ArrayList<String>(Arrays.asList(addressList.split(StringPool.COMMA)));
         }
         return registryList;
     }

@@ -3,6 +3,7 @@ package io.github.rosestack.spring.boot.xxljob.client;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.rosestack.core.util.JsonUtils;
+import io.github.rosestack.core.util.StringPool;
 import io.github.rosestack.spring.boot.xxljob.client.model.*;
 import io.github.rosestack.spring.boot.xxljob.config.XxlJobProperties;
 import java.net.URI;
@@ -24,7 +25,7 @@ public class XxlJobClient {
         if (admin == null || admin.isEmpty()) {
             throw new IllegalStateException("rose.xxl-job.admin-addresses 未配置");
         }
-        String[] parts = admin.split(",");
+        String[] parts = admin.split(StringPool.COMMA);
         String base = parts[0].trim();
         if (base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);

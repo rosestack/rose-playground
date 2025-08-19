@@ -1,12 +1,13 @@
 package io.github.rosestack.spring.boot.web.config;
 
+import io.github.rosestack.core.util.StringPool;
 import io.github.rosestack.spring.factory.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.web.advice.ApiResponseBodyAdvice;
-import io.github.rosestack.spring.boot.web.exception.ExceptionHandlerHelper;
 import io.github.rosestack.spring.boot.web.exception.GlobalExceptionHandler;
 import io.github.rosestack.spring.filter.CachingRequestFilter;
 import io.github.rosestack.spring.filter.LoggingRequestFilter;
 import io.github.rosestack.spring.filter.XssRequestFilter;
+import io.github.rosestack.spring.util.SpringContextUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
@@ -22,7 +24,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
@@ -58,6 +62,15 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 public class RoseWebAutoConfiguration {
 	private final RoseWebProperties roseWebProperties;
 
+	@Order(value = Ordered.HIGHEST_PRECEDENCE)
+	@EventListener(WebServerInitializedEvent.class)
+	public void afterStart(WebServerInitializedEvent event) {
+		String appName = SpringContextUtils.getApplicationName();
+		int localPort = event.getWebServer().getPort();
+		String profiles = String.join(StringPool.COMMA, SpringContextUtils.getActiveProfiles());
+		log.info("Application {} finish to start with port {} and {} profile", appName, localPort, profiles);
+	}
+
 	@PostConstruct
 	public void init() {
 		log.info("Rose Web 自动配置已启用");
@@ -81,7 +94,7 @@ public class RoseWebAutoConfiguration {
 			new CachingRequestFilter(roseWebProperties.getFilter().getExcludePaths());
 		FilterRegistrationBean<CachingRequestFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
-		registrationBean.addUrlPatterns("/*");
+		registrationBean.addUrlPatterns(StringPool.ALL_PATH);
 		registrationBean.setName(filter.getClass().getSimpleName());
 		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 		return registrationBean;
@@ -97,7 +110,7 @@ public class RoseWebAutoConfiguration {
 		XssRequestFilter filter = new XssRequestFilter(roseWebProperties.getFilter().getExcludePaths());
 		FilterRegistrationBean<XssRequestFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
-		registrationBean.addUrlPatterns("/*");
+		registrationBean.addUrlPatterns(StringPool.ALL_PATH);
 		registrationBean.setName(filter.getClass().getSimpleName());
 		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
 		return registrationBean;

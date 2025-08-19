@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.security.core.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.core.util.JsonUtils;
 import io.github.rosestack.spring.boot.security.account.LoginLockoutService;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;

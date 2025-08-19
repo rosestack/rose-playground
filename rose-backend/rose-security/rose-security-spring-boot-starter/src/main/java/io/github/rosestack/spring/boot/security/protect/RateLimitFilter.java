@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.security.protect;
 
-import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.core.util.JsonUtils;
 import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import jakarta.servlet.FilterChain;

@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.web.advice;
 
-import io.github.rosestack.core.model.ApiResponse;
+import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.spring.annotation.ResponseIgnore;
 import io.github.rosestack.spring.filter.AbstractRequestFilter;
 import io.github.rosestack.spring.util.ServletUtils;
