@@ -66,7 +66,7 @@ import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDE
  */
 @Slf4j
 @RequiredArgsConstructor
-@PropertySource(value = "classpath:application-rose-mybatis.yml", factory = YmlPropertySourceFactory.class)
+@PropertySource(value = "classpath:application-rose-mybatis.yaml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.mybatis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseMybatisProperties.class)
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})

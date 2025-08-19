@@ -41,7 +41,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Slf4j
 @AutoConfiguration(after = RedisAutoConfiguration.class)
 @ConditionalOnClass(RedisTemplate.class)
-@PropertySource(value = "classpath:application-rose-redis.yml", factory = YmlPropertySourceFactory.class)
+@PropertySource(value = "classpath:application-rose-redis.yaml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseRedisProperties.class)
 public class RoseRedisAutoConfiguration {

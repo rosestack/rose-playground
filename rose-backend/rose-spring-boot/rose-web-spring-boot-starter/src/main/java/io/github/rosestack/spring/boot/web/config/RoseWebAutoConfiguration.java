@@ -38,7 +38,7 @@ import org.springframework.context.annotation.PropertySource;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableConfigurationProperties(RoseWebProperties.class)
 @ConditionalOnProperty(prefix = "rose.web", name = "enabled", havingValue = "true", matchIfMissing = true)
-@PropertySource(value = "classpath:application-rose-web.yml", factory = YmlPropertySourceFactory.class)
+@PropertySource(value = "classpath:application-rose-web.yaml", factory = YmlPropertySourceFactory.class)
 public class RoseWebAutoConfiguration {
 
 	@PostConstruct

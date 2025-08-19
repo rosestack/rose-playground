@@ -62,24 +62,19 @@ type: "always_apply"
   - 跨服务调用必须设置超时与重试上限。
 * 参数外置：所有超时与线程池参数必须通过配置暴露，按环境覆盖；禁止硬编码。
 
-### 3. 事务边界
+### 4. 事务边界
 
 * 读操作显式 @Transactional(readOnly = true)；写操作 @Transactional(rollbackFor = Exception.class)。
 * 事务范围最小化；禁止在单事务内发起远程调用；必要时采用补偿/Saga。
 * 只在 Service 层定义事务；Controller/DAO 层不直接控制事务。
 
-### 4. Web 层一致性
+### 5. Web 层一致性
 
 * Controller 保持瘦身：无业务逻辑；DTO + Jakarta Validation。
-* 统一响应：`ApiResponse<T>`（不采用 RFC7807），字段包括 code（Integer）、message（String，可国际化）、data（泛型，可为 null）、success（boolean）。
-  - 错误码分配：0（成功）；1000-1999（校验/客户端）；2000-2999（业务规则）；3000-3999（鉴权/权限）；4000-4999（资源/配额/并发冲突）；5000-5999（下游/外部系统）；9000-9999（系统内部错误）。
-  - 每个模块维护错误码清单（README 或 docs/error-codes.md），避免冲突；traceId 通过响应头（如 X-Trace-Id）透传，必要时在响应体回显。
-* 全局异常处理（@RestControllerAdvice）。
 * 分页统一使用 MyBatis-Plus 的 `Page` 模型：Controller/Service 入参采用 `Page<?>`对象，返回 `Page<T>`；禁止直接返回实体。
 * 使用命令对象（例如“CreateOrderCommand”）进行业务操作
-* 推荐启用 Swagger（springdoc）文档。
 
-### 5. 遵循 REST API 设计原则
+### 6. 遵循 REST API 设计原则
 
 * **版本化、面向资源的 URL：**将您的端点构造为 `/api/v{version}/resources`（例如 `/api/v1/orders`）。
 * **集合和子资源的一致模式**：保持 URL 约定统一（例如，帖子集合使用 `/posts`，特定帖子的评论使用 `/posts/{slug}/comments`）。
@@ -87,18 +82,18 @@ type: "always_apply"
 * 排序约束：采用白名单字段与默认稳定排序；禁止直接透传数据库字段名。
 * 幂等性：对关键 POST/支付/订单等操作，客户端需提供 Idempotency-Key；服务端在 5-10 分钟窗口内去重并返回首次结果。
 
-### 6. 安全
+### 7. 安全
 
 * Spring Security 最小权限：启用方法级鉴权（@PreAuthorize），细粒度基于角色/权限串；
 * 认证与会话：推荐 JWT/OAuth2，签名密钥轮换；令牌最短可用期与刷新策略明确；
 * 秘密与凭据：集中管理（Vault/环境变量），git/secrets 扫描；禁止在日志/配置中明文；
 * 输入输出安全：XSS/SQL 注入/路径遍历防护；文件上传大小/类型限制与存储隔离；CORS 最小化策略。
 
-### 7. 国际化
+### 8. 国际化
 
 * 将所有面向用户的文本（如标签、提示和消息）外部化到 ResourceBundles 中，而不是将它们嵌入到代码中。
 
-### 8. 日志与可观测性
+### 9. 日志与可观测性
 
 日志：
 * 切勿使用 `System.out.println()` 进行应用程序日志记录，使用 SLF4J + Logback。
@@ -112,20 +107,20 @@ type: "always_apply"
 * 优雅停机、Readiness/Liveness 探针配置完备并通过演练。
 * 为关键操作添加业务埋点、指标与告警阈值。建议使用 Micrometer + Spring Boot Actuator 暴露指标。
 
-### 9. 测试与门禁
+### 10. 测试与门禁
 
 * 单元/集成/契约测试覆盖率符合项目阈值；使用 Testcontainers 启动真实依赖。
 * 构建中开启 Sonar（SonarQube/SonarCloud）、Spotless、JaCoCo，违规即失败；不降低阈值。
 * 使用随机端口进行集成测试
 
-### 10. 版本与依赖管理
+### 11. 版本与依赖管理
 
 * Java 与构建基线：最低 JDK 版本为 Java 21（LTS）；Maven 使用 Toolchains 或 maven-compiler-plugin（release/target=21），Gradle 使用 Java Toolchains（sourceCompatibility/targetCompatibility=21）；启用 spring-boot-configuration-processor 生成配置元数据。
 * 使用父 POM/BOM 锁定版本：Spring Boot 3.5.x、Spring Cloud 2025.0.x、MyBatis-Plus 3.5.12+。
 * 根 POM 统一 properties 管理版本（如 spring-boot.version、spring-cloud.version、mybatis-plus.version）。
 * 建立依赖升级机制：优先使用 Renovate（或月度人工巡检），禁止长期滞后。
 
-### 11. 本地依赖与编排
+### 12. 本地依赖与编排
 
 * 仓库根提供 docker-compose.yaml 与 .env.example，包含 MySQL/Redis/RabbitMQ 的默认配置与持久化卷。
 * 构建镜像可使用 spring-boot-maven-plugin 的 build-image（Paketo Buildpacks），无需 Dockerfile；如需高级定制可保留
@@ -300,7 +295,10 @@ type: "always_apply"
 ### 2. 全局异常处理
 
 * 使用 @RestControllerAdvice 统一处理异常；区分不同异常类型返回对应错误码。
-* 异常响应包含：错误码、错误消息（支持国际化）、traceId、时间戳；敏感信息不暴露给前端。
+* 统一响应：`ApiResponse<T>`（不采用 RFC7807），字段包括 code（Integer）、message（String，可国际化）、data（泛型，可为 null）、success（boolean）。
+  - 错误码分配：0（成功）；1000-1999（校验/客户端）；2000-2999（业务规则）；3000-3999（鉴权/权限）；4000-4999（资源/配额/并发冲突）；5000-5999（下游/外部系统）；9000-9999（系统内部错误）。
+  - 每个模块维护错误码清单（README 或 docs/error-codes.md），避免冲突；traceId 通过响应头（如 X-Trace-Id）透传，必要时在响应体回显。
+  - 敏感信息不暴露给前端
 * 参数校验异常统一处理：@Valid/@Validated 校验失败返回详细字段错误信息。
 
 ### 3. 重试与容错
@@ -434,7 +432,7 @@ type: "always_apply"
 
 ### 3. 文档管理
 
-* API 文档：使用 Swagger/OpenAPI 自动生成；与代码同步更新。
+* API 文档：使用 OpenAPI 自动生成；与代码同步更新。
 * 架构文档：记录重要的架构决策；定期更新设计文档。
 * 运维文档：部署、监控、故障处理手册；操作流程标准化。
 

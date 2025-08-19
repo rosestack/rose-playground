@@ -6,7 +6,7 @@ vars:
   SLEEP_CMD: '{{if eq .GOOS "windows"}}timeout{{else}}sleep{{end}}'
   IMAGE_NAME: 'chensoul/rose-backend'
   DC_DIR: "docker"
-  DC_FILE: "{{.DC_DIR}}/docker-compose.yml"
+  DC_FILE: "{{.DC_DIR}}/docker-compose.yaml"
 
 tasks:
   default:

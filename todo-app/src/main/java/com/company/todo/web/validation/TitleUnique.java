@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Target({FIELD, METHOD, ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Constraint(validatedBy = UserNameUniqueValidator.class)
+@Constraint(validatedBy = TitleUniqueValidator.class)
 public @interface TitleUnique {
 
     String message() default "{todo.title.exists}";

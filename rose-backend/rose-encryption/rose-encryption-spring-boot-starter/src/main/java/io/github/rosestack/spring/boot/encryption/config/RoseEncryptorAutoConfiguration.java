@@ -20,7 +20,7 @@ import org.springframework.context.annotation.PropertySource;
 
 @Slf4j
 @RequiredArgsConstructor
-@PropertySource(value = "classpath:application-rose-encryption.yml", factory = YmlPropertySourceFactory.class)
+@PropertySource(value = "classpath:application-rose-encryption.yaml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(RoseEncryptionProperties.class)
 @Import({KeyRotationController.class, RoseEncryptorAutoConfiguration.class})

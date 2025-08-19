@@ -8,12 +8,12 @@ import java.util.Collections;
 import java.util.Map;
 import org.springframework.web.servlet.HandlerMapping;
 
-class UserNameUniqueValidator implements ConstraintValidator<TitleUnique, String> {
+class TitleUniqueValidator implements ConstraintValidator<TitleUnique, String> {
 
     private final TodoService todoService;
     private final HttpServletRequest request;
 
-    public UserNameUniqueValidator(TodoService todoService, HttpServletRequest request) {
+    public TitleUniqueValidator(TodoService todoService, HttpServletRequest request) {
         this.todoService = todoService;
         this.request = request;
     }

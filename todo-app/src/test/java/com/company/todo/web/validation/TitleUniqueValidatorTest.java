@@ -17,8 +17,8 @@ class TitleUniqueValidatorTest {
 
     @SuppressWarnings("unchecked")
     private ConstraintValidator<?, String> newValidator(TodoService svc, HttpServletRequest req) throws Exception {
-        // 通过反射创建包可见的 UserNameUniqueValidator
-        Class<?> clazz = Class.forName("com.company.todo.web.validation.UserNameUniqueValidator");
+        // 通过反射创建包可见的 TitleUniqueValidator
+        Class<?> clazz = Class.forName("com.company.todo.web.validation.TitleUniqueValidator");
         Constructor<?> c = clazz.getDeclaredConstructors()[0];
         c.setAccessible(true);
         return (ConstraintValidator<?, String>) c.newInstance(svc, req);
