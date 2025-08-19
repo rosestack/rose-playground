@@ -3,10 +3,43 @@ rose:
   xxl-job:
     enabled: true
     admin-addresses: http://127.0.0.1:8080/xxl-job-admin
-    # appname: ''
-    # address: ''
-    # ip: ''
+    # 执行器名称（默认回退到 spring.application.name）
+    # appname: demo-service
+    # address: ''     # 可选，一般不填，默认自动注册
+    # ip: ''          # 可选，IP 指定
     port: 9999
     # access-token: ''
     log-path: logs/xxl-job/
     log-retention-days: 30
+
+    # 指标上报（启用后暴露切面埋点）
+    metrics:
+      enabled: false
+
+    # Admin 客户端能力（启用后在启动时自动检查/注册任务）
+    client:
+      enabled: false
+      # 登录账号（必填）
+      # username: admin
+      # 登录密码（某些版本可选）
+      # password: 123456
+      # 登录路径（不同 admin 版本可能不同，默认 /login）
+      login-path: /login
+      # 登录表单字段名
+      username-param: userName
+      password-param: password
+      # cookie 名（默认 Cookie）
+      cookie-name: Cookie
+
+      # 任务默认值（可被注解覆盖）
+      defaults:
+        author: admin
+        # 告警邮箱，多个逗号分隔
+        # alarm-email: dev@company.com
+        schedule-type: CRON
+        glue-type: BEAN
+        executor-route-strategy: ROUND
+        misfire-strategy: DO_NOTHING
+        executor-block-strategy: SERIAL_EXECUTION
+        executor-timeout: 0
+        executor-fail-retry-count: 0

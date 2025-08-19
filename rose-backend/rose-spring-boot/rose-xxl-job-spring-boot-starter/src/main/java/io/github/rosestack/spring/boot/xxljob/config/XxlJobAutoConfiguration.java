@@ -38,7 +38,7 @@ public class XxlJobAutoConfiguration {
 			throw new IllegalStateException("xxl-job appname 未配置，且 spring.application.name 也为空，请至少配置其中一个");
 		}
 
-		log.info("配置 xxl-job 执行器: appName={}, adminAddresses={}", appName, props.getAdminAddresses());
+		log.info("xxl-job.executor.config: appName={}, adminAddresses={}", appName, props.getAdminAddresses());
 		XxlJobSpringExecutor executor = new XxlJobSpringExecutor();
 		executor.setAdminAddresses(props.getAdminAddresses());
 		executor.setAppname(appName);

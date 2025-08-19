@@ -1,6 +1,7 @@
 package io.github.rosestack.spring.boot.xxljob.client.registry;
 
 import com.xxl.job.core.handler.annotation.XxlJob;
+import io.github.rosestack.core.lang.function.checked.CheckedSupplier;
 import io.github.rosestack.spring.boot.xxljob.client.annotation.XxlJobRegister;
 import io.github.rosestack.spring.boot.xxljob.client.XxlJobClient;
 import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobGroup;
@@ -38,13 +39,15 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
 
 	@Override
 	public void afterSingletonsInstantiated() {
-		Integer jobGroupId;
-		try {
-			jobGroupId = findOrCreateJobGroupId(props.getAppname());
-		} catch (Exception e) {
-			log.warn("XXL-Job register failed: app={}, err={}", props.getAppname(), e.toString());
+		Integer jobGroupId = safeExecute(
+			() -> findOrCreateJobGroupId(props.getAppname()),
+			"执行器组获取失败",
+			props.getAppname()
+		);
+		if (jobGroupId == null) {
 			return;
 		}
+
 		String[] beanNames = applicationContext.getBeanDefinitionNames();
 		for (String name : beanNames) {
 			Object bean = applicationContext.getBean(name);
@@ -62,12 +65,14 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
 	private void processMethod(Method m, int jobGroupId) {
 		XxlJob xxlJob = m.getAnnotation(XxlJob.class);
 		XxlJobRegister reg = m.getAnnotation(XxlJobRegister.class);
-		if (xxlJob == null || reg == null) return;
+		if (xxlJob == null || reg == null) {
+			return;
+		}
 		registerOrUpdateJob(xxlJob.value(), reg, jobGroupId);
 	}
 
 	private void registerOrUpdateJob(String handler, XxlJobRegister reg, int jobGroupId) {
-		try {
+		safeExecute(() -> {
 			// 1) 查找是否已存在同名 handler 的任务
 			XxlJobInfo exist = findJobByHandler(jobGroupId, handler);
 
@@ -76,18 +81,17 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
 			XxlJobInfo saved;
 			if (exist == null) {
 				saved = client.addJob(job);
-				log.info("XXL-Job created, handler={}, id={}", handler, saved != null ? saved.getId() : null);
+				log.info("xxl-job.registered: handler={}, id={}", handler, saved != null ? saved.getId() : null);
 			} else {
 				job.setId(exist.getId());
 				saved = client.updateJob(job);
-				log.info("XXL-Job updated, handler={}, id={}", handler, saved != null ? saved.getId() : null);
+				log.info("xxl-job.updated: handler={}, id={}", handler, saved != null ? saved.getId() : null);
 			}
 
 			// 3) 按需自动启动
 			startIfNeeded(reg, saved, handler);
-		} catch (Exception e) {
-			log.warn("XXL-Job register failed: app={}, handler={}, err={}", props.getAppname(), handler, e.toString());
-		}
+			return null;
+		}, "注册任务失败", handler);
 	}
 
 	private XxlJobInfo buildJobInfo(int jobGroupId, String handler, XxlJobRegister reg) {
@@ -118,17 +122,30 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
 		if (!reg.autoStart() || saved == null || saved.getId() <= 0) {
 			return;
 		}
-		try {
+		safeExecute(() -> {
 			client.startJob(saved.getId());
-			log.info("XXL-Job started, handler={}, id={}", handler, saved.getId());
-		} catch (Exception startEx) {
-			log.warn("XXL-Job start failed, handler={}, id={}, err={}", handler, saved.getId(), startEx.toString());
+			log.info("启动任务成功, handler={}, id={}", handler, saved.getId());
+			return null;
+		}, "任务失败启动", handler);
+	}
+
+	/**
+	 * 统一异常处理辅助方法
+	 */
+	private <T> T safeExecute(CheckedSupplier<T> supplier, String errorMessage, String handler) {
+		try {
+			return supplier.get();
+		} catch (Exception e) {
+			log.warn("{} {}", handler, errorMessage, e);
+			return null;
 		}
 	}
 
 	private Integer findOrCreateJobGroupId(String appname) {
 		Integer groupId = queryGroupId(appname);
-		if (groupId != null) return groupId;
+		if (groupId != null) {
+			return groupId;
+		}
 
 		XxlJobGroup created = client.addJobGroup(appname);
 		if (created != null && created.getId() > 0) {
@@ -145,17 +162,21 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
 
 	private Integer queryGroupId(String appname) {
 		XxlJobGroupPage page = client.pageJobGroup(appname);
-		if (page == null || page.getData() == null) return null;
+		if (page == null || page.getData() == null) {
+			return null;
+		}
 		return page.getData().stream()
-				.filter(it -> appname.equals(it.getAppname()))
-				.map(XxlJobGroup::getId)
-				.findFirst().orElse(null);
+			.filter(it -> appname.equals(it.getAppname()))
+			.map(XxlJobGroup::getId)
+			.findFirst().orElse(null);
 	}
 
 	private XxlJobInfo findJobByHandler(Integer jobGroupId, String handler) {
 		XxlJobInfoPage page = client.pageJobInfo(jobGroupId, handler);
 		List<XxlJobInfo> list = page != null ? page.getData() : null;
-		if (list == null || list.isEmpty()) return null;
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
 		return list.get(0);
 	}
 }
