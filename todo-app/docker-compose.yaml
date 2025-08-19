@@ -23,7 +23,7 @@ services:
       - mysql_data:/var/lib/mysql
 
   redis:
-    image: redis:7
+    image: redis:8
     container_name: todo-redis
     restart: unless-stopped
     ports:

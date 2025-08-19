@@ -23,7 +23,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d:ro
   redis:
-    image: redis:7
+    image: redis:8
     container_name: rose-redis
     restart: unless-stopped
     ports:
