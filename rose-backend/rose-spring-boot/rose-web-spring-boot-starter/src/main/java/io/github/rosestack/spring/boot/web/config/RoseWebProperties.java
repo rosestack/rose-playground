@@ -2,7 +2,6 @@ package io.github.rosestack.spring.boot.web.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Web 配置属性
@@ -22,11 +21,6 @@ public class RoseWebProperties {
 	private boolean enabled = true;
 
 	/**
-	 * 跨域配置
-	 */
-	private CorsConfiguration cors = new CorsConfiguration();
-
-	/**
 	 * 过滤器配置
 	 */
 	private Filter filter = new Filter();
@@ -34,7 +28,7 @@ public class RoseWebProperties {
 	/**
 	 * Swagger 配置
 	 */
-	private Swagger swagger = new Swagger();
+	private Springdoc springdoc = new Springdoc();
 
 	/**
 	 * 过滤器配置
@@ -83,11 +77,6 @@ public class RoseWebProperties {
 			 * 是否启用
 			 */
 			private boolean enabled = true;
-
-			/**
-			 * 排除的路径
-			 */
-			private String[] excludePaths = {"/actuator/**"};
 		}
 	}
 
@@ -95,12 +84,7 @@ public class RoseWebProperties {
 	 * Swagger 配置
 	 */
 	@Data
-	public static class Swagger {
-		/**
-		 * 是否启用 Swagger
-		 */
-		private boolean enabled = false;
-
+	public static class Springdoc {
 		/**
 		 * API 标题
 		 */

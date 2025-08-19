@@ -12,19 +12,19 @@ import io.github.rosestack.core.exception.BaseException;
  */
 public class NotificationException extends BaseException {
 
-	public NotificationException(String messageKey) {
-		super(messageKey);
-	}
+    public NotificationException(String messageKey) {
+        super(messageKey);
+    }
 
-	protected NotificationException(String messageKey, Throwable cause) {
-		super(messageKey, cause);
-	}
+    protected NotificationException(String messageKey, Throwable cause) {
+        super(messageKey, cause);
+    }
 
-	protected NotificationException(String messageKey, Object... messageArgs) {
-		super(messageKey, messageArgs);
-	}
+    protected NotificationException(String messageKey, Object... messageArgs) {
+        super(messageKey, messageArgs);
+    }
 
-	protected NotificationException(String messageKey, Throwable cause, Object... messageArgs) {
-		super(messageKey, cause, messageArgs);
-	}
+    protected NotificationException(String messageKey, Throwable cause, Object... messageArgs) {
+        super(messageKey, cause, messageArgs);
+    }
 }

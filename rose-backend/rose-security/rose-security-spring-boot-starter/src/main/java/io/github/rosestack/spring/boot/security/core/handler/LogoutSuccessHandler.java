@@ -11,29 +11,29 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 public class LogoutSuccessHandler implements LogoutHandler {
 
-	private final TokenService tokenService;
-	private final RoseSecurityProperties properties;
-	private final ApplicationEventPublisher eventPublisher;
+    private final TokenService tokenService;
+    private final RoseSecurityProperties properties;
+    private final ApplicationEventPublisher eventPublisher;
 
-	public LogoutSuccessHandler(
-		TokenService tokenService, RoseSecurityProperties properties, ApplicationEventPublisher eventPublisher) {
-		this.tokenService = tokenService;
-		this.properties = properties;
-		this.eventPublisher = eventPublisher;
-	}
+    public LogoutSuccessHandler(
+            TokenService tokenService, RoseSecurityProperties properties, ApplicationEventPublisher eventPublisher) {
+        this.tokenService = tokenService;
+        this.properties = properties;
+        this.eventPublisher = eventPublisher;
+    }
 
-	@Override
-	public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-		String header = properties.getToken().getHeader();
-		String token = request.getHeader(header);
-		if (token != null && !token.isEmpty()) {
-			tokenService.revoke(token);
-		}
+    @Override
+    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        String header = properties.getToken().getHeader();
+        String token = request.getHeader(header);
+        if (token != null && !token.isEmpty()) {
+            tokenService.revoke(token);
+        }
 
-		if (this.eventPublisher != null) {
-			if (authentication != null) {
-				this.eventPublisher.publishEvent(new LogoutSuccessEvent(authentication));
-			}
-		}
-	}
+        if (this.eventPublisher != null) {
+            if (authentication != null) {
+                this.eventPublisher.publishEvent(new LogoutSuccessEvent(authentication));
+            }
+        }
+    }
 }

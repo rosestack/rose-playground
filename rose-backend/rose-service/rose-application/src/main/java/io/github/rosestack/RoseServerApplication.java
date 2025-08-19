@@ -6,9 +6,9 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
 
 @SpringBootApplication
 public class RoseServerApplication {
-	public static void main(String[] args) {
-		SpringApplication application = new SpringApplication(RoseServerApplication.class);
-		application.setApplicationStartup(new BufferingApplicationStartup(2048));
-		application.run(args);
-	}
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(RoseServerApplication.class);
+        application.setApplicationStartup(new BufferingApplicationStartup(2048));
+        application.run(args);
+    }
 }

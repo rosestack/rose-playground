@@ -7,13 +7,13 @@ package io.github.rosestack.core.model;
  */
 public interface HasStatus {
 
-	/**
-	 * 获取状态
-	 */
-	String getStatus();
+    /**
+     * 获取状态
+     */
+    String getStatus();
 
-	/**
-	 * 设置状态
-	 */
-	void setStatus(String status);
+    /**
+     * 设置状态
+     */
+    void setStatus(String status);
 }

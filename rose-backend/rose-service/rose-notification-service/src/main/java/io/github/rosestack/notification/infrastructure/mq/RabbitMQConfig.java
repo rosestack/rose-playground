@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-	@Bean
-	public Queue notificationSendQueue() {
-		return new Queue(RabbitNotificationSendProducer.QUEUE, true);
-	}
+    @Bean
+    public Queue notificationSendQueue() {
+        return new Queue(RabbitNotificationSendProducer.QUEUE, true);
+    }
 }

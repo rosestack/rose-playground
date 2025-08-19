@@ -23,4 +23,3 @@ public @interface XxlJobRegister {
 
     String executorParam() default "";
 }
-

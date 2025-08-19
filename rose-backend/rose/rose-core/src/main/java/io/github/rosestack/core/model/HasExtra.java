@@ -9,13 +9,13 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public interface HasExtra {
 
-	/**
-	 * 获取额外信息
-	 */
-	JsonNode getExtra();
+    /**
+     * 获取额外信息
+     */
+    JsonNode getExtra();
 
-	/**
-	 * 设置额外信息
-	 */
-	void setExtra(JsonNode extra);
+    /**
+     * 设置额外信息
+     */
+    void setExtra(JsonNode extra);
 }

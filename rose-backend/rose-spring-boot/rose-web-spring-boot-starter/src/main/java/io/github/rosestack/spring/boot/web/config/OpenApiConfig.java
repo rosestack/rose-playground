@@ -8,13 +8,14 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-
-import java.util.List;
 
 /**
  * Swagger 3 配置
@@ -26,9 +27,8 @@ import java.util.List;
  */
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "rose.web.swagger", name = "enabled", havingValue = "true")
-public class SwaggerConfig {
-
+@ConditionalOnProperty(prefix = "springdoc.api-docs", name = "enabled", havingValue = "true")
+public class OpenApiConfig {
 	private final RoseWebProperties roseWebProperties;
 
 	/**
@@ -36,13 +36,13 @@ public class SwaggerConfig {
 	 */
 	@Bean
 	public OpenAPI customOpenAPI() {
-		RoseWebProperties.Swagger swaggerConfig = roseWebProperties.getSwagger();
+		RoseWebProperties.Springdoc springdocConfig = roseWebProperties.getSpringdoc();
 
-		OpenAPI openAPI = new OpenAPI().info(buildInfo(swaggerConfig)).servers(buildServers(swaggerConfig));
+		OpenAPI openAPI = new OpenAPI().info(buildInfo(springdocConfig)).servers(buildServers(springdocConfig));
 
 		// 根据配置添加安全认证
-		if (swaggerConfig.getSecurity().isEnabled()) {
-			openAPI.components(buildComponents(swaggerConfig)).security(buildSecurityRequirements(swaggerConfig));
+		if (springdocConfig.getSecurity().isEnabled()) {
+			openAPI.components(buildComponents(springdocConfig)).security(buildSecurityRequirements(springdocConfig));
 		}
 
 		log.info("启用 OpenAPI 文档: {}", openAPI.getInfo().getTitle());
@@ -53,25 +53,25 @@ public class SwaggerConfig {
 	/**
 	 * 构建 API 信息
 	 */
-	private Info buildInfo(RoseWebProperties.Swagger swaggerConfig) {
+	private Info buildInfo(RoseWebProperties.Springdoc springdocConfig) {
 		return new Info()
-			.title(swaggerConfig.getTitle())
-			.description(swaggerConfig.getDescription())
-			.version(swaggerConfig.getVersion())
+			.title(springdocConfig.getTitle())
+			.description(springdocConfig.getDescription())
+			.version(springdocConfig.getVersion())
 			.contact(new Contact()
-				.name(swaggerConfig.getContact().getName())
-				.email(swaggerConfig.getContact().getEmail())
-				.url(swaggerConfig.getContact().getUrl()))
+				.name(springdocConfig.getContact().getName())
+				.email(springdocConfig.getContact().getEmail())
+				.url(springdocConfig.getContact().getUrl()))
 			.license(new License()
-				.name(swaggerConfig.getLicense().getName())
-				.url(swaggerConfig.getLicense().getUrl()));
+				.name(springdocConfig.getLicense().getName())
+				.url(springdocConfig.getLicense().getUrl()));
 	}
 
 	/**
 	 * 构建服务器列表
 	 */
-	private List<Server> buildServers(RoseWebProperties.Swagger swaggerConfig) {
-		return swaggerConfig.getServers().stream()
+	private List<Server> buildServers(RoseWebProperties.Springdoc springdocConfig) {
+		return springdocConfig.getServers().stream()
 			.map(serverConfig -> new Server().url(serverConfig.getUrl()).description(serverConfig.getDescription()))
 			.toList();
 	}
@@ -79,9 +79,9 @@ public class SwaggerConfig {
 	/**
 	 * 构建安全组件
 	 */
-	private Components buildComponents(RoseWebProperties.Swagger swaggerConfig) {
+	private Components buildComponents(RoseWebProperties.Springdoc springdocConfig) {
 		Components components = new Components();
-		RoseWebProperties.Swagger.Security security = swaggerConfig.getSecurity();
+		RoseWebProperties.Springdoc.Security security = springdocConfig.getSecurity();
 
 		// JWT Token 认证
 		if (security.getJwt().isEnabled()) {
@@ -140,8 +140,8 @@ public class SwaggerConfig {
 	/**
 	 * 构建安全要求
 	 */
-	private List<SecurityRequirement> buildSecurityRequirements(RoseWebProperties.Swagger swaggerConfig) {
-		RoseWebProperties.Swagger.Security security = swaggerConfig.getSecurity();
+	private List<SecurityRequirement> buildSecurityRequirements(RoseWebProperties.Springdoc springdocConfig) {
+		RoseWebProperties.Springdoc.Security security = springdocConfig.getSecurity();
 		List<SecurityRequirement> requirements = new java.util.ArrayList<>();
 
 		if (security.getJwt().isEnabled()) {
@@ -163,7 +163,7 @@ public class SwaggerConfig {
 	 * 系统管理 API 分组
 	 */
 	@Bean
-	@ConditionalOnProperty(prefix = "rose.web.swagger.groups.system", name = "enabled", havingValue = "true")
+	@ConditionalOnProperty(prefix = "rose.web.springdoc.groups.system", name = "enabled", havingValue = "true")
 	public GroupedOpenApi systemApi() {
 		return GroupedOpenApi.builder()
 			.group("system")
@@ -176,7 +176,7 @@ public class SwaggerConfig {
 	 * 业务 API 分组
 	 */
 	@Bean
-	@ConditionalOnProperty(prefix = "rose.web.swagger.groups.business", name = "enabled", havingValue = "true")
+	@ConditionalOnProperty(prefix = "rose.web.springdoc.groups.business", name = "enabled", havingValue = "true")
 	public GroupedOpenApi businessApi() {
 		return GroupedOpenApi.builder()
 			.group("business")
@@ -189,7 +189,7 @@ public class SwaggerConfig {
 	 * 公共 API 分组
 	 */
 	@Bean
-	@ConditionalOnProperty(prefix = "rose.web.swagger.groups.public", name = "enabled", havingValue = "true")
+	@ConditionalOnProperty(prefix = "rose.web.springdoc.groups.public", name = "enabled", havingValue = "true")
 	public GroupedOpenApi publicApi() {
 		return GroupedOpenApi.builder()
 			.group("public")
@@ -202,7 +202,7 @@ public class SwaggerConfig {
 	 * 内部 API 分组
 	 */
 	@Bean
-	@ConditionalOnProperty(prefix = "rose.web.swagger.groups.internal", name = "enabled", havingValue = "true")
+	@ConditionalOnProperty(prefix = "rose.web.springdoc.groups.internal", name = "enabled", havingValue = "true")
 	public GroupedOpenApi internalApi() {
 		return GroupedOpenApi.builder()
 			.group("internal")
@@ -215,7 +215,7 @@ public class SwaggerConfig {
 	 * 监控 API 分组
 	 */
 	@Bean
-	@ConditionalOnProperty(prefix = "rose.web.swagger.groups.actuator", name = "enabled", havingValue = "true")
+	@ConditionalOnProperty(prefix = "rose.web.springdoc.groups.actuator", name = "enabled", havingValue = "true")
 	public GroupedOpenApi actuatorApi() {
 		return GroupedOpenApi.builder()
 			.group("actuator")

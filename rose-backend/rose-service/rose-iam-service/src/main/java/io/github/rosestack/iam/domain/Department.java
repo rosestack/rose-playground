@@ -11,53 +11,53 @@ import lombok.Data;
  */
 @Data
 public class Department extends BaseTenantEntity implements HasCodeNameDescription {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@TableId(type = IdType.AUTO)
-	private Long id;
+    @TableId(type = IdType.AUTO)
+    private Long id;
 
-	/**
-	 * 名称
-	 */
-	private String name;
+    /**
+     * 名称
+     */
+    private String name;
 
-	/**
-	 * 识别码
-	 */
-	private String code;
+    /**
+     * 识别码
+     */
+    private String code;
 
-	/**
-	 * 描述
-	 */
-	private String description;
+    /**
+     * 描述
+     */
+    private String description;
 
-	// org、depart
-	private String type;
+    // org、depart
+    private String type;
 
-	/**
-	 * 父id
-	 */
-	private String parentId;
+    /**
+     * 父id
+     */
+    private String parentId;
 
-	/**
-	 * 是否包含子部门
-	 */
-	private Boolean hasChildren;
+    /**
+     * 是否包含子部门
+     */
+    private Boolean hasChildren;
 
-	/**
-	 * 是否是虚拟
-	 */
-	private Boolean isVirtualNode;
+    /**
+     * 是否是虚拟
+     */
+    private Boolean isVirtualNode;
 
-	/**
-	 * 负责人 ID
-	 */
-	private String leaderUserIds;
+    /**
+     * 负责人 ID
+     */
+    private String leaderUserIds;
 
-	private String userPoolId;
+    private String userPoolId;
 
-	/**
-	 * 状态
-	 */
-	private Boolean status;
+    /**
+     * 状态
+     */
+    private Boolean status;
 }

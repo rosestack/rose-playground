@@ -10,23 +10,23 @@ import net.sf.jsqlparser.expression.StringValue;
  */
 public abstract class AbstractTenantLineHandler implements TenantLineHandler {
 
-	protected abstract String getTenantIdColumnInternal();
+    protected abstract String getTenantIdColumnInternal();
 
-	protected abstract boolean isIgnoreTableInternal(String tableName);
+    protected abstract boolean isIgnoreTableInternal(String tableName);
 
-	@Override
-	public Expression getTenantId() {
-		String tenantId = TenantContextHolder.getCurrentTenantId();
-		return new StringValue(tenantId == null ? "" : tenantId);
-	}
+    @Override
+    public Expression getTenantId() {
+        String tenantId = TenantContextHolder.getCurrentTenantId();
+        return new StringValue(tenantId == null ? "" : tenantId);
+    }
 
-	@Override
-	public String getTenantIdColumn() {
-		return getTenantIdColumnInternal();
-	}
+    @Override
+    public String getTenantIdColumn() {
+        return getTenantIdColumnInternal();
+    }
 
-	@Override
-	public boolean ignoreTable(String tableName) {
-		return isIgnoreTableInternal(tableName);
-	}
+    @Override
+    public boolean ignoreTable(String tableName) {
+        return isIgnoreTableInternal(tableName);
+    }
 }

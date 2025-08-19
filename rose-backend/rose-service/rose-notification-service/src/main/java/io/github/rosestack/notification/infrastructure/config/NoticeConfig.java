@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class NoticeConfig {
-	@Bean
-	public NoticeService noticeService() {
-		return new NoticeService();
-	}
+    @Bean
+    public NoticeService noticeService() {
+        return new NoticeService();
+    }
 }

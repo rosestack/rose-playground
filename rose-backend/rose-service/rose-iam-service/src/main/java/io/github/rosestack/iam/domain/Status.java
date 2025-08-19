@@ -9,11 +9,11 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Status {
-	SUSPENDED("Suspended"),
-	RESIGNED("Resigned"),
-	ACTIVATED("Activated"),
-	ARCHIVED("Archived"),
-	DEACTIVATED("Deactivated"),
-	;
-	private String value;
+    SUSPENDED("Suspended"),
+    RESIGNED("Resigned"),
+    ACTIVATED("Activated"),
+    ARCHIVED("Archived"),
+    DEACTIVATED("Deactivated"),
+    ;
+    private String value;
 }

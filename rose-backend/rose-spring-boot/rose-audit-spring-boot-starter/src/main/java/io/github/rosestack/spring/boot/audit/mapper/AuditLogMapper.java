@@ -5,5 +5,4 @@ import io.github.rosestack.spring.boot.audit.entity.AuditLog;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface AuditLogMapper extends BaseMapper<AuditLog> {
-}
+public interface AuditLogMapper extends BaseMapper<AuditLog> {}

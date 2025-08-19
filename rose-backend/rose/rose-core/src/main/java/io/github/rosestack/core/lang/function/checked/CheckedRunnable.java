@@ -10,70 +10,70 @@ import java.util.Objects;
 @FunctionalInterface
 public interface CheckedRunnable {
 
-	/**
-	 * 从 JDK Runnable 创建 CheckedRunnable
-	 */
-	static CheckedRunnable from(Runnable runnable) {
-		Objects.requireNonNull(runnable);
-		return runnable::run;
-	}
+    /**
+     * 从 JDK Runnable 创建 CheckedRunnable
+     */
+    static CheckedRunnable from(Runnable runnable) {
+        Objects.requireNonNull(runnable);
+        return runnable::run;
+    }
 
-	/**
-	 * 执行任务
-	 *
-	 * @throws Exception 可能抛出的异常
-	 */
-	void run() throws Exception;
+    /**
+     * 执行任务
+     *
+     * @throws Exception 可能抛出的异常
+     */
+    void run() throws Exception;
 
-	/**
-	 * 转换为 JDK Runnable（异常会被包装为 RuntimeException）
-	 */
-	default Runnable unchecked() {
-		return () -> {
-			try {
-				run();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		};
-	}
+    /**
+     * 转换为 JDK Runnable（异常会被包装为 RuntimeException）
+     */
+    default Runnable unchecked() {
+        return () -> {
+            try {
+                run();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
 
-	/**
-	 * 转换为 JDK Runnable，使用自定义异常处理器
-	 *
-	 * @param handler 异常处理器，接收捕获的异常
-	 * @return 标准 Runnable
-	 */
-	default Runnable unchecked(java.util.function.Consumer<Throwable> handler) {
-		Objects.requireNonNull(handler, "handler cannot be null");
-		return () -> {
-			try {
-				run();
-			} catch (Exception e) {
-				handler.accept(e);
-			}
-		};
-	}
+    /**
+     * 转换为 JDK Runnable，使用自定义异常处理器
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @return 标准 Runnable
+     */
+    default Runnable unchecked(java.util.function.Consumer<Throwable> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return () -> {
+            try {
+                run();
+            } catch (Exception e) {
+                handler.accept(e);
+            }
+        };
+    }
 
-	/**
-	 * 组合多个 CheckedRunnable
-	 */
-	default CheckedRunnable andThen(CheckedRunnable after) {
-		Objects.requireNonNull(after);
-		return () -> {
-			run();
-			after.run();
-		};
-	}
+    /**
+     * 组合多个 CheckedRunnable
+     */
+    default CheckedRunnable andThen(CheckedRunnable after) {
+        Objects.requireNonNull(after);
+        return () -> {
+            run();
+            after.run();
+        };
+    }
 
-	/**
-	 * 组合多个 CheckedRunnable
-	 */
-	default CheckedRunnable andThen(Runnable after) {
-		Objects.requireNonNull(after);
-		return () -> {
-			run();
-			after.run();
-		};
-	}
+    /**
+     * 组合多个 CheckedRunnable
+     */
+    default CheckedRunnable andThen(Runnable after) {
+        Objects.requireNonNull(after);
+        return () -> {
+            run();
+            after.run();
+        };
+    }
 }

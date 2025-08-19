@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @TableName("notification_template_channel")
 public class NotificationTemplateChannelEntity {
-	private Long id;
-	private String templateId;
-	private String channelId;
+    private Long id;
+    private String templateId;
+    private String channelId;
 }

@@ -2,9 +2,8 @@ package io.github.rosestack.notification.interfaces.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Data;
 
 /**
  * 发送通知请求 DTO
@@ -17,32 +16,28 @@ import java.util.Map;
 @Data
 public class SendNotificationRequest {
 
-	/**
-	 * 幂等请求ID
-	 */
-	@NotBlank(message = "请求ID不能为空")
-	private String requestId;
+    /**
+     * 幂等请求ID
+     */
+    @NotBlank(message = "请求ID不能为空") private String requestId;
 
-	/**
-	 * 通知目标
-	 */
-	@NotBlank(message = "通知目标不能为空")
-	private String target;
+    /**
+     * 通知目标
+     */
+    @NotBlank(message = "通知目标不能为空") private String target;
 
-	/**
-	 * 目标类型
-	 */
-	@NotNull(message = "目标类型不能为空")
-	private String targetType;
+    /**
+     * 目标类型
+     */
+    @NotNull(message = "目标类型不能为空") private String targetType;
 
-	/**
-	 * 模板ID
-	 */
-	@NotBlank(message = "模板ID不能为空")
-	private String templateId;
+    /**
+     * 模板ID
+     */
+    @NotBlank(message = "模板ID不能为空") private String templateId;
 
-	/**
-	 * 模板变量
-	 */
-	private Map<String, Object> variables;
+    /**
+     * 模板变量
+     */
+    private Map<String, Object> variables;
 }

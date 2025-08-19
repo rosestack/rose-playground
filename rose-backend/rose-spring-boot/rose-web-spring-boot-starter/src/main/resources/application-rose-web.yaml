@@ -30,52 +30,21 @@ logging:
   level:
     root: INFO
   #    com.baomidou.mybatisplus.core.mapper: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-  file:
-    name: logs/${spring.application.name}.log
-  logback:
-    rollingpolicy:
-      max-file-size: 100MB
-      max-history: 30
 
 rose:
   web:
     # 是否启用 Web 功能
     enabled: true
-
-    # 全局排除路径配置
-    # 这些路径将被所有过滤器排除，不进行过滤处理
-    global-exclude-paths:
-      - "/actuator/**"
-      - "/swagger-ui/**"
-      - "/v3/api-docs/**"
-      - "/webjars/**"
-      - "/favicon.ico"
-      - "/error"
-      - "/static/**"
-      - "/public/**"
-
     # 过滤器配置
     filter:
-      # 请求ID过滤器
-      request-id:
+      trace:
         enabled: true
-      # XSS过滤器
       xss:
         enabled: true
-        excludePaths:
-          - /swagger-ui.html
-          - /swagger-resources/**
-          - /v3/api-docs
-          - /swagger-ui/**
-          - /actuator/**
-
       caching-request:
         enabled: true
+      excludePaths: [ ]
 
-    swagger:
-      enabled: true
-
-
+springdoc:
+  api-docs:
+    enabled: true

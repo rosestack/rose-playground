@@ -36,6 +36,11 @@
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
     <!-- AOP 指标改为可选依赖，避免强绑定 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -57,13 +62,11 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- JSON 解析 -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-commons</artifactId>
+      <optional>true</optional>
     </dependency>
-
-
   </dependencies>
 </project>
 

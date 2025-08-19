@@ -21,14 +21,13 @@ import io.github.rosestack.i18n.ReloadedResourceMessageSource;
 import io.github.rosestack.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nConstants;
 import io.github.rosestack.i18n.spring.PropertySourceResourceI18nMessageSource;
+import java.util.Set;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
-
-import java.util.Set;
 
 /**
  * * An {@link ApplicationListener} of {@link EnvironmentChangeEvent} to reload {@link
@@ -43,32 +42,32 @@ import java.util.Set;
  * @since 1.0.0
  */
 public class ReloadableResourceServiceMessageSourceListener
-	implements SmartInitializingSingleton, ApplicationListener<EnvironmentChangeEvent>, BeanFactoryAware {
+        implements SmartInitializingSingleton, ApplicationListener<EnvironmentChangeEvent>, BeanFactoryAware {
 
-	private BeanFactory beanFactory;
+    private BeanFactory beanFactory;
 
-	private ReloadedResourceMessageSource reloadedResourceMessageSource;
+    private ReloadedResourceMessageSource reloadedResourceMessageSource;
 
-	@Override
-	public void onApplicationEvent(EnvironmentChangeEvent event) {
-		Set<String> changedPropertyNames = event.getKeys();
-		for (String changedPropertyName : changedPropertyNames) {
-			String resource = changedPropertyName;
-			if (reloadedResourceMessageSource.canReload(resource)) {
-				reloadedResourceMessageSource.reload(resource);
-			}
-		}
-	}
+    @Override
+    public void onApplicationEvent(EnvironmentChangeEvent event) {
+        Set<String> changedPropertyNames = event.getKeys();
+        for (String changedPropertyName : changedPropertyNames) {
+            String resource = changedPropertyName;
+            if (reloadedResourceMessageSource.canReload(resource)) {
+                reloadedResourceMessageSource.reload(resource);
+            }
+        }
+    }
 
-	@Override
-	public void afterSingletonsInstantiated() {
-		// Lookup the primary bean of PropertySourcesServiceMessageSource
-		this.reloadedResourceMessageSource = this.beanFactory.getBean(
-			I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, ReloadedResourceMessageSource.class);
-	}
+    @Override
+    public void afterSingletonsInstantiated() {
+        // Lookup the primary bean of PropertySourcesServiceMessageSource
+        this.reloadedResourceMessageSource = this.beanFactory.getBean(
+                I18nConstants.I18N_MESSAGE_SOURCE_BEAN_NAME, ReloadedResourceMessageSource.class);
+    }
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
 }

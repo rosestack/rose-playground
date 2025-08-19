@@ -11,22 +11,20 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ConsoleSender extends AbstractConfigure implements Sender {
-	@Override
-	public String getChannelType() {
-		return CONSOLE;
-	}
+    @Override
+    public String getChannelType() {
+        return CONSOLE;
+    }
 
-	@Override
-	public String send(SendRequest request) {
-		log.info("[ConsoleSender] send message {} to {}", request.getTemplateContent(), request.getTarget());
-		return null;
-	}
+    @Override
+    public String send(SendRequest request) {
+        log.info("[ConsoleSender] send message {} to {}", request.getTemplateContent(), request.getTarget());
+        return null;
+    }
 
-	@Override
-	public void destroy() {
-	}
+    @Override
+    public void destroy() {}
 
-	@Override
-	public void doConfigure(SenderConfiguration config) throws Exception {
-	}
+    @Override
+    public void doConfigure(SenderConfiguration config) throws Exception {}
 }

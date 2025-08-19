@@ -4,14 +4,25 @@ import io.github.rosestack.spring.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.web.advice.ApiResponseBodyAdvice;
 import io.github.rosestack.spring.boot.web.exception.ExceptionHandlerHelper;
 import io.github.rosestack.spring.boot.web.exception.GlobalExceptionHandler;
+import io.github.rosestack.spring.filter.CachingRequestFilter;
+import io.github.rosestack.spring.filter.XssFilter;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.DispatcherType;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.Ordered;
+import org.springframework.web.context.request.RequestContextListener;
 
 /**
  * Web 自动配置
@@ -22,27 +33,70 @@ import org.springframework.context.annotation.PropertySource;
  * @since 1.0.0
  */
 @Import({
-	CorsConfig.class,
-	AsyncConfig.class,
-	MessageConfig.class,
-	MetricConfig.class,
-	WebMvcConfig.class,
-	SwaggerConfig.class,
-	// 精准引入组件（替代包扫描）
-	ApiResponseBodyAdvice.class,
-	GlobalExceptionHandler.class,
-	ExceptionHandlerHelper.class
+    AsyncConfig.class,
+    WebMvcConfig.class,
+    OpenApiConfig.class,
+    JacksonConfig.class,
+    RestTemplateConfig.class,
+    TracingConfig.class,
+    LoggingAspectConfig.class,
+    // 精准引入组件（替代包扫描）
+    ApiResponseBodyAdvice.class,
+    GlobalExceptionHandler.class,
+    ExceptionHandlerHelper.class
 })
 @Slf4j
+@RequiredArgsConstructor
 @AutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableConfigurationProperties(RoseWebProperties.class)
 @ConditionalOnProperty(prefix = "rose.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @PropertySource(value = "classpath:application-rose-web.yaml", factory = YmlPropertySourceFactory.class)
 public class RoseWebAutoConfiguration {
+    private final RoseWebProperties roseWebProperties;
 
-	@PostConstruct
-	public void init() {
-		log.info("Rose Web 自动配置已启用");
-	}
+    @PostConstruct
+    public void init() {
+        log.info("Rose Web 自动配置已启用");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(RequestContextListener.class)
+    RequestContextListener requestContextListener() {
+        return new RequestContextListener();
+    }
+
+    @Bean
+    WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> enableDefaultServlet() {
+        return (factory) -> factory.setRegisterDefaultServlet(true);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "rose.web.filter.caching-request", name = "enabled", havingValue = "true", matchIfMissing = true)
+    FilterRegistrationBean<CachingRequestFilter> cachingRequestFilter() {
+        CachingRequestFilter filter =
+                new CachingRequestFilter(roseWebProperties.getFilter().getExcludePaths());
+        FilterRegistrationBean<CachingRequestFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setName(filter.getClass().getSimpleName());
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+        return registrationBean;
+    }
+
+    @Bean
+    @ConditionalOnProperty(
+            prefix = "rose.web.filter.xss",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
+    FilterRegistrationBean<XssFilter> xxsFilter() {
+        XssFilter filter = new XssFilter(roseWebProperties.getFilter().getExcludePaths());
+        FilterRegistrationBean<XssFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
+        registrationBean.addUrlPatterns("/*");
+        registrationBean.setName(filter.getClass().getSimpleName());
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
+        return registrationBean;
+    }
 }

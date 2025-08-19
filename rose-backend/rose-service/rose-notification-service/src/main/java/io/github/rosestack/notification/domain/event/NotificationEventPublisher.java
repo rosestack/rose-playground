@@ -12,10 +12,10 @@ import org.springframework.context.ApplicationEvent;
  */
 public interface NotificationEventPublisher {
 
-	/**
-	 * 发布应用事件
-	 *
-	 * @param applicationEvent 要发布的应用事件
-	 */
-	void publishEvent(ApplicationEvent applicationEvent);
+    /**
+     * 发布应用事件
+     *
+     * @param applicationEvent 要发布的应用事件
+     */
+    void publishEvent(ApplicationEvent applicationEvent);
 }

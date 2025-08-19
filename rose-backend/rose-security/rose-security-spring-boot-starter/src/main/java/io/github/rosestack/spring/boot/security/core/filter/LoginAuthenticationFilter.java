@@ -5,6 +5,7 @@ import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,34 +16,32 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import java.io.IOException;
-
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-	public LoginAuthenticationFilter(
-		AuthenticationManager authenticationManager,
-		RoseSecurityProperties props,
-		AuthenticationSuccessHandler successHandler,
-		AuthenticationFailureHandler failureHandler) {
-		super(regexPostMatcher(props.getLoginPath()));
-		setAuthenticationManager(authenticationManager);
-		setAuthenticationSuccessHandler(successHandler);
-		setAuthenticationFailureHandler(failureHandler);
-	}
+    public LoginAuthenticationFilter(
+            AuthenticationManager authenticationManager,
+            RoseSecurityProperties props,
+            AuthenticationSuccessHandler successHandler,
+            AuthenticationFailureHandler failureHandler) {
+        super(regexPostMatcher(props.getLoginPath()));
+        setAuthenticationManager(authenticationManager);
+        setAuthenticationSuccessHandler(successHandler);
+        setAuthenticationFailureHandler(failureHandler);
+    }
 
-	private static RequestMatcher regexPostMatcher(String path) {
-		String regex = "^" + java.util.regex.Pattern.quote(path) + "$";
-		return new RegexRequestMatcher(regex, "POST");
-	}
+    private static RequestMatcher regexPostMatcher(String path) {
+        String regex = "^" + java.util.regex.Pattern.quote(path) + "$";
+        return new RegexRequestMatcher(regex, "POST");
+    }
 
-	@Override
-	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-		throws AuthenticationException, IOException {
-		AuthModels body = objectMapper.readValue(request.getInputStream(), AuthModels.class);
-		UsernamePasswordAuthenticationToken authRequest =
-			new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
-		return this.getAuthenticationManager().authenticate(authRequest);
-	}
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException, IOException {
+        AuthModels body = objectMapper.readValue(request.getInputStream(), AuthModels.class);
+        UsernamePasswordAuthenticationToken authRequest =
+                new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
+        return this.getAuthenticationManager().authenticate(authRequest);
+    }
 }

@@ -1,12 +1,11 @@
 package io.github.rosestack.i18n;
 
 import io.github.rosestack.i18n.util.I18nUtils;
+import java.util.Locale;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.i18n.LocaleContextHolder;
-
-import java.util.Locale;
 
 /**
  * Abstract Spring Test
@@ -16,20 +15,20 @@ import java.util.Locale;
  */
 public abstract class AbstractSpringTest {
 
-	@BeforeAll
-	public static void beforeClass() {
-		// Set the simplified Chinese as the default Locale
-		Locale.setDefault(Locale.SIMPLIFIED_CHINESE);
-	}
+    @BeforeAll
+    public static void beforeClass() {
+        // Set the simplified Chinese as the default Locale
+        Locale.setDefault(Locale.SIMPLIFIED_CHINESE);
+    }
 
-	@AfterAll
-	public static void afterClass() {
-		I18nUtils.destroyMessageSource();
-		LocaleContextHolder.resetLocaleContext();
-	}
+    @AfterAll
+    public static void afterClass() {
+        I18nUtils.destroyMessageSource();
+        LocaleContextHolder.resetLocaleContext();
+    }
 
-	@BeforeEach
-	public void before() {
-		LocaleContextHolder.resetLocaleContext();
-	}
+    @BeforeEach
+    public void before() {
+        LocaleContextHolder.resetLocaleContext();
+    }
 }

@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public interface AuthApi {
-	@PostMapping("/api/auth/register")
-	ApiResponse<RegisterVO> register(@RequestBody UserRegisterDTO dto);
+    @PostMapping("/api/auth/register")
+    ApiResponse<RegisterVO> register(@RequestBody UserRegisterDTO dto);
 
-	@PostMapping("/api/auth/login")
-	ApiResponse<LoginVO> login(@RequestBody UserLoginDTO dto);
+    @PostMapping("/api/auth/login")
+    ApiResponse<LoginVO> login(@RequestBody UserLoginDTO dto);
 
-	@PostMapping("/api/auth/logout")
-	ApiResponse<Void> logout();
+    @PostMapping("/api/auth/logout")
+    ApiResponse<Void> logout();
 }

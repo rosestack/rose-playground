@@ -17,7 +17,6 @@
 package io.github.rosestack.i18n.exception;
 
 import io.github.rosestack.i18n.util.I18nUtils;
-
 import java.util.Arrays;
 import java.util.StringJoiner;
 
@@ -29,30 +28,30 @@ import java.util.StringJoiner;
  */
 public class I18nException extends RuntimeException {
 
-	private final String message;
-	private final Object[] args;
+    private final String message;
+    private final Object[] args;
 
-	public I18nException(String message, Object... args) {
-		this.message = message;
-		this.args = args;
-	}
+    public I18nException(String message, Object... args) {
+        this.message = message;
+        this.args = args;
+    }
 
-	@Override
-	public String getMessage() {
-		return message;
-	}
+    @Override
+    public String getMessage() {
+        return message;
+    }
 
-	@Override
-	public String getLocalizedMessage() {
-		return I18nUtils.i18nMessageSource().getMessage(message, args);
-	}
+    @Override
+    public String getLocalizedMessage() {
+        return I18nUtils.i18nMessageSource().getMessage(message, args);
+    }
 
-	@Override
-	public String toString() {
-		return new StringJoiner(", ", I18nException.class.getSimpleName() + "[", "]")
-			.add("message='" + message + "'")
-			.add("args=" + Arrays.toString(args))
-			.add("localized message='" + getLocalizedMessage() + "'")
-			.toString();
-	}
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", I18nException.class.getSimpleName() + "[", "]")
+                .add("message='" + message + "'")
+                .add("args=" + Arrays.toString(args))
+                .add("localized message='" + getLocalizedMessage() + "'")
+                .toString();
+    }
 }

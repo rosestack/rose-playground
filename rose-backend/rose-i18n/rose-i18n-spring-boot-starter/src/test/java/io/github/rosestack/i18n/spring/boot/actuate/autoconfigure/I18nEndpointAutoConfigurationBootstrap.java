@@ -25,15 +25,15 @@ import org.springframework.context.annotation.Bean;
 @EnableAutoConfiguration
 public class I18nEndpointAutoConfigurationBootstrap {
 
-	public static void main(String[] args) {
-		new SpringApplicationBuilder(I18nEndpointAutoConfigurationBootstrap.class)
-			.web(WebApplicationType.SERVLET)
-			.properties("test.i18n_messages_en.properties=test.a = test-a-2024")
-			.run(args);
-	}
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(I18nEndpointAutoConfigurationBootstrap.class)
+                .web(WebApplicationType.SERVLET)
+                .properties("test.i18n_messages_en.properties=test.a = test-a-2024")
+                .run(args);
+    }
 
-	@Bean
-	public static I18nMessageSourceFactoryBean testServiceMessageSource() {
-		return new I18nMessageSourceFactoryBean("test");
-	}
+    @Bean
+    public static I18nMessageSourceFactoryBean testServiceMessageSource() {
+        return new I18nMessageSourceFactoryBean("test");
+    }
 }

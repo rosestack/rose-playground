@@ -14,19 +14,19 @@ import lombok.Data;
 @Data
 @TableName("notification_preference")
 public class NotificationPreferenceEntity {
-	private String id;
-	private String tenantId;
-	private String userId;
+    private String id;
+    private String tenantId;
+    private String userId;
 
-	@TableField(typeHandler = NotificationChannelTypeHandler.class)
-	private NotificationChannelType channelType;
+    @TableField(typeHandler = NotificationChannelTypeHandler.class)
+    private NotificationChannelType channelType;
 
-	private boolean enabled;
+    private boolean enabled;
 
-	@TableField(typeHandler = JacksonTypeHandler.class)
-	private TimeWindow quietPeriod;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private TimeWindow quietPeriod;
 
-	private String channelBlacklist;
-	private String channelWhitelist;
-	private Integer frequencyLimit;
+    private String channelBlacklist;
+    private String channelWhitelist;
+    private Integer frequencyLimit;
 }

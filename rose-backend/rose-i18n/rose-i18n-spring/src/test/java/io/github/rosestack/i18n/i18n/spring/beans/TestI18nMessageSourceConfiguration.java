@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Bean;
  */
 public class TestI18nMessageSourceConfiguration {
 
-	@Bean
-	public static I18nMessageSourceFactoryBean testServiceMessageSource() {
-		return new I18nMessageSourceFactoryBean("test");
-	}
+    @Bean
+    public static I18nMessageSourceFactoryBean testServiceMessageSource() {
+        return new I18nMessageSourceFactoryBean("test");
+    }
 }

@@ -1,9 +1,15 @@
 package io.github.rosestack.i18n.i18n.spring.beans.factory;
 
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import io.github.rosestack.i18n.AbstractSpringTest;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.i18n.spring.beans.TestI18nMessageSourceConfiguration;
 import io.github.rosestack.i18n.spring.context.ResourceMessageSourceChangedEvent;
+import java.util.Arrays;
+import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +23,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Arrays;
-import java.util.Locale;
-
-import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 /**
  * {@link io.github.rosestack.i18n.spring.I18nMessageSourceFactoryBean} Test
  *
@@ -33,70 +32,70 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {I18nMessageSourceFactoryBeanTest.class, TestI18nMessageSourceConfiguration.class})
 @TestPropertySource(
-	properties = {
-		"rose.i18n.default-locale=en",
-		"rose.i18n.supported-locales=en",
-	})
+        properties = {
+            "rose.i18n.default-locale=en",
+            "rose.i18n.supported-locales=en",
+        })
 class I18nMessageSourceFactoryBeanTest extends AbstractSpringTest {
 
-	@Autowired
-	private I18nMessageSource i18nMessageSource;
+    @Autowired
+    private I18nMessageSource i18nMessageSource;
 
-	@Autowired
-	private ApplicationContext context;
+    @Autowired
+    private ApplicationContext context;
 
-	@Autowired
-	private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
-	@Autowired
-	private ConfigurableEnvironment environment;
+    @Autowired
+    private ConfigurableEnvironment environment;
 
-	private MockPropertySource propertySource;
+    private MockPropertySource propertySource;
 
-	@BeforeEach
-	public void before() {
-		super.before();
-		LocaleContextHolder.setLocale(Locale.ENGLISH);
-		propertySource = new MockPropertySource("mock");
-		environment.getPropertySources().addFirst(propertySource);
-	}
+    @BeforeEach
+    public void before() {
+        super.before();
+        LocaleContextHolder.setLocale(Locale.ENGLISH);
+        propertySource = new MockPropertySource("mock");
+        environment.getPropertySources().addFirst(propertySource);
+    }
 
-	@Test
-	public void testGetMessage() throws InterruptedException {
-		assertEquals("test-a", i18nMessageSource.getMessage("a"));
-		assertEquals("Hello,World", i18nMessageSource.getMessage("hello", "World"));
+    @Test
+    public void testGetMessage() throws InterruptedException {
+        assertEquals("test-a", i18nMessageSource.getMessage("a"));
+        assertEquals("Hello,World", i18nMessageSource.getMessage("hello", "World"));
 
-		// Test FRANCE
-		assertNull(i18nMessageSource.getMessage("a", Locale.FRANCE));
+        // Test FRANCE
+        assertNull(i18nMessageSource.getMessage("a", Locale.FRANCE));
 
-		ResourceMessageSourceChangedEvent event =
-			new ResourceMessageSourceChangedEvent(context, Arrays.asList("test.i18n_messages_en.properties"));
-		propertySource.setProperty("test.i18n_messages_en.properties", "a=1");
-		eventPublisher.publishEvent(event);
-		//        assertEquals("1", i18nMessageSource.getMessage("a"));
-	}
+        ResourceMessageSourceChangedEvent event =
+                new ResourceMessageSourceChangedEvent(context, Arrays.asList("test.i18n_messages_en.properties"));
+        propertySource.setProperty("test.i18n_messages_en.properties", "a=1");
+        eventPublisher.publishEvent(event);
+        //        assertEquals("1", i18nMessageSource.getMessage("a"));
+    }
 
-	@Test
-	public void testGetLocale() {
-		assertEquals(Locale.ENGLISH, i18nMessageSource.getLocale());
+    @Test
+    public void testGetLocale() {
+        assertEquals(Locale.ENGLISH, i18nMessageSource.getLocale());
 
-		// Test US
-		LocaleContextHolder.setLocale(Locale.US);
-		assertEquals(Locale.US, i18nMessageSource.getLocale());
-	}
+        // Test US
+        LocaleContextHolder.setLocale(Locale.US);
+        assertEquals(Locale.US, i18nMessageSource.getLocale());
+    }
 
-	@Test
-	public void testGetDefaultLocale() {
-		assertEquals(Locale.ENGLISH, i18nMessageSource.getDefaultLocale());
-	}
+    @Test
+    public void testGetDefaultLocale() {
+        assertEquals(Locale.ENGLISH, i18nMessageSource.getDefaultLocale());
+    }
 
-	@Test
-	public void testGetSupportedLocales() {
-		assertEquals(asList(Locale.ENGLISH), i18nMessageSource.getSupportedLocales());
-	}
+    @Test
+    public void testGetSupportedLocales() {
+        assertEquals(asList(Locale.ENGLISH), i18nMessageSource.getSupportedLocales());
+    }
 
-	@Test
-	public void testGetSource() {
-		assertEquals("test", i18nMessageSource.getSource());
-	}
+    @Test
+    public void testGetSource() {
+        assertEquals("test", i18nMessageSource.getSource());
+    }
 }

@@ -7,34 +7,34 @@ import lombok.Data;
  */
 @Data
 public class Role {
-	private String id;
-	private String name;
-	private String code;
-	private String description;
+    private String id;
+    private String name;
+    private String code;
+    private String description;
 
-	private Boolean isSystem;
+    private Boolean isSystem;
 
-	private String userPoolId;
+    private String userPoolId;
 
-	private String appId;
+    private String appId;
 
-	/**
-	 * 租户 ID，可以为空
-	 */
-	private String tenantId;
+    /**
+     * 租户 ID，可以为空
+     */
+    private String tenantId;
 
-	/**
-	 * 状态
-	 */
-	private Boolean status;
+    /**
+     * 状态
+     */
+    private Boolean status;
 
-	/**
-	 * 创建时间
-	 */
-	private String createdAt;
+    /**
+     * 创建时间
+     */
+    private String createdAt;
 
-	/**
-	 * 修改时间
-	 */
-	private String updatedAt;
+    /**
+     * 修改时间
+     */
+    private String updatedAt;
 }

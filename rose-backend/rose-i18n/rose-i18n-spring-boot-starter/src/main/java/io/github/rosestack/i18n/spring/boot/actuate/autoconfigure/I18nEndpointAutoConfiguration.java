@@ -16,17 +16,17 @@ import org.springframework.context.annotation.Bean;
  * @since 1.0.0
  */
 @ConditionalOnClass(
-	name = {
-		"org.springframework.boot.actuate.endpoint.annotation.Endpoint", // spring-boot-actuator-autoconfigure
-	})
+        name = {
+            "org.springframework.boot.actuate.endpoint.annotation.Endpoint", // spring-boot-actuator-autoconfigure
+        })
 @ConditionalOnI18nEnabled
 @ConditionalOnAvailableEndpoint(endpoint = I18nEndpoint.class)
 @AutoConfigureAfter(I18nAutoConfiguration.class)
 public class I18nEndpointAutoConfiguration {
 
-	@Bean
-	@ConditionalOnMissingBean
-	public I18nEndpoint i18nEndpoint() {
-		return new I18nEndpoint();
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public I18nEndpoint i18nEndpoint() {
+        return new I18nEndpoint();
+    }
 }

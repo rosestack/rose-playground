@@ -1,159 +1,142 @@
 package io.github.rosestack.spring.boot.web.config;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.task.TaskExecutionProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Arrays;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
-
-/**
- * 异步执行配置类
- *
- * <p>为 @Async 注解方法提供自定义线程池和异常处理，替代默认的 SimpleAsyncTaskExecutor。
- *
- * <p>
- *
- * <h3>核心特性：</h3>
- *
- * <ul>
- *   <li>使用自定义线程池执行异步方法
- *   <li>统一处理异步方法中的未捕获异常
- * </ul>
- *
- * <p>
- *
- * <h3>使用示例：</h3>
- *
- * <pre>{@code
- * @Service
- * public class UserService {
- *
- *     @Async
- *     public CompletableFuture<String> processUserAsync(Long userId) {
- *         // 异步处理用户数据
- *         return CompletableFuture.completedFuture("处理完成");
- *     }
- * }
- * }</pre>
- *
- * @author chensoul
- * @see AsyncConfigurer
- * @see ThreadPoolTaskExecutor
- * @since 1.0.0
- */
-@EnableAsync(proxyTargetClass = true)
-@EnableScheduling
-@RequiredArgsConstructor
 @Slf4j
+@EnableAsync
+@EnableScheduling
 public class AsyncConfig implements AsyncConfigurer {
-	/**
-	 * 系统 CPU 核心数，用于计算默认线程池大小
-	 */
-	private final int core = Runtime.getRuntime().availableProcessors();
+    /**
+     * 系统 CPU 核心数，用于计算默认线程池大小
+     */
+    private final int core = Runtime.getRuntime().availableProcessors();
 
-	private final TaskExecutionProperties taskExecutionProperties;
+    private final TaskExecutionProperties properties;
 
-	/**
-	 * 获取异步方法执行器
-	 *
-	 * <p>返回自定义配置的线程池，替代 Spring 默认的 SimpleAsyncTaskExecutor。
-	 *
-	 * @return 配置的线程池执行器
-	 */
-	@Override
-	public Executor getAsyncExecutor() {
+    public AsyncConfig(TaskExecutionProperties properties) {
+        this.properties = properties;
+    }
 
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    @Override
+    @Bean(name = "taskExecutor")
+    public Executor getAsyncExecutor() {
+        log.info("Creating Async Task Executor");
 
-		// 使用 Spring Boot 配置属性
-		TaskExecutionProperties.Pool pool = taskExecutionProperties.getPool();
-		executor.setCorePoolSize(ObjectUtils.defaultIfNull(pool.getCoreSize(), core));
-		executor.setMaxPoolSize(ObjectUtils.defaultIfNull(pool.getMaxSize(), core * 2));
-		executor.setQueueCapacity(pool.getQueueCapacity());
-		executor.setKeepAliveSeconds((int) pool.getKeepAlive().getSeconds());
-		executor.setThreadNamePrefix(taskExecutionProperties.getThreadNamePrefix());
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(properties.getPool().getCoreSize());
+        executor.setMaxPoolSize(properties.getPool().getMaxSize());
+        executor.setQueueCapacity(properties.getPool().getQueueCapacity());
+        executor.setThreadNamePrefix(properties.getThreadNamePrefix());
+        executor.setAllowCoreThreadTimeOut(properties.getPool().isAllowCoreThreadTimeout());
+        executor.setKeepAliveSeconds((int) properties.getPool().getKeepAlive().toSeconds());
 
-		// 关闭配置
-		TaskExecutionProperties.Shutdown shutdown = taskExecutionProperties.getShutdown();
-		executor.setWaitForTasksToCompleteOnShutdown(shutdown.isAwaitTermination());
-		if (shutdown.getAwaitTerminationPeriod() != null) {
-			executor.setAwaitTerminationSeconds(
-				(int) shutdown.getAwaitTerminationPeriod().getSeconds());
-		}
+        // 关闭配置
+        TaskExecutionProperties.Shutdown shutdown = properties.getShutdown();
+        executor.setWaitForTasksToCompleteOnShutdown(shutdown.isAwaitTermination());
+        if (shutdown.getAwaitTerminationPeriod() != null) {
+            executor.setAwaitTerminationSeconds(
+                    (int) shutdown.getAwaitTerminationPeriod().getSeconds());
+        }
 
-		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-		executor.initialize();
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
-		log.info(
-			"创建异步线程池，核心线程数：{}，最大线程数：{}，队列容量：{}，线程前缀：{}",
-			executor.getCorePoolSize(),
-			executor.getMaxPoolSize(),
-			executor.getQueueCapacity(),
-			executor.getThreadNamePrefix());
+        executor.initialize();
 
-		return executor;
-	}
+        log.info(
+                "创建异步线程池，核心线程数：{}，最大线程数：{}，队列容量：{}，线程前缀：{}",
+                executor.getCorePoolSize(),
+                executor.getMaxPoolSize(),
+                executor.getQueueCapacity(),
+                executor.getThreadNamePrefix());
 
-	/**
-	 * 获取异步方法异常处理器
-	 *
-	 * <p>处理异步方法中的未捕获异常，记录异常信息并转换为 BusinessException。 包含异常消息、方法名称和参数值等上下文信息。
-	 *
-	 * @return 异常处理器
-	 */
-	@Override
-	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-		return (throwable, method, objects) -> {
-			throwable.printStackTrace();
+        return executor;
+    }
 
-			StringBuilder sb = new StringBuilder();
-			sb.append("Exception message - ")
-				.append(throwable.getMessage())
-				.append(", Method name - ")
-				.append(method.getName());
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        return (ex, method, params) ->
+                log.error("Async void method error: {}({})", method.getName(), Arrays.toString(params), ex);
+    }
 
-			if (ObjectUtils.isNotEmpty(objects)) {
-				sb.append(", Parameter value - ").append(Arrays.toString(objects));
-			}
-			throw new RuntimeException(sb.toString());
-		};
-	}
+    /**
+     * 创建定时任务线程池
+     *
+     * <p>创建用于执行定时任务的 ScheduledExecutorService，线程数等于 CPU 核心数。 使用守护线程，不会阻止 JVM 关闭。
+     *
+     * @return 定时任务执行器
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    ScheduledExecutorService scheduledExecutorService() {
+        return new ScheduledThreadPoolExecutor(
+                core,
+                new BasicThreadFactory.Builder()
+                        .namingPattern("schedule-pool-%d")
+                        .daemon(true)
+                        .build(),
+                new ThreadPoolExecutor.CallerRunsPolicy()) {
+            @Override
+            protected void afterExecute(Runnable r, Throwable t) {
+                super.afterExecute(r, t);
+            }
+        };
+    }
 
-	/**
-	 * 创建定时任务线程池
-	 *
-	 * <p>创建用于执行定时任务的 ScheduledExecutorService，线程数等于 CPU 核心数。 使用守护线程，不会阻止 JVM 关闭。
-	 *
-	 * @return 定时任务执行器
-	 */
-	@ConditionalOnMissingBean
-	@Bean(name = "scheduledExecutorService")
-	protected ScheduledExecutorService scheduledExecutorService() {
-		return new ScheduledThreadPoolExecutor(
-			core,
-			new BasicThreadFactory.Builder()
-				.namingPattern("schedule-pool-%d")
-				.daemon(true)
-				.build(),
-			new ThreadPoolExecutor.CallerRunsPolicy()) {
+    @Bean
+    BeanPostProcessor threadPoolTaskExecutorBeanPostProcessor() {
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                if (!(bean instanceof ThreadPoolTaskExecutor)) {
+                    return bean;
+                }
+                ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) bean;
+                executor.setTaskDecorator(new CopyContextTaskDecorator());
+                return executor;
+            }
+        };
+    }
 
-			@Override
-			protected void afterExecute(Runnable r, Throwable t) {
-				super.afterExecute(r, t);
-			}
-		};
-	}
+    public static class CopyContextTaskDecorator implements TaskDecorator {
+        @Override
+        public Runnable decorate(Runnable runnable) {
+            final var contextMap = MDC.getCopyOfContextMap();
+            return () -> {
+                // 将父线程的 MDC 上下文透传到子线程，确保 traceId/spanId 在异步日志中可见
+                Map<String, String> previous = null;
+                try {
+                    previous = MDC.getCopyOfContextMap();
+                    if (contextMap != null) {
+                        MDC.setContextMap(contextMap);
+                    }
+                    runnable.run();
+                } finally {
+                    if (previous == null) {
+                        MDC.clear();
+                    } else {
+                        MDC.setContextMap(previous);
+                    }
+                }
+            };
+        }
+    }
 }

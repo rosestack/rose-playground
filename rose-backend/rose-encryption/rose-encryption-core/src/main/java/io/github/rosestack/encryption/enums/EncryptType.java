@@ -4,33 +4,33 @@ package io.github.rosestack.encryption.enums;
  * 加密算法类型枚举
  */
 public enum EncryptType {
-	/**
-	 * AES 对称加密算法
-	 */
-	AES,
+    /**
+     * AES 对称加密算法
+     */
+    AES,
 
-	/**
-	 * DES 对称加密算法（不推荐，安全性较低）
-	 */
-	DES,
+    /**
+     * DES 对称加密算法（不推荐，安全性较低）
+     */
+    DES,
 
-	/**
-	 * 3DES 对称加密算法
-	 */
-	DES3,
+    /**
+     * 3DES 对称加密算法
+     */
+    DES3,
 
-	/**
-	 * SM4 国密对称加密算法
-	 */
-	SM4,
+    /**
+     * SM4 国密对称加密算法
+     */
+    SM4,
 
-	/**
-	 * SM2 国密非对称加密算法
-	 */
-	SM2,
+    /**
+     * SM2 国密非对称加密算法
+     */
+    SM2,
 
-	/**
-	 * RSA 非对称加密算法
-	 */
-	RSA
+    /**
+     * RSA 非对称加密算法
+     */
+    RSA
 }

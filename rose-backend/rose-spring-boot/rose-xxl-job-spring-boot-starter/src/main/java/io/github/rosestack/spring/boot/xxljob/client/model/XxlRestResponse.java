@@ -5,9 +5,9 @@ import lombok.Data;
 @Data
 public class XxlRestResponse<T> {
 
-	private T content;
+    private T content;
 
-	private String msg;
+    private String msg;
 
-	private Integer code;
+    private Integer code;
 }

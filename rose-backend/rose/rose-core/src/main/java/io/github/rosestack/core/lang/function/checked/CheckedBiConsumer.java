@@ -14,86 +14,86 @@ import java.util.function.Consumer;
 @FunctionalInterface
 public interface CheckedBiConsumer<T, U> {
 
-	/**
-	 * 从 JDK BiConsumer 创建 CheckedBiConsumer
-	 */
-	static <T, U> CheckedBiConsumer<T, U> from(BiConsumer<T, U> consumer) {
-		Objects.requireNonNull(consumer);
-		return consumer::accept;
-	}
+    /**
+     * 从 JDK BiConsumer 创建 CheckedBiConsumer
+     */
+    static <T, U> CheckedBiConsumer<T, U> from(BiConsumer<T, U> consumer) {
+        Objects.requireNonNull(consumer);
+        return consumer::accept;
+    }
 
-	/**
-	 * 消费两个值
-	 *
-	 * @param t 第一个输入参数
-	 * @param u 第二个输入参数
-	 * @throws Exception 可能抛出的异常
-	 */
-	void accept(T t, U u) throws Exception;
+    /**
+     * 消费两个值
+     *
+     * @param t 第一个输入参数
+     * @param u 第二个输入参数
+     * @throws Exception 可能抛出的异常
+     */
+    void accept(T t, U u) throws Exception;
 
-	/**
-	 * 组合消费者
-	 */
-	default CheckedBiConsumer<T, U> andThen(CheckedBiConsumer<? super T, ? super U> after) {
-		Objects.requireNonNull(after);
-		return (T t, U u) -> {
-			accept(t, u);
-			after.accept(t, u);
-		};
-	}
+    /**
+     * 组合消费者
+     */
+    default CheckedBiConsumer<T, U> andThen(CheckedBiConsumer<? super T, ? super U> after) {
+        Objects.requireNonNull(after);
+        return (T t, U u) -> {
+            accept(t, u);
+            after.accept(t, u);
+        };
+    }
 
-	/**
-	 * 组合消费者
-	 */
-	default CheckedBiConsumer<T, U> andThen(BiConsumer<? super T, ? super U> after) {
-		Objects.requireNonNull(after);
-		return (T t, U u) -> {
-			accept(t, u);
-			after.accept(t, u);
-		};
-	}
+    /**
+     * 组合消费者
+     */
+    default CheckedBiConsumer<T, U> andThen(BiConsumer<? super T, ? super U> after) {
+        Objects.requireNonNull(after);
+        return (T t, U u) -> {
+            accept(t, u);
+            after.accept(t, u);
+        };
+    }
 
-	/**
-	 * 部分应用：固定第一个参数
-	 */
-	default CheckedConsumer<U> applyFirst(T t) {
-		return (U u) -> accept(t, u);
-	}
+    /**
+     * 部分应用：固定第一个参数
+     */
+    default CheckedConsumer<U> applyFirst(T t) {
+        return (U u) -> accept(t, u);
+    }
 
-	/**
-	 * 部分应用：固定第二个参数
-	 */
-	default CheckedConsumer<T> applySecond(U u) {
-		return (T t) -> accept(t, u);
-	}
+    /**
+     * 部分应用：固定第二个参数
+     */
+    default CheckedConsumer<T> applySecond(U u) {
+        return (T t) -> accept(t, u);
+    }
 
-	/**
-	 * 转换为 JDK BiConsumer（异常会被包装为 RuntimeException）
-	 */
-	default BiConsumer<T, U> unchecked() {
-		return (T t, U u) -> {
-			try {
-				accept(t, u);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		};
-	}
+    /**
+     * 转换为 JDK BiConsumer（异常会被包装为 RuntimeException）
+     */
+    default BiConsumer<T, U> unchecked() {
+        return (T t, U u) -> {
+            try {
+                accept(t, u);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
 
-	/**
-	 * 转换为 JDK BiConsumer，使用自定义异常处理器
-	 *
-	 * @param handler 异常处理器，接收捕获的异常
-	 * @return 标准 BiConsumer
-	 */
-	default BiConsumer<T, U> unchecked(Consumer<Throwable> handler) {
-		Objects.requireNonNull(handler, "handler cannot be null");
-		return (T t, U u) -> {
-			try {
-				accept(t, u);
-			} catch (Exception e) {
-				handler.accept(e);
-			}
-		};
-	}
+    /**
+     * 转换为 JDK BiConsumer，使用自定义异常处理器
+     *
+     * @param handler 异常处理器，接收捕获的异常
+     * @return 标准 BiConsumer
+     */
+    default BiConsumer<T, U> unchecked(Consumer<Throwable> handler) {
+        Objects.requireNonNull(handler, "handler cannot be null");
+        return (T t, U u) -> {
+            try {
+                accept(t, u);
+            } catch (Exception e) {
+                handler.accept(e);
+            }
+        };
+    }
 }

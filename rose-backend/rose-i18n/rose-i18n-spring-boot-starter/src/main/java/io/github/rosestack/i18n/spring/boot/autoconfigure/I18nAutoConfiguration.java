@@ -30,29 +30,29 @@ import org.springframework.data.redis.core.RedisTemplate;
 @EnableConfigurationProperties(I18nProperties.class)
 @Import(I18nAutoConfiguration.MessageCacheLoaderConfiguration.class)
 public class I18nAutoConfiguration {
-	private final I18nProperties i18nProperties;
+    private final I18nProperties i18nProperties;
 
-	@Bean
-	@ConditionalOnProperty(name = "spring.application.name")
-	public I18nMessageSourceFactoryBean applicationMessageSource(
-		@Value("${spring.application.name}") String applicationName, MessageCacheLoader messageCacheLoader) {
-		return new I18nMessageSourceFactoryBean(applicationName, messageCacheLoader);
-	}
+    @Bean
+    @ConditionalOnProperty(name = "spring.application.name")
+    public I18nMessageSourceFactoryBean applicationMessageSource(
+            @Value("${spring.application.name}") String applicationName, MessageCacheLoader messageCacheLoader) {
+        return new I18nMessageSourceFactoryBean(applicationName, messageCacheLoader);
+    }
 
-	public class MessageCacheLoaderConfiguration {
-		@Bean
-		@ConditionalOnMissingBean
-		@ConditionalOnProperty(name = "rose.i18n.cache.type", havingValue = "MEMORY", matchIfMissing = true)
-		public MessageCacheLoader inMemoryMessageCacheLoader() {
-			return new InMemoryMessageCacheLoader(i18nProperties.getCache());
-		}
+    public class MessageCacheLoaderConfiguration {
+        @Bean
+        @ConditionalOnMissingBean
+        @ConditionalOnProperty(name = "rose.i18n.cache.type", havingValue = "MEMORY", matchIfMissing = true)
+        public MessageCacheLoader inMemoryMessageCacheLoader() {
+            return new InMemoryMessageCacheLoader(i18nProperties.getCache());
+        }
 
-		@Bean
-		@ConditionalOnClass(RedisTemplate.class)
-		@ConditionalOnProperty(name = "rose.i18n.cache.type", havingValue = "REDIS")
-		@ConditionalOnMissingBean
-		public MessageCacheLoader redisMessageCacheLoader(RedisTemplate<String, Object> redisTemplate) {
-			return new RedisMessageCacheLoader(i18nProperties.getCache(), redisTemplate);
-		}
-	}
+        @Bean
+        @ConditionalOnClass(RedisTemplate.class)
+        @ConditionalOnProperty(name = "rose.i18n.cache.type", havingValue = "REDIS")
+        @ConditionalOnMissingBean
+        public MessageCacheLoader redisMessageCacheLoader(RedisTemplate<String, Object> redisTemplate) {
+            return new RedisMessageCacheLoader(i18nProperties.getCache(), redisTemplate);
+        }
+    }
 }

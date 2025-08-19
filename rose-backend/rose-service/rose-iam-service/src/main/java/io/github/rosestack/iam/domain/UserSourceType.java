@@ -10,10 +10,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum UserSourceType {
-	EXCEL("excel"),
-	REGISTER("register"),
-	ADMIN_CREATED("adminCreated"),
-	SYNC("sync"),
-	WORKFLOW("workflow");
-	private String value;
+    EXCEL("excel"),
+    REGISTER("register"),
+    ADMIN_CREATED("adminCreated"),
+    SYNC("sync"),
+    WORKFLOW("workflow");
+    private String value;
 }

@@ -26,43 +26,43 @@ import org.springframework.context.annotation.PropertySource;
 @Import({KeyRotationController.class, RoseEncryptorAutoConfiguration.class})
 @AutoConfiguration
 public class RoseEncryptorAutoConfiguration {
-	private final RoseEncryptionProperties properties;
+    private final RoseEncryptionProperties properties;
 
-	@Bean
-	@ConditionalOnMissingBean
-	public FieldEncryptor fieldEncryptor() {
-		return new DefaultFieldEncryptor(properties.getSecretKey(), properties.isFailOnError());
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public FieldEncryptor fieldEncryptor() {
+        return new DefaultFieldEncryptor(properties.getSecretKey(), properties.isFailOnError());
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(
-		prefix = "rose.encryption.hash",
-		name = "enabled",
-		havingValue = "true",
-		matchIfMissing = true)
-	public HashService hashService() {
-		return new HashService(properties.getHashProperties(), properties.isFailOnError());
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(
+            prefix = "rose.encryption.hash",
+            name = "enabled",
+            havingValue = "true",
+            matchIfMissing = true)
+    public HashService hashService() {
+        return new HashService(properties.getHashProperties(), properties.isFailOnError());
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(prefix = "rose.encryption.key-rotation", name = "enabled", havingValue = "true")
-	public KeyRotationManager keyRotationManager() {
-		return new KeyRotationManager();
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.encryption.key-rotation", name = "enabled", havingValue = "true")
+    public KeyRotationManager keyRotationManager() {
+        return new KeyRotationManager();
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(prefix = "rose.encryption.key-rotation", name = "enabled", havingValue = "true")
-	public RotationAwareFieldEncryptor rotationAwareFieldEncryptor(KeyRotationManager keyRotationManager) {
-		return new RotationAwareFieldEncryptor(keyRotationManager);
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.encryption.key-rotation", name = "enabled", havingValue = "true")
+    public RotationAwareFieldEncryptor rotationAwareFieldEncryptor(KeyRotationManager keyRotationManager) {
+        return new RotationAwareFieldEncryptor(keyRotationManager);
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	@ConditionalOnProperty(prefix = "rose.encryption.key-rotation", name = "enabled", havingValue = "true")
-	public AutoKeyRotationScheduler autoKeyRotationScheduler(KeyRotationManager keyRotationManager) {
-		return new AutoKeyRotationScheduler(keyRotationManager, properties.getKeyRotationProperties());
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "rose.encryption.key-rotation", name = "enabled", havingValue = "true")
+    public AutoKeyRotationScheduler autoKeyRotationScheduler(KeyRotationManager keyRotationManager) {
+        return new AutoKeyRotationScheduler(keyRotationManager, properties.getKeyRotationProperties());
+    }
 }

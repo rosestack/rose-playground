@@ -3,7 +3,6 @@ package io.github.rosestack.spring.boot.audit.annotation;
 import io.github.rosestack.encryption.enums.EncryptType;
 import io.github.rosestack.spring.boot.audit.enums.AuditEventType;
 import io.github.rosestack.spring.boot.audit.enums.AuditRiskLevel;
-
 import java.lang.annotation.*;
 
 @Target({ElementType.METHOD})
@@ -11,21 +10,21 @@ import java.lang.annotation.*;
 @Documented
 public @interface Audit {
 
-	String value() default "";
+    String value() default "";
 
-	AuditEventType eventType() default AuditEventType.DATA_OTHER;
+    AuditEventType eventType() default AuditEventType.DATA_OTHER;
 
-	AuditRiskLevel riskLevel() default AuditRiskLevel.LOW;
+    AuditRiskLevel riskLevel() default AuditRiskLevel.LOW;
 
-	String condition() default "";
+    String condition() default "";
 
-	boolean recordParams() default true;
+    boolean recordParams() default true;
 
-	boolean recordException() default true;
+    boolean recordException() default true;
 
-	boolean recordReturnValue() default false;
+    boolean recordReturnValue() default false;
 
-	String[] maskFields() default {};
+    String[] maskFields() default {};
 
-	EncryptType encryptType() default EncryptType.AES;
+    EncryptType encryptType() default EncryptType.AES;
 }
