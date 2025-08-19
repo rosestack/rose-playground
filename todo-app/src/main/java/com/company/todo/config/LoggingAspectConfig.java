@@ -13,74 +13,74 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Profile;
 
 @Slf4j
 @Configuration
 @EnableAspectJAutoProxy
+@Profile({"dev","test"})
 public class LoggingAspectConfig {
 
-	@Bean
-	public LoggingAspect loggingAspect(ObjectMapper objectMapper) {
-		log.info("Initializing LoggingAspect for dev or test profile");
+    @Bean
+    public LoggingAspect loggingAspect(ObjectMapper objectMapper) {
+        log.info("Initializing LoggingAspect for dev or test profile");
 
-		return new LoggingAspect(objectMapper);
-	}
+        return new LoggingAspect(objectMapper);
+    }
 
-	@Aspect
-	public class LoggingAspect {
-		private final ObjectMapper objectMapper;
+    @Aspect
+    public class LoggingAspect {
+        private final ObjectMapper objectMapper;
 
-		public LoggingAspect(ObjectMapper objectMapper) {
-			this.objectMapper = objectMapper;
-		}
+        public LoggingAspect(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+        }
 
-		@Pointcut("within(@org.springframework.stereotype.Repository *)"
-			+ " || within(@org.springframework.stereotype.Service *)"
-			+ " || within(@org.springframework.web.bind.annotation.RestController *)")
-		public void springBeanPointcut() {
-		}
+        @Pointcut("within(@org.springframework.stereotype.Repository *)"
+                + " || within(@org.springframework.stereotype.Service *)"
+                + " || within(@org.springframework.web.bind.annotation.RestController *)")
+        public void springBeanPointcut() {}
 
-		@Pointcut("within(com.company.todo..*.*Mapper)" + " || within(com.company.todo..*.*Service)"
-			+ " || within(com.company.todo..*.*Controller)")
-		public void applicationPackagePointcut() {
-		}
+        @Pointcut("within(com.company.todo..*.*Mapper)" + " || within(com.company.todo..*.*Service)"
+                + " || within(com.company.todo..*.*Controller)")
+        public void applicationPackagePointcut() {}
 
-		private Logger logger(JoinPoint joinPoint) {
-			return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
-		}
+        private Logger logger(JoinPoint joinPoint) {
+            return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
+        }
 
-		@AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
-		public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
-			logger(joinPoint)
-				.error(
-					"Exception in {}() with cause = '{}' and exception = '{}'",
-					joinPoint.getSignature().getName(),
-					e.getCause() != null ? e.getCause() : "NULL",
-					e.getMessage(),
-					e);
-		}
+        @AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
+        public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
+            logger(joinPoint)
+                    .error(
+                            "Exception in {}() with cause = '{}' and exception = '{}'",
+                            joinPoint.getSignature().getName(),
+                            e.getCause() != null ? e.getCause() : "NULL",
+                            e.getMessage(),
+                            e);
+        }
 
-		@Around("applicationPackagePointcut() && springBeanPointcut()")
-		public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
-			Logger log = logger(joinPoint);
-			log.info(
-				"Enter {}() with arguments = {}",
-				joinPoint.getSignature().getName(),
-				objectMapper.writeValueAsString(joinPoint.getArgs()));
-			try {
-				Object result = joinPoint.proceed();
-				log.info(
-					"Exit {}() with result = {}",
-					joinPoint.getSignature().getName(),
-					objectMapper.writeValueAsString(result));
-				return result;
-			} catch (IllegalArgumentException e) {
-				log.error(
-					"Illegal argument: {} in {}()",
-					objectMapper.writeValueAsString(joinPoint.getArgs()),
-					joinPoint.getSignature().getName());
-				throw e;
-			}
-		}
-	}
+        @Around("applicationPackagePointcut() && springBeanPointcut()")
+        public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+            Logger log = logger(joinPoint);
+            log.info(
+                    "Enter {}() with arguments = {}",
+                    joinPoint.getSignature().getName(),
+                    objectMapper.writeValueAsString(joinPoint.getArgs()));
+            try {
+                Object result = joinPoint.proceed();
+                log.info(
+                        "Exit {}() with result = {}",
+                        joinPoint.getSignature().getName(),
+                        objectMapper.writeValueAsString(result));
+                return result;
+            } catch (IllegalArgumentException e) {
+                log.error(
+                        "Illegal argument: {} in {}()",
+                        objectMapper.writeValueAsString(joinPoint.getArgs()),
+                        joinPoint.getSignature().getName());
+                throw e;
+            }
+        }
+    }
 }

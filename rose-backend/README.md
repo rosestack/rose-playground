@@ -71,7 +71,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ## 构建与质量
 
-- JDK：17+，Maven：3.9+
+- JDK：21+，Maven：3.9+
 - 依赖管理：Spring Boot 3.5.x Parent + Spring Cloud 2025.0.0 + MyBatis Plus 3.5.12
 - 插件建议：
     - `spotless:apply` 统一格式
