@@ -19,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * @since 1.0.0
  */
 @Slf4j
-public abstract class AbstractBaseFilter extends OncePerRequestFilter {
+public abstract class AbstractRequestFilter extends OncePerRequestFilter {
     /**
      * 默认排除路径
      */
@@ -37,7 +37,7 @@ public abstract class AbstractBaseFilter extends OncePerRequestFilter {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private static final Set<String> excludePathsCache = new HashSet<>();
 
-    protected AbstractBaseFilter(String[] excludePaths) {
+    protected AbstractRequestFilter(String[] excludePaths) {
         initializeExcludePaths(excludePaths);
     }
 

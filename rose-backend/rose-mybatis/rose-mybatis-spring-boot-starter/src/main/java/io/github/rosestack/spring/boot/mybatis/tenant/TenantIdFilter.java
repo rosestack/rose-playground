@@ -6,7 +6,7 @@ import static io.github.rosestack.mybatis.MybatisConstants.MDC_TENANT_ID;
 import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
 import io.github.rosestack.mybatis.tenant.TenantContextHolder;
 import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentTenantProvider;
-import io.github.rosestack.spring.filter.AbstractBaseFilter;
+import io.github.rosestack.spring.filter.AbstractRequestFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ import org.slf4j.MDC;
  * @author rosestack
  * @since 1.0.0
  */
-public class TenantIdFilter extends AbstractBaseFilter {
+public class TenantIdFilter extends AbstractRequestFilter {
     private final CurrentTenantProvider currentTenantProvider = new DefaultCurrentTenantProvider();
 
     public TenantIdFilter(List<String> excludePaths) {

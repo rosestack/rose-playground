@@ -5,7 +5,7 @@ import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.hash.HashService;
 import io.github.rosestack.encryption.rotation.KeyRotationManager;
 import io.github.rosestack.encryption.rotation.RotationAwareFieldEncryptor;
-import io.github.rosestack.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.factory.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.encryption.AutoKeyRotationScheduler;
 import io.github.rosestack.spring.boot.encryption.controller.KeyRotationController;
 import lombok.RequiredArgsConstructor;

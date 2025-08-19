@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
-import io.github.rosestack.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.factory.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.redis.lock.DistributedLockManager;
 import io.github.rosestack.spring.boot.redis.lock.aspect.LockAspect;
 import io.github.rosestack.spring.boot.redis.ratelimit.RateLimitManager;

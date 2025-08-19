@@ -21,7 +21,7 @@ import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.hash.HashService;
 import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
 import io.github.rosestack.mybatis.provider.CurrentUserProvider;
-import io.github.rosestack.spring.YmlPropertySourceFactory;
+import io.github.rosestack.spring.factory.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.mybatis.audit.RoseMetaObjectHandler;
 import io.github.rosestack.spring.boot.mybatis.encryption.FieldEncryptionInterceptor;
 import io.github.rosestack.spring.boot.mybatis.permission.DataPermissionMetrics;

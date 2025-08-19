@@ -1,4 +1,4 @@
-package io.github.rosestack.spring;
+package io.github.rosestack.spring.factory;
 
 import java.io.IOException;
 import java.util.Properties;

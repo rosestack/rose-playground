@@ -16,7 +16,7 @@ import org.springframework.web.util.HtmlUtils;
  * @author rosestack
  * @since 1.0.0
  */
-public class XssFilter extends AbstractBaseFilter {
+public class XssRequestFilter extends AbstractRequestFilter {
 
     // 简化的 XSS 攻击模式，只保留最常见的
     private static final Pattern[] XSS_PATTERNS = {
@@ -26,7 +26,7 @@ public class XssFilter extends AbstractBaseFilter {
         Pattern.compile("on\\w+\\s*=", Pattern.CASE_INSENSITIVE) // 匹配所有 on 事件
     };
 
-    public XssFilter(String[] excludePaths) {
+    public XssRequestFilter(String[] excludePaths) {
         super(excludePaths);
     }
 

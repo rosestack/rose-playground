@@ -47,7 +47,16 @@ public class RoseWebProperties {
 		 */
 		private Xss xss = new Xss();
 
-		private CachingRequest cachingRequest = new CachingRequest();
+		private CachingRequest caching = new CachingRequest();
+
+		private LoggingRequest logging = new LoggingRequest();
+
+		@Data
+		public static class LoggingRequest {
+			private boolean enabled = true;
+
+			private int maxResponseTimeToLogInMs = 1500;
+		}
 
 		@Data
 		public static class CachingRequest {

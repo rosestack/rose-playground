@@ -18,7 +18,7 @@ import org.springframework.util.StreamUtils;
  * @author zhijun.chen
  * @since 2.16.3
  */
-public class CachingRequestFilter extends AbstractBaseFilter {
+public class CachingRequestFilter extends AbstractRequestFilter {
 
     public CachingRequestFilter(String[] excludePaths) {
         super(excludePaths);

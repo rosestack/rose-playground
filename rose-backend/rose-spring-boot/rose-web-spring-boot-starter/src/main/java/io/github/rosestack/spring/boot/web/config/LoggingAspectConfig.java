@@ -19,66 +19,63 @@ import org.springframework.context.annotation.Profile;
 @Profile({"dev", "test"})
 public class LoggingAspectConfig {
 
-    @Bean
-    public LoggingAspect loggingAspect(ObjectMapper objectMapper) {
-        log.info("Initializing LoggingAspect for dev or test profile");
+	@Bean
+	public LoggingAspect loggingAspect(ObjectMapper objectMapper) {
+		log.info("Initializing LoggingAspect for dev or test profile");
 
-        return new LoggingAspect(objectMapper);
-    }
+		return new LoggingAspect(objectMapper);
+	}
 
-    @Aspect
-    public class LoggingAspect {
-        private final ObjectMapper objectMapper;
+	@Aspect
+	public class LoggingAspect {
+		private final ObjectMapper objectMapper;
 
-        public LoggingAspect(ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
-        }
+		public LoggingAspect(ObjectMapper objectMapper) {
+			this.objectMapper = objectMapper;
+		}
 
-        @Pointcut("within(@org.springframework.stereotype.Repository *)"
-                + " || within(@org.springframework.stereotype.Service *)"
-                + " || within(@org.springframework.web.bind.annotation.RestController *)")
-        public void springBeanPointcut() {}
+		@Pointcut("within(@org.springframework.stereotype.Repository *)"
+			+ " || within(@org.springframework.stereotype.Service *)"
+			+ " || within(@org.springframework.web.bind.annotation.RestController *)")
+		public void springBeanPointcut() {
+		}
 
-        @Pointcut("within(io.github.rosestack..*.*Mapper)" + " || within(io.github.rosestack..*.*Service)"
-                + " || within(io.github.rosestack..*.*Controller)")
-        public void applicationPackagePointcut() {}
+		private Logger logger(JoinPoint joinPoint) {
+			return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
+		}
 
-        private Logger logger(JoinPoint joinPoint) {
-            return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
-        }
+		@AfterThrowing(pointcut = "springBeanPointcut()", throwing = "e")
+		public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
+			logger(joinPoint)
+				.error(
+					"Exception in {}() with cause = '{}' and exception = '{}'",
+					joinPoint.getSignature().getName(),
+					e.getCause() != null ? e.getCause() : "NULL",
+					e.getMessage(),
+					e);
+		}
 
-        @AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
-        public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
-            logger(joinPoint)
-                    .error(
-                            "Exception in {}() with cause = '{}' and exception = '{}'",
-                            joinPoint.getSignature().getName(),
-                            e.getCause() != null ? e.getCause() : "NULL",
-                            e.getMessage(),
-                            e);
-        }
-
-        @Around("applicationPackagePointcut() && springBeanPointcut()")
-        public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
-            Logger log = logger(joinPoint);
-            log.info(
-                    "Enter {}() with arguments = {}",
-                    joinPoint.getSignature().getName(),
-                    objectMapper.writeValueAsString(joinPoint.getArgs()));
-            try {
-                Object result = joinPoint.proceed();
-                log.info(
-                        "Exit {}() with result = {}",
-                        joinPoint.getSignature().getName(),
-                        objectMapper.writeValueAsString(result));
-                return result;
-            } catch (IllegalArgumentException e) {
-                log.error(
-                        "Illegal argument: {} in {}()",
-                        objectMapper.writeValueAsString(joinPoint.getArgs()),
-                        joinPoint.getSignature().getName());
-                throw e;
-            }
-        }
-    }
+		@Around("springBeanPointcut()")
+		public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
+			Logger log = logger(joinPoint);
+			log.info(
+				"Enter {}() with arguments = {}",
+				joinPoint.getSignature().getName(),
+				objectMapper.writeValueAsString(joinPoint.getArgs()));
+			try {
+				Object result = joinPoint.proceed();
+				log.info(
+					"Exit {}() with result = {}",
+					joinPoint.getSignature().getName(),
+					objectMapper.writeValueAsString(result));
+				return result;
+			} catch (IllegalArgumentException e) {
+				log.error(
+					"Illegal argument: {} in {}()",
+					objectMapper.writeValueAsString(joinPoint.getArgs()),
+					joinPoint.getSignature().getName());
+				throw e;
+			}
+		}
+	}
 }

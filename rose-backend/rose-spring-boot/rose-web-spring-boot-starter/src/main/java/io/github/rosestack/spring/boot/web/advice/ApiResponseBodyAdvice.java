@@ -2,7 +2,7 @@ package io.github.rosestack.spring.boot.web.advice;
 
 import io.github.rosestack.core.model.ApiResponse;
 import io.github.rosestack.spring.annotation.ResponseIgnore;
-import io.github.rosestack.spring.filter.AbstractBaseFilter;
+import io.github.rosestack.spring.filter.AbstractRequestFilter;
 import io.github.rosestack.spring.util.ServletUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
             ServerHttpResponse response) {
         // 检查请求路径是否应该被排除
         String requestPath = ServletUtils.extractPathFromUri(request.getURI().getPath());
-        if (AbstractBaseFilter.shouldExcludePath(requestPath)) {
+        if (AbstractRequestFilter.shouldExcludePath(requestPath)) {
             log.debug("ApiResponseBodyAdvice 跳过包装路径: {}", requestPath);
             return body;
         }
