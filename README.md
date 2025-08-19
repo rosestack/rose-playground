@@ -299,10 +299,10 @@ Rose 平台旨在构建一个功能完整、架构清晰、可扩展的企业级
 
 ## 📞 联系我们
 
-- 项目主页: https://github.com/chensoul/rose-monolithic
-- 问题反馈: https://github.com/chensoul/rose-monolithic/issues
+- 项目主页: https://github.com/chensoul/rose-playground
+- 问题反馈: https://github.com/chensoul/rose-playground/issues
 - 邮箱: ichensoul@gmail.com
-- 文档: https://github.com/chensoul/rose-monolithic/tree/master/docs
+- 文档: https://github.com/chensoul/rose-playground/tree/master/docs
 
 ---
 

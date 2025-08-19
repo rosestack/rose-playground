@@ -4,7 +4,7 @@
 3.5）。本目录聚合了基础组件（Core、Starter）与领域服务（Billing、IAM、Notification），支持国际化、字段加密、数据权限、租户隔离、审计日志、认证授权、Web
 基础能力等。
 
-- 代码根仓库：`rose-monolithic`
+- 代码根仓库：`rose-playground`
 - 当前目录：`rose-backend`
 - 运行时依赖：MySQL/Redis/RabbitMQ（可通过 docker-compose 快速启动）
 
@@ -34,8 +34,8 @@
 1) 克隆项目并进入目录
 
 ```bash
-git clone https://github.com/chensoul/rose-monolithic.git
-cd rose-monolithic/rose-backend
+git clone https://github.com/chensoul/rose-playground.git
+cd rose-playground/rose-backend
 ```
 
 2) 启动依赖（MySQL/Redis/RabbitMQ）
