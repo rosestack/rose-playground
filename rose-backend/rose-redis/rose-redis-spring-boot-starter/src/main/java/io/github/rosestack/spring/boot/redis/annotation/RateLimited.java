@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.redis.annotation;
 
-import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
+import io.github.rosestack.spring.boot.redis.config.RedisProperties;
 import java.lang.annotation.*;
 
 /**
@@ -66,7 +66,7 @@ public @interface RateLimited {
      *
      * @return 限流算法
      */
-    RoseRedisProperties.RateLimit.Algorithm algorithm() default RoseRedisProperties.RateLimit.Algorithm.TOKEN_BUCKET;
+    RedisProperties.RateLimit.Algorithm algorithm() default RedisProperties.RateLimit.Algorithm.TOKEN_BUCKET;
 
     /**
      * 超出限流时的处理策略

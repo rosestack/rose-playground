@@ -1,4 +1,4 @@
-package io.github.rosestack.i18n.spring.boot.autoconfigure;
+package io.github.rosestack.i18n.spring.boot.config;
 
 import io.github.rosestack.i18n.cache.CacheProperties;
 import java.util.List;

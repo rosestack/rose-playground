@@ -6,6 +6,7 @@ import io.github.rosestack.i18n.spring.DelegatingI18nMessageSource;
 import io.github.rosestack.i18n.spring.I18nBeanPostProcessor;
 import io.github.rosestack.i18n.spring.I18nMessageSourceBeanLifecyclePostProcessor;
 import io.github.rosestack.i18n.spring.I18nMessageSourceFactoryBean;
+import io.github.rosestack.i18n.spring.boot.config.I18nAutoConfig;
 import io.github.rosestack.i18n.spring.context.I18nApplicationListener;
 import io.github.rosestack.i18n.spring.context.MessageSourceAdapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-class I18nAutoConfigurationTests {
+class I18NAutoConfigTests {
 
     ApplicationContextRunner applicationContextRunner;
 
@@ -28,7 +29,7 @@ class I18nAutoConfigurationTests {
         applicationContextRunner
                 .withPropertyValues("spring.application.name=I18nAutoConfigurationTests")
                 .withConfiguration(
-                        AutoConfigurations.of(I18nAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class))
+                        AutoConfigurations.of(I18nAutoConfig.class, PropertyPlaceholderAutoConfiguration.class))
                 .run(context -> {
                     assertThat(context)
                             .hasBean("applicationMessageSource")

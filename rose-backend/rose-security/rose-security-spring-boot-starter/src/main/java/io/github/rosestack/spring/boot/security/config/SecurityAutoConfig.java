@@ -41,19 +41,19 @@ import ua_parser.Parser;
 
 @RequiredArgsConstructor
 @AutoConfiguration
-@EnableConfigurationProperties(RoseSecurityProperties.class)
+@EnableConfigurationProperties(SecurityProperties.class)
 @Import({
-    RoseSecurityAutoConfiguration.RoseAuthenticationConfiguration.class,
-    RoseAccountConfiguration.class,
-    RoseProtectConfiguration.class
+    SecurityAutoConfig.RoseAuthenticationConfiguration.class,
+    SecurityAccountConfig.class,
+    SecurityProtectConfig.class
 })
 @ConditionalOnProperty(prefix = "rose.security", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class RoseSecurityAutoConfiguration {
+public class SecurityAutoConfig {
     private static final String[] PUBLIC_RESOURCES = {
         "/favicon.ico", "/actuator/**", "/error",
     };
 
-    private final RoseSecurityProperties props;
+    private final SecurityProperties props;
     private final ObjectProvider<AccessListFilter> accessListFilterProvider;
     private final ObjectProvider<ReplayFilter> replayFilterObjectProvider;
     private final ObjectProvider<RateLimitFilter> rateLimitFilterObjectProvider;
@@ -171,7 +171,7 @@ public class RoseSecurityAutoConfiguration {
         }
 
         @Bean
-        public LogoutSuccessHandler logoutSuccessHandler(TokenService tokenService, RoseSecurityProperties props) {
+        public LogoutSuccessHandler logoutSuccessHandler(TokenService tokenService, SecurityProperties props) {
             return new LogoutSuccessHandler(tokenService, props, eventPublisher);
         }
 
@@ -187,7 +187,7 @@ public class RoseSecurityAutoConfiguration {
                 name = "type",
                 havingValue = "LOCAL",
                 matchIfMissing = true)
-        public TokenService opaqueTokenService(RoseSecurityProperties props) {
+        public TokenService opaqueTokenService(SecurityProperties props) {
             return new OpaqueTokenService(props);
         }
     }

@@ -2,16 +2,16 @@ package io.github.rosestack.spring.boot.security.protect;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 
 public class ReplayProtection {
 
-    private final RoseSecurityProperties.Protect.Replay props;
+    private final SecurityProperties.Protect.Replay props;
     private final Cache<String, Boolean> nonceCache;
 
-    public ReplayProtection(RoseSecurityProperties properties) {
+    public ReplayProtection(SecurityProperties properties) {
         this.props = properties.getProtect().getReplay();
         Duration window = props.getWindow();
         this.nonceCache = Caffeine.newBuilder().expireAfterWrite(window).build();

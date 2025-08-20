@@ -2,7 +2,7 @@ package io.github.rosestack.spring.boot.security.core.token;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,7 +14,7 @@ public class OpaqueTokenService implements TokenService {
     private final long ttlSeconds;
     private final Cache<String, java.util.Map<String, Long>> userToTokens;
 
-    public OpaqueTokenService(RoseSecurityProperties props) {
+    public OpaqueTokenService(SecurityProperties props) {
         Duration ttl = props.getToken().getTtl();
         this.ttlSeconds = ttl.getSeconds();
         this.tokenToUser = Caffeine.newBuilder()

@@ -26,7 +26,7 @@ public class TenantConfig {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TenantLineHandler tenantLineHandler(RoseMybatisProperties properties) {
+	public TenantLineHandler tenantLineHandler(MybatisProperties properties) {
 		log.info("启用租户处理器, 租户 ID 字段: {}", properties.getTenant().getColumn());
 
 		return new RoseTenantLineHandler(properties);

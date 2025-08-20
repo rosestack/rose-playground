@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.redis.ratelimit.aspect;
 
 import io.github.rosestack.spring.boot.redis.annotation.RateLimited;
-import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
+import io.github.rosestack.spring.boot.redis.config.RedisProperties;
 import io.github.rosestack.spring.boot.redis.exception.RateLimitExceededException;
 import io.github.rosestack.spring.boot.redis.ratelimit.RateLimitManager;
 import java.lang.reflect.Method;
@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 public class RateLimitAspect {
 
     private final RateLimitManager rateLimitManager;
-    private final RoseRedisProperties properties;
+    private final RedisProperties properties;
     private final ExpressionParser parser = new SpelExpressionParser();
 
     @Around("@annotation(rateLimited)")
@@ -59,7 +59,7 @@ public class RateLimitAspect {
 
         try {
             // 获取限流配置
-            RoseRedisProperties.RateLimit.Algorithm algorithm = rateLimited.algorithm();
+            RedisProperties.RateLimit.Algorithm algorithm = rateLimited.algorithm();
             int rate = rateLimited.rate() > 0
                     ? rateLimited.rate()
                     : properties.getRateLimit().getDefaultRate();

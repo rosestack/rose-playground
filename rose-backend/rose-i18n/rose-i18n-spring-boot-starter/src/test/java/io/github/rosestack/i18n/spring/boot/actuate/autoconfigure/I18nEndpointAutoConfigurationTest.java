@@ -3,7 +3,7 @@ package io.github.rosestack.i18n.spring.boot.actuate.autoconfigure;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import io.github.rosestack.i18n.spring.boot.actuate.I18nEndpoint;
-import io.github.rosestack.i18n.spring.boot.autoconfigure.I18nAutoConfiguration;
+import io.github.rosestack.i18n.spring.boot.config.I18nAutoConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -17,7 +17,7 @@ class I18nEndpointAutoConfigurationTest {
     void setup() {
         applicationContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
-                        AutoConfigurations.of(I18nAutoConfiguration.class, I18nEndpointAutoConfiguration.class));
+                        AutoConfigurations.of(I18nAutoConfig.class, I18nEndpointAutoConfiguration.class));
     }
 
     @Test

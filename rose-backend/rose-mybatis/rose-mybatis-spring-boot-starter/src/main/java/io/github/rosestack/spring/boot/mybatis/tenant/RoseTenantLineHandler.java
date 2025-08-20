@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.mybatis.tenant;
 
-import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.spring.boot.mybatis.config.MybatisProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoseTenantLineHandler extends AbstractTenantLineHandler {
 
-    private final RoseMybatisProperties properties;
+    private final MybatisProperties properties;
 
     @Override
     protected String getTenantIdColumnInternal() {

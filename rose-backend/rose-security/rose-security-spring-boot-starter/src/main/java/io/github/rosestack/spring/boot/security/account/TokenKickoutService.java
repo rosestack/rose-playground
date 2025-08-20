@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.security.account;
 
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import io.github.rosestack.spring.boot.security.core.event.TokenRevokedEvent;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import java.util.Comparator;
@@ -10,15 +10,15 @@ import org.springframework.context.ApplicationEventPublisher;
 public class TokenKickoutService {
 
     private final TokenService tokenService;
-    private final RoseSecurityProperties properties;
+    private final SecurityProperties properties;
     private final ApplicationEventPublisher publisher;
 
-    public TokenKickoutService(TokenService tokenService, RoseSecurityProperties properties) {
+    public TokenKickoutService(TokenService tokenService, SecurityProperties properties) {
         this(tokenService, properties, null);
     }
 
     public TokenKickoutService(
-            TokenService tokenService, RoseSecurityProperties properties, ApplicationEventPublisher publisher) {
+            TokenService tokenService, SecurityProperties properties, ApplicationEventPublisher publisher) {
         this.tokenService = tokenService;
         this.properties = properties;
         this.publisher = publisher;
@@ -65,7 +65,7 @@ public class TokenKickoutService {
         if (!isEnabled()) {
             return 0;
         }
-        RoseSecurityProperties.Account.Kickout k = properties.getAccount().getKickout();
+        SecurityProperties.Account.Kickout k = properties.getAccount().getKickout();
         if (k.getConcurrentLimit() > 1) {
             return 0;
         }

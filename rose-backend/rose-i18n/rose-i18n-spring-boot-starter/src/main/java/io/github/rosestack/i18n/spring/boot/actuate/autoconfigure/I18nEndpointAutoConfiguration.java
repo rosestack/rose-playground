@@ -1,7 +1,7 @@
 package io.github.rosestack.i18n.spring.boot.actuate.autoconfigure;
 
 import io.github.rosestack.i18n.spring.boot.actuate.I18nEndpoint;
-import io.github.rosestack.i18n.spring.boot.autoconfigure.I18nAutoConfiguration;
+import io.github.rosestack.i18n.spring.boot.config.I18nAutoConfig;
 import io.github.rosestack.i18n.spring.boot.condition.ConditionalOnI18nEnabled;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Bean;
         })
 @ConditionalOnI18nEnabled
 @ConditionalOnAvailableEndpoint(endpoint = I18nEndpoint.class)
-@AutoConfigureAfter(I18nAutoConfiguration.class)
+@AutoConfigureAfter(I18nAutoConfig.class)
 public class I18nEndpointAutoConfiguration {
 
     @Bean

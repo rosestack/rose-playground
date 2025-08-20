@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
  * 仅在 rose.xxl-job.client.enabled=true 时，提供最小的 RestTemplate 与 Admin 客户端
  */
 @ConditionalOnProperty(prefix = "rose.xxl-job.client", name = "enabled", havingValue = "true")
-public class XxlJobClientConfiguration {
+public class XxlJobClientConfig {
     @Bean
     @ConditionalOnMissingBean
     XxlJobClientAuthInterceptor xxlJobClientAuthInterceptor(XxlJobProperties properties) {

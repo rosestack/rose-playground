@@ -29,14 +29,14 @@ import org.springframework.context.annotation.Bean;
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "springdoc.api-docs", name = "enabled", havingValue = "true")
 public class OpenApiConfig {
-	private final RoseWebProperties roseWebProperties;
+	private final WebProperties webProperties;
 
 	/**
 	 * 配置 OpenAPI 文档
 	 */
 	@Bean
 	public OpenAPI customOpenAPI() {
-		RoseWebProperties.Springdoc springdocConfig = roseWebProperties.getSpringdoc();
+		WebProperties.Springdoc springdocConfig = webProperties.getSpringdoc();
 
 		OpenAPI openAPI = new OpenAPI().info(buildInfo(springdocConfig)).servers(buildServers(springdocConfig));
 
@@ -53,7 +53,7 @@ public class OpenApiConfig {
 	/**
 	 * 构建 API 信息
 	 */
-	private Info buildInfo(RoseWebProperties.Springdoc springdocConfig) {
+	private Info buildInfo(WebProperties.Springdoc springdocConfig) {
 		return new Info()
 			.title(springdocConfig.getTitle())
 			.description(springdocConfig.getDescription())
@@ -70,7 +70,7 @@ public class OpenApiConfig {
 	/**
 	 * 构建服务器列表
 	 */
-	private List<Server> buildServers(RoseWebProperties.Springdoc springdocConfig) {
+	private List<Server> buildServers(WebProperties.Springdoc springdocConfig) {
 		return springdocConfig.getServers().stream()
 			.map(serverConfig -> new Server().url(serverConfig.getUrl()).description(serverConfig.getDescription()))
 			.toList();
@@ -79,9 +79,9 @@ public class OpenApiConfig {
 	/**
 	 * 构建安全组件
 	 */
-	private Components buildComponents(RoseWebProperties.Springdoc springdocConfig) {
+	private Components buildComponents(WebProperties.Springdoc springdocConfig) {
 		Components components = new Components();
-		RoseWebProperties.Springdoc.Security security = springdocConfig.getSecurity();
+		WebProperties.Springdoc.Security security = springdocConfig.getSecurity();
 
 		// JWT Token 认证
 		if (security.getJwt().isEnabled()) {
@@ -140,8 +140,8 @@ public class OpenApiConfig {
 	/**
 	 * 构建安全要求
 	 */
-	private List<SecurityRequirement> buildSecurityRequirements(RoseWebProperties.Springdoc springdocConfig) {
-		RoseWebProperties.Springdoc.Security security = springdocConfig.getSecurity();
+	private List<SecurityRequirement> buildSecurityRequirements(WebProperties.Springdoc springdocConfig) {
+		WebProperties.Springdoc.Security security = springdocConfig.getSecurity();
 		List<SecurityRequirement> requirements = new java.util.ArrayList<>();
 
 		if (security.getJwt().isEnabled()) {

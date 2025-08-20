@@ -1,4 +1,4 @@
-package io.github.rosestack.i18n.spring.boot.autoconfigure;
+package io.github.rosestack.i18n.spring.boot.config;
 
 import io.github.rosestack.i18n.MessageCacheLoader;
 import io.github.rosestack.i18n.cache.InMemoryMessageCacheLoader;
@@ -28,8 +28,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 @RequiredArgsConstructor
 @AutoConfiguration
 @EnableConfigurationProperties(I18nProperties.class)
-@Import(I18nAutoConfiguration.MessageCacheLoaderConfiguration.class)
-public class I18nAutoConfiguration {
+@Import(I18nAutoConfig.MessageCacheLoaderConfiguration.class)
+public class I18nAutoConfig {
     private final I18nProperties i18nProperties;
 
     @Bean

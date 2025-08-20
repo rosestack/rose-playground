@@ -12,7 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "rose.security")
 @Data
-public class RoseSecurityProperties {
+public class SecurityProperties {
 
     /**
      * Token 相关配置

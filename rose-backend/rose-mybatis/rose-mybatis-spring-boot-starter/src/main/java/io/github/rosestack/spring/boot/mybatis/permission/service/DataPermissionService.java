@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.mybatis.permission.service;
 
-import io.github.rosestack.spring.boot.mybatis.config.RoseMybatisProperties;
+import io.github.rosestack.spring.boot.mybatis.config.MybatisProperties;
 import io.github.rosestack.spring.boot.mybatis.permission.RoseDataPermissionHandler;
 import java.util.Map;
 import lombok.Data;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
         havingValue = "true",
         matchIfMissing = true)
 public class DataPermissionService {
-    private final RoseMybatisProperties properties;
+    private final MybatisProperties properties;
     private final RoseDataPermissionHandler dataPermissionHandler;
 
     /**

@@ -2,7 +2,7 @@ package io.github.rosestack.spring.boot.security.protect;
 
 import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.core.util.JsonUtils;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +17,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final RateLimiter limiter;
-    private final RoseSecurityProperties properties;
+    private final SecurityProperties properties;
 
-    public RateLimitFilter(RateLimiter limiter, RoseSecurityProperties properties) {
+    public RateLimitFilter(RateLimiter limiter, SecurityProperties properties) {
         this.limiter = limiter;
         this.properties = properties;
     }

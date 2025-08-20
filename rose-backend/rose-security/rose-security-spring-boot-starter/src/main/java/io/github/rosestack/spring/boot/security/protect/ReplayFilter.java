@@ -2,7 +2,7 @@ package io.github.rosestack.spring.boot.security.protect;
 
 import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.core.util.JsonUtils;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,9 +15,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class ReplayFilter extends OncePerRequestFilter {
 
     private final ReplayProtection protection;
-    private final RoseSecurityProperties properties;
+    private final SecurityProperties properties;
 
-    public ReplayFilter(ReplayProtection protection, RoseSecurityProperties properties) {
+    public ReplayFilter(ReplayProtection protection, SecurityProperties properties) {
         this.protection = protection;
         this.properties = properties;
     }

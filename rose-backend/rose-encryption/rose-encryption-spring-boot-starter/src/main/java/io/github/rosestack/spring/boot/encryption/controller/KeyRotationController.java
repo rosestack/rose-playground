@@ -4,7 +4,7 @@ import io.github.rosestack.encryption.enums.EncryptType;
 import io.github.rosestack.encryption.rotation.KeyRotationManager;
 import io.github.rosestack.encryption.rotation.KeySpec;
 import io.github.rosestack.spring.boot.encryption.AutoKeyRotationScheduler;
-import io.github.rosestack.spring.boot.encryption.config.RoseEncryptionProperties;
+import io.github.rosestack.spring.boot.encryption.config.EncryptionProperties;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 public class KeyRotationController {
 
     private final KeyRotationManager keyRotationManager;
-    private final RoseEncryptionProperties properties;
+    private final EncryptionProperties properties;
     private final AutoKeyRotationScheduler autoRotationScheduler;
 
     /**

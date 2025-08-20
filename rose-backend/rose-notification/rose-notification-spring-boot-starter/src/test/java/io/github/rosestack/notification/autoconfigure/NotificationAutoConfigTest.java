@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-class NotificationAutoConfigurationTest {
+class NotificationAutoConfigTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(NotificationAutoConfiguration.class))
+            .withConfiguration(AutoConfigurations.of(NotificationAutoConfig.class))
             .withPropertyValues(
                     "rose.notification.retryable=true",
                     "rose.notification.executor-core-size=2",

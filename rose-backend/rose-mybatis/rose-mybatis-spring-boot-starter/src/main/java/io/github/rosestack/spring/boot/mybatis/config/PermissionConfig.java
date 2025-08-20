@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 	matchIfMissing = true)
 @RequiredArgsConstructor
 @Import({DataPermissionController.class, DataPermissionService.class})
-public class DataPermissionConfig {
-	private final RoseMybatisProperties properties;
+public class PermissionConfig {
+	private final MybatisProperties properties;
 
 	@Bean
 	@ConditionalOnMissingBean(DataPermissionProviderManager.class)

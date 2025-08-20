@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 @ConditionalOnProperty(prefix = "rose.security.account", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class RoseAccountConfiguration {
+public class SecurityAccountConfig {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(
@@ -18,7 +18,7 @@ public class RoseAccountConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public LoginLockoutService loginLockoutService(RoseSecurityProperties props) {
+    public LoginLockoutService loginLockoutService(SecurityProperties props) {
         return new LoginLockoutService(props);
     }
 
@@ -30,7 +30,7 @@ public class RoseAccountConfiguration {
             havingValue = "true",
             matchIfMissing = true)
     public LoginPreCheckFilter loginPreCheckFilter(
-            RoseSecurityProperties props, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
+		SecurityProperties props, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
         return new LoginPreCheckFilter(props, loginLockoutServiceProvider);
     }
 
@@ -41,7 +41,7 @@ public class RoseAccountConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public TokenKickoutService tokenKickoutService(TokenService tokenService, RoseSecurityProperties props) {
+    public TokenKickoutService tokenKickoutService(TokenService tokenService, SecurityProperties props) {
         return new TokenKickoutService(tokenService, props);
     }
 }

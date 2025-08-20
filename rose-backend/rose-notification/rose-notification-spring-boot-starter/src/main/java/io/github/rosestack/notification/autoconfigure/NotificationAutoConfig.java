@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
 @EnableConfigurationProperties(NotificationProperties.class)
-public class NotificationAutoConfiguration {
+public class NotificationAutoConfig {
 
     @Bean
     @ConditionalOnMissingBean

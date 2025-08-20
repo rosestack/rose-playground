@@ -33,9 +33,9 @@ import org.springframework.core.env.Environment;
 @RequiredArgsConstructor
 @EnableConfigurationProperties(XxlJobProperties.class)
 @ConditionalOnClass({XxlJobExecutor.class, XxlJobSpringExecutor.class})
-@Import(XxlJobClientConfiguration.class)
+@Import(XxlJobClientConfig.class)
 @ConditionalOnProperty(prefix = "rose.xxl-job", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class XxlJobAutoConfiguration {
+public class XxlJobAutoConfig {
 
     private static final String XXL_JOB_ADMIN = "rose-xxl-job";
     private final ObjectProvider<DiscoveryClient> discoveryClientObjectProvider;
@@ -62,7 +62,7 @@ public class XxlJobAutoConfiguration {
             String serverList = discoveryClient.getServices().stream()
                     .filter(s -> s.contains(XXL_JOB_ADMIN))
                     .flatMap(s -> discoveryClient.getInstances(s).stream())
-                    .map(XxlJobAutoConfiguration::getServiceUrl)
+                    .map(XxlJobAutoConfig::getServiceUrl)
                     .collect(Collectors.joining(","));
             executor.setAdminAddresses(serverList);
         } else {

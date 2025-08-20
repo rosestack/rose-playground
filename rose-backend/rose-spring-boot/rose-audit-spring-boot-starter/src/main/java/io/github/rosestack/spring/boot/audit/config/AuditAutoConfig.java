@@ -34,7 +34,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableConfigurationProperties(AuditProperties.class)
 @MapperScan(basePackages = "io.github.rosestack.spring.boot.audit.mapper")
 @ConditionalOnProperty(prefix = "rose.audit", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class AuditAutoConfiguration {
+public class AuditAutoConfig {
     private final AuditProperties auditProperties;
 
     @PostConstruct

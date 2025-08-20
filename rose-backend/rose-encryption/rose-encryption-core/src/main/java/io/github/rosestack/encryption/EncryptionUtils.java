@@ -3,20 +3,33 @@ package io.github.rosestack.encryption;
 import com.antherd.smcrypto.sm2.Sm2;
 import com.antherd.smcrypto.sm4.Sm4;
 import io.github.rosestack.encryption.enums.EncryptType;
+import io.github.rosestack.encryption.exception.EncryptionException;
+import io.github.rosestack.encryption.monitor.EncryptionMonitorManager;
+
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 通用加密工具类
+ * 安全的通用加密工具类
  *
- * <p>提供统一的加密解密功能，支持多种加密算法。 被 FieldEncryptor 和审计模块共同使用，避免代码重复。
+ * <p>提供统一的加密解密功能，支持多种加密算法。
+ * <p>安全特性：
+ * <ul>
+ *   <li>使用安全的加密模式（GCM/CBC，避免ECB）</li>
+ *   <li>每次加密生成随机IV</li>
+ *   <li>完善的异常处理和日志记录</li>
+ *   <li>性能监控和统计</li>
+ * </ul>
  *
  * @author Rose Team
  * @since 1.0.0
@@ -24,302 +37,420 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public final class EncryptionUtils {
 
-    /**
-     * Cipher 实例缓存 - 线程安全
-     */
-    private static final ConcurrentMap<String, Cipher> ENCRYPT_CIPHER_CACHE = new ConcurrentHashMap<>();
+	/**
+	 * 安全的加密算法配置
+	 */
+	private static final Map<EncryptType, String> TRANSFORMATIONS = Map.of(
+		EncryptType.AES, "AES/GCM/NoPadding",
+		EncryptType.DES, "DES/CBC/PKCS5Padding",
+		EncryptType.DES3, "DESede/CBC/PKCS5Padding"
+	);
 
-    private static final ConcurrentMap<String, Cipher> DECRYPT_CIPHER_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<String, Long> PERFORMANCE_STATS = new ConcurrentHashMap<>();
-    private static final String DEFAULT_TRANSFORMATION = "AES/ECB/PKCS5Padding";
+	/**
+	 * IV 长度配置
+	 */
+	private static final Map<EncryptType, Integer> IV_LENGTHS = Map.of(
+		EncryptType.AES, 12,  // GCM 推荐 12 字节
+		EncryptType.DES, 8,   // DES 块大小
+		EncryptType.DES3, 8   // 3DES 块大小
+	);
 
-    private EncryptionUtils() {}
+	/**
+	 * GCM 标签长度
+	 */
+	private static final int GCM_TAG_LENGTH = 128;
 
-    /**
-     * 加密数据
-     *
-     * @param plainText   明文
-     * @param encryptType 加密类型
-     * @param secretKey   密钥
-     * @return 加密后的密文，如果加密失败且不抛出异常则返回原文
-     */
-    public static String encrypt(String plainText, EncryptType encryptType, String secretKey) {
-        if (StringUtils.isBlank(plainText)) {
-            return plainText;
-        }
+	/**
+	 * 安全随机数生成器
+	 */
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-        if (StringUtils.isBlank(secretKey)) {
-            log.warn("加密密钥为空，返回原始值");
-            return plainText;
-        }
+	/**
+	 * 监控管理器
+	 */
+	private static final EncryptionMonitorManager MONITORING_MANAGER = EncryptionMonitorManager.getInstance();
 
-        long startTime = System.nanoTime();
-        try {
-            String result = doEncrypt(plainText, encryptType, secretKey);
-            recordPerformance("encrypt_" + encryptType.name(), startTime);
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException("数据加密失败", e);
-        }
-    }
+	private EncryptionUtils() {
+	}
 
-    /**
-     * 解密数据
-     *
-     * @param cipherText  密文
-     * @param encryptType 加密类型
-     * @param secretKey   密钥
-     * @return 解密后的明文，如果解密失败且不抛出异常则返回原文
-     */
-    public static String decrypt(String cipherText, EncryptType encryptType, String secretKey) {
-        if (StringUtils.isBlank(cipherText)) {
-            return cipherText;
-        }
+	/**
+	 * 安全加密数据
+	 *
+	 * @param plainText   明文
+	 * @param encryptType 加密类型
+	 * @param secretKey   密钥
+	 * @return 加密后的密文（Base64编码，包含IV）
+	 * @throws EncryptionException 加密失败时抛出
+	 */
+	public static String encrypt(String plainText, EncryptType encryptType, String secretKey) {
+		return executeWithMonitoring("encrypt", plainText, encryptType, secretKey,
+			() -> doEncrypt(plainText, encryptType, secretKey));
+	}
 
-        if (StringUtils.isBlank(secretKey)) {
-            log.warn("解密密钥为空，返回原始值");
-            return cipherText;
-        }
+	/**
+	 * 安全解密数据
+	 *
+	 * @param cipherText  密文（Base64编码，包含IV）
+	 * @param encryptType 加密类型
+	 * @param secretKey   密钥
+	 * @return 解密后的明文
+	 * @throws EncryptionException 解密失败时抛出
+	 */
+	public static String decrypt(String cipherText, EncryptType encryptType, String secretKey) {
+		return executeWithMonitoring("decrypt", cipherText, encryptType, secretKey,
+			() -> doDecrypt(cipherText, encryptType, secretKey));
+	}
 
-        long startTime = System.nanoTime();
-        try {
-            String result = doDecrypt(cipherText, encryptType, secretKey);
-            recordPerformance("decrypt_" + encryptType.name(), startTime);
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException("数据解密失败", e);
-        }
-    }
+	/**
+	 * 通用的加密解密执行方法，包含监控和错误处理
+	 */
+	private static String executeWithMonitoring(String operation, String inputData,
+												EncryptType encryptType, String secretKey, CryptoOperation cryptoOperation) {
+		// 输入验证
+		if (StringUtils.isBlank(inputData)) {
+			return inputData;
+		}
 
-    /**
-     * 批量加密
-     *
-     * @param plainTexts  明文数组
-     * @param encryptType 加密类型
-     * @param secretKey   密钥
-     * @return 加密后的密文数组
-     */
-    public static String[] encryptBatch(String[] plainTexts, EncryptType encryptType, String secretKey) {
-        if (plainTexts == null) {
-            return null;
-        }
+		validateSecretKey(secretKey, operation);
 
-        String[] results = new String[plainTexts.length];
-        for (int i = 0; i < plainTexts.length; i++) {
-            results[i] = encrypt(plainTexts[i], encryptType, secretKey);
-        }
-        return results;
-    }
+		// 执行操作并监控
+		long startTime = System.nanoTime();
+		try {
+			String result = cryptoOperation.execute();
+			MONITORING_MANAGER.recordPerformance(operation, encryptType.name(), startTime, true, inputData.length());
+			return result;
+		} catch (Exception e) {
+			MONITORING_MANAGER.recordPerformance(operation, encryptType.name(), startTime, false, inputData.length());
+			MONITORING_MANAGER.recordError(operation, encryptType.name(), e.getClass().getSimpleName());
+			log.error("数据{}失败: encryptType={}, error={}", operation, encryptType, e.getMessage());
+			throw new EncryptionException("数据" + operation + "失败: " + e.getMessage(), e);
+		}
+	}
 
-    /**
-     * 批量解密
-     *
-     * @param cipherTexts 密文数组
-     * @param encryptType 加密类型
-     * @param secretKey   密钥
-     * @return 解密后的明文数组
-     */
-    public static String[] decryptBatch(String[] cipherTexts, EncryptType encryptType, String secretKey) {
-        if (cipherTexts == null) {
-            return null;
-        }
+	/**
+	 * 验证密钥
+	 */
+	private static void validateSecretKey(String secretKey, String operation) {
+		if (StringUtils.isBlank(secretKey)) {
+			throw new EncryptionException(operation + "密钥不能为空");
+		}
 
-        String[] results = new String[cipherTexts.length];
-        for (int i = 0; i < cipherTexts.length; i++) {
-            results[i] = decrypt(cipherTexts[i], encryptType, secretKey);
-        }
-        return results;
-    }
+		if (secretKey.length() < 16) {
+			throw new EncryptionException(operation + "密钥长度不足，至少需要16个字符");
+		}
+	}
 
-    /**
-     * 生成哈希值
-     *
-     * @param data 原始数据
-     * @return SHA-256 哈希值
-     */
-    public static String generateHash(String data) {
-        if (StringUtils.isBlank(data)) {
-            return "";
-        }
+	/**
+	 * 加密解密操作的函数式接口
+	 */
+	@FunctionalInterface
+	private interface CryptoOperation {
+		String execute() throws Exception;
+	}
 
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (Exception e) {
-            log.error("生成哈希值失败: {}", e.getMessage(), e);
-            throw new RuntimeException("生成哈希值失败", e);
-        }
-    }
+	/**
+	 * 批量加密
+	 *
+	 * @param plainTexts  明文数组
+	 * @param encryptType 加密类型
+	 * @param secretKey   密钥
+	 * @return 加密后的密文数组
+	 */
+	public static String[] encryptBatch(String[] plainTexts, EncryptType encryptType, String secretKey) {
+		if (plainTexts == null) {
+			return null;
+		}
 
-    /**
-     * 验证哈希值
-     *
-     * @param data 原始数据
-     * @param hash 哈希值
-     * @return 是否匹配
-     */
-    public static boolean verifyHash(String data, String hash) {
-        if (StringUtils.isBlank(data) || StringUtils.isBlank(hash)) {
-            return false;
-        }
+		String[] results = new String[plainTexts.length];
+		for (int i = 0; i < plainTexts.length; i++) {
+			results[i] = encrypt(plainTexts[i], encryptType, secretKey);
+		}
+		return results;
+	}
 
-        try {
-            String computedHash = generateHash(data);
-            return hash.equals(computedHash);
-        } catch (Exception e) {
-            log.error("验证哈希值失败: {}", e.getMessage(), e);
-            return false;
-        }
-    }
+	/**
+	 * 批量解密
+	 *
+	 * @param cipherTexts 密文数组
+	 * @param encryptType 加密类型
+	 * @param secretKey   密钥
+	 * @return 解密后的明文数组
+	 */
+	public static String[] decryptBatch(String[] cipherTexts, EncryptType encryptType, String secretKey) {
+		if (cipherTexts == null) {
+			return null;
+		}
 
-    /**
-     * 执行加密
-     */
-    private static String doEncrypt(String plainText, EncryptType encryptType, String secretKey) throws Exception {
-        if (encryptType == EncryptType.SM4) {
-            return Sm4.encrypt(plainText, secretKey);
-        } else if (encryptType == EncryptType.SM2) {
-            return Sm2.doEncrypt(plainText, secretKey);
-        }
+		String[] results = new String[cipherTexts.length];
+		for (int i = 0; i < cipherTexts.length; i++) {
+			results[i] = decrypt(cipherTexts[i], encryptType, secretKey);
+		}
+		return results;
+	}
 
-        Cipher cipher = getEncryptCipher(encryptType, secretKey);
-        byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(encrypted);
-    }
+	/**
+	 * 安全加密实现
+	 */
+	private static String doEncrypt(String plainText, EncryptType encryptType, String secretKey) throws Exception {
+		switch (encryptType) {
+			case AES:
+				return encryptAES(plainText, secretKey);
+			case SM4:
+				return Sm4.encrypt(plainText, secretKey);
+			case SM2:
+				return Sm2.doEncrypt(plainText, secretKey);
+			case DES:
+			case DES3:
+			case RSA:
+				return encryptWithCipher(plainText, encryptType, secretKey);
+			default:
+				throw new EncryptionException("不支持的加密类型: " + encryptType);
+		}
+	}
 
-    /**
-     * 执行解密
-     */
-    private static String doDecrypt(String cipherText, EncryptType encryptType, String secretKey) throws Exception {
-        if (encryptType == EncryptType.SM4) {
-            return Sm4.decrypt(cipherText, secretKey);
-        } else if (encryptType == EncryptType.SM2) {
-            return Sm2.doDecrypt(cipherText, secretKey);
-        }
+	/**
+	 * 安全解密实现
+	 */
+	private static String doDecrypt(String cipherText, EncryptType encryptType, String secretKey) throws Exception {
+		switch (encryptType) {
+			case AES:
+				return decryptAES(cipherText, secretKey);
+			case SM4:
+				return Sm4.decrypt(cipherText, secretKey);
+			case SM2:
+				return Sm2.doDecrypt(cipherText, secretKey);
+			case DES:
+			case DES3:
+			case RSA:
+				return decryptWithCipher(cipherText, encryptType, secretKey);
+			default:
+				throw new EncryptionException("不支持的解密类型: " + encryptType);
+		}
+	}
 
-        Cipher cipher = getDecryptCipher(encryptType, secretKey);
-        byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(cipherText));
-        return new String(decrypted, StandardCharsets.UTF_8);
-    }
+	/**
+	 * AES-GCM 加密
+	 */
+	private static String encryptAES(String plainText, String secretKey) throws Exception {
+		byte[] keyBytes = adjustKeyLength(secretKey.getBytes(StandardCharsets.UTF_8), getKeyLength(EncryptType.AES));
+		SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
 
-    /**
-     * 获取加密 Cipher 实例（带缓存）
-     */
-    private static Cipher getEncryptCipher(EncryptType encryptType, String secretKey) throws Exception {
-        String cacheKey = "encrypt_" + encryptType.name() + "_" + secretKey.hashCode();
-        return ENCRYPT_CIPHER_CACHE.computeIfAbsent(cacheKey, k -> {
-            try {
-                return createEncryptCipher(encryptType, secretKey);
-            } catch (Exception e) {
-                throw new RuntimeException("创建加密 Cipher 失败", e);
-            }
-        });
-    }
+		// 使用配置的 IV 长度生成随机 IV
+		int ivLength = IV_LENGTHS.get(EncryptType.AES);
+		byte[] iv = new byte[ivLength];
+		SECURE_RANDOM.nextBytes(iv);
 
-    /**
-     * 获取解密 Cipher 实例（带缓存）
-     */
-    private static Cipher getDecryptCipher(EncryptType encryptType, String secretKey) throws Exception {
-        String cacheKey = "decrypt_" + encryptType.name() + "_" + secretKey.hashCode();
-        return DECRYPT_CIPHER_CACHE.computeIfAbsent(cacheKey, k -> {
-            try {
-                return createDecryptCipher(encryptType, secretKey);
-            } catch (Exception e) {
-                throw new RuntimeException("创建解密 Cipher 失败", e);
-            }
-        });
-    }
+		String transformation = TRANSFORMATIONS.get(EncryptType.AES);
+		Cipher cipher = Cipher.getInstance(transformation);
+		GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+		cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
 
-    /**
-     * 创建加密 Cipher
-     */
-    private static Cipher createEncryptCipher(EncryptType encryptType, String secretKey) throws Exception {
-        String algorithm = encryptType == EncryptType.AES ? DEFAULT_TRANSFORMATION : encryptType.name();
-        SecretKeySpec keySpec = new SecretKeySpec(adjustKeyLength(secretKey, encryptType), encryptType.name());
-        Cipher cipher = Cipher.getInstance(algorithm);
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-        return cipher;
-    }
+		byte[] cipherBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
 
-    /**
-     * 创建解密 Cipher
-     */
-    private static Cipher createDecryptCipher(EncryptType encryptType, String secretKey) throws Exception {
-        String algorithm = encryptType == EncryptType.AES ? DEFAULT_TRANSFORMATION : encryptType.name();
-        SecretKeySpec keySpec = new SecretKeySpec(adjustKeyLength(secretKey, encryptType), encryptType.name());
-        Cipher cipher = Cipher.getInstance(algorithm);
-        cipher.init(Cipher.DECRYPT_MODE, keySpec);
-        return cipher;
-    }
+		// 将 IV 和密文组合
+		byte[] result = new byte[iv.length + cipherBytes.length];
+		System.arraycopy(iv, 0, result, 0, iv.length);
+		System.arraycopy(cipherBytes, 0, result, iv.length, cipherBytes.length);
 
-    /**
-     * 调整密钥长度
-     */
-    private static byte[] adjustKeyLength(String secretKey, EncryptType encryptType) {
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        int requiredLength = getRequiredKeyLength(encryptType);
+		return Base64.getEncoder().encodeToString(result);
+	}
 
-        if (keyBytes.length == requiredLength) {
-            return keyBytes;
-        }
+	/**
+	 * AES-GCM 解密
+	 */
+	private static String decryptAES(String cipherText, String secretKey) throws Exception {
+		byte[] data = Base64.getDecoder().decode(cipherText);
 
-        byte[] adjustedKey = new byte[requiredLength];
-        if (keyBytes.length > requiredLength) {
-            System.arraycopy(keyBytes, 0, adjustedKey, 0, requiredLength);
-        } else {
-            System.arraycopy(keyBytes, 0, adjustedKey, 0, keyBytes.length);
-            // 用0填充剩余部分
-            for (int i = keyBytes.length; i < requiredLength; i++) {
-                adjustedKey[i] = 0;
-            }
-        }
-        return adjustedKey;
-    }
+		int ivLength = IV_LENGTHS.get(EncryptType.AES);
+		if (data.length < ivLength) {
+			throw new EncryptionException("密文格式错误：长度不足");
+		}
 
-    /**
-     * 获取所需密钥长度
-     */
-    private static int getRequiredKeyLength(EncryptType encryptType) {
-        switch (encryptType) {
-            case AES:
-                return 16; // 128位
-            case DES:
-                return 8; // 64位
-            default:
-                return 16;
-        }
-    }
+		// 提取 IV 和密文
+		byte[] iv = new byte[ivLength];
+		byte[] cipherBytes = new byte[data.length - ivLength];
+		System.arraycopy(data, 0, iv, 0, ivLength);
+		System.arraycopy(data, ivLength, cipherBytes, 0, cipherBytes.length);
 
-    /**
-     * 记录性能统计
-     */
-    private static void recordPerformance(String operation, long startTime) {
-        long duration = System.nanoTime() - startTime;
-        PERFORMANCE_STATS.merge(operation, duration, Long::sum);
-    }
+		byte[] keyBytes = adjustKeyLength(secretKey.getBytes(StandardCharsets.UTF_8), getKeyLength(EncryptType.AES));
+		SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
 
-    /**
-     * 获取性能统计
-     */
-    public static ConcurrentMap<String, Long> getPerformanceStats() {
-        return new ConcurrentHashMap<>(PERFORMANCE_STATS);
-    }
+		String transformation = TRANSFORMATIONS.get(EncryptType.AES);
+		Cipher cipher = Cipher.getInstance(transformation);
+		GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+		cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
 
-    /**
-     * 获取缓存统计信息
-     */
-    public static String getCacheStats() {
-        return String.format("加密缓存: %d, 解密缓存: %d", ENCRYPT_CIPHER_CACHE.size(), DECRYPT_CIPHER_CACHE.size());
-    }
+		byte[] plainBytes = cipher.doFinal(cipherBytes);
+		return new String(plainBytes, StandardCharsets.UTF_8);
+	}
 
-    /**
-     * 清空缓存
-     */
-    public static void clearCache() {
-        ENCRYPT_CIPHER_CACHE.clear();
-        DECRYPT_CIPHER_CACHE.clear();
-        PERFORMANCE_STATS.clear();
-        log.info("已清空加密工具缓存");
-    }
+	/**
+	 * 获取加密算法的变换字符串
+	 */
+	private static String getTransformation(EncryptType encryptType) {
+		// 优先使用配置的变换字符串
+		String transformation = TRANSFORMATIONS.get(encryptType);
+		if (transformation != null) {
+			return transformation;
+		}
+
+		// 兼容其他算法
+		switch (encryptType) {
+			case RSA:
+				return "RSA/ECB/PKCS1Padding";
+			default:
+				throw new EncryptionException("不支持的加密类型: " + encryptType);
+		}
+	}
+
+	/**
+	 * 获取算法名称
+	 */
+	private static String getAlgorithm(EncryptType encryptType) {
+		switch (encryptType) {
+			case DES:
+				return "DES";
+			case DES3:
+				return "DESede";
+			case RSA:
+				return "RSA";
+			default:
+				return encryptType.name();
+		}
+	}
+
+	/**
+	 * 获取密钥长度
+	 */
+	private static int getKeyLength(EncryptType encryptType) {
+		switch (encryptType) {
+			case DES:
+				return 8;
+			case DES3:
+				return 24;
+			case AES:
+				return 32; // AES-256
+			default:
+				return 16; // 默认
+		}
+	}
+
+	/**
+	 * 调整密钥长度
+	 */
+	private static byte[] adjustKeyLength(byte[] key, int targetLength) {
+		if (key.length == targetLength) {
+			return key;
+		}
+
+		byte[] adjustedKey = new byte[targetLength];
+		if (key.length > targetLength) {
+			System.arraycopy(key, 0, adjustedKey, 0, targetLength);
+		} else {
+			System.arraycopy(key, 0, adjustedKey, 0, key.length);
+			// 用零填充剩余部分
+			Arrays.fill(adjustedKey, key.length, targetLength, (byte) 0);
+		}
+		return adjustedKey;
+	}
+
+	/**
+	 * 使用 Cipher 加密（DES/3DES/RSA）
+	 */
+	private static String encryptWithCipher(String plainText, EncryptType encryptType, String secretKey) throws Exception {
+		return processCipher(plainText, encryptType, secretKey, true);
+	}
+
+	/**
+	 * 使用 Cipher 解密（DES/3DES/RSA）
+	 */
+	private static String decryptWithCipher(String cipherText, EncryptType encryptType, String secretKey) throws Exception {
+		return processCipher(cipherText, encryptType, secretKey, false);
+	}
+
+	/**
+	 * 通用的 Cipher 处理方法
+	 */
+	private static String processCipher(String inputData, EncryptType encryptType, String secretKey, boolean isEncrypt) throws Exception {
+		String transformation = getTransformation(encryptType);
+		SecretKeySpec keySpec = new SecretKeySpec(
+			adjustKeyLength(secretKey.getBytes(StandardCharsets.UTF_8), getKeyLength(encryptType)),
+			getAlgorithm(encryptType)
+		);
+
+		Cipher cipher = Cipher.getInstance(transformation);
+
+		if (transformation.contains("CBC")) {
+			return isEncrypt ?
+				encryptWithCBC(cipher, keySpec, inputData) :
+				decryptWithCBC(cipher, keySpec, inputData);
+		} else {
+			return isEncrypt ?
+				encryptWithoutIV(cipher, keySpec, inputData) :
+				decryptWithoutIV(cipher, keySpec, inputData);
+		}
+	}
+
+	/**
+	 * CBC 模式加密
+	 */
+	private static String encryptWithCBC(Cipher cipher, SecretKeySpec keySpec, String plainText) throws Exception {
+		// 生成随机 IV
+		byte[] iv = new byte[cipher.getBlockSize()];
+		SECURE_RANDOM.nextBytes(iv);
+		IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+		cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+		byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+
+		// 将 IV 和密文组合
+		byte[] result = new byte[iv.length + encrypted.length];
+		System.arraycopy(iv, 0, result, 0, iv.length);
+		System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
+
+		return Base64.getEncoder().encodeToString(result);
+	}
+
+	/**
+	 * CBC 模式解密
+	 */
+	private static String decryptWithCBC(Cipher cipher, SecretKeySpec keySpec, String cipherText) throws Exception {
+		byte[] data = Base64.getDecoder().decode(cipherText);
+		int blockSize = cipher.getBlockSize();
+
+		if (data.length < blockSize) {
+			throw new EncryptionException("密文格式错误：长度不足");
+		}
+
+		// 提取 IV 和密文
+		byte[] iv = new byte[blockSize];
+		byte[] encrypted = new byte[data.length - blockSize];
+		System.arraycopy(data, 0, iv, 0, blockSize);
+		System.arraycopy(data, blockSize, encrypted, 0, encrypted.length);
+
+		IvParameterSpec ivSpec = new IvParameterSpec(iv);
+		cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+
+		byte[] decrypted = cipher.doFinal(encrypted);
+		return new String(decrypted, StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * 无 IV 模式加密
+	 */
+	private static String encryptWithoutIV(Cipher cipher, SecretKeySpec keySpec, String plainText) throws Exception {
+		cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+		byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+		return Base64.getEncoder().encodeToString(encrypted);
+	}
+
+	/**
+	 * 无 IV 模式解密
+	 */
+	private static String decryptWithoutIV(Cipher cipher, SecretKeySpec keySpec, String cipherText) throws Exception {
+		cipher.init(Cipher.DECRYPT_MODE, keySpec);
+		byte[] data = Base64.getDecoder().decode(cipherText);
+		byte[] decrypted = cipher.doFinal(data);
+		return new String(decrypted, StandardCharsets.UTF_8);
+	}
 }

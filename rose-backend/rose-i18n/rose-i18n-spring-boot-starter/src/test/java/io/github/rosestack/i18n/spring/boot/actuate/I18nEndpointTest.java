@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import io.github.rosestack.i18n.spring.boot.actuate.autoconfigure.I18nEndpointAutoConfiguration;
-import io.github.rosestack.i18n.spring.boot.autoconfigure.I18nAutoConfiguration;
+import io.github.rosestack.i18n.spring.boot.config.I18nAutoConfig;
 import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,7 +50,7 @@ class I18nEndpointTest {
 
     @ImportAutoConfiguration(
             classes = {
-                I18nAutoConfiguration.class,
+                I18nAutoConfig.class,
                 I18nEndpointAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class
             })

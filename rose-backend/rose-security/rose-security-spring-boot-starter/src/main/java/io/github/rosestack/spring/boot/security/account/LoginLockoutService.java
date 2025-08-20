@@ -1,16 +1,16 @@
 package io.github.rosestack.spring.boot.security.account;
 
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LoginLockoutService {
 
-    private final RoseSecurityProperties.Account.LoginLock props;
+    private final SecurityProperties.Account.LoginLock props;
     private final Map<String, State> stateByUser = new ConcurrentHashMap<>();
 
-    public LoginLockoutService(RoseSecurityProperties properties) {
+    public LoginLockoutService(SecurityProperties properties) {
         this.props = properties.getAccount().getLoginLock();
     }
 

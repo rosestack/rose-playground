@@ -6,6 +6,44 @@ rose:
     secret-key: "0123456789abcdeffedcba9876543210"
     # 加密失败时是否抛出异常
     fail-on-error: true
+
+    # 监控配置
+    metrics:
+      # 是否启用指标收集
+      enabled: true
+      # 指标前缀
+      prefix: "encryption"
+      # 是否包含详细的算法统计
+      include-algorithm-details: true
+      # 是否包含数据大小分布统计
+      include-data-size-distribution: true
+      # 是否包含成功率统计
+      include-success-rate: true
+
+    # 健康检查配置
+    health:
+      # 是否启用健康检查
+      enabled: true
+      # 健康检查超时时间（毫秒）
+      timeout: 5000
+      # 测试数据
+      test-data: "health-check-test"
+      # 是否在健康检查中包含性能统计
+      include-performance-stats: true
+      # 成功率阈值（低于此值将标记为不健康）
+      success-rate-threshold: 95.0
+      # 错误数量阈值（超过此值将标记为不健康）
+      error-count-threshold: 100
+
+    # 缓存配置
+    cache:
+      # 是否启用统计缓存
+      enabled: true
+      # 缓存清理间隔（秒）
+      cleanup-interval: 3600
+      # 最大缓存条目数
+      max-entries: 10000
+
     # 哈希配置
     hash:
       # 是否启用哈希功能
@@ -16,3 +54,43 @@ rose:
       algorithm: "HMAC_SHA256"
       # HMAC 密钥（生产环境应该从外部配置获取）
       hmac-key: "rose-mybatis-hmac-key-2024"
+
+# Spring Boot Actuator 配置（可选）
+management:
+  endpoints:
+    web:
+      exposure:
+        # 暴露的端点
+        include: health,info,metrics,encryption
+      base-path: /actuator
+  endpoint:
+    health:
+      # 显示健康检查详情
+      show-details: when-authorized
+      # 健康检查组件
+      show-components: always
+    encryption:
+      # 是否启用加密监控端点
+      enabled: true
+      # 是否需要认证
+      sensitive: true
+  metrics:
+    export:
+      # 简单的内存指标导出器
+      simple:
+        enabled: true
+    tags:
+      # 为所有指标添加应用标签
+      application: ${spring.application.name:rose-encryption}
+      environment: ${spring.profiles.active:default}
+
+# 日志配置
+logging:
+  level:
+    # 加密相关日志级别
+    io.github.rosestack.encryption: INFO
+    # 监控相关日志级别
+    io.github.rosestack.spring.boot.encryption: INFO
+  pattern:
+    # 日志格式（包含 traceId 支持）
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"

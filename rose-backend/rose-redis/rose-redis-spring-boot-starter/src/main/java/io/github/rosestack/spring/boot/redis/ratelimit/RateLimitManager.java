@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.redis.ratelimit;
 
-import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
+import io.github.rosestack.spring.boot.redis.config.RedisProperties;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 public class RateLimitManager {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RoseRedisProperties properties;
+    private final RedisProperties properties;
 
     // 限流器实例缓存
     private final ConcurrentHashMap<String, RateLimiter> rateLimiterCache = new ConcurrentHashMap<>();
@@ -33,7 +33,7 @@ public class RateLimitManager {
      * @return 限流器实例
      */
     public RateLimiter getRateLimiter(String key) {
-        RoseRedisProperties.RateLimit config = properties.getRateLimit();
+        RedisProperties.RateLimit config = properties.getRateLimit();
         return getRateLimiter(
                 key, config.getDefaultAlgorithm(), config.getDefaultRate(), config.getDefaultTimeWindow());
     }
@@ -45,8 +45,8 @@ public class RateLimitManager {
      * @param algorithm 限流算法
      * @return 限流器实例
      */
-    public RateLimiter getRateLimiter(String key, RoseRedisProperties.RateLimit.Algorithm algorithm) {
-        RoseRedisProperties.RateLimit config = properties.getRateLimit();
+    public RateLimiter getRateLimiter(String key, RedisProperties.RateLimit.Algorithm algorithm) {
+        RedisProperties.RateLimit config = properties.getRateLimit();
         return getRateLimiter(key, algorithm, config.getDefaultRate(), config.getDefaultTimeWindow());
     }
 
@@ -60,7 +60,7 @@ public class RateLimitManager {
      * @return 限流器实例
      */
     public RateLimiter getRateLimiter(
-            String key, RoseRedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
+            String key, RedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
         if (key == null || key.trim().isEmpty()) {
             throw new IllegalArgumentException("限流键不能为空");
         }
@@ -101,7 +101,7 @@ public class RateLimitManager {
      * @param algorithm 限流算法
      * @return 是否获取成功
      */
-    public boolean tryAcquire(String key, RoseRedisProperties.RateLimit.Algorithm algorithm) {
+    public boolean tryAcquire(String key, RedisProperties.RateLimit.Algorithm algorithm) {
         return getRateLimiter(key, algorithm).tryAcquire(key);
     }
 
@@ -114,7 +114,7 @@ public class RateLimitManager {
      * @param timeWindow 时间窗口
      * @return 是否获取成功
      */
-    public boolean tryAcquire(String key, RoseRedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
+    public boolean tryAcquire(String key, RedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
         return getRateLimiter(key, algorithm, rate, timeWindow).tryAcquire(key);
     }
 
@@ -157,7 +157,7 @@ public class RateLimitManager {
     /**
      * 创建限流器实例
      */
-    private RateLimiter createRateLimiter(RoseRedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
+    private RateLimiter createRateLimiter(RedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
         String keyPrefix = properties.getRateLimit().getKeyPrefix();
 
         switch (algorithm) {
@@ -181,7 +181,7 @@ public class RateLimitManager {
      * 构建缓存键
      */
     private String buildCacheKey(
-            String key, RoseRedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
+            String key, RedisProperties.RateLimit.Algorithm algorithm, int rate, int timeWindow) {
         return String.format("%s:%s:%d:%d", key, algorithm, rate, timeWindow);
     }
 }

@@ -39,12 +39,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @PropertySource(value = "classpath:application-rose-mybatis.yaml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.mybatis", name = "enabled", havingValue = "true", matchIfMissing = true)
-@EnableConfigurationProperties(RoseMybatisProperties.class)
+@EnableConfigurationProperties(MybatisProperties.class)
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
 @AutoConfiguration
-@Import({DataPermissionConfig.class, EncryptionConfig.class, TenantConfig.class})
-public class RoseMybatisAutoConfiguration {
-	private final RoseMybatisProperties properties;
+@Import({PermissionConfig.class, EncryptionConfig.class, TenantConfig.class})
+public class MybatisAutoConfig {
+	private final MybatisProperties properties;
 
 	@PostConstruct
 	public void init() {

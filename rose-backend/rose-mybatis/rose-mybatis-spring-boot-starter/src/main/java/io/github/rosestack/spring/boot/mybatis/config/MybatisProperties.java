@@ -19,7 +19,7 @@ import org.springframework.validation.annotation.Validated;
 @Data
 @Validated
 @ConfigurationProperties(prefix = "rose.mybatis")
-public class RoseMybatisProperties {
+public class MybatisProperties {
 
 	/**
 	 * 是否启用 Rose MyBatis Plus 增强功能

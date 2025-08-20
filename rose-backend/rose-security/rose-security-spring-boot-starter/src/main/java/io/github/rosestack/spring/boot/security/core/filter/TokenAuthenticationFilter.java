@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.security.core.filter;
 
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import io.github.rosestack.spring.boot.security.core.token.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,9 +16,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
-    private final RoseSecurityProperties properties;
+    private final SecurityProperties properties;
 
-    public TokenAuthenticationFilter(TokenService tokenService, RoseSecurityProperties properties) {
+    public TokenAuthenticationFilter(TokenService tokenService, SecurityProperties properties) {
         this.tokenService = tokenService;
         this.properties = properties;
     }

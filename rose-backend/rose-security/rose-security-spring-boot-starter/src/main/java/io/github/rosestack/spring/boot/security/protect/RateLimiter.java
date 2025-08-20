@@ -2,17 +2,17 @@ package io.github.rosestack.spring.boot.security.protect;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateLimiter {
-    private final RoseSecurityProperties.Protect.RateLimit props;
+    private final SecurityProperties.Protect.RateLimit props;
     private final Cache<String, AtomicInteger> counters;
 
-    public RateLimiter(RoseSecurityProperties properties) {
+    public RateLimiter(SecurityProperties properties) {
         this.props = properties.getProtect().getRateLimit();
         Duration window = props.getWindow();
         this.counters = Caffeine.newBuilder().expireAfterWrite(window).build();

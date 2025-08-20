@@ -10,7 +10,7 @@ import io.github.rosestack.spring.boot.audit.enums.AuditEventType;
 import io.github.rosestack.spring.boot.audit.enums.AuditRiskLevel;
 import io.github.rosestack.spring.boot.audit.enums.AuditStatus;
 import io.github.rosestack.spring.boot.audit.listener.AuditEvent;
-import io.github.rosestack.spring.desensitization.MaskUtils;
+import io.github.rosestack.core.util.MaskUtils;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;

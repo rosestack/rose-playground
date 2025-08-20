@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.rosestack.core.util.ApiResponse;
 import io.github.rosestack.core.util.JsonUtils;
 import io.github.rosestack.spring.boot.security.account.LoginLockoutService;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,12 +23,12 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
  */
 public class LoginPreCheckFilter extends OncePerRequestFilter {
 
-    private final RoseSecurityProperties properties;
+    private final SecurityProperties properties;
     private final LoginLockoutService lockoutService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public LoginPreCheckFilter(
-            RoseSecurityProperties properties, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
+            SecurityProperties properties, ObjectProvider<LoginLockoutService> loginLockoutServiceProvider) {
         this.properties = properties;
         this.lockoutService = loginLockoutServiceProvider.getIfAvailable();
     }

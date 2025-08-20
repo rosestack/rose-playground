@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Data
 @ConfigurationProperties(prefix = "rose.redis")
-public class RoseRedisProperties {
+public class RedisProperties {
 
     /**
      * 是否启用 Rose Redis 增强功能

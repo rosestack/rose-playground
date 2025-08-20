@@ -10,7 +10,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.github.rosestack.i18n.I18nMessageSource;
 import io.github.rosestack.i18n.spring.boot.actuate.I18nEndpoint;
 import io.github.rosestack.i18n.spring.boot.actuate.autoconfigure.I18nEndpointAutoConfiguration;
-import io.github.rosestack.i18n.spring.boot.autoconfigure.I18nAutoConfiguration;
+import io.github.rosestack.i18n.spring.boot.config.I18nAutoConfig;
 import io.github.rosestack.i18n.spring.cloud.event.ReloadableResourceServiceMessageSourceListener;
 import java.util.Locale;
 import org.assertj.core.util.Maps;
@@ -53,7 +53,7 @@ class MessageSourceIntegrationTest {
 
     @ImportAutoConfiguration(
             classes = {
-                I18nAutoConfiguration.class,
+                I18nAutoConfig.class,
                 I18nEndpointAutoConfiguration.class,
                 PropertyPlaceholderAutoConfiguration.class
             })

@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Data
 @ConfigurationProperties(prefix = "rose.web")
-public class RoseWebProperties {
+public class WebProperties {
 
     /**
      * 是否启用 Web 自动配置

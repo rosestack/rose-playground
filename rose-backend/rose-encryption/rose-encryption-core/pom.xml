@@ -14,12 +14,16 @@
   <name>rose-encryption-core</name>
 
   <dependencies>
-
     <dependency>
       <groupId>com.antherd</groupId>
       <artifactId>sm-crypto</artifactId>
       <version>0.3.2.1</version>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.nashorn</groupId>
+      <artifactId>nashorn-core</artifactId>
+      <version>15.4</version>
     </dependency>
     <dependency>
       <groupId>io.github.rosestack</groupId>

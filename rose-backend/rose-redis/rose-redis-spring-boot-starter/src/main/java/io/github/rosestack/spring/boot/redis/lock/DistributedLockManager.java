@@ -1,6 +1,6 @@
 package io.github.rosestack.spring.boot.redis.lock;
 
-import io.github.rosestack.spring.boot.redis.config.RoseRedisProperties;
+import io.github.rosestack.spring.boot.redis.config.RedisProperties;
 import jakarta.annotation.PreDestroy;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class DistributedLockManager {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RoseRedisProperties properties;
+    private final RedisProperties properties;
 
     // 锁实例缓存
     private final ConcurrentHashMap<String, DistributedLock> lockCache = new ConcurrentHashMap<>();

@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.security.core.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.rosestack.spring.boot.security.config.RoseSecurityProperties;
+import io.github.rosestack.spring.boot.security.config.SecurityProperties;
 import io.github.rosestack.spring.boot.security.core.model.AuthModels;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +22,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
 
     public LoginAuthenticationFilter(
             AuthenticationManager authenticationManager,
-            RoseSecurityProperties props,
+            SecurityProperties props,
             AuthenticationSuccessHandler successHandler,
             AuthenticationFailureHandler failureHandler) {
         super(regexPostMatcher(props.getLoginPath()));

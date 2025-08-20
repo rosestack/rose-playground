@@ -43,8 +43,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @ConditionalOnClass(RedisTemplate.class)
 @PropertySource(value = "classpath:application-rose-redis.yaml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
-@EnableConfigurationProperties(RoseRedisProperties.class)
-public class RoseRedisAutoConfiguration {
+@EnableConfigurationProperties(RedisProperties.class)
+public class RedisAutoConfig {
 
     @PostConstruct
     public void init() {
@@ -62,7 +62,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
         public DistributedLockManager distributedLockManager(
-                RedisTemplate<String, Object> redisTemplate, RoseRedisProperties properties) {
+                RedisTemplate<String, Object> redisTemplate, RedisProperties properties) {
             log.info("启用 Rose Redis 分布式锁功能");
             return new DistributedLockManager(redisTemplate, properties);
         }
@@ -125,7 +125,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnBean(RedisTemplate.class)
         public RateLimitManager rateLimitManager(
-                RedisTemplate<String, Object> redisTemplate, RoseRedisProperties properties) {
+                RedisTemplate<String, Object> redisTemplate, RedisProperties properties) {
             log.info("启用 Rose Redis 限流功能");
             return new RateLimitManager(redisTemplate, properties);
         }
@@ -157,7 +157,7 @@ public class RoseRedisAutoConfiguration {
         @ConditionalOnMissingBean
         @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
         @ConditionalOnBean(RateLimitManager.class)
-        public RateLimitAspect rateLimitAspect(RateLimitManager rateLimitManager, RoseRedisProperties properties) {
+        public RateLimitAspect rateLimitAspect(RateLimitManager rateLimitManager, RedisProperties properties) {
             log.info("启用 Rose Redis 限流切面");
             return new RateLimitAspect(rateLimitManager, properties);
         }

@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 @ConditionalOnProperty(prefix = "rose.security.protect", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class RoseProtectConfiguration {
+public class SecurityProtectConfig {
 
     @Bean
     @ConditionalOnMissingBean
@@ -28,7 +28,7 @@ public class RoseProtectConfiguration {
             havingValue = "true",
             matchIfMissing = true)
     AccessListFilter accessListFilter(
-            RoseSecurityProperties props, ObjectProvider<AccessListStore> accessListStoreProvider) {
+		SecurityProperties props, ObjectProvider<AccessListStore> accessListStoreProvider) {
         AccessListMatcher matcher = new AccessListMatcher(accessListStoreProvider, props);
         return new AccessListFilter(matcher, props);
     }
@@ -40,7 +40,7 @@ public class RoseProtectConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public ReplayFilter replayFilter(RoseSecurityProperties props) {
+    public ReplayFilter replayFilter(SecurityProperties props) {
         return new ReplayFilter(new ReplayProtection(props), props);
     }
 
@@ -51,7 +51,7 @@ public class RoseProtectConfiguration {
             name = "enabled",
             havingValue = "true",
             matchIfMissing = true)
-    public RateLimitFilter rateLimitFilter(RoseSecurityProperties props) {
+    public RateLimitFilter rateLimitFilter(SecurityProperties props) {
         return new RateLimitFilter(new RateLimiter(props), props);
     }
 }

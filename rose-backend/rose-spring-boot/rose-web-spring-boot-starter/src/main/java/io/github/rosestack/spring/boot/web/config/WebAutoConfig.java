@@ -46,7 +46,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 	JacksonConfig.class,
 	RestTemplateConfig.class,
 	TracingConfig.class,
-	LoggingAspectConfig.class,
+	LoggingConfig.class,
 	// 精准引入组件（替代包扫描）
 	ApiResponseBodyAdvice.class,
 	GlobalExceptionHandler.class
@@ -55,11 +55,11 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 @RequiredArgsConstructor
 @AutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-@EnableConfigurationProperties(RoseWebProperties.class)
+@EnableConfigurationProperties(WebProperties.class)
 @ConditionalOnProperty(prefix = "rose.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @PropertySource(value = "classpath:application-rose-web.yaml", factory = YmlPropertySourceFactory.class)
-public class RoseWebAutoConfiguration {
-	private final RoseWebProperties roseWebProperties;
+public class WebAutoConfig {
+	private final WebProperties webProperties;
 
 	@Order(value = Ordered.HIGHEST_PRECEDENCE)
 	@EventListener(WebServerInitializedEvent.class)
@@ -94,7 +94,7 @@ public class RoseWebAutoConfiguration {
 		matchIfMissing = true)
 	FilterRegistrationBean<CachingRequestFilter> cachingRequestFilter() {
 		CachingRequestFilter filter =
-			new CachingRequestFilter(roseWebProperties.getFilter().getExcludePaths());
+			new CachingRequestFilter(webProperties.getFilter().getExcludePaths());
 		FilterRegistrationBean<CachingRequestFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
 		registrationBean.addUrlPatterns(StringPool.ALL_PATH);
@@ -111,7 +111,7 @@ public class RoseWebAutoConfiguration {
 		matchIfMissing = true)
 	FilterRegistrationBean<XssRequestFilter> xxsFilter() {
 		XssRequestFilter filter =
-			new XssRequestFilter(roseWebProperties.getFilter().getExcludePaths());
+			new XssRequestFilter(webProperties.getFilter().getExcludePaths());
 		FilterRegistrationBean<XssRequestFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
 		registrationBean.addUrlPatterns(StringPool.ALL_PATH);
@@ -128,7 +128,7 @@ public class RoseWebAutoConfiguration {
 		matchIfMissing = true)
 	public CommonsRequestLoggingFilter commonsRequestLoggingFilter() {
 		final CommonsRequestLoggingFilter filter = new LoggingRequestFilter(
-			roseWebProperties.getFilter().getLogging().getMaxResponseTimeToLogInMs());
+			webProperties.getFilter().getLogging().getMaxResponseTimeToLogInMs());
 		filter.setIncludeQueryString(true);
 		filter.setIncludePayload(true);
 		filter.setMaxPayloadLength(1000);
