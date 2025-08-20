@@ -1,0 +1,3 @@
+io.github.rosestack.notify.sender.EmailSender
+io.github.rosestack.notify.sender.SmsSender
+io.github.rosestack.notify.sender.ConsoleSender

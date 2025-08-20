@@ -1,7 +1,7 @@
 # Rose Backend
 
 多租户 SaaS 平台后端（Java 21 + Spring Boot
-3.5）。本目录聚合了基础组件（Core、Starter）与领域服务（Billing、IAM、Notification），支持国际化、字段加密、数据权限、租户隔离、审计日志、认证授权、Web
+3.5）。本目录聚合了基础组件（Core、Starter）与领域服务（Billing、IAM、Notice），支持国际化、字段加密、数据权限、租户隔离、审计日志、认证授权、Web
 基础能力等。
 
 - 代码根仓库：`rose-playground`
@@ -16,7 +16,7 @@
 - `rose-spring/`：Spring 上下文与通用工具（过滤器、脱敏、表达式等）
 - `rose-i18n/`：国际化核心与 Spring/Cloud/OpenFeign 集成及 Actuator 端点
 - `rose-crypto/`：字段加密核心与 Spring Boot Starter（支持密钥轮转）
-- `rose-notification/`：通知核心与 Starter（模板、发送、重试、可观测）
+- `rose-notify/`：通知核心与 Starter（模板、发送、重试、可观测）
 - `rose-mybatis/`：MyBatis Plus 核心与 Starter（审计、租户、数据权限、加密拦截）
 - `rose-redis/`：Redis Starter（分布式锁、限流）
 - `rose-spring-boot/`：Web/Auth/Audit 等通用 Starter
@@ -25,7 +25,7 @@
     - `rose-billing-service/`：计费域（支付/退款/对账/Outbox）
     - `rose-iam-api/`：IAM 对外 API 契约（DTO/VO）
     - `rose-iam-service/`：身份与权限域
-    - `rose-notification-service/`：通知域
+    - `rose-notify-service/`：通知域
 - `sql/`：示例 DDL（如 `billing-schema.sql`、`iam-schema.sql`）
 - `docker-compose.yml`：本地依赖编排（可配合 `.env.example`）
 
@@ -66,7 +66,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 - 分布式能力（`rose-redis`）：分布式锁 `@Lock`、限流 `@RateLimited`
 - 审计与安全（`rose-spring-boot`）：审计日志、统一异常/响应、CORS、异步、Swagger、Auth/JWT/OAuth2
 - 计费域（`rose-billing-service`）：支付策略（支付宝/微信/Stripe）、退款回调、Outbox、对账 Job、报表
-- 通知域（`rose-notification-service`）：模板渲染（变量/Groovy）、发送通道（短信/邮件/控制台）、重试与幂等
+- 通知域（`rose-notify-service`）：模板渲染（变量/Groovy）、发送通道（短信/邮件/控制台）、重试与幂等
 - 身份域（`rose-iam-service`）：用户/组织/角色/租户基础模型与 MyBatis 实体/Mapper
 
 ## 构建与质量

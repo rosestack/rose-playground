@@ -9,7 +9,7 @@ CREATE TABLE `user` (
 ) ;
 
 -- 通知主表
-CREATE TABLE notification (
+CREATE TABLE notice (
     id VARCHAR(64) PRIMARY KEY,
     tenant_id VARCHAR(64),
     channel_id VARCHAR(64),
@@ -25,11 +25,11 @@ CREATE TABLE notification (
     retry_count INT default -1,
     trace_id VARCHAR(64),
     request_id VARCHAR(64),
-    CONSTRAINT uk_notification_request_id UNIQUE (request_id)
+    CONSTRAINT uk_notice_request_id UNIQUE (request_id)
 );
 
 -- 通知模板表
-CREATE TABLE `notification_template` (
+CREATE TABLE `notice_template` (
     id VARCHAR(64) PRIMARY KEY,
     tenant_id VARCHAR(64),
     name VARCHAR(64),
@@ -43,7 +43,7 @@ CREATE TABLE `notification_template` (
 );
 
 -- 用户通知偏好表
-CREATE TABLE `notification_preference` (
+CREATE TABLE `notice_preference` (
     id VARCHAR(64) PRIMARY KEY,
     tenant_id VARCHAR(64),
     user_id VARCHAR(64),
@@ -56,7 +56,7 @@ CREATE TABLE `notification_preference` (
 );
 
 -- 渠道配置表
-CREATE TABLE `notification_channel` (
+CREATE TABLE `notice_channel` (
     id VARCHAR(64) PRIMARY KEY,
     tenant_id VARCHAR(64),
     channel_type VARCHAR(32),
@@ -64,7 +64,7 @@ CREATE TABLE `notification_channel` (
     enabled BOOLEAN
 );
 
-CREATE TABLE `notification_template_channel` (
+CREATE TABLE `notice_template_channel` (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     template_id VARCHAR(64),
     channel_id VARCHAR(64)

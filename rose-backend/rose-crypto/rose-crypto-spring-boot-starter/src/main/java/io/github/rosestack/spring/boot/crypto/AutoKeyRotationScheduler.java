@@ -89,13 +89,13 @@ public class AutoKeyRotationScheduler {
             log.info("自动密钥轮换完成: {} -> {}", currentKey.getVersion(), newVersion);
 
             // 发送轮换通知（可以扩展为发送邮件、消息等）
-            sendRotationNotification(currentKey.getVersion(), newVersion);
+            sendRotationNotice(currentKey.getVersion(), newVersion);
 
         } catch (Exception e) {
             log.error("自动密钥轮换失败，当前版本: {}", currentKey.getVersion(), e);
 
             // 发送失败通知
-            sendRotationFailureNotification(currentKey.getVersion(), e.getMessage());
+            sendRotationFailureNotice(currentKey.getVersion(), e.getMessage());
         }
     }
 
@@ -143,7 +143,7 @@ public class AutoKeyRotationScheduler {
     /**
      * 发送轮换成功通知
      */
-    private void sendRotationNotification(String oldVersion, String newVersion) {
+    private void sendRotationNotice(String oldVersion, String newVersion) {
         // 这里可以扩展为发送邮件、消息队列、webhook等
         log.info("密钥轮换通知: {} -> {}", oldVersion, newVersion);
 
@@ -154,7 +154,7 @@ public class AutoKeyRotationScheduler {
     /**
      * 发送轮换失败通知
      */
-    private void sendRotationFailureNotification(String currentVersion, String errorMessage) {
+    private void sendRotationFailureNotice(String currentVersion, String errorMessage) {
         // 这里可以扩展为发送告警邮件、消息等
         log.error("密钥轮换失败通知: 版本={}, 错误={}", currentVersion, errorMessage);
 

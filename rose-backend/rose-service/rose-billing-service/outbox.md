@@ -1544,12 +1544,12 @@ public class CacheEventHandler {
 
 // 通知服务
 @Component
-public class NotificationEventHandler {
+public class NoticeEventHandler {
 
     @EventListener
     public void handleArticlePublished(ArticlePublishedEvent event) {
         // 通知订阅者
-        notificationService.notifySubscribers(
+        noticeService.notifySubscribers(
             event.getAuthorId(),
             event.getTitle()
         );
@@ -1618,7 +1618,7 @@ public class AlarmEventHandler {
     @EventListener
     public void handleDeviceAlarmTriggered(DeviceAlarmTriggeredEvent event) {
         // 发送告警通知
-        alarmService.sendAlarmNotification(event);
+        alarmService.sendAlarmNotice(event);
 
         // 记录告警历史
         alarmService.recordAlarmHistory(event);

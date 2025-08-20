@@ -468,7 +468,7 @@
 - firstSeenAt/lastSeenAt: datetime，必填
 - occurrences: int64，必填，累计次数
 - assignees: json，可选，处理人列表
-- notifications: json，可选，通知记录
+- notices: json，可选，通知记录
 - closeReason/closedBy/closedAt: 可选
   约束与索引：tenantId+state+severity 组合索引；lastSeenAt 索引
 

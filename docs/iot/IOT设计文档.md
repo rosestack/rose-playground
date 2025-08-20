@@ -921,10 +921,10 @@ CREATE TABLE iot_alarm_record (
 );
 
 -- 告警通知表
-CREATE TABLE iot_alarm_notification (
+CREATE TABLE iot_alarm_notice (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '通知ID',
     alarm_record_id BIGINT NOT NULL COMMENT '告警记录ID',
-    notification_type ENUM('EMAIL', 'SMS', 'WEBHOOK', 'DINGTALK', 'WECHAT') NOT NULL COMMENT '通知类型',
+    notice_type ENUM('EMAIL', 'SMS', 'WEBHOOK', 'DINGTALK', 'WECHAT') NOT NULL COMMENT '通知类型',
     recipient VARCHAR(255) NOT NULL COMMENT '接收人',
     content TEXT NOT NULL COMMENT '通知内容',
     status ENUM('PENDING', 'SENT', 'FAILED') DEFAULT 'PENDING' COMMENT '发送状态',
@@ -932,10 +932,10 @@ CREATE TABLE iot_alarm_notification (
     error_message TEXT COMMENT '错误信息',
     retry_count TINYINT DEFAULT 0 COMMENT '重试次数',
     created_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    INDEX idx_alarm_notification_alarm_record_id (alarm_record_id),
-    INDEX idx_alarm_notification_type (notification_type),
-    INDEX idx_alarm_notification_status (status),
-    INDEX idx_alarm_notification_created_time (created_time)
+    INDEX idx_alarm_notice_alarm_record_id (alarm_record_id),
+    INDEX idx_alarm_notice_type (notice_type),
+    INDEX idx_alarm_notice_status (status),
+    INDEX idx_alarm_notice_created_time (created_time)
 );
 
 -- 操作日志表

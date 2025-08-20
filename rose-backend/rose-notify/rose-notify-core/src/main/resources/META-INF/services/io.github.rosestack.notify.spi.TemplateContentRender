@@ -1,0 +1,3 @@
+io.github.rosestack.notify.render.NoopTemplateContentRender
+io.github.rosestack.notify.render.SimpleVariableTemplateContentRender
+io.github.rosestack.notify.render.GroovyTemplateContentRender

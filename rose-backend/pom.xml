@@ -36,7 +36,7 @@
     <module>rose-spring</module>
     <module>rose-i18n</module>
     <module>rose-crypto</module>
-    <module>rose-notification</module>
+    <module>rose-notify</module>
     <module>rose-mybatis</module>
     <module>rose-redis</module>
     <module>rose-security</module>
