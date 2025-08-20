@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @since 1.0.0
  */
 @Slf4j
-public class MaskUtils {
+public class SensitiveUtils {
 	// 手机号正则
 	public static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
 
@@ -271,27 +271,27 @@ public class MaskUtils {
 	public static String maskByPattern(String data) {
 		// 手机号检测
 		if (PHONE_PATTERN.matcher(data).matches()) {
-			return MaskUtils.maskPhone(data);
+			return SensitiveUtils.maskPhone(data);
 		}
 
 		// 邮箱检测
 		if (EMAIL_PATTERN.matcher(data).find()) {
-			return MaskUtils.maskEmail(data);
+			return SensitiveUtils.maskEmail(data);
 		}
 
 		// 身份证检测
 		if (ID_CARD_PATTERN.matcher(data).matches()) {
-			return MaskUtils.maskIdCard(data);
+			return SensitiveUtils.maskIdCard(data);
 		}
 
 		// 银行卡检测
 		if (BANK_CARD_PATTERN.matcher(data).matches()) {
-			return MaskUtils.maskBankCard(data);
+			return SensitiveUtils.maskBankCard(data);
 		}
 
 		// IP地址检测
 		if (IPV4_PATTERN.matcher(data).matches()) {
-			return MaskUtils.maskIpAddress(data);
+			return SensitiveUtils.maskIpAddress(data);
 		}
 
 		// 如果都不匹配，返回原值

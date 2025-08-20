@@ -120,9 +120,9 @@ public class CryptoProperties {
         }
 
         // 检查是否通过环境变量配置
-        String envKey = System.getenv("ROSE_ENCRYPTION_SECRET_KEY");
+        String envKey = System.getenv("ROSE_CRYPTO_SECRET_KEY");
         if (envKey == null || envKey.trim().isEmpty()) {
-            log.warn("建议通过环境变量 ROSE_ENCRYPTION_SECRET_KEY 配置密钥");
+            log.warn("建议通过环境变量 ROSE_CRYPTO_SECRET_KEY 配置密钥");
         }
 
         if (!failOnError) {

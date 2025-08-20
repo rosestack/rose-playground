@@ -5,9 +5,9 @@
         - 自动装配与属性
         - 最小 SecurityFilterChain（无状态、放行列表、统一401/403输出）
     - 产物:
-        - `config.RoseSecurityProperties`（prefix: `rose.security`，含
+        - `config.SecurityProperties`（prefix: `rose.security`，含
           enabled/basePath/permitAll/loginPath/logoutPath、token.*、protect.* 占位）
-        - `config.RoseSecurityAutoConfiguration`（启用属性并注册最小安全链）
+        - `config.SecurityAutoConfig`（启用属性并注册最小安全链）
         - `core.RestAuthenticationEntryPoint`、`core.RestAccessDeniedHandler`
         - `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
     - 验证:

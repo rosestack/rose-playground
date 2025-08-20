@@ -10,7 +10,7 @@ import io.github.rosestack.spring.boot.audit.enums.AuditEventType;
 import io.github.rosestack.spring.boot.audit.enums.AuditRiskLevel;
 import io.github.rosestack.spring.boot.audit.enums.AuditStatus;
 import io.github.rosestack.spring.boot.audit.listener.AuditEvent;
-import io.github.rosestack.core.util.MaskUtils;
+import io.github.rosestack.core.util.SensitiveUtils;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
@@ -288,8 +288,8 @@ public class AuditEventBuilder {
 
         if (detailKey.isSensitive()) {
             auditLogDetail.setDetailValue(JsonUtils.toString(
-                    MaskUtils.maskSensitiveFields(detailValue, maskFields.toArray(new String[] {}))));
-            auditLogDetail.setIsSensitive(auditLogDetail.getDetailValue().contains(MaskUtils.MASKED));
+                    SensitiveUtils.maskSensitiveFields(detailValue, maskFields.toArray(new String[] {}))));
+            auditLogDetail.setIsSensitive(auditLogDetail.getDetailValue().contains(SensitiveUtils.MASKED));
         } else {
             auditLogDetail.setIsSensitive(false);
         }

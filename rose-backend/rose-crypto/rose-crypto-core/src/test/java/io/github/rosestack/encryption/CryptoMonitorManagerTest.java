@@ -90,7 +90,7 @@ class CryptoMonitorManagerTest {
     void testDataSizeStats() {
         // 不同大小的数据
         CryptoUtils.encrypt("Small", EncryptType.AES, TEST_SECRET_KEY); // small (5字符)
-        CryptoUtils.encrypt("This is a medium length text for testing encryption algorithms", EncryptType.AES, TEST_SECRET_KEY); // medium (>100字符)
+        CryptoUtils.encrypt("This is a medium length text for testing crypto algorithms", EncryptType.AES, TEST_SECRET_KEY); // medium (>100字符)
 
         StringBuilder largeText = new StringBuilder();
         for (int i = 0; i < 200; i++) {

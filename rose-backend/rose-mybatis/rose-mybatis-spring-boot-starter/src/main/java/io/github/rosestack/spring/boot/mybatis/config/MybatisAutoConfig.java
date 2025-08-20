@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 @EnableConfigurationProperties(MybatisProperties.class)
 @ConditionalOnClass({DataSource.class, MybatisPlusInterceptor.class})
 @AutoConfiguration
-@Import({PermissionConfig.class, EncryptionConfig.class, TenantConfig.class})
+@Import({MybatisPermissionConfig.class, MybatisCryptoConfig.class, MybatisTenantConfig.class})
 public class MybatisAutoConfig {
 	private final MybatisProperties properties;
 

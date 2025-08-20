@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.mybatis.encryption;
+package io.github.rosestack.spring.boot.mybatis.crypto;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -7,24 +7,24 @@ import io.micrometer.core.instrument.Timer;
 /**
  * 字段加解密指标埋点。
  */
-public class FieldEncryptionMetrics {
+public class FieldEncryptorMetrics {
     private final Timer encryptTimer;
     private final Timer decryptTimer;
     private final Counter encryptErrorCounter;
     private final Counter decryptErrorCounter;
 
-    public FieldEncryptionMetrics(MeterRegistry registry) {
-        this.encryptTimer = Timer.builder("rose.mybatis.encryption.encrypt.duration")
+    public FieldEncryptorMetrics(MeterRegistry registry) {
+        this.encryptTimer = Timer.builder("rose.mybatis.crypto.encrypt.duration")
                 .description("Duration of encrypting fields")
                 .register(registry);
-        this.decryptTimer = Timer.builder("rose.mybatis.encryption.decrypt.duration")
+        this.decryptTimer = Timer.builder("rose.mybatis.crypto.decrypt.duration")
                 .description("Duration of decrypting fields")
                 .register(registry);
-        this.encryptErrorCounter = Counter.builder("rose.mybatis.encryption.encrypt.errors")
-                .description("Field encryption error count")
+        this.encryptErrorCounter = Counter.builder("rose.mybatis.crypto.encrypt.errors")
+                .description("Field crypto error count")
                 .register(registry);
-        this.decryptErrorCounter = Counter.builder("rose.mybatis.encryption.decrypt.errors")
-                .description("Field decryption error count")
+        this.decryptErrorCounter = Counter.builder("rose.mybatis.crypto.decrypt.errors")
+                .description("Field crypto error count")
                 .register(registry);
     }
 

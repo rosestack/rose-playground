@@ -25,7 +25,7 @@ class EncryptorPerformanceTest {
 
     private static final String SECRET_KEY = "MySecretKey12345MySecretKey12345";
     private static final String SHORT_TEXT = "Hello";
-    private static final String MEDIUM_TEXT = "This is a medium length text for testing encryption performance.";
+    private static final String MEDIUM_TEXT = "This is a medium length text for testing crypto performance.";
     private static final String LONG_TEXT = generateLongText(1000);
 
     private DefaultFieldEncryptor encryptor;
@@ -227,7 +227,7 @@ class EncryptorPerformanceTest {
      */
     private static String generateLongText(int length) {
         StringBuilder sb = new StringBuilder();
-        String base = "This is a test text for encryption performance testing. ";
+        String base = "This is a test text for crypto performance testing. ";
         while (sb.length() < length) {
             sb.append(base);
         }

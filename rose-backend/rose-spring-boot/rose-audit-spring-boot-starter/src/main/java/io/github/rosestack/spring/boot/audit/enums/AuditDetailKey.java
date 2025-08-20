@@ -59,7 +59,7 @@ public enum AuditDetailKey {
      */
     private final AuditDetailType detailType;
 
-    private final boolean isEncrypted;
+    private final boolean encrypted;
 
     /**
      * 是否包含敏感数据
@@ -67,11 +67,11 @@ public enum AuditDetailKey {
     private final boolean sensitive;
 
     AuditDetailKey(
-            String code, String description, AuditDetailType detailType, boolean isEncrypted, boolean sensitive) {
+		String code, String description, AuditDetailType detailType, boolean encrypted, boolean sensitive) {
         this.code = code;
         this.description = description;
         this.detailType = detailType;
-        this.isEncrypted = isEncrypted;
+        this.encrypted = encrypted;
         this.sensitive = sensitive;
     }
 
@@ -107,8 +107,8 @@ public enum AuditDetailKey {
      *
      * @return 是否需要加密
      */
-    public boolean needsEncryption() {
-        return this.sensitive;
+    public boolean needsEncrypt() {
+        return this.encrypted;
     }
 
     /**

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/internal/encryption/key-rotation")
+@RequestMapping("/api/internal/crypto/key-rotation")
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "rose.crypto.key-rotation", name = "enabled", havingValue = "true")
 public class KeyRotationController {

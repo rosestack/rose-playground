@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.github.rosestack.core.util.SensitiveType;
 import io.github.rosestack.spring.desensitization.FieldSensitiveSerializer;
-import io.github.rosestack.core.util.MaskUtils;
+import io.github.rosestack.core.util.SensitiveUtils;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -38,7 +38,7 @@ public @interface FieldSensitive {
 	 *
 	 * @return String
 	 */
-	char mask() default MaskUtils.MASK;
+	char mask() default SensitiveUtils.MASK;
 
 	String expression() default "";
 }

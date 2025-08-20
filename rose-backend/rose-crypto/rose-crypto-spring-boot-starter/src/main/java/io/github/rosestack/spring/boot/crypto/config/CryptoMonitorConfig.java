@@ -38,7 +38,7 @@ public class CryptoMonitorConfig {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(name = "org.springframework.boot.actuator.health.HealthIndicator")
-    public CryptoHealthIndicator encryptionHealthIndicator(CryptoProperties properties) {
+    public CryptoHealthIndicator cryptoHealthIndicator(CryptoProperties properties) {
         log.info("注册加密服务健康检查指示器");
         return new CryptoHealthIndicator(properties);
     }
@@ -49,8 +49,8 @@ public class CryptoMonitorConfig {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(name = "org.springframework.boot.actuator.endpoint.annotation.Endpoint")
-    public CryptoEndpoint encryptionEndpoint(CryptoProperties properties) {
-        log.info("注册加密服务监控端点: /actuator/encryption");
+    public CryptoEndpoint cryptoEndpoint(CryptoProperties properties) {
+        log.info("注册加密服务监控端点: /actuator/crypto");
         return new CryptoEndpoint(properties);
     }
 
@@ -66,7 +66,7 @@ public class CryptoMonitorConfig {
         havingValue = "true",
         matchIfMissing = true
     )
-    public CryptoMetrics encryptionMetrics() {
+    public CryptoMetrics cryptoMetrics() {
         log.info("注册加密服务指标收集器");
         return new CryptoMetrics();
     }

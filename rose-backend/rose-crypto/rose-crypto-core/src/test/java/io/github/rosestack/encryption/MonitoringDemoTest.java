@@ -30,7 +30,7 @@ class MonitoringDemoTest {
     @Test
     @DisplayName("完整监控功能演示")
     void demonstrateMonitoringFeatures() {
-        System.out.println("=== Rose Encryption 监控功能演示 ===\n");
+        System.out.println("=== Rose Crypto 监控功能演示 ===\n");
 
         // 1. 执行各种加密操作
         System.out.println("1. 执行加密操作...");
@@ -42,7 +42,7 @@ class MonitoringDemoTest {
 
         // 不同大小的数据
         String smallData = CryptoUtils.encrypt("Small", EncryptType.AES, SECRET_KEY);
-        String mediumData = CryptoUtils.encrypt("This is a medium length text for testing encryption performance and monitoring capabilities", EncryptType.AES, SECRET_KEY);
+        String mediumData = CryptoUtils.encrypt("This is a medium length text for testing crypto performance and monitoring capabilities", EncryptType.AES, SECRET_KEY);
 
         StringBuilder largeDataBuilder = new StringBuilder();
         for (int i = 0; i < 100; i++) {
@@ -134,7 +134,7 @@ class MonitoringDemoTest {
         System.out.println("=== 性能基准测试 ===\n");
 
         int iterations = 1000;
-        String testData = "Performance test data for encryption benchmarking";
+        String testData = "Performance test data for crypto benchmarking";
 
         System.out.printf("执行 %d 次 AES 加密解密操作...%n", iterations);
 

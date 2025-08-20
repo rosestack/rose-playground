@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import io.github.rosestack.core.util.MaskUtils;
+import io.github.rosestack.core.util.SensitiveUtils;
 import io.github.rosestack.spring.annotation.FieldSensitive;
 import io.github.rosestack.spring.expression.SpringExpressionResolver;
 
@@ -34,7 +34,7 @@ public class FieldSensitiveSerializer extends JsonSerializer<String> implements 
 			return origin;
 		}
 
-		return MaskUtils.mask(origin, fieldSensitive.type());
+		return SensitiveUtils.mask(origin, fieldSensitive.type());
 	}
 
 	@Override

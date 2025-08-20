@@ -51,10 +51,10 @@ public class MybatisProperties {
 	 */
 	private Audit audit = new Audit();
 
-	private Encryption encryption = new Encryption();
+	private Crypto crypto = new Crypto();
 
 	@Data
-	public static class Encryption {
+	public static class Crypto {
 		private boolean enabled = false;
 	}
 

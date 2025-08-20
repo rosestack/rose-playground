@@ -60,7 +60,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 	 */
 	private void registerPerformanceMetrics() {
 		// 总操作数
-		Gauge.builder("encryption.operations.total", this, metrics -> {
+		Gauge.builder("crypto.operations.total", this, metrics -> {
 				try {
 					Map<String, Long> stats = CryptoMonitorManager.getInstance().getPerformanceStats();
 					return stats.values().stream()
@@ -75,7 +75,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 			.register(meterRegistry);
 
 		// 成功操作数
-		Gauge.builder("encryption.operations.success", this, metrics -> {
+		Gauge.builder("crypto.operations.success", this, metrics -> {
 				try {
 					Map<String, Long> stats = CryptoMonitorManager.getInstance().getPerformanceStats();
 					return stats.entrySet().stream()
@@ -91,7 +91,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 			.register(meterRegistry);
 
 		// 失败操作数
-		Gauge.builder("encryption.operations.failure", this, metrics -> {
+		Gauge.builder("crypto.operations.failure", this, metrics -> {
 				try {
 					Map<String, Long> stats = CryptoMonitorManager.getInstance().getPerformanceStats();
 					return stats.entrySet().stream()
@@ -115,7 +115,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 		String[] algorithms = {"AES", "DES", "DES3", "SM2", "SM4", "RSA"};
 
 		for (String algorithm : algorithms) {
-			Gauge.builder("encryption.algorithm.usage", algorithm, alg -> {
+			Gauge.builder("crypto.algorithm.usage", algorithm, alg -> {
 					try {
 						Map<String, Long> stats = CryptoMonitorManager.getInstance().getAlgorithmUsageStats();
 						return stats.getOrDefault(alg, 0L).doubleValue();
@@ -135,7 +135,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 	 */
 	private void registerErrorMetrics() {
 		// 总错误数
-		Gauge.builder("encryption.errors.total", this, metrics -> {
+		Gauge.builder("crypto.errors.total", this, metrics -> {
 				try {
 					Map<String, Long> errors = CryptoMonitorManager.getInstance().getErrorStats();
 					return errors.getOrDefault("encrypt_total_errors", 0L).doubleValue() +
@@ -149,7 +149,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 			.register(meterRegistry);
 
 		// 加密错误数
-		Gauge.builder("encryption.errors.encrypt", this, metrics -> {
+		Gauge.builder("crypto.errors.encrypt", this, metrics -> {
 				try {
 					Map<String, Long> errors = CryptoMonitorManager.getInstance().getErrorStats();
 					return errors.getOrDefault("encrypt_total_errors", 0L).doubleValue();
@@ -162,7 +162,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 			.register(meterRegistry);
 
 		// 解密错误数
-		Gauge.builder("encryption.errors.decrypt", this, metrics -> {
+		Gauge.builder("crypto.errors.decrypt", this, metrics -> {
 				try {
 					Map<String, Long> errors = CryptoMonitorManager.getInstance().getErrorStats();
 					return errors.getOrDefault("decrypt_total_errors", 0L).doubleValue();
@@ -185,7 +185,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 		for (String operation : operations) {
 			for (String category : sizeCategories) {
 				String key = operation + "_" + category;
-				Gauge.builder("encryption.data.size.distribution", key, k -> {
+				Gauge.builder("crypto.data.size.distribution", key, k -> {
 						try {
 							Map<String, Long> stats = CryptoMonitorManager.getInstance().getDataSizeStats();
 							return stats.getOrDefault(k, 0L).doubleValue();
@@ -206,7 +206,7 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 	 */
 	private void registerSuccessRateMetrics() {
 		// 总体成功率
-		Gauge.builder("encryption.success.rate.overall", this, metrics -> {
+		Gauge.builder("crypto.success.rate.overall", this, metrics -> {
 				try {
 					Map<String, Object> report = CryptoMonitorManager.getInstance().getMonitoringReport();
 					@SuppressWarnings("unchecked")
@@ -229,12 +229,12 @@ public class CryptoMetrics implements MeterRegistryCustomizer<MeterRegistry> {
 			.register(meterRegistry);
 
 		// AES 成功率
-		Gauge.builder("encryption.success.rate.aes", this, metrics -> getAlgorithmSuccessRate("AES"))
+		Gauge.builder("crypto.success.rate.aes", this, metrics -> getAlgorithmSuccessRate("AES"))
 			.description("AES 算法成功率")
 			.register(meterRegistry);
 
 		// DES 成功率
-		Gauge.builder("encryption.success.rate.des", this, metrics -> getAlgorithmSuccessRate("DES"))
+		Gauge.builder("crypto.success.rate.des", this, metrics -> getAlgorithmSuccessRate("DES"))
 			.description("DES 算法成功率")
 			.register(meterRegistry);
 	}

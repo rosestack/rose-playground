@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 	matchIfMissing = true)
 @RequiredArgsConstructor
 @Import({DataPermissionController.class, DataPermissionService.class})
-public class PermissionConfig {
+public class MybatisPermissionConfig {
 	private final MybatisProperties properties;
 
 	@Bean

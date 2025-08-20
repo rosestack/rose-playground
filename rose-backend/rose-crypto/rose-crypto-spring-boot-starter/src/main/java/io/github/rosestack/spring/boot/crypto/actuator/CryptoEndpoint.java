@@ -1,6 +1,7 @@
 package io.github.rosestack.spring.boot.crypto.actuator;
 
 
+import io.github.rosestack.core.util.SensitiveUtils;
 import io.github.rosestack.crypto.monitor.CryptoMonitorManager;
 import io.github.rosestack.spring.boot.crypto.config.CryptoProperties;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class CryptoEndpoint {
 	 * @return 监控报告
 	 */
 	@ReadOperation
-	public Map<String, Object> encryption() {
+	public Map<String, Object> crypto() {
 		Map<String, Object> result = new LinkedHashMap<>();
 
 		// 基础配置信息
@@ -113,22 +114,12 @@ public class CryptoEndpoint {
 				config.put("secretKeyConfigured", true);
 				config.put("secretKeyLength", secretKey.length());
 				// 出于安全考虑，不显示实际密钥
-				config.put("secretKeyMasked", maskSecretKey(secretKey));
+				config.put("secretKeyMasked", SensitiveUtils.maskSecretKey(secretKey));
 			} else {
 				config.put("secretKeyConfigured", false);
 			}
 		}
 
 		return config;
-	}
-
-	/**
-	 * 掩码密钥，只显示前后几位字符
-	 */
-	private String maskSecretKey(String secretKey) {
-		if (secretKey == null || secretKey.length() <= 8) {
-			return "****";
-		}
-		return secretKey.substring(0, 4) + "****" + secretKey.substring(secretKey.length() - 4);
 	}
 }

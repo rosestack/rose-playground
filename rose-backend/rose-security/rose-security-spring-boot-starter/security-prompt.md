@@ -131,8 +131,8 @@ Starter，聚焦无状态认证与鉴权能力，提供生产级默认值并支�
 
 - 目标：提供用户名/密码登录、登出、令牌颁发与校验，集成到 Spring Security 过滤链。
 - 组件：
-    - 配置属性类：RoseSecurityProperties（`rose.security.*`）
-    - Web 安全自动配置：RoseSecurityAutoConfiguration
+    - 配置属性类：SecurityProperties（`rose.security.*`）
+    - Web 安全自动配置：SecurityAutoConfig
     - 过滤器：LoginAuthenticationFilter、TokenAuthenticationFilter
     - 认证入口点与失败处理器：RestAuthenticationEntryPoint、RestAccessDeniedHandler
     - Token SPI：TokenService、TokenStore、TokenGenerator
@@ -281,7 +281,7 @@ Starter，聚焦无状态认证与鉴权能力，提供生产级默认值并支�
 
 - 访问名单（Access List）
     -
-    属性类：RoseSecurityProperties.Protection.AccessList（enabled、defaultPolicy、combine、store、cache.enabled、cache.ttl、refreshInterval、dimensions、redis.keyPrefix）；
+    属性类：SecurityProperties.Protection.AccessList（enabled、defaultPolicy、combine、store、cache.enabled、cache.ttl、refreshInterval、dimensions、redis.keyPrefix）；
         - 说明：YAML 使用短横线命名（如 `redis.key-prefix`、`cache.ttl`），属性类对应驼峰（`redis.keyPrefix`、`cacheTtl`）。
     - SPI：AccessListStore（接口，定义查询 allow/deny 列表与表达式的契约，按维度返回；支持分页/增量）
     - 默认实现：

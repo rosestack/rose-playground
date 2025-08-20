@@ -22,7 +22,7 @@ import static io.github.rosestack.mybatis.MybatisConstants.TENANT_ID_FILTER_ORDE
 	name = "enabled",
 	havingValue = "true",
 	matchIfMissing = true)
-public class TenantConfig {
+public class MybatisTenantConfig {
 
 	@Bean
 	@ConditionalOnMissingBean

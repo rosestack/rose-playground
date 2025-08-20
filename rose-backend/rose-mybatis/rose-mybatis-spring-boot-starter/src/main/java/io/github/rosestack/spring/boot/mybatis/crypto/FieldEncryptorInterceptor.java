@@ -1,4 +1,4 @@
-package io.github.rosestack.spring.boot.mybatis.encryption;
+package io.github.rosestack.spring.boot.mybatis.crypto;
 
 import io.github.rosestack.crypto.FieldEncryptor;
 import io.github.rosestack.crypto.annotation.EncryptField;
@@ -37,19 +37,19 @@ import org.springframework.util.ReflectionUtils;
             method = "handleResultSets",
             args = {Statement.class})
 })
-public class FieldEncryptionInterceptor implements Interceptor {
+public class FieldEncryptorInterceptor implements Interceptor {
 
     private final FieldEncryptor fieldEncryptor;
     private final HashService hashService;
-    private final FieldEncryptionMetrics metrics;
+    private final FieldEncryptorMetrics metrics;
 
-    public FieldEncryptionInterceptor(
+    public FieldEncryptorInterceptor(
             FieldEncryptor fieldEncryptor,
             @Autowired(required = false) HashService hashService,
             @Autowired(required = false) MeterRegistry registry) {
         this.fieldEncryptor = fieldEncryptor;
         this.hashService = hashService;
-        this.metrics = registry != null ? new FieldEncryptionMetrics(registry) : null;
+        this.metrics = registry != null ? new FieldEncryptorMetrics(registry) : null;
     }
 
     @Override

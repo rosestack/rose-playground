@@ -87,7 +87,7 @@ class CryptoUtilsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"短文本", "这是一个中等长度的测试文本，包含中文字符",
-                           "This is a very long text that contains multiple sentences and should test the encryption algorithm's ability to handle longer inputs without any issues."})
+                           "This is a very long text that contains multiple sentences and should test the crypto algorithm's ability to handle longer inputs without any issues."})
     @DisplayName("不同长度文本加密测试")
     void testDifferentTextLengths(String text) {
         String encrypted = CryptoUtils.encrypt(text, EncryptType.AES, TEST_SECRET_KEY);
