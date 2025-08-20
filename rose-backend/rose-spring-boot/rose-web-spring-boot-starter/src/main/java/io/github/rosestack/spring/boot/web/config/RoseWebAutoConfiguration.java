@@ -39,18 +39,17 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
  * @since 1.0.0
  */
 @Import({
-    AsyncConfig.class,
-    SchedulingConfig.class,
-    WebMvcConfig.class,
-    OpenApiConfig.class,
-    JacksonConfig.class,
-    RestTemplateConfig.class,
-    TracingConfig.class,
-    LoggingAspectConfig.class,
-    // 精准引入组件（替代包扫描）
-    ApiResponseBodyAdvice.class,
-    GlobalExceptionHandler.class,
-    ExceptionHandlerHelper.class
+	AsyncConfig.class,
+	SchedulingConfig.class,
+	WebMvcConfig.class,
+	OpenApiConfig.class,
+	JacksonConfig.class,
+	RestTemplateConfig.class,
+	TracingConfig.class,
+	LoggingAspectConfig.class,
+	// 精准引入组件（替代包扫描）
+	ApiResponseBodyAdvice.class,
+	GlobalExceptionHandler.class
 })
 @Slf4j
 @RequiredArgsConstructor
@@ -60,81 +59,81 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 @ConditionalOnProperty(prefix = "rose.web", name = "enabled", havingValue = "true", matchIfMissing = true)
 @PropertySource(value = "classpath:application-rose-web.yaml", factory = YmlPropertySourceFactory.class)
 public class RoseWebAutoConfiguration {
-    private final RoseWebProperties roseWebProperties;
+	private final RoseWebProperties roseWebProperties;
 
-    @Order(value = Ordered.HIGHEST_PRECEDENCE)
-    @EventListener(WebServerInitializedEvent.class)
-    public void afterStart(WebServerInitializedEvent event) {
-        String appName = SpringContextUtils.getApplicationName();
-        int localPort = event.getWebServer().getPort();
-        String profiles = String.join(StringPool.COMMA, SpringContextUtils.getActiveProfiles());
-        log.info("Application {} finish to start with port {} and {} profile", appName, localPort, profiles);
-    }
+	@Order(value = Ordered.HIGHEST_PRECEDENCE)
+	@EventListener(WebServerInitializedEvent.class)
+	public void afterStart(WebServerInitializedEvent event) {
+		String appName = SpringContextUtils.getApplicationName();
+		int localPort = event.getWebServer().getPort();
+		String profiles = String.join(StringPool.COMMA, SpringContextUtils.getActiveProfiles());
+		log.info("Application {} finish to start with port {} and {} profile", appName, localPort, profiles);
+	}
 
-    @PostConstruct
-    public void init() {
-        log.info("Rose Web 自动配置已启用");
-    }
+	@PostConstruct
+	public void init() {
+		log.info("Rose Web 自动配置已启用");
+	}
 
-    @Bean
-    @ConditionalOnMissingBean(RequestContextListener.class)
-    RequestContextListener requestContextListener() {
-        return new RequestContextListener();
-    }
+	@Bean
+	@ConditionalOnMissingBean(RequestContextListener.class)
+	RequestContextListener requestContextListener() {
+		return new RequestContextListener();
+	}
 
-    @Bean
-    WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> enableDefaultServlet() {
-        return (factory) -> factory.setRegisterDefaultServlet(true);
-    }
+	@Bean
+	WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> enableDefaultServlet() {
+		return (factory) -> factory.setRegisterDefaultServlet(true);
+	}
 
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "rose.web.filter.caching",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    FilterRegistrationBean<CachingRequestFilter> cachingRequestFilter() {
-        CachingRequestFilter filter =
-                new CachingRequestFilter(roseWebProperties.getFilter().getExcludePaths());
-        FilterRegistrationBean<CachingRequestFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
-        registrationBean.addUrlPatterns(StringPool.ALL_PATH);
-        registrationBean.setName(filter.getClass().getSimpleName());
-        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-        return registrationBean;
-    }
+	@Bean
+	@ConditionalOnProperty(
+		prefix = "rose.web.filter.caching",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	FilterRegistrationBean<CachingRequestFilter> cachingRequestFilter() {
+		CachingRequestFilter filter =
+			new CachingRequestFilter(roseWebProperties.getFilter().getExcludePaths());
+		FilterRegistrationBean<CachingRequestFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
+		registrationBean.addUrlPatterns(StringPool.ALL_PATH);
+		registrationBean.setName(filter.getClass().getSimpleName());
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+		return registrationBean;
+	}
 
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "rose.web.filter.xss",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    FilterRegistrationBean<XssRequestFilter> xxsFilter() {
-        XssRequestFilter filter =
-                new XssRequestFilter(roseWebProperties.getFilter().getExcludePaths());
-        FilterRegistrationBean<XssRequestFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
-        registrationBean.addUrlPatterns(StringPool.ALL_PATH);
-        registrationBean.setName(filter.getClass().getSimpleName());
-        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
-        return registrationBean;
-    }
+	@Bean
+	@ConditionalOnProperty(
+		prefix = "rose.web.filter.xss",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	FilterRegistrationBean<XssRequestFilter> xxsFilter() {
+		XssRequestFilter filter =
+			new XssRequestFilter(roseWebProperties.getFilter().getExcludePaths());
+		FilterRegistrationBean<XssRequestFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
+		registrationBean.addUrlPatterns(StringPool.ALL_PATH);
+		registrationBean.setName(filter.getClass().getSimpleName());
+		registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
+		return registrationBean;
+	}
 
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "rose.web.filter.logging",
-            name = "enabled",
-            havingValue = "true",
-            matchIfMissing = true)
-    public CommonsRequestLoggingFilter commonsRequestLoggingFilter() {
-        final CommonsRequestLoggingFilter filter = new LoggingRequestFilter(
-                roseWebProperties.getFilter().getLogging().getMaxResponseTimeToLogInMs());
-        filter.setIncludeQueryString(true);
-        filter.setIncludePayload(true);
-        filter.setMaxPayloadLength(1000);
-        filter.setIncludeHeaders(true);
-        filter.setIncludeClientInfo(true);
-        return filter;
-    }
+	@Bean
+	@ConditionalOnProperty(
+		prefix = "rose.web.filter.logging",
+		name = "enabled",
+		havingValue = "true",
+		matchIfMissing = true)
+	public CommonsRequestLoggingFilter commonsRequestLoggingFilter() {
+		final CommonsRequestLoggingFilter filter = new LoggingRequestFilter(
+			roseWebProperties.getFilter().getLogging().getMaxResponseTimeToLogInMs());
+		filter.setIncludeQueryString(true);
+		filter.setIncludePayload(true);
+		filter.setMaxPayloadLength(1000);
+		filter.setIncludeHeaders(true);
+		filter.setIncludeClientInfo(true);
+		return filter;
+	}
 }
