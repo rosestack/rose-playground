@@ -9,8 +9,7 @@ import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobGroupPage;
 import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobInfo;
 import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobInfoPage;
 import io.github.rosestack.spring.boot.xxljob.config.XxlJobProperties;
-import java.lang.reflect.Method;
-import java.util.List;
+import io.github.rosestack.spring.boot.xxljob.exception.XxlJobException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +18,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.scheduling.support.CronExpression;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * 启动时扫描 @XxlRegister + @XxlJob，自动在 admin 侧创建任务（若不存在）
@@ -103,7 +106,10 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
                 reg.author(), props.getClient().getDefaults().getAuthor()));
         job.setAlarmEmail(StringUtils.defaultIfBlank(
                 reg.alarmEmail(), props.getClient().getDefaults().getAlarmEmail()));
-        job.setScheduleConf(reg.cron());
+        // 验证并设置 cron 表达式
+        String cronExpression = reg.cron();
+        validateCronExpression(cronExpression, handler);
+        job.setScheduleConf(cronExpression);
         job.setExecutorRouteStrategy(reg.executorRouteStrategy());
         job.setExecutorParam(reg.executorParam());
         // 可选的默认/保守设置
@@ -140,28 +146,43 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
         try {
             return supplier.get();
         } catch (Exception e) {
-            log.warn("{} {}", handler, errorMessage, e);
+            log.warn("任务注册失败 - handler: {}, 错误: {}", handler, errorMessage, e);
+            // 对于关键操作，可以选择抛出异常而不是返回 null
+            if (errorMessage.contains("执行器组")) {
+                throw new XxlJobException(errorMessage + ": " + e.getMessage(), e);
+            }
             return null;
         }
     }
 
     private Integer findOrCreateJobGroupId(String appname) {
-        Integer groupId = queryGroupId(appname);
-        if (groupId != null) {
+        try {
+            Integer groupId = queryGroupId(appname);
+            if (groupId != null) {
+                log.debug("找到已存在的执行器组: {} -> {}", appname, groupId);
+                return groupId;
+            }
+
+            log.info("创建新的执行器组: {}", appname);
+            XxlJobGroup created = client.addJobGroup(appname);
+            if (created != null && created.getId() > 0) {
+                log.info("执行器组创建成功: {} -> {}", appname, created.getId());
+                return created.getId();
+            }
+
+            // 兼容有些 admin 不返回 id 的情况，再查一次
+            groupId = queryGroupId(appname);
+            if (groupId == null) {
+                throw new XxlJobException("执行器组创建失败，无法获取ID");
+            }
+            log.info("执行器组创建成功（延迟获取ID）: {} -> {}", appname, groupId);
             return groupId;
+        } catch (Exception e) {
+            if (e instanceof XxlJobException) {
+                throw e;
+            }
+            throw new XxlJobException("执行器组操作失败: " + e.getMessage(), e);
         }
-
-        XxlJobGroup created = client.addJobGroup(appname);
-        if (created != null && created.getId() > 0) {
-            return created.getId();
-        }
-
-        // 兼容有些 admin 不返回 id 的情况，再查一次
-        groupId = queryGroupId(appname);
-        if (groupId == null) {
-            throw new RuntimeException("执行器 " + appname + " 没有注册");
-        }
-        return groupId;
     }
 
     private Integer queryGroupId(String appname) {
@@ -183,5 +204,20 @@ public class XxlJobRegistrar implements ApplicationContextAware, SmartInitializi
             return null;
         }
         return list.get(0);
+    }
+
+    /**
+     * 验证 Cron 表达式
+     */
+    private void validateCronExpression(String cronExpression, String handler) {
+        if (cronExpression == null || cronExpression.trim().isEmpty()) {
+            throw new XxlJobException("任务 " + handler + " 的 Cron 表达式不能为空");
+        }
+
+        try {
+            CronExpression.parse(cronExpression.trim());
+        } catch (IllegalArgumentException e) {
+            throw new XxlJobException("任务 " + handler + " 的 Cron 表达式无效: " + cronExpression + ", 错误: " + e.getMessage());
+        }
     }
 }

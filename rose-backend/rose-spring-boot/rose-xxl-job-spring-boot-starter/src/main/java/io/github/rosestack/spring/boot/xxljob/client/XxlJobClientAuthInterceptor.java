@@ -1,10 +1,12 @@
 package io.github.rosestack.spring.boot.xxljob.client;
 
 import io.github.rosestack.spring.boot.xxljob.config.XxlJobProperties;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.RequestEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
  * - 若配置了 username/password，拦截首个请求，先尝试登录以获取 Cookie（JSESSIONID），后续请求自动携带
  * - 鉴于不同 Admin 版本的登录端点/参数可能不同，这里采用最通用的 /login POST + form 约定，需按实际端点调整。
  */
+@Slf4j
 @RequiredArgsConstructor
 public class XxlJobClientAuthInterceptor implements ClientHttpRequestInterceptor {
 
@@ -55,8 +58,10 @@ public class XxlJobClientAuthInterceptor implements ClientHttpRequestInterceptor
                 cookieRef.set(c);
                 request.getHeaders().add(props.getClient().getCookieName(), c);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             // 登录失败则继续按原请求执行，可能由网关/外部代理注入鉴权
+            // 但记录警告日志以便排查问题
+            log.warn("XXL-Job 自动登录失败，将尝试无认证访问: {}", e.getMessage());
         }
         return execution.execute(request, body);
     }
