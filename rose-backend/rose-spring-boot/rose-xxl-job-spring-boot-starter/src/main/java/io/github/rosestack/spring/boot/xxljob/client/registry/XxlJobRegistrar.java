@@ -10,6 +10,8 @@ import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobInfo;
 import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobInfoPage;
 import io.github.rosestack.spring.boot.xxljob.config.XxlJobProperties;
 import io.github.rosestack.spring.boot.xxljob.exception.XxlJobException;
+import java.lang.reflect.Method;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,9 +21,6 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.support.CronExpression;
-
-import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * 启动时扫描 @XxlRegister + @XxlJob，自动在 admin 侧创建任务（若不存在）

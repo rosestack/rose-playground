@@ -5,11 +5,11 @@ package io.github.rosestack.spring.boot.xxljob.exception;
  */
 public class XxlJobException extends RuntimeException {
 
-	public XxlJobException(String message) {
-		super(message);
-	}
+    public XxlJobException(String message) {
+        super(message);
+    }
 
-	public XxlJobException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public XxlJobException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

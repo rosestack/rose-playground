@@ -33,7 +33,8 @@ public class EmailSender extends AbstractConfigure implements Sender {
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(request.getTarget()));
         List<String> ccList = request.getCc();
         if (ccList != null && !ccList.isEmpty()) {
-            message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(String.join(StringPool.COMMA, ccList)));
+            message.setRecipients(
+                    Message.RecipientType.CC, InternetAddress.parse(String.join(StringPool.COMMA, ccList)));
         }
         Object subjObj = config.get("mail.smtp.subject");
         String subject = subjObj != null ? subjObj.toString() : "通知";

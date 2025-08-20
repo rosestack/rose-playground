@@ -1,7 +1,6 @@
 package io.github.rosestack.spring.boot.xxljob.client;
 
 import io.github.rosestack.spring.boot.xxljob.config.XxlJobProperties;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;

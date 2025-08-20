@@ -21,7 +21,6 @@ import io.github.rosestack.encryption.FieldEncryptor;
 import io.github.rosestack.encryption.hash.HashService;
 import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
 import io.github.rosestack.mybatis.provider.CurrentUserProvider;
-import io.github.rosestack.spring.factory.YmlPropertySourceFactory;
 import io.github.rosestack.spring.boot.mybatis.audit.RoseMetaObjectHandler;
 import io.github.rosestack.spring.boot.mybatis.encryption.FieldEncryptionInterceptor;
 import io.github.rosestack.spring.boot.mybatis.permission.DataPermissionMetrics;
@@ -33,6 +32,7 @@ import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentTenantProv
 import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentUserProvider;
 import io.github.rosestack.spring.boot.mybatis.tenant.RoseTenantLineHandler;
 import io.github.rosestack.spring.boot.mybatis.tenant.TenantIdFilter;
+import io.github.rosestack.spring.factory.YmlPropertySourceFactory;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.DispatcherType;

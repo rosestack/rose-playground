@@ -16,7 +16,6 @@
 package io.github.rosestack.core.util.tree;
 
 import java.util.*;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
