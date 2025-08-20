@@ -1,8 +1,8 @@
-package io.github.rosestack.core.lang.function;
+package io.github.rosestack.core.util.function;
 
 import static java.util.stream.Collectors.toList;
 
-import io.github.rosestack.core.lang.function.checked.CheckedConsumer;
+import io.github.rosestack.core.util.function.checked.CheckedConsumer;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -81,7 +81,9 @@ public interface Streams {
      */
     static <T, S extends Iterable<T>> S filter(S values, Predicate<? super T> predicate) {
         final boolean isSet = Set.class.isAssignableFrom(values.getClass());
-        return (S) (isSet ? filterSet(values, predicate) : filterList(values, predicate));
+        @SuppressWarnings("unchecked")
+        S result = (S) (isSet ? filterSet(values, predicate) : filterList(values, predicate));
+        return result;
     }
 
     /**

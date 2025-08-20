@@ -35,13 +35,18 @@ public interface Node<T> extends Comparable<Node<T>>, Serializable {
 
     Node<T> setWeight(Comparable<?> var1);
 
-    default int compareTo(Node node) {
-        Comparable weight = this.getWeight();
+    default int compareTo(Node<T> node) {
+        Comparable<?> weight = this.getWeight();
         if (null != weight) {
-            Comparable weightOther = node.getWeight();
-            return weight.compareTo(weightOther);
+            Comparable<?> weightOther = node.getWeight();
+            return compareWeights(weight, weightOther);
         } else {
             return 0;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    static int compareWeights(Comparable<?> weight1, Comparable<?> weight2) {
+        return ((Comparable<Object>) weight1).compareTo(weight2);
     }
 }

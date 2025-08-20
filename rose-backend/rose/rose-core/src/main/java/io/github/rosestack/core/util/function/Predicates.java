@@ -1,15 +1,17 @@
-package io.github.rosestack.core.lang.function;
+package io.github.rosestack.core.util.function;
 
 import java.util.function.Predicate;
 
 public final class Predicates {
 
-    protected static final Predicate[] EMPTY_PREDICATE_ARRAY = new Predicate[0];
+    @SuppressWarnings("rawtypes")
+    private static final Predicate[] EMPTY_PREDICATE_ARRAY = new Predicate[0];
 
     private Predicates() {}
 
+    @SuppressWarnings("unchecked")
     public static <T> Predicate<T>[] emptyArray() {
-        return EMPTY_PREDICATE_ARRAY;
+        return (Predicate<T>[]) EMPTY_PREDICATE_ARRAY;
     }
 
     public static <T> Predicate<T> alwaysTrue() {
@@ -32,6 +34,7 @@ public final class Predicates {
      * @param <T>        the type to test
      * @return non-null
      */
+    @SafeVarargs
     public static <T> Predicate<T> and(Predicate<T>... predicates) {
         int length = predicates == null ? 0 : predicates.length;
         if (length == 0) {
@@ -47,9 +50,10 @@ public final class Predicates {
         }
     }
 
+    @SafeVarargs
     public static <T> Predicate<T> not(Predicate<T>... predicates) {
         if (predicates == null || predicates.length == 0) {
-            // 如果没有传入任何Predicate，返回一个总是返回true的Predicate
+            // 对空数组的处理逻辑
             return e -> true;
         } else if (predicates.length == 1) {
             // 如果只有一个Predicate，直接对其取反
@@ -72,6 +76,7 @@ public final class Predicates {
      * @param <T>        the detected type
      * @return non-null
      */
+    @SafeVarargs
     public static <T> Predicate<T> or(Predicate<T>... predicates) {
         int length = predicates == null ? 0 : predicates.length;
         if (length == 0) {

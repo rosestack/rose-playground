@@ -230,11 +230,13 @@ public class Tree<T> extends LinkedHashMap<String, Object> implements Node<T> {
     }
 
     @Override
-    public int compareTo(Node node) {
-        Comparable weight = this.getWeight();
+    public int compareTo(Node<T> node) {
+        Comparable<?> weight = this.getWeight();
         if (null != weight) {
-            Comparable weightOther = node.getWeight();
-            return treeNodeConfig.getReversed() ? weightOther.compareTo(weight) : weight.compareTo(weightOther);
+            Comparable<?> weightOther = node.getWeight();
+            return treeNodeConfig.getReversed()
+                ? Node.compareWeights(weightOther, weight)
+                : Node.compareWeights(weight, weightOther);
         } else {
             return 0;
         }

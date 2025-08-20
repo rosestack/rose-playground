@@ -1,4 +1,6 @@
-package io.github.rosestack.core.lang.function;
+package io.github.rosestack.core.util.function;
+
+import java.util.function.Predicate;
 
 /**
  * @param <I>
@@ -15,6 +17,10 @@ public class Pipeline<I, O> {
 
     public <K> Pipeline<I, K> addHandler(Handler<O, K> newHandler) {
         return new Pipeline<>(input -> newHandler.process(currentHandler.process(input)));
+    }
+
+    public Pipeline<I, O> filter(Predicate<O> predicate) {
+        return addHandler(input -> predicate.test(input) ? input : null);
     }
 
     public O execute(I input) {

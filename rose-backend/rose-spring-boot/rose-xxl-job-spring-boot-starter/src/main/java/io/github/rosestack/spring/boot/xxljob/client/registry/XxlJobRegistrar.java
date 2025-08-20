@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.xxljob.client.registry;
 
 import com.xxl.job.core.handler.annotation.XxlJob;
-import io.github.rosestack.core.lang.function.checked.CheckedSupplier;
+import io.github.rosestack.core.util.function.checked.CheckedSupplier;
 import io.github.rosestack.spring.boot.xxljob.client.XxlJobClient;
 import io.github.rosestack.spring.boot.xxljob.client.annotation.XxlJobRegister;
 import io.github.rosestack.spring.boot.xxljob.client.model.XxlJobGroup;

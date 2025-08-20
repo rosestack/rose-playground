@@ -1,6 +1,6 @@
-package io.github.rosestack.core.lang.function;
+package io.github.rosestack.core.util.function;
 
-import io.github.rosestack.core.lang.function.checked.CheckedFunction;
+import io.github.rosestack.core.util.function.checked.CheckedFunction;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;

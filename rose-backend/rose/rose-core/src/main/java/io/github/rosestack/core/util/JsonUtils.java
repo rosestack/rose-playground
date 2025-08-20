@@ -1,8 +1,6 @@
 package io.github.rosestack.core.util;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -30,16 +28,12 @@ public abstract class JsonUtils {
     }
 
     private static ObjectMapper createPrettySortedMapper() {
-        return createDefaultMapper()
+        return JsonMapper.builder()
+                .addModule(new Jdk8Module())
                 .enable(SerializationFeature.INDENT_OUTPUT)
-                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
-                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
-    }
-
-    private static ObjectMapper createUnquotedFieldNamesMapper() {
-        return createDefaultMapper()
-                .configure(JsonWriteFeature.QUOTE_FIELD_NAMES.mappedFeature(), false)
-                .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+                .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .build();
     }
 
     private static ObjectMapper createIgnoreUnknownPropertiesMapper() {

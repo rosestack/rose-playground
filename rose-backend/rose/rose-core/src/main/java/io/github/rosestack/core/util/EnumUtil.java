@@ -257,6 +257,7 @@ public abstract class EnumUtil {
         if (bitSet == EMPTY_BIT_SET) {
             return null;
         }
+        @SuppressWarnings("unchecked")
         E[] array = (E[]) Array.newInstance(eClass, bitSetSize(bitSet));
         int i = 0;
         for (E f : eClass.getEnumConstants()) {

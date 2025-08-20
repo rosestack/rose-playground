@@ -268,7 +268,9 @@ public class BetweenFormatter implements Serializable {
          */
         public static DateUnit of(ChronoUnit unit) {
             switch (unit) {
+                case NANOS:
                 case MICROS:
+                case MILLIS:
                     return DateUnit.MS;
                 case SECONDS:
                     return DateUnit.SECOND;
@@ -276,12 +278,21 @@ public class BetweenFormatter implements Serializable {
                     return DateUnit.MINUTE;
                 case HOURS:
                     return DateUnit.HOUR;
+                case HALF_DAYS:
                 case DAYS:
                     return DateUnit.DAY;
                 case WEEKS:
                     return DateUnit.WEEK;
+                case MONTHS:
+                case YEARS:
+                case DECADES:
+                case CENTURIES:
+                case MILLENNIA:
+                case ERAS:
+                case FOREVER:
+                default:
+                    return null;
             }
-            return null;
         }
 
         /**

@@ -1,4 +1,4 @@
-package io.github.rosestack.core.lang.function.checked;
+package io.github.rosestack.core.util.function.checked;
 
 import java.util.function.BiFunction;
 

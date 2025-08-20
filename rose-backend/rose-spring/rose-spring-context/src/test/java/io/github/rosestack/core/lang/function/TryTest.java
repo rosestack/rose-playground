@@ -2,9 +2,11 @@ package io.github.rosestack.core.lang.function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.github.rosestack.core.lang.function.checked.CheckedFunction;
-import io.github.rosestack.core.lang.function.checked.CheckedPredicate;
-import io.github.rosestack.core.lang.function.checked.CheckedRunnable;
+import io.github.rosestack.core.util.function.Option;
+import io.github.rosestack.core.util.function.Try;
+import io.github.rosestack.core.util.function.checked.CheckedFunction;
+import io.github.rosestack.core.util.function.checked.CheckedPredicate;
+import io.github.rosestack.core.util.function.checked.CheckedRunnable;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;

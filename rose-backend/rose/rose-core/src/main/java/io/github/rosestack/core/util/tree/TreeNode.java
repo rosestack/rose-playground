@@ -28,7 +28,6 @@ import java.util.Objects;
 public class TreeNode<T> implements Node<T> {
 
     private static final long serialVersionUID = 1L;
-    private final Boolean reversed = false;
     /**
      * ID
      */
