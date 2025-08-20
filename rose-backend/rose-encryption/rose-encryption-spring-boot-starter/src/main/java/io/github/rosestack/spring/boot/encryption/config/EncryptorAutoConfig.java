@@ -23,9 +23,9 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource(value = "classpath:application-rose-encryption.yaml", factory = YmlPropertySourceFactory.class)
 @ConditionalOnProperty(prefix = "rose.encryption", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(EncryptionProperties.class)
-@Import({KeyRotationController.class, EncryptionMonitorConfiguration.class})
+@Import({KeyRotationController.class, EncryptionMonitorConfig.class})
 @AutoConfiguration
-public class EncryptorAutoConfiguration {
+public class EncryptorAutoConfig {
 	private final EncryptionProperties properties;
 
 	@Bean
