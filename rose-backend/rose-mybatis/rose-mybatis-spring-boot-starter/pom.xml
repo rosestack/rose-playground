@@ -20,7 +20,7 @@
     </dependency>
     <dependency>
       <groupId>io.github.rosestack</groupId>
-      <artifactId>rose-encryption-core</artifactId>
+      <artifactId>rose-crypto-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

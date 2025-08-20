@@ -15,7 +15,7 @@
     - `rose-annotation-processor/`：注解处理器
 - `rose-spring/`：Spring 上下文与通用工具（过滤器、脱敏、表达式等）
 - `rose-i18n/`：国际化核心与 Spring/Cloud/OpenFeign 集成及 Actuator 端点
-- `rose-encryption/`：字段加密核心与 Spring Boot Starter（支持密钥轮转）
+- `rose-crypto/`：字段加密核心与 Spring Boot Starter（支持密钥轮转）
 - `rose-notification/`：通知核心与 Starter（模板、发送、重试、可观测）
 - `rose-mybatis/`：MyBatis Plus 核心与 Starter（审计、租户、数据权限、加密拦截）
 - `rose-redis/`：Redis Starter（分布式锁、限流）
@@ -61,7 +61,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ## 关键能力
 
 - 国际化（`rose-i18n`）：多源消息、热加载、缓存、Actuator 端点
-- 字段加密（`rose-encryption`）：`@EncryptField`、密钥轮转、Hash 服务
+- 字段加密（`rose-crypto`）：`@EncryptField`、密钥轮转、Hash 服务
 - 数据访问（`rose-mybatis`）：审计字段填充、租户隔离、数据权限、字段加密拦截
 - 分布式能力（`rose-redis`）：分布式锁 `@Lock`、限流 `@RateLimited`
 - 审计与安全（`rose-spring-boot`）：审计日志、统一异常/响应、CORS、异步、Swagger、Auth/JWT/OAuth2

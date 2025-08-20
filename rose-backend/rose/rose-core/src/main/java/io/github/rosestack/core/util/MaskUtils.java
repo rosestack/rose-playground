@@ -217,7 +217,7 @@ public class MaskUtils {
 	 */
 	public static String maskSecretKey(String secretKey) {
 		if (secretKey == null || secretKey.length() < 8) {
-			return MASKED;
+			return secretKey;
 		}
 
 		int length = secretKey.length();

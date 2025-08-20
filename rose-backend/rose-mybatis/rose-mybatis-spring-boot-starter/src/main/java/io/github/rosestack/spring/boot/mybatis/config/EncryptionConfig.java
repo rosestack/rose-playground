@@ -1,7 +1,7 @@
 package io.github.rosestack.spring.boot.mybatis.config;
 
-import io.github.rosestack.encryption.FieldEncryptor;
-import io.github.rosestack.encryption.hash.HashService;
+import io.github.rosestack.crypto.FieldEncryptor;
+import io.github.rosestack.crypto.hash.HashService;
 import io.github.rosestack.spring.boot.mybatis.encryption.FieldEncryptionInterceptor;
 import io.github.rosestack.spring.boot.mybatis.permission.controller.DataPermissionController;
 import io.github.rosestack.spring.boot.mybatis.permission.service.DataPermissionService;

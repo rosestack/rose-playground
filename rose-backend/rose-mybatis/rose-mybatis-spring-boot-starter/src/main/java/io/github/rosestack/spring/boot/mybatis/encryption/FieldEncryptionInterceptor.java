@@ -1,8 +1,8 @@
 package io.github.rosestack.spring.boot.mybatis.encryption;
 
-import io.github.rosestack.encryption.FieldEncryptor;
-import io.github.rosestack.encryption.annotation.EncryptField;
-import io.github.rosestack.encryption.hash.HashService;
+import io.github.rosestack.crypto.FieldEncryptor;
+import io.github.rosestack.crypto.annotation.EncryptField;
+import io.github.rosestack.crypto.hash.HashService;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.sql.Statement;
 import java.util.Collection;
