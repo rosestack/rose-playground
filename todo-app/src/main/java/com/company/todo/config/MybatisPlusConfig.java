@@ -27,10 +27,8 @@ public class MybatisPlusConfig {
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         PaginationInnerInterceptor paginationInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
-        // 从配置中读取分页大小上限，避免硬编码
         paginationInterceptor.setMaxLimit(properties.getPagination().getMaxPageSize());
         interceptor.addInnerInterceptor(paginationInterceptor);
-        // 启用乐观锁插件，配合实体的 @Version 字段生效
         interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
         interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
 

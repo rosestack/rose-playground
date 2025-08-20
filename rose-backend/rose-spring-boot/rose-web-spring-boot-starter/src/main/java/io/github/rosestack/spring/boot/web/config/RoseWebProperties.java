@@ -170,7 +170,7 @@ public class RoseWebProperties {
             /**
              * 是否启用安全认证
              */
-            private boolean enabled = true;
+            private boolean enabled = false;
 
             /**
              * JWT Token 配置

@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/internal/data-permission/cache")
+@RequestMapping("/api/internal/permission/cache")
 @RequiredArgsConstructor
 @ConditionalOnBean(DataPermissionService.class)
 @ConditionalOnProperty(
-        prefix = "rose.mybatis.data-permission",
+        prefix = "rose.mybatis.permission",
         name = "enabled",
         havingValue = "true",
         matchIfMissing = true)

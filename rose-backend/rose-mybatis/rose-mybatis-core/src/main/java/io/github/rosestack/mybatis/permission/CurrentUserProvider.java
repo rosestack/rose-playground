@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.provider;
+package io.github.rosestack.mybatis.permission;
 
 /**
  * 当前用户ID提供器抽象。

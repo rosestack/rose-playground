@@ -3,7 +3,7 @@ package io.github.rosestack.spring.boot.mybatis.permission;
 import com.baomidou.mybatisplus.extension.plugins.handler.MultiDataPermissionHandler;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.github.rosestack.mybatis.annotation.DataPermission;
-import io.github.rosestack.mybatis.provider.CurrentUserProvider;
+import io.github.rosestack.mybatis.permission.CurrentUserProvider;
 import io.github.rosestack.spring.boot.mybatis.permission.provider.DataPermissionProviderManager;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;

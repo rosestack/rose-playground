@@ -17,17 +17,17 @@ public class RoseMetaObjectHandler extends AbstractMetaObjectHandler {
 
     @Override
     protected String getCreateTimeColumn() {
-        return properties.getFieldFill().getCreateTimeColumn();
+        return properties.getMetaObject().getCreateTimeColumn();
     }
 
     @Override
     protected String getUpdateTimeColumn() {
-        return properties.getFieldFill().getUpdateTimeColumn();
+        return properties.getMetaObject().getUpdateTimeColumn();
     }
 
     @Override
     protected String getCreatedByColumn() {
-        return properties.getFieldFill().getCreatedByColumn();
+        return properties.getMetaObject().getCreatedByColumn();
     }
 
     @Override
@@ -42,6 +42,6 @@ public class RoseMetaObjectHandler extends AbstractMetaObjectHandler {
 
     @Override
     protected String getCurrentUsername() {
-        return properties.getFieldFill().getDefaultUser();
+        return properties.getMetaObject().getDefaultUser();
     }
 }

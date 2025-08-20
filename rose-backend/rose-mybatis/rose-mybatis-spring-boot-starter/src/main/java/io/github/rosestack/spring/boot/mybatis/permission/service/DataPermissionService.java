@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(
-        prefix = "rose.mybatis.data-permission",
+        prefix = "rose.mybatis.permission",
         name = "enabled",
         havingValue = "true",
         matchIfMissing = true)
@@ -95,16 +95,16 @@ public class DataPermissionService {
             status.setExpiredRate(expiredRate);
 
             // 健康检查规则
-            if (expiredRate > properties.getDataPermission().getCache().getExpiredRate()) { // 过期率超过50%
+            if (expiredRate > properties.getPermission().getCache().getExpiredRate()) { // 过期率超过50%
                 status.setHealthy(false);
                 status.addWarning("过期缓存比例过高: " + String.format("%.2f%%", expiredRate * 100));
             }
 
-            if (annotationCacheSize > properties.getDataPermission().getCache().getMaxAnnotationCacheSize()) { // 注解缓存过大
+            if (annotationCacheSize > properties.getPermission().getCache().getMaxAnnotationCacheSize()) { // 注解缓存过大
                 status.addWarning("注解缓存数量过多: " + annotationCacheSize);
             }
 
-            if (permissionCacheSize > properties.getDataPermission().getCache().getMaxPermissionCacheSize()) { // 权限缓存过大
+            if (permissionCacheSize > properties.getPermission().getCache().getMaxPermissionCacheSize()) { // 权限缓存过大
                 status.addWarning("权限缓存数量过多: " + permissionCacheSize);
             }
 

@@ -1,4 +1,4 @@
-package io.github.rosestack.mybatis.provider;
+package io.github.rosestack.mybatis.tenant;
 
 /**
  * 当前租户ID提供器抽象。

@@ -14,17 +14,17 @@ public class DataPermissionMetrics {
     private final Counter errorCounter;
 
     public DataPermissionMetrics(MeterRegistry registry) {
-        this.getSqlSegmentTimer = Timer.builder("rose.mybatis.data-permission.get_sql_segment.duration")
-                .description("Duration of building data-permission SQL segment")
+        this.getSqlSegmentTimer = Timer.builder("rose.mybatis.permission.get_sql_segment.duration")
+                .description("Duration of building permission SQL segment")
                 .register(registry);
-        this.cacheHitCounter = Counter.builder("rose.mybatis.data-permission.cache.hit")
-                .description("Data-permission cache hit count")
+        this.cacheHitCounter = Counter.builder("rose.mybatis.permission.cache.hit")
+                .description("permission cache hit count")
                 .register(registry);
-        this.cacheMissCounter = Counter.builder("rose.mybatis.data-permission.cache.miss")
-                .description("Data-permission cache miss count")
+        this.cacheMissCounter = Counter.builder("rose.mybatis.permission.cache.miss")
+                .description("permission cache miss count")
                 .register(registry);
-        this.errorCounter = Counter.builder("rose.mybatis.data-permission.errors")
-                .description("Data-permission handler errors")
+        this.errorCounter = Counter.builder("rose.mybatis.permission.errors")
+                .description("permission handler errors")
                 .register(registry);
     }
 

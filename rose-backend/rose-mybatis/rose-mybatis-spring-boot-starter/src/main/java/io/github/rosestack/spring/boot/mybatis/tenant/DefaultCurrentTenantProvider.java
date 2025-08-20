@@ -1,9 +1,9 @@
-package io.github.rosestack.spring.boot.mybatis.provider;
+package io.github.rosestack.spring.boot.mybatis.tenant;
 
 import static io.github.rosestack.mybatis.MybatisConstants.HEADER_TENANT_ID;
 import static io.github.rosestack.mybatis.MybatisConstants.MDC_TENANT_ID;
 
-import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
+import io.github.rosestack.mybatis.tenant.CurrentTenantProvider;
 import io.github.rosestack.spring.util.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;

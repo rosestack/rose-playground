@@ -101,7 +101,7 @@ rose:
         use-hmac: true
 
     # 数据权限配置
-    data-permission:
+    permission:
       enabled: true
       use-mybatis-plus-interceptor: true  # 是否使用 MyBatis Plus 拦截器（推荐）
       default-field: "user_id"
@@ -308,16 +308,16 @@ clear();
 
 ```bash
 # 获取缓存统计
-GET /api/internal/data-permission-cache/stats
+GET /api/internal/permission-cache/stats
 
 # 检查缓存健康
-GET /api/internal/data-permission-cache/health
+GET /api/internal/permission-cache/health
 
 # 清空所有缓存
-DELETE /api/internal/data-permission-cache/all
+DELETE /api/internal/permission-cache/all
 
 # 清空用户缓存
-DELETE /api/internal/data-permission-cache/user/{userId}
+DELETE /api/internal/permission-cache/user/{userId}
 ```
 
 ### 自定义审计存储

@@ -3,9 +3,8 @@ package io.github.rosestack.spring.boot.mybatis.tenant;
 import static io.github.rosestack.mybatis.MybatisConstants.HEADER_TENANT_ID;
 import static io.github.rosestack.mybatis.MybatisConstants.MDC_TENANT_ID;
 
-import io.github.rosestack.mybatis.provider.CurrentTenantProvider;
+import io.github.rosestack.mybatis.tenant.CurrentTenantProvider;
 import io.github.rosestack.mybatis.tenant.TenantContextHolder;
-import io.github.rosestack.spring.boot.mybatis.provider.DefaultCurrentTenantProvider;
 import io.github.rosestack.spring.filter.AbstractRequestFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

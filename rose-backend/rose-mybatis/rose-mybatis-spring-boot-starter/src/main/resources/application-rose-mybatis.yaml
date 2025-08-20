@@ -17,24 +17,19 @@ rose:
       # 是否启用分页插件
       enabled: true
       # 单页最大限制数量
-      max-limit: 1000
-      # 是否启用合理化分页
-      reasonable: true
+      max-page-size: 1000
       # 数据库类型（mysql, postgresql, oracle, sqlserver, h2, sqlite）
-      db-type: mysql
-    # 乐观锁配置
-    optimistic-lock:
-      # 是否启用乐观锁
-      enabled: true
+      db-type: MYSQL
     # 字段填充配置
-    field-fill:
+    meta-object:
       # 是否启用字段自动填充
       enabled: true
-      # 创建时间字段名
+      created-by-column: created_by
       create-time-column: created_time
-      # 更新时间字段名
+      updated-by-column: updated_by
       update-time-column: updated_time
-    data-permission:
+      default-user: admin
+    permission:
       enabled: true
       cache:
         # 是否启用缓存
