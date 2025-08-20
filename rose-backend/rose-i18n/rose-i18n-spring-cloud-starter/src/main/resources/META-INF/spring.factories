@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-io.github.rosestack.i18n.spring.cloud.autoconfigure.I18nCloudAutoConfiguration
+io.github.rosestack.i18n.spring.cloud.config.I18nCloudAutoConfig

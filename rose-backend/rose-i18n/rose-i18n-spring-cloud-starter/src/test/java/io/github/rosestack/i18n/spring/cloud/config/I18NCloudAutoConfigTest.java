@@ -1,4 +1,4 @@
-package io.github.rosestack.i18n.spring.cloud.autoconfigure;
+package io.github.rosestack.i18n.spring.cloud.config;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -10,14 +10,14 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-class I18nCloudAutoConfigurationTest {
+class I18NCloudAutoConfigTest {
     ApplicationContextRunner applicationContextRunner;
 
     @BeforeEach
     void setup() {
         applicationContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
-                        AutoConfigurations.of(I18nAutoConfig.class, I18nCloudAutoConfiguration.class));
+                        AutoConfigurations.of(I18nAutoConfig.class, I18nCloudAutoConfig.class));
     }
 
     @Test

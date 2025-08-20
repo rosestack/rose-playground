@@ -1,4 +1,4 @@
-package io.github.rosestack.i18n.spring.cloud.autoconfigure;
+package io.github.rosestack.i18n.spring.cloud.config;
 
 import io.github.rosestack.i18n.spring.boot.condition.ConditionalOnI18nEnabled;
 import io.github.rosestack.i18n.spring.cloud.event.ReloadableResourceServiceMessageSourceListener;
@@ -17,4 +17,4 @@ import org.springframework.context.annotation.Import;
             "org.springframework.cloud.context.environment.EnvironmentChangeEvent", // spring-cloud-context
         })
 @Import({ReloadableResourceServiceMessageSourceListener.class})
-public class I18nCloudAutoConfiguration {}
+public class I18nCloudAutoConfig {}
