@@ -157,4 +157,15 @@ public interface BillUsageMapper extends BaseMapper<BillUsage> {
                 .eq(BillUsage::getSubscriptionId, subscriptionId);
         return selectCount(queryWrapper);
     }
+
+    /**
+     * 删除指定订阅、功能和计费周期的使用量记录
+     */
+    default int deleteBySubscriptionFeatureAndPeriod(Long subscriptionId, Long featureId, LocalDate billingPeriod) {
+        LambdaQueryWrapper<BillUsage> queryWrapper = new LambdaQueryWrapper<BillUsage>()
+                .eq(BillUsage::getSubscriptionId, subscriptionId)
+                .eq(BillUsage::getFeatureId, featureId)
+                .eq(BillUsage::getBillingPeriod, billingPeriod);
+        return delete(queryWrapper);
+    }
 }

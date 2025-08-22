@@ -3,7 +3,7 @@ package io.github.rosestack.billing.domain.invoice;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.github.rosestack.billing.domain.enums.BillStatus;
+import io.github.rosestack.billing.domain.enums.InvoiceStatus;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -87,7 +87,7 @@ public class BillInvoice extends BaseTenantEntity {
      * CANCELLED: 已取消 - 账单已取消或作废
      * REFUNDED: 已退款 - 账单已退款
      */
-    private BillStatus status;
+    private InvoiceStatus status;
 
     /**
      * 账单到期日期
@@ -114,7 +114,7 @@ public class BillInvoice extends BaseTenantEntity {
      * 检查账单是否已支付
      */
     public boolean isPaid() {
-        return BillStatus.PAID == status;
+        return InvoiceStatus.PAID == status;
     }
 
     /**
@@ -123,7 +123,7 @@ public class BillInvoice extends BaseTenantEntity {
     public boolean isPartialPaid() {
         // 在新的设计中，我们不再有独立的PARTIAL_PAID状态
         // 而是根据已支付金额和总金额来判断
-        return BillStatus.PENDING == status &&
+        return InvoiceStatus.PENDING == status &&
                paidAmount != null &&
                paidAmount.compareTo(BigDecimal.ZERO) > 0 &&
                paidAmount.compareTo(totalAmount) < 0;
@@ -133,24 +133,24 @@ public class BillInvoice extends BaseTenantEntity {
      * 检查账单是否逾期
      */
     public boolean isOverdue() {
-        return BillStatus.OVERDUE == status ||
-               (BillStatus.PENDING == status && dueDate != null && dueDate.isBefore(LocalDate.now()));
+        return InvoiceStatus.OVERDUE == status ||
+               (InvoiceStatus.PENDING == status && dueDate != null && dueDate.isBefore(LocalDate.now()));
     }
 
     /**
      * 检查账单是否可以支付
      */
     public boolean canBePaid() {
-        return BillStatus.PENDING == status ||
-               BillStatus.OVERDUE == status;
+        return InvoiceStatus.PENDING == status ||
+               InvoiceStatus.OVERDUE == status;
     }
 
     /**
      * 检查账单是否可以取消
      */
     public boolean canBeVoided() {
-        return BillStatus.DRAFT == status ||
-               BillStatus.PENDING == status;
+        return InvoiceStatus.DRAFT == status ||
+               InvoiceStatus.PENDING == status;
     }
 
     /**
@@ -184,7 +184,7 @@ public class BillInvoice extends BaseTenantEntity {
 
         // 更新账单状态
         if (unpaidAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            status = BillStatus.PAID;
+            status = InvoiceStatus.PAID;
             paidTime = LocalDateTime.now();
         }
         // 注意：在新设计中，我们不再有独立的PARTIAL_PAID状态
@@ -196,7 +196,7 @@ public class BillInvoice extends BaseTenantEntity {
      */
     public void markAsOverdue() {
         if (canBePaid()) {
-            this.status = BillStatus.OVERDUE;
+            this.status = InvoiceStatus.OVERDUE;
         }
     }
 
@@ -205,7 +205,7 @@ public class BillInvoice extends BaseTenantEntity {
      */
     public void voidBill() {
         if (canBeVoided()) {
-            this.status = BillStatus.CANCELLED;
+            this.status = InvoiceStatus.CANCELLED;
         } else {
             throw new IllegalStateException("账单状态不允许作废: " + status);
         }
@@ -215,7 +215,7 @@ public class BillInvoice extends BaseTenantEntity {
      * 标记为已退款
      */
     public void markAsRefunded() {
-        this.status = BillStatus.REFUNDED;
+        this.status = InvoiceStatus.REFUNDED;
         this.unpaidAmount = BigDecimal.ZERO;
     }
 
@@ -223,8 +223,8 @@ public class BillInvoice extends BaseTenantEntity {
      * 发布账单（从草稿状态到待付状态）
      */
     public void publish() {
-        if (BillStatus.DRAFT == status) {
-            this.status = BillStatus.PENDING;
+        if (InvoiceStatus.DRAFT == status) {
+            this.status = InvoiceStatus.PENDING;
             this.unpaidAmount = this.totalAmount;
         } else {
             throw new IllegalStateException("只有草稿状态的账单可以发布: " + status);
@@ -243,6 +243,26 @@ public class BillInvoice extends BaseTenantEntity {
         }
         return paidAmount.divide(totalAmount, 4, BigDecimal.ROUND_HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
+    }
+
+    /**
+     * 更新支付状态
+     * 根据已支付金额和未支付金额更新账单状态
+     */
+    public void updatePaymentStatus(BigDecimal paidAmount, BigDecimal unpaidAmount) {
+        this.paidAmount = paidAmount != null ? paidAmount : BigDecimal.ZERO;
+        this.unpaidAmount = unpaidAmount != null ? unpaidAmount : BigDecimal.ZERO;
+        
+        // 根据支付情况更新状态
+        if (this.unpaidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            this.status = InvoiceStatus.PAID;
+            this.paidTime = LocalDateTime.now();
+        } else if (this.paidAmount.compareTo(BigDecimal.ZERO) > 0) {
+            // 部分支付，但保持PENDING或OVERDUE状态
+            if (this.status != InvoiceStatus.OVERDUE) {
+                this.status = InvoiceStatus.PENDING;
+            }
+        }
     }
 
     /**

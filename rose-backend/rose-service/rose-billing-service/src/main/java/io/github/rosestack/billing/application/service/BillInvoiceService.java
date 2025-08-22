@@ -1,6 +1,6 @@
 package io.github.rosestack.billing.application.service;
 
-import io.github.rosestack.billing.domain.enums.BillStatus;
+import io.github.rosestack.billing.domain.enums.InvoiceStatus;
 import io.github.rosestack.billing.domain.invoice.BillInvoice;
 import io.github.rosestack.billing.domain.invoice.BillInvoiceMapper;
 import io.github.rosestack.billing.domain.subscription.BillSubscription;
@@ -58,7 +58,7 @@ public class BillInvoiceService {
 
         // 设置默认值
         if (bill.getStatus() == null) {
-            bill.setStatus(BillStatus.DRAFT);
+            bill.setStatus(InvoiceStatus.DRAFT);
         }
         if (bill.getCurrency() == null) {
             bill.setCurrency("CNY");
@@ -113,7 +113,7 @@ public class BillInvoiceService {
         bill.setPeriodStart(periodStart);
         bill.setPeriodEnd(periodEnd);
         bill.setTotalAmount(totalAmount);
-        bill.setStatus(BillStatus.DRAFT);
+        bill.setStatus(InvoiceStatus.DRAFT);
 
         // 生成账单详情
         String billDetails = generateBillDetails(subscriptionId, periodStart, periodEnd);

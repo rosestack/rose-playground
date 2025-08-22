@@ -2,6 +2,7 @@ package io.github.rosestack.billing.domain.plan;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.github.rosestack.billing.domain.enums.PlanFeatureStatus;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public interface BillPlanFeatureMapper extends BaseMapper<BillPlanFeature> {
     default List<BillPlanFeature> findActiveByPlanId(Long planId) {
         LambdaQueryWrapper<BillPlanFeature> queryWrapper = new LambdaQueryWrapper<BillPlanFeature>()
                 .eq(BillPlanFeature::getPlanId, planId)
-                .eq(BillPlanFeature::getStatus, "ACTIVE")
+                .eq(BillPlanFeature::getStatus, PlanFeatureStatus.ACTIVE)
                 .orderByAsc(BillPlanFeature::getFeatureId);
         return selectList(queryWrapper);
     }
@@ -45,7 +46,7 @@ public interface BillPlanFeatureMapper extends BaseMapper<BillPlanFeature> {
     default List<BillPlanFeature> findByFeatureId(Long featureId) {
         LambdaQueryWrapper<BillPlanFeature> queryWrapper = new LambdaQueryWrapper<BillPlanFeature>()
                 .eq(BillPlanFeature::getFeatureId, featureId)
-                .eq(BillPlanFeature::getStatus, "ACTIVE")
+                .eq(BillPlanFeature::getStatus, PlanFeatureStatus.ACTIVE)
                 .orderByAsc(BillPlanFeature::getPlanId);
         return selectList(queryWrapper);
     }
@@ -79,7 +80,7 @@ public interface BillPlanFeatureMapper extends BaseMapper<BillPlanFeature> {
         LambdaQueryWrapper<BillPlanFeature> queryWrapper = new LambdaQueryWrapper<BillPlanFeature>()
                 .eq(BillPlanFeature::getPlanId, planId)
                 .eq(BillPlanFeature::getFeatureValue, featureValue)
-                .eq(BillPlanFeature::getStatus, "ACTIVE");
+                .eq(BillPlanFeature::getStatus, PlanFeatureStatus.ACTIVE);
         return selectList(queryWrapper);
     }
 
@@ -91,7 +92,7 @@ public interface BillPlanFeatureMapper extends BaseMapper<BillPlanFeature> {
         LambdaQueryWrapper<BillPlanFeature> queryWrapper = new LambdaQueryWrapper<BillPlanFeature>()
                 .eq(BillPlanFeature::getPlanId, planId)
                 .eq(BillPlanFeature::getFeatureValue, "enabled")
-                .eq(BillPlanFeature::getStatus, "ACTIVE");
+                .eq(BillPlanFeature::getStatus, PlanFeatureStatus.ACTIVE);
         return selectList(queryWrapper);
     }
 
@@ -118,7 +119,7 @@ public interface BillPlanFeatureMapper extends BaseMapper<BillPlanFeature> {
      */
     default int deactivateByPlanId(Long planId) {
         BillPlanFeature updateEntity = new BillPlanFeature();
-        updateEntity.setStatus("INACTIVE");
+        updateEntity.setStatus(PlanFeatureStatus.INACTIVE);
         
         LambdaQueryWrapper<BillPlanFeature> queryWrapper = new LambdaQueryWrapper<BillPlanFeature>()
                 .eq(BillPlanFeature::getPlanId, planId);
@@ -130,7 +131,7 @@ public interface BillPlanFeatureMapper extends BaseMapper<BillPlanFeature> {
      */
     default int activateByPlanId(Long planId) {
         BillPlanFeature updateEntity = new BillPlanFeature();
-        updateEntity.setStatus("ACTIVE");
+        updateEntity.setStatus(PlanFeatureStatus.ACTIVE);
         
         LambdaQueryWrapper<BillPlanFeature> queryWrapper = new LambdaQueryWrapper<BillPlanFeature>()
                 .eq(BillPlanFeature::getPlanId, planId);

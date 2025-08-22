@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.domain.enums.BillingCycle;
 import io.github.rosestack.billing.domain.enums.PriceType;
 import io.github.rosestack.billing.domain.enums.TargetType;
-import io.github.rosestack.core.model.HasStatus;
 import io.github.rosestack.mybatis.audit.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -58,7 +57,7 @@ public class BillPrice extends BaseEntity {
      * 当type为PLAN或FEATURE时，此字段为NULL（适用于所有租户）
      * 当type为TENANT_PLAN或TENANT_FEATURE时，此字段有具体值（特定租户）
      */
-    private Long tenantId;
+    private String tenantId;
 
     /**
      * 价格

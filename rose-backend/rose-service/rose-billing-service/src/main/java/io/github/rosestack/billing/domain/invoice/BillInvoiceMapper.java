@@ -2,7 +2,7 @@ package io.github.rosestack.billing.domain.invoice;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.github.rosestack.billing.domain.enums.BillStatus;
+import io.github.rosestack.billing.domain.enums.InvoiceStatus;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.math.BigDecimal;
@@ -44,7 +44,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
     /**
      * 根据状态查找账单
      */
-    default List<BillInvoice> findByStatus(BillStatus status) {
+    default List<BillInvoice> findByStatus(InvoiceStatus status) {
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
                 .eq(BillInvoice::getStatus, status)
                 .orderByDesc(BillInvoice::getCreatedTime);
@@ -56,7 +56,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
      */
     default List<BillInvoice> findPendingPaymentBills() {
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
-                .in(BillInvoice::getStatus, BillStatus.PENDING, BillStatus.OVERDUE)
+                .in(BillInvoice::getStatus, InvoiceStatus.PENDING, InvoiceStatus.OVERDUE)
                 .orderByAsc(BillInvoice::getDueDate);
         return selectList(queryWrapper);
     }
@@ -68,10 +68,10 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
         LocalDate today = LocalDate.now();
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
                 .and(wrapper -> wrapper
-                        .eq(BillInvoice::getStatus, BillStatus.OVERDUE)
+                        .eq(BillInvoice::getStatus, InvoiceStatus.OVERDUE)
                         .or()
                         .and(subWrapper -> subWrapper
-                                .eq(BillInvoice::getStatus, BillStatus.PENDING)
+                                .eq(BillInvoice::getStatus, InvoiceStatus.PENDING)
                                 .lt(BillInvoice::getDueDate, today)
                         )
                 )
@@ -85,7 +85,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
     default List<BillInvoice> findBillsDueSoon(int days) {
         LocalDate dueDate = LocalDate.now().plusDays(days);
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
-                .eq(BillInvoice::getStatus, BillStatus.PENDING)
+                .eq(BillInvoice::getStatus, InvoiceStatus.PENDING)
                 .le(BillInvoice::getDueDate, dueDate)
                 .orderByAsc(BillInvoice::getDueDate);
         return selectList(queryWrapper);
@@ -96,7 +96,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
      */
     default List<BillInvoice> findUpcomingDueInvoices(LocalDate dueDate) {
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
-                .eq(BillInvoice::getStatus, BillStatus.PENDING)
+                .eq(BillInvoice::getStatus, InvoiceStatus.PENDING)
                 .eq(BillInvoice::getDueDate, dueDate)
                 .orderByAsc(BillInvoice::getCreatedTime);
         return selectList(queryWrapper);
@@ -152,7 +152,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
     default List<BillInvoice> findPendingPaymentBillsBySubscription(Long subscriptionId) {
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
                 .eq(BillInvoice::getSubscriptionId, subscriptionId)
-                .in(BillInvoice::getStatus, BillStatus.PENDING, BillStatus.OVERDUE)
+                .in(BillInvoice::getStatus, InvoiceStatus.PENDING, InvoiceStatus.OVERDUE)
                 .orderByAsc(BillInvoice::getDueDate);
         return selectList(queryWrapper);
     }
@@ -180,7 +180,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
     /**
      * 统计指定状态的账单数量
      */
-    default long countByStatus(BillStatus status) {
+    default long countByStatus(InvoiceStatus status) {
         LambdaQueryWrapper<BillInvoice> queryWrapper = new LambdaQueryWrapper<BillInvoice>()
                 .eq(BillInvoice::getStatus, status);
         return selectCount(queryWrapper);
@@ -189,7 +189,7 @@ public interface BillInvoiceMapper extends BaseMapper<BillInvoice> {
     /**
      * 计算指定状态账单的总金额
      */
-    default BigDecimal sumAmountByStatus(BillStatus status) {
+    default BigDecimal sumAmountByStatus(InvoiceStatus status) {
         List<BillInvoice> bills = findByStatus(status);
         return bills.stream()
                 .map(bill -> bill.getTotalAmount() != null ? bill.getTotalAmount() : BigDecimal.ZERO)

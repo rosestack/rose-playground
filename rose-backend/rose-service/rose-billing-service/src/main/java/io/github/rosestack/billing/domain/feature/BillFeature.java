@@ -3,10 +3,10 @@ package io.github.rosestack.billing.domain.feature;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.github.rosestack.billing.domain.enums.FeatureStatus;
 import io.github.rosestack.billing.domain.enums.FeatureType;
 import io.github.rosestack.billing.domain.enums.ResetPeriod;
 import io.github.rosestack.billing.domain.enums.ValueScope;
-import io.github.rosestack.core.model.HasStatus;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,7 +22,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("bill_feature")
-public class BillFeature extends BaseTenantEntity implements HasStatus<String> {
+public class BillFeature extends BaseTenantEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -79,13 +79,13 @@ public class BillFeature extends BaseTenantEntity implements HasStatus<String> {
      * ACTIVE: 激活
      * INACTIVE: 禁用
      */
-    private String status;
+    private FeatureStatus status;
 
     /**
      * 检查功能是否激活
      */
     public boolean isActive() {
-        return "ACTIVE".equals(status);
+        return status != null && status.isActive();
     }
 
     /**
@@ -131,31 +131,31 @@ public class BillFeature extends BaseTenantEntity implements HasStatus<String> {
     }
 
     /**
-     * 检查是否为系统级功能（租户ID为0）
+     * 检查是否为系统级功能（租户ID为"0"）
      */
     public boolean isSystemFeature() {
-        return getTenantId() != null && getTenantId().equals(0L);
+        return getTenantId() != null && getTenantId().equals("0");
     }
 
     /**
      * 检查是否为租户专属功能
      */
     public boolean isTenantSpecific() {
-        return getTenantId() != null && !getTenantId().equals(0L);
+        return getTenantId() != null && !getTenantId().equals("0");
     }
 
     /**
      * 激活功能
      */
     public void activate() {
-        this.status = "ACTIVE";
+        this.status = FeatureStatus.ACTIVE;
     }
 
     /**
      * 禁用功能
      */
     public void deactivate() {
-        this.status = "INACTIVE";
+        this.status = FeatureStatus.INACTIVE;
     }
 
     /**
@@ -163,7 +163,7 @@ public class BillFeature extends BaseTenantEntity implements HasStatus<String> {
      * 格式：tenant_id:code
      */
     public String getFullCode() {
-        return String.format("%d:%s", getTenantId(), code);
+        return String.format("%s:%s", getTenantId(), code);
     }
 
     /**
@@ -194,11 +194,27 @@ public class BillFeature extends BaseTenantEntity implements HasStatus<String> {
         }
 
         // 配额限制型和使用量计费型应该有计量单位
-        if ((type == FeatureType.QUOTA || type == FeatureType.USAGE) 
+        if ((type == FeatureType.QUOTA || type == FeatureType.USAGE)
             && (unit == null || unit.trim().isEmpty())) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * 检查功能是否可以被删除
+     * 仅非系统级功能可以被删除
+     */
+    public boolean canBeDeleted() {
+        return !isSystemFeature();
+    }
+
+    /**
+     * 检查功能是否有效
+     * 等同于isValidConfiguration方法
+     */
+    public boolean isValidFeature() {
+        return isValidConfiguration();
     }
 }

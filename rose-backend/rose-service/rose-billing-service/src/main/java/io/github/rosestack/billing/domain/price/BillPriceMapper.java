@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.github.rosestack.billing.domain.enums.BillingCycle;
 import io.github.rosestack.billing.domain.enums.PriceType;
+import io.github.rosestack.billing.domain.enums.TargetType;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.time.LocalDateTime;
@@ -30,7 +31,7 @@ public interface BillPriceMapper extends BaseMapper<BillPrice> {
      * @param billingCycle 计费周期
      * @return 定价规则
      */
-    default BillPrice findEffectivePrice(Long tenantId, String targetType, Long targetId, BillingCycle billingCycle) {
+    default BillPrice findEffectivePrice(String tenantId, String targetType, Long targetId, BillingCycle billingCycle) {
         LocalDateTime now = LocalDateTime.now();
         
         // 首先查找租户专属定价
@@ -46,7 +47,7 @@ public interface BillPriceMapper extends BaseMapper<BillPrice> {
     /**
      * 查找租户专属定价
      */
-    default BillPrice findTenantSpecificPrice(Long tenantId, String targetType, Long targetId, BillingCycle billingCycle, LocalDateTime effectiveTime) {
+    default BillPrice findTenantSpecificPrice(String tenantId, String targetType, Long targetId, BillingCycle billingCycle, LocalDateTime effectiveTime) {
         PriceType priceType = "PLAN".equals(targetType) ? PriceType.TENANT_PLAN : PriceType.TENANT_FEATURE;
         
         LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
@@ -99,7 +100,7 @@ public interface BillPriceMapper extends BaseMapper<BillPrice> {
     /**
      * 根据租户查找专属定价规则
      */
-    default List<BillPrice> findTenantSpecificPrices(Long tenantId) {
+    default List<BillPrice> findTenantSpecificPrices(String tenantId) {
         LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
                 .eq(BillPrice::getTenantId, tenantId)
                 .in(BillPrice::getType, PriceType.TENANT_PLAN, PriceType.TENANT_FEATURE)
@@ -219,5 +220,137 @@ public interface BillPriceMapper extends BaseMapper<BillPrice> {
                 .eq(BillPrice::getTargetType, targetType)
                 .eq(BillPrice::getTargetId, targetId);
         return delete(queryWrapper);
+    }
+
+    // ========== BillPriceService需要的方法 ==========
+
+    /**
+     * 查找最佳定价（优先租户专属，其次标准定价）
+     */
+    default BillPrice findBestPrice(String tenantId, TargetType targetType, Long targetId, BillingCycle cycle) {
+        LocalDateTime now = LocalDateTime.now();
+        
+        // 首先查找租户专属定价
+        BillPrice tenantPrice = findTenantSpecificPrice(tenantId, targetType, targetId, cycle);
+        if (tenantPrice != null) {
+            return tenantPrice;
+        }
+        
+        // 如果没有租户专属定价，查找标准定价
+        return findEffectiveStandardPrice(targetType, targetId, cycle);
+    }
+
+    /**
+     * 查找租户专属定价（简化版本，不需要时间参数）
+     */
+    default BillPrice findTenantSpecificPrice(String tenantId, TargetType targetType, Long targetId, BillingCycle cycle) {
+        LocalDateTime now = LocalDateTime.now();
+        PriceType priceType = targetType == TargetType.PLAN ? PriceType.TENANT_PLAN : PriceType.TENANT_FEATURE;
+        
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getType, priceType)
+                .eq(BillPrice::getTargetType, targetType)
+                .eq(BillPrice::getTargetId, targetId)
+                .eq(BillPrice::getTenantId, tenantId)
+                .eq(BillPrice::getBillingCycle, cycle)
+                .eq(BillPrice::getStatus, "ACTIVE")
+                .le(BillPrice::getEffectiveTime, now)
+                .and(wrapper -> wrapper.isNull(BillPrice::getExpireTime).or().gt(BillPrice::getExpireTime, now))
+                .orderByDesc(BillPrice::getEffectiveTime)
+                .last("LIMIT 1");
+        
+        return selectOne(queryWrapper);
+    }
+
+    /**
+     * 查找有效的标准定价
+     */
+    default BillPrice findEffectiveStandardPrice(TargetType targetType, Long targetId, BillingCycle cycle) {
+        LocalDateTime now = LocalDateTime.now();
+        PriceType priceType = targetType == TargetType.PLAN ? PriceType.PLAN : PriceType.FEATURE;
+        
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getType, priceType)
+                .eq(BillPrice::getTargetType, targetType)
+                .eq(BillPrice::getTargetId, targetId)
+                .isNull(BillPrice::getTenantId)
+                .eq(BillPrice::getBillingCycle, cycle)
+                .eq(BillPrice::getStatus, "ACTIVE")
+                .le(BillPrice::getEffectiveTime, now)
+                .and(wrapper -> wrapper.isNull(BillPrice::getExpireTime).or().gt(BillPrice::getExpireTime, now))
+                .orderByDesc(BillPrice::getEffectiveTime)
+                .last("LIMIT 1");
+        
+        return selectOne(queryWrapper);
+    }
+
+    /**
+     * 检查是否存在定价
+     */
+    default boolean existsPrice(TargetType targetType, Long targetId, BillingCycle cycle, String tenantId) {
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getTargetType, targetType)
+                .eq(BillPrice::getTargetId, targetId)
+                .eq(BillPrice::getBillingCycle, cycle)
+                .eq(BillPrice::getStatus, "ACTIVE");
+
+        if (tenantId != null) {
+            queryWrapper.eq(BillPrice::getTenantId, tenantId);
+        } else {
+            queryWrapper.isNull(BillPrice::getTenantId);
+        }
+
+        return selectCount(queryWrapper) > 0;
+    }
+
+    /**
+     * 根据租户查找定价规则
+     */
+    default List<BillPrice> findPricesByTenant(String tenantId) {
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getTenantId, tenantId)
+                .eq(BillPrice::getStatus, "ACTIVE")
+                .orderByDesc(BillPrice::getEffectiveTime);
+        return selectList(queryWrapper);
+    }
+
+    /**
+     * 查找所有有效的套餐定价
+     */
+    default List<BillPrice> findEffectivePlanPrices() {
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getTargetType, TargetType.PLAN)
+                .in(BillPrice::getType, PriceType.PLAN, PriceType.TENANT_PLAN)
+                .eq(BillPrice::getStatus, "ACTIVE")
+                .orderByDesc(BillPrice::getEffectiveTime);
+        return selectList(queryWrapper);
+    }
+
+    /**
+     * 查找所有有效的功能定价
+     */
+    default List<BillPrice> findEffectiveFeaturePrices() {
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getTargetType, TargetType.FEATURE)
+                .in(BillPrice::getType, PriceType.FEATURE, PriceType.TENANT_FEATURE)
+                .eq(BillPrice::getStatus, "ACTIVE")
+                .orderByDesc(BillPrice::getEffectiveTime);
+        return selectList(queryWrapper);
+    }
+
+    /**
+     * 批量过期目标的所有定价规则
+     */
+    default void expirePrices(TargetType targetType, Long targetId) {
+        BillPrice updateEntity = new BillPrice();
+        updateEntity.setStatus("EXPIRED");
+        updateEntity.setExpireTime(LocalDateTime.now());
+
+        LambdaQueryWrapper<BillPrice> queryWrapper = new LambdaQueryWrapper<BillPrice>()
+                .eq(BillPrice::getTargetType, targetType)
+                .eq(BillPrice::getTargetId, targetId)
+                .eq(BillPrice::getStatus, "ACTIVE");
+
+        update(updateEntity, queryWrapper);
     }
 }

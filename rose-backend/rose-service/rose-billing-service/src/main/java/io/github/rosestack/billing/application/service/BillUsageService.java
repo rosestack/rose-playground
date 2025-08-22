@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 public class BillUsageService {
 
     private final BillUsageMapper usageMapper;
+    private final BillingEngineService billingEngineService;
     private final BillSubscriptionMapper subscriptionMapper;
     private final BillFeatureMapper featureMapper;
 
@@ -173,35 +174,39 @@ public class BillUsageService {
      * 检查配额是否充足
      */
     public boolean checkQuotaAvailable(Long subscriptionId, Long featureId, BigDecimal requestedAmount) {
-        // TODO: 实现配额检查逻辑
-        // 1. 获取套餐中该功能的配额限制
-        // 2. 计算当前周期已使用量
-        // 3. 判断剩余配额是否足够
-
         log.debug("Checking quota for subscription={}, feature={}, requested={}",
                 subscriptionId, featureId, requestedAmount);
 
-        // 临时实现：总是返回true
-        return true;
+        try {
+            billingEngineService.checkQuota(subscriptionId, featureId, requestedAmount);
+            return true;
+        } catch (Exception e) {
+            log.debug("Quota check failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**
      * 获取配额使用情况
      */
     public QuotaUsage getQuotaUsage(Long subscriptionId, Long featureId) {
-        // TODO: 实现配额使用情况查询
-        // 1. 获取套餐中该功能的配额限制
-        // 2. 计算当前周期已使用量
-        // 3. 计算剩余配额和使用率
+        log.debug("Getting quota usage for subscription={}, feature={}", subscriptionId, featureId);
 
-        LocalDate currentPeriod = LocalDate.now().withDayOfMonth(1);
-        BigDecimal usedAmount = getFeatureUsageInPeriod(subscriptionId, featureId, currentPeriod);
+        try {
+            BillingEngineService.QuotaUsageInfo usageInfo = billingEngineService.getQuotaUsage(subscriptionId, featureId);
+            if (usageInfo == null) {
+                return new QuotaUsage(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+            }
 
-        return new QuotaUsage(
-                BigDecimal.valueOf(1000), // 临时配额限制
-                usedAmount,
-                BigDecimal.valueOf(1000).subtract(usedAmount)
-        );
+            return new QuotaUsage(
+                usageInfo.getTotalQuota(),
+                usageInfo.getCurrentUsage(),
+                usageInfo.getTotalQuota().subtract(usageInfo.getCurrentUsage())
+            );
+        } catch (Exception e) {
+            log.error("Failed to get quota usage", e);
+            return new QuotaUsage(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
     }
 
     /**

@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.domain.enums.BillingMode;
 import io.github.rosestack.billing.domain.enums.PlanStatus;
 import io.github.rosestack.billing.domain.enums.PlanType;
-import io.github.rosestack.core.model.HasStatus;
 import io.github.rosestack.mybatis.audit.BaseTenantEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -108,7 +107,7 @@ public class BillPlan extends BaseTenantEntity {
      * 检查套餐是否可用
      */
     public boolean isAvailable() {
-        if (!PlanStatus.ACTIVE.name().equals(status)) {
+        if (status != PlanStatus.ACTIVE) {
             return false;
         }
 
@@ -175,7 +174,7 @@ public class BillPlan extends BaseTenantEntity {
      * 设置套餐状态（枚举版本）
      */
     public void setStatus(PlanStatus status) {
-        this.status = status ;
+        this.status = status;
     }
 
 

@@ -3,7 +3,7 @@ package io.github.rosestack.billing.domain.plan;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.github.rosestack.core.model.HasStatus;
+import io.github.rosestack.billing.domain.enums.PlanFeatureStatus;
 import io.github.rosestack.mybatis.audit.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -61,27 +61,27 @@ public class BillPlanFeature extends BaseEntity {
      * ACTIVE: 激活
      * INACTIVE: 禁用
      */
-    private String status;
+    private PlanFeatureStatus status;
 
     /**
      * 检查关联是否激活
      */
     public boolean isActive() {
-        return "ACTIVE".equals(status);
+        return status != null && status.isActive();
     }
 
     /**
      * 激活关联
      */
     public void activate() {
-        this.status = "ACTIVE";
+        this.status = PlanFeatureStatus.ACTIVE;
     }
 
     /**
      * 禁用关联
      */
     public void deactivate() {
-        this.status = "INACTIVE";
+        this.status = PlanFeatureStatus.INACTIVE;
     }
 
     /**
