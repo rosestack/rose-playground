@@ -1,6 +1,6 @@
 package io.github.rosestack.billing.domain.enums;
 
-import io.github.rosestack.core.model.BaseEnum;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

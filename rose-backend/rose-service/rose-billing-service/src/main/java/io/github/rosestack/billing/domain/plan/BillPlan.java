@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.github.rosestack.billing.domain.enums.BillingMode;
 import io.github.rosestack.billing.domain.enums.PlanStatus;
 import io.github.rosestack.billing.domain.enums.PlanType;
-import io.github.rosestack.mybatis.audit.BaseTenantEntity;
+import io.github.rosestack.mybatis.audit.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("bill_plan")
-public class BillPlan extends BaseTenantEntity {
+public class BillPlan extends BaseEntity {
 
     @TableId(type = IdType.AUTO)
     private Long id;
