@@ -247,7 +247,6 @@ public class BillPlanService {
 		newPlan.setTrialEnabled(latestPlan.getTrialEnabled());
 		newPlan.setTrialDays(latestPlan.getTrialDays());
 		newPlan.setTrialLimitPerUser(latestPlan.getTrialLimitPerUser());
-		newPlan.setTenantId(latestPlan.getTenantId());
 
 		// 新版本默认为草稿状态
 		newPlan.setStatus(PlanStatus.DRAFT);

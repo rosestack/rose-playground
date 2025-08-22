@@ -12,6 +12,8 @@ import io.github.rosestack.billing.domain.usage.BillUsage;
 import io.github.rosestack.billing.domain.usage.BillUsageMapper;
 import io.github.rosestack.billing.domain.exception.QuotaException;
 import io.github.rosestack.billing.domain.enums.FeatureType;
+import io.github.rosestack.core.exception.BusinessException;
+import io.micrometer.core.instrument.Timer;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +42,6 @@ import java.util.Map;
  * @since 1.0.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BillingEngineService {
 
@@ -50,6 +51,23 @@ public class BillingEngineService {
 	private final BillPlanFeatureMapper planFeatureMapper;
 	private final BillUsageMapper usageMapper;
 	private final ObjectMapper objectMapper;
+	private final Timer billingCalculationTimer;
+
+	public BillingEngineService(BillSubscriptionMapper subscriptionMapper,
+							  BillPlanMapper planMapper,
+							  BillFeatureMapper featureMapper,
+							  BillPlanFeatureMapper planFeatureMapper,
+							  BillUsageMapper usageMapper,
+							  ObjectMapper objectMapper,
+							  Timer billingCalculationTimer) {
+		this.subscriptionMapper = subscriptionMapper;
+		this.planMapper = planMapper;
+		this.featureMapper = featureMapper;
+		this.planFeatureMapper = planFeatureMapper;
+		this.usageMapper = usageMapper;
+		this.objectMapper = objectMapper;
+		this.billingCalculationTimer = billingCalculationTimer;
+	}
 
 	/**
 	 * 预估计费
@@ -67,60 +85,62 @@ public class BillingEngineService {
 	 * 计算订阅在指定周期的总费用
 	 */
 	public BillingResult calculateBilling(Long subscriptionId, LocalDate periodStart, LocalDate periodEnd) {
-		log.info("Calculating billing for subscription: {}, period: {} to {}",
-			subscriptionId, periodStart, periodEnd);
+		return billingCalculationTimer.record(() -> {
+			log.info("Calculating billing for subscription: {}, period: {} to {}",
+				subscriptionId, periodStart, periodEnd);
 
-		// 获取订阅信息
-		BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
-		if (subscription == null) {
-			throw new IllegalArgumentException("订阅不存在: " + subscriptionId);
-		}
+			// 获取订阅信息
+			BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
+			if (subscription == null) {
+				throw new IllegalArgumentException("订阅不存在: " + subscriptionId);
+			}
 
-		// 获取套餐信息
-		BillPlan plan = planMapper.selectById(subscription.getPlanId());
-		if (plan == null) {
-			throw new IllegalArgumentException("套餐不存在: " + subscription.getPlanId());
-		}
+			// 获取套餐信息
+			BillPlan plan = planMapper.selectById(subscription.getPlanId());
+			if (plan == null) {
+				throw new IllegalArgumentException("套餐不存在: " + subscription.getPlanId());
+			}
 
-		// 获取套餐的所有功能配置
-		List<BillPlanFeature> planFeatures = planFeatureMapper.findByPlanId(subscription.getPlanId());
+			// 获取套餐的所有功能配置
+			List<BillPlanFeature> planFeatures = planFeatureMapper.findByPlanId(subscription.getPlanId());
 
-		BillingResult result = new BillingResult();
-		result.setSubscriptionId(subscriptionId);
-		result.setPlanId(subscription.getPlanId());
-		result.setPeriodStart(periodStart);
-		result.setPeriodEnd(periodEnd);
-		result.setQuantity(subscription.getQuantity());
+			BillingResult result = new BillingResult();
+			result.setSubscriptionId(subscriptionId);
+			result.setPlanId(subscription.getPlanId());
+			result.setPeriodStart(periodStart);
+			result.setPeriodEnd(periodEnd);
+			result.setQuantity(subscription.getQuantity());
 
-		BigDecimal totalAmount = BigDecimal.ZERO;
-		Map<Long, FeatureBilling> featureBillings = new HashMap<>();
+			BigDecimal totalAmount = BigDecimal.ZERO;
+			Map<Long, FeatureBilling> featureBillings = new HashMap<>();
 
-		// 计算每个功能的费用
-		for (BillPlanFeature planFeature : planFeatures) {
-			FeatureBilling featureBilling = calculateFeatureBilling(
-				subscriptionId, planFeature, periodStart, periodEnd, subscription.getQuantity());
+			// 计算每个功能的费用
+			for (BillPlanFeature planFeature : planFeatures) {
+				FeatureBilling featureBilling = calculateFeatureBilling(
+					subscriptionId, planFeature, periodStart, periodEnd, subscription.getQuantity());
 
-			featureBillings.put(planFeature.getFeatureId(), featureBilling);
-			totalAmount = totalAmount.add(featureBilling.getAmount());
-		}
+				featureBillings.put(planFeature.getFeatureId(), featureBilling);
+				totalAmount = totalAmount.add(featureBilling.getAmount());
+			}
 
-		result.setFeatureBillings(featureBillings);
-		result.setSubtotal(totalAmount);
+			result.setFeatureBillings(featureBillings);
+			result.setSubtotal(totalAmount);
 
-		// 应用折扣
-		BigDecimal discount = calculateDiscount(subscription, plan, totalAmount);
-		result.setDiscount(discount);
+			// 应用折扣
+			BigDecimal discount = calculateDiscount(subscription, plan, totalAmount);
+			result.setDiscount(discount);
 
-		// 计算税费
-		BigDecimal tax = calculateTax(totalAmount.subtract(discount));
-		result.setTax(tax);
+			// 计算税费
+			BigDecimal tax = calculateTax(totalAmount.subtract(discount));
+			result.setTax(tax);
 
-		// 计算最终金额
-		BigDecimal finalAmount = totalAmount.subtract(discount).add(tax);
-		result.setTotalAmount(finalAmount);
+			// 计算最终金额
+			BigDecimal finalAmount = totalAmount.subtract(discount).add(tax);
+			result.setTotalAmount(finalAmount);
 
-		log.info("Billing calculated: subscription={}, amount={}", subscriptionId, finalAmount);
-		return result;
+			log.info("Billing calculated: subscription={}, amount={}", subscriptionId, finalAmount);
+			return result;
+		});
 	}
 
 	/**
@@ -439,7 +459,7 @@ public class BillingEngineService {
 		BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
 		if (subscription == null) {
 			log.warn("Subscription not found: {}", subscriptionId);
-			throw new QuotaException.SubscriptionNotFoundException("订阅不存在: " + subscriptionId);
+			throw new BusinessException("subscription.not.found");
 		}
 
 		// 获取功能配置
@@ -448,14 +468,14 @@ public class BillingEngineService {
 
 		if (planFeature == null) {
 			log.warn("Feature not configured for subscription: {}, feature: {}", subscriptionId, featureId);
-			throw new QuotaException.FeatureNotConfiguredException("功能未配置: " + featureId);
+			throw new BusinessException("feature.not.configured");
 		}
 		FeatureConfig config = parseFeatureConfig(planFeature.getFeatureValue());
 
 		// 检查功能是否启用
 		if (!config.isEnabled()) {
 			log.warn("Feature is disabled for subscription: {}, feature: {}", subscriptionId, featureId);
-			throw new QuotaException.FeatureDisabledException("功能已禁用: " + featureId);
+			throw new BusinessException("feature.disabled");
 		}
 
 		// 获取当前用量
@@ -471,8 +491,8 @@ public class BillingEngineService {
 		if (availableQuota.compareTo(requestedAmount) < 0) {
 			log.warn("Insufficient quota - subscription: {}, feature: {}, available: {}, requested: {}",
 				subscriptionId, featureId, availableQuota, requestedAmount);
-			throw new QuotaException.InsufficientQuotaException(
-				"配额不足：请求 " + requestedAmount + "，可用 " + availableQuota);
+			throw new BusinessException("quota.insufficient");
+
 		}
 
 		log.debug("Quota check passed - subscription: {}, feature: {}, available: {}, total: {}",
@@ -595,6 +615,79 @@ public class BillingEngineService {
 		}
 	}
 
+    /**
+     * 获取订阅的计费周期信息
+     */
+    public BillingPeriodInfo getBillingPeriodInfo(Long subscriptionId) {
+        BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
+        if (subscription == null) {
+            throw new IllegalArgumentException("订阅不存在: " + subscriptionId);
+        }
+
+        BillingPeriodInfo info = new BillingPeriodInfo();
+        info.setSubscriptionId(subscriptionId);
+        info.setCurrentPeriodStart(subscription.getCurrentPeriodStartTime());
+        info.setCurrentPeriodEnd(subscription.getCurrentPeriodEndTime());
+        info.setNextBillingTime(subscription.getNextBillingTime());
+        info.setAutoRenew(subscription.getAutoRenew());
+        
+        return info;
+    }
+
+    /**
+     * 计算订阅席位变更的费用
+     */
+    public SeatChangeCalculation calculateSeatChangeCost(Long subscriptionId, int newQuantity) {
+        BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
+        if (subscription == null) {
+            throw new IllegalArgumentException("订阅不存在: " + subscriptionId);
+        }
+
+        // 获取当前计费周期剩余天数
+        LocalDate now = LocalDate.now();
+        LocalDate periodEnd = subscription.getCurrentPeriodEndTime().toLocalDate();
+        long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(now, periodEnd);
+        
+        // 获取计费周期总天数
+        LocalDate periodStart = subscription.getCurrentPeriodStartTime().toLocalDate();
+        long totalDays = java.time.temporal.ChronoUnit.DAYS.between(periodStart, periodEnd);
+        
+        if (totalDays <= 0) {
+            throw new IllegalArgumentException("计费周期无效");
+        }
+        
+        // 按比例计算费用
+        BigDecimal prorationRate = BigDecimal.valueOf(remainingDays).divide(BigDecimal.valueOf(totalDays), 6, BigDecimal.ROUND_HALF_UP);
+        
+        // 获取套餐价格
+        try {
+            JsonNode pricingSnapshot = objectMapper.readTree(subscription.getPricingSnapshot());
+            BigDecimal basePrice = getJsonDecimal(pricingSnapshot.path("plan_pricing"), "price", BigDecimal.ZERO);
+            
+            // 计算席位变更费用
+            int currentQuantity = subscription.getQuantity();
+            int quantityDiff = newQuantity - currentQuantity;
+            
+            BigDecimal seatChangeCost = basePrice
+                .multiply(BigDecimal.valueOf(quantityDiff))
+                .multiply(prorationRate)
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+            
+            SeatChangeCalculation calculation = new SeatChangeCalculation();
+            calculation.setSubscriptionId(subscriptionId);
+            calculation.setCurrentQuantity(currentQuantity);
+            calculation.setNewQuantity(newQuantity);
+            calculation.setQuantityDiff(quantityDiff);
+            calculation.setProrationRate(prorationRate);
+            calculation.setSeatChangeCost(seatChangeCost);
+            
+            return calculation;
+        } catch (Exception e) {
+            log.error("Failed to calculate seat change cost for subscription: {}", subscriptionId, e);
+            throw new BusinessException("billing.calculation.failed", "席位变更费用计算失败");
+        }
+    }
+
 	/**
 	 * 计费结果
 	 */
@@ -673,6 +766,31 @@ public class BillingEngineService {
 		private String unit;
 		private LocalDate periodStart;
 		private boolean enabled;
+	}
+
+	/**
+	 * 计费周期信息
+	 */
+	@Data
+	public static class BillingPeriodInfo {
+		private Long subscriptionId;
+		private LocalDateTime currentPeriodStart;
+		private LocalDateTime currentPeriodEnd;
+		private LocalDateTime nextBillingTime;
+		private Boolean autoRenew;
+	}
+
+	/**
+	 * 席位变更费用计算结果
+	 */
+	@Data
+	public static class SeatChangeCalculation {
+		private Long subscriptionId;
+		private int currentQuantity;
+		private int newQuantity;
+		private int quantityDiff;
+		private BigDecimal prorationRate;
+		private BigDecimal seatChangeCost;
 	}
 
 }

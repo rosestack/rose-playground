@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 计费系统配置类
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.0.0
  */
 @Configuration
+@EnableScheduling
 public class BillingConfiguration {
 
 	/**
@@ -77,6 +79,11 @@ public class BillingConfiguration {
 		private DiscountConfig discount = new DiscountConfig();
 
 		/**
+		 * Outbox配置
+		 */
+		private OutboxConfig outbox = new OutboxConfig();
+
+		/**
 		 * 计费引擎配置
 		 */
 		@Data
@@ -98,6 +105,20 @@ public class BillingConfiguration {
 			private double quantity100DiscountRate = 0.10; // 100+ 席位折扣率
 			private double quantity200DiscountRate = 0.15; // 200+ 席位折扣率
 			private boolean enableVipDiscount = false; // 是否启用VIP折扣
+		}
+
+		/**
+		 * Outbox配置
+		 */
+		@Data
+		public static class OutboxConfig {
+			private boolean enabled = true; // 是否启用Outbox
+			private int retentionDays = 7; // 事件保留天数
+			private int maxRetryCount = 5; // 最大重试次数
+			private long processingDelay = 30000; // 处理延迟（毫秒）
+			private long retryDelay = 120000; // 重试延迟（毫秒）
+			private long statsInterval = 3600000; // 统计间隔（毫秒）
+			private String cleanupCron = "0 0 2 * * ?"; // 清理任务Cron表达式
 		}
 	}
 }

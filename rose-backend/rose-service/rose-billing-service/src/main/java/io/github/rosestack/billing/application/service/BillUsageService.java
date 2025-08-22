@@ -7,6 +7,7 @@ import io.github.rosestack.billing.domain.subscription.BillSubscriptionMapper;
 import io.github.rosestack.billing.domain.usage.BillUsage;
 import io.github.rosestack.billing.domain.usage.BillUsageMapper;
 import io.github.rosestack.core.exception.BusinessException;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,6 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BillUsageService {
 
@@ -37,6 +37,19 @@ public class BillUsageService {
     private final BillingEngineService billingEngineService;
     private final BillSubscriptionMapper subscriptionMapper;
     private final BillFeatureMapper featureMapper;
+    private final Timer quotaCheckTimer;
+
+    public BillUsageService(BillUsageMapper usageMapper,
+                          BillingEngineService billingEngineService,
+                          BillSubscriptionMapper subscriptionMapper,
+                          BillFeatureMapper featureMapper,
+                          Timer quotaCheckTimer) {
+        this.usageMapper = usageMapper;
+        this.billingEngineService = billingEngineService;
+        this.subscriptionMapper = subscriptionMapper;
+        this.featureMapper = featureMapper;
+        this.quotaCheckTimer = quotaCheckTimer;
+    }
 
     /**
      * 记录用量
@@ -46,34 +59,11 @@ public class BillUsageService {
         log.debug("Recording usage: subscription={}, feature={}, amount={}",
                 usage.getSubscriptionId(), usage.getFeatureId(), usage.getUsageAmount());
 
-        // 验证订阅是否存在且可提供服务
-        BillSubscription subscription = subscriptionMapper.selectById(usage.getSubscriptionId());
-        if (subscription == null) {
-            throw new BusinessException("订阅不存在: " + usage.getSubscriptionId());
-        }
-        if (!subscription.canProvideService()) {
-            throw new BusinessException("订阅状态不允许使用服务: " + subscription.getStatus());
-        }
-
-        // 验证功能是否存在且启用
-        BillFeature feature = featureMapper.selectById(usage.getFeatureId());
-        if (feature == null) {
-            throw new BusinessException("功能不存在: " + usage.getFeatureId());
-        }
-        if (!feature.isActive()) {
-            throw new BusinessException("功能未启用: " + feature.getName());
-        }
+        // 验证订阅和功能
+        validateSubscriptionAndFeature(usage);
 
         // 设置默认值
-        if (usage.getUsageTime() == null) {
-            usage.setUsageTime(LocalDateTime.now());
-        }
-        if (usage.getBillingPeriod() == null) {
-            usage.setBillingPeriodFromDate(usage.getUsageTime());
-        }
-        if (usage.getUnit() == null) {
-            usage.setUnit(feature.getUnit());
-        }
+        setDefaultValues(usage);
 
         // 保存用量记录
         usageMapper.insert(usage);
@@ -93,17 +83,59 @@ public class BillUsageService {
             return;
         }
 
-        // 验证所有用量记录
+        // 验证所有用量记录并保存
         for (BillUsage usage : usages) {
-            validateUsageRecord(usage);
-        }
+            // 验证订阅和功能
+            validateSubscriptionAndFeature(usage);
 
-        // 批量插入
-        for (BillUsage usage : usages) {
+            // 设置默认值
+            setDefaultValues(usage);
+
             usageMapper.insert(usage);
         }
 
         log.info("Batch usage recorded successfully: {} records", usages.size());
+    }
+
+    /**
+     * 验证订阅和功能的有效性
+     */
+    private void validateSubscriptionAndFeature(BillUsage usage) {
+        // 验证订阅是否存在且可提供服务
+        BillSubscription subscription = subscriptionMapper.selectById(usage.getSubscriptionId());
+        if (subscription == null) {
+            throw new BusinessException("subscription.not.found");
+        }
+        if (!subscription.canProvideService()) {
+            throw new BusinessException("subscription.service.unavailable");
+        }
+
+        // 验证功能是否存在且启用
+        BillFeature feature = featureMapper.selectById(usage.getFeatureId());
+        if (feature == null) {
+            throw new BusinessException("feature.not.found");
+        }
+        if (!feature.isActive()) {
+            throw new BusinessException("feature.not.active");
+        }
+    }
+
+    /**
+     * 设置用量记录的默认值
+     */
+    private void setDefaultValues(BillUsage usage) {
+        if (usage.getUsageTime() == null) {
+            usage.setUsageTime(LocalDateTime.now());
+        }
+        if (usage.getBillingPeriod() == null) {
+            usage.setBillingPeriodFromDate(usage.getUsageTime());
+        }
+        if (usage.getUnit() == null) {
+            BillFeature feature = featureMapper.selectById(usage.getFeatureId());
+            if (feature != null) {
+                usage.setUnit(feature.getUnit());
+            }
+        }
     }
 
     /**
@@ -174,39 +206,43 @@ public class BillUsageService {
      * 检查配额是否充足
      */
     public boolean checkQuotaAvailable(Long subscriptionId, Long featureId, BigDecimal requestedAmount) {
-        log.debug("Checking quota for subscription={}, feature={}, requested={}",
-                subscriptionId, featureId, requestedAmount);
+        return quotaCheckTimer.record(() -> {
+            log.debug("Checking quota for subscription={}, feature={}, requested={}",
+                    subscriptionId, featureId, requestedAmount);
 
-        try {
-            billingEngineService.checkQuota(subscriptionId, featureId, requestedAmount);
-            return true;
-        } catch (Exception e) {
-            log.debug("Quota check failed: {}", e.getMessage());
-            return false;
-        }
+            try {
+                billingEngineService.checkQuota(subscriptionId, featureId, requestedAmount);
+                return true;
+            } catch (Exception e) {
+                log.debug("Quota check failed: {}", e.getMessage());
+                return false;
+            }
+        });
     }
 
     /**
      * 获取配额使用情况
      */
     public QuotaUsage getQuotaUsage(Long subscriptionId, Long featureId) {
-        log.debug("Getting quota usage for subscription={}, feature={}", subscriptionId, featureId);
+        return quotaCheckTimer.record(() -> {
+            log.debug("Getting quota usage for subscription={}, feature={}", subscriptionId, featureId);
 
-        try {
-            BillingEngineService.QuotaUsageInfo usageInfo = billingEngineService.getQuotaUsage(subscriptionId, featureId);
-            if (usageInfo == null) {
+            try {
+                BillingEngineService.QuotaUsageInfo usageInfo = billingEngineService.getQuotaUsage(subscriptionId, featureId);
+                if (usageInfo == null) {
+                    return new QuotaUsage(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+                }
+
+                return new QuotaUsage(
+                        usageInfo.getTotalQuota(),
+                        usageInfo.getCurrentUsage(),
+                        usageInfo.getTotalQuota().subtract(usageInfo.getCurrentUsage())
+                );
+            } catch (Exception e) {
+                log.error("Failed to get quota usage", e);
                 return new QuotaUsage(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
             }
-
-            return new QuotaUsage(
-                usageInfo.getTotalQuota(),
-                usageInfo.getCurrentUsage(),
-                usageInfo.getTotalQuota().subtract(usageInfo.getCurrentUsage())
-            );
-        } catch (Exception e) {
-            log.error("Failed to get quota usage", e);
-            return new QuotaUsage(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
-        }
+        });
     }
 
     /**
@@ -253,21 +289,6 @@ public class BillUsageService {
                 ));
 
         return new UsageReport(subscriptionId, startDate, endDate, featureUsages, dailyUsages);
-    }
-
-    /**
-     * 验证用量记录
-     */
-    private void validateUsageRecord(BillUsage usage) {
-        if (usage.getSubscriptionId() == null) {
-            throw new BusinessException("订阅ID不能为空");
-        }
-        if (usage.getFeatureId() == null) {
-            throw new BusinessException("功能ID不能为空");
-        }
-        if (usage.getUsageAmount() == null || usage.getUsageAmount().compareTo(BigDecimal.ZERO) < 0) {
-            throw new BusinessException("用量必须为非负数");
-        }
     }
 
     /**

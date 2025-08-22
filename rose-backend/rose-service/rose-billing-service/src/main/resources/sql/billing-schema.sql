@@ -5,7 +5,6 @@
 -- 功能表
 CREATE TABLE IF NOT EXISTS `bill_feature` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-  `tenant_id` BIGINT NOT NULL DEFAULT 0 COMMENT '租户ID，0表示系统级',
   `code` VARCHAR(50) NOT NULL COMMENT '功能代码',
   `name` VARCHAR(100) NOT NULL COMMENT '功能名称',
   `description` TEXT COMMENT '功能描述',
@@ -19,7 +18,6 @@ CREATE TABLE IF NOT EXISTS `bill_feature` (
   `created_by` VARCHAR(100),
   `updated_by` VARCHAR(100),
   
-  UNIQUE KEY `uk_tenant_code` (`tenant_id`, `code`),
   KEY `idx_type_status` (`type`, `status`),
   KEY `idx_reset_period` (`reset_period`, `type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='功能表';
@@ -27,7 +25,6 @@ CREATE TABLE IF NOT EXISTS `bill_feature` (
 -- 套餐表
 CREATE TABLE IF NOT EXISTS `bill_plan` (
   `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-  `tenant_id` BIGINT NOT NULL DEFAULT 0 COMMENT '租户ID，0表示系统级',
   `code` VARCHAR(50) NOT NULL COMMENT '套餐代码',
   `name` VARCHAR(100) NOT NULL COMMENT '套餐名称',
   `version` VARCHAR(20) NOT NULL DEFAULT 'v1.0' COMMENT '套餐版本号',
@@ -45,7 +42,6 @@ CREATE TABLE IF NOT EXISTS `bill_plan` (
   `created_by` VARCHAR(100),
   `updated_by` VARCHAR(100),
   
-  UNIQUE KEY `uk_tenant_plan_code_version` (`tenant_id`, `code`, `version`),
   KEY `idx_plan_type_status` (`plan_type`, `status`),
   KEY `idx_trial_enabled` (`trial_enabled`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='套餐表';
@@ -74,7 +70,6 @@ CREATE TABLE IF NOT EXISTS `bill_price` (
   `type` ENUM('PLAN','FEATURE','TENANT_PLAN','TENANT_FEATURE') NOT NULL COMMENT '定价类型',
   `target_type` ENUM('PLAN','FEATURE') NOT NULL COMMENT '目标类型',
   `target_id` BIGINT NOT NULL COMMENT '目标ID',
-  `tenant_id` BIGINT COMMENT '租户ID',
   `price` DECIMAL(18,4) DEFAULT 0 COMMENT '价格',
   `currency` VARCHAR(10) DEFAULT 'USD' COMMENT '货币单位',
   `billing_cycle` ENUM('MONTHLY','YEARLY','USAGE') NOT NULL COMMENT '计费周期',
@@ -87,9 +82,7 @@ CREATE TABLE IF NOT EXISTS `bill_price` (
   `created_by` VARCHAR(100),
   `updated_by` VARCHAR(100),
   
-  UNIQUE KEY `uk_pricing_rule` (`type`, `target_type`, `target_id`, `tenant_id`, `billing_cycle`, `effective_time`),
   KEY `idx_type_target` (`type`, `target_type`, `target_id`),
-  KEY `idx_tenant_pricing` (`tenant_id`, `type`),
   KEY `idx_effective_time` (`effective_time`, `expire_time`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一定价表';
@@ -248,6 +241,32 @@ CREATE TABLE IF NOT EXISTS `bill_payment` (
   KEY `idx_gateway_transaction` (`payment_gateway`, `gateway_transaction_id`),
   FOREIGN KEY (`invoice_id`) REFERENCES `bill_invoice`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='支付记录表';
+
+-- Outbox事件表
+CREATE TABLE IF NOT EXISTS `bill_outbox_event` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `event_id` VARCHAR(50) NOT NULL COMMENT '事件唯一标识符',
+  `tenant_id` BIGINT NOT NULL COMMENT '租户ID',
+  `event_type` VARCHAR(50) NOT NULL COMMENT '事件类型',
+  `aggregate_type` VARCHAR(50) NOT NULL COMMENT '聚合根类型',
+  `aggregate_id` VARCHAR(50) NOT NULL COMMENT '聚合根ID',
+  `event_data` JSON COMMENT '事件数据',
+  `status` ENUM('PENDING','PUBLISHING','PUBLISHED','FAILED','SKIPPED') DEFAULT 'PENDING' COMMENT '事件状态',
+  `retry_count` INT DEFAULT 0 COMMENT '重试次数',
+  `max_retry_count` INT DEFAULT 5 COMMENT '最大重试次数',
+  `next_retry_time` DATETIME COMMENT '下次重试时间',
+  `published_time` DATETIME COMMENT '发布时间',
+  `error_message` TEXT COMMENT '错误信息',
+  `metadata` JSON COMMENT '事件元数据',
+  `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  UNIQUE KEY `uk_event_id` (`event_id`),
+  KEY `idx_tenant_status` (`tenant_id`, `status`),
+  KEY `idx_status_retry` (`status`, `next_retry_time`),
+  KEY `idx_created_time` (`created_time`),
+  KEY `idx_event_type` (`event_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Outbox事件表';
 
 -- 插入基础功能数据
 INSERT IGNORE INTO `bill_feature` (`tenant_id`, `code`, `name`, `type`, `unit`, `reset_period`, `value_scope`) VALUES

@@ -6,7 +6,7 @@ import io.github.rosestack.billing.domain.invoice.BillInvoiceMapper;
 import io.github.rosestack.billing.domain.subscription.BillSubscription;
 import io.github.rosestack.billing.domain.subscription.BillSubscriptionMapper;
 import io.github.rosestack.core.exception.BusinessException;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,6 @@ import java.util.UUID;
  * @since 1.0.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BillInvoiceService {
 
@@ -35,6 +34,19 @@ public class BillInvoiceService {
     private final BillSubscriptionMapper subscriptionMapper;
     private final BillUsageService usageService;
     private final BillingEngineService billingEngineService;
+    private final Timer invoiceGenerationTimer;
+
+    public BillInvoiceService(BillInvoiceMapper invoiceMapper,
+                           BillSubscriptionMapper subscriptionMapper,
+                           BillUsageService usageService,
+                           BillingEngineService billingEngineService,
+                           Timer invoiceGenerationTimer) {
+        this.invoiceMapper = invoiceMapper;
+        this.subscriptionMapper = subscriptionMapper;
+        this.usageService = usageService;
+        this.billingEngineService = billingEngineService;
+        this.invoiceGenerationTimer = invoiceGenerationTimer;
+    }
 
     /**
      * 创建账单
@@ -93,33 +105,35 @@ public class BillInvoiceService {
      */
     @Transactional(rollbackFor = Exception.class)
     public BillInvoice generateBillForSubscription(Long subscriptionId, LocalDate periodStart, LocalDate periodEnd) {
-        log.info("Generating bill for subscription: {}, period: {} to {}", 
-                subscriptionId, periodStart, periodEnd);
-
-        // 检查是否已有该周期的账单
-        BillInvoice existingBill = invoiceMapper.findBySubscriptionAndPeriod(subscriptionId, periodStart, periodEnd);
-        if (existingBill != null) {
-            log.warn("Bill already exists for subscription {} and period {} to {}", 
+        return invoiceGenerationTimer.record(() -> {
+            log.info("Generating bill for subscription: {}, period: {} to {}", 
                     subscriptionId, periodStart, periodEnd);
-            return existingBill;
-        }
 
-        // 获取用量数据并计算费用
-        BigDecimal totalAmount = calculateBillAmount(subscriptionId, periodStart, periodEnd);
+            // 检查是否已有该周期的账单
+            BillInvoice existingBill = invoiceMapper.findBySubscriptionAndPeriod(subscriptionId, periodStart, periodEnd);
+            if (existingBill != null) {
+                log.warn("Bill already exists for subscription {} and period {} to {}", 
+                        subscriptionId, periodStart, periodEnd);
+                return existingBill;
+            }
 
-        // 创建账单
-        BillInvoice bill = new BillInvoice();
-        bill.setSubscriptionId(subscriptionId);
-        bill.setPeriodStart(periodStart);
-        bill.setPeriodEnd(periodEnd);
-        bill.setTotalAmount(totalAmount);
-        bill.setStatus(InvoiceStatus.DRAFT);
+            // 获取用量数据并计算费用
+            BigDecimal totalAmount = calculateBillAmount(subscriptionId, periodStart, periodEnd);
 
-        // 生成账单详情
-        String billDetails = generateBillDetails(subscriptionId, periodStart, periodEnd);
-        bill.setBillDetails(billDetails);
+            // 创建账单
+            BillInvoice bill = new BillInvoice();
+            bill.setSubscriptionId(subscriptionId);
+            bill.setPeriodStart(periodStart);
+            bill.setPeriodEnd(periodEnd);
+            bill.setTotalAmount(totalAmount);
+            bill.setStatus(InvoiceStatus.DRAFT);
 
-        return createBill(bill);
+            // 生成账单详情
+            String billDetails = generateBillDetails(subscriptionId, periodStart, periodEnd);
+            bill.setBillDetails(billDetails);
+
+            return createBill(bill);
+        });
     }
 
     /**

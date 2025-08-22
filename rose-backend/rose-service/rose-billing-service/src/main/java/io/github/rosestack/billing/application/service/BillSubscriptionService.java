@@ -6,7 +6,7 @@ import io.github.rosestack.billing.domain.plan.BillPlanMapper;
 import io.github.rosestack.billing.domain.subscription.BillSubscription;
 import io.github.rosestack.billing.domain.subscription.BillSubscriptionMapper;
 import io.github.rosestack.core.exception.BusinessException;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,74 +25,84 @@ import java.util.UUID;
  * @since 1.0.0
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BillSubscriptionService {
 
     private final BillSubscriptionMapper subscriptionMapper;
     private final BillPlanMapper planMapper;
+    private final Timer subscriptionCreationTimer;
+
+    public BillSubscriptionService(BillSubscriptionMapper subscriptionMapper,
+                                 BillPlanMapper planMapper,
+                                 Timer subscriptionCreationTimer) {
+        this.subscriptionMapper = subscriptionMapper;
+        this.planMapper = planMapper;
+        this.subscriptionCreationTimer = subscriptionCreationTimer;
+    }
 
     /**
      * 创建新订阅
      */
     @Transactional(rollbackFor = Exception.class)
     public BillSubscription createSubscription(BillSubscription subscription) {
-        log.info("Creating new subscription for plan: {}", subscription.getPlanId());
+        return subscriptionCreationTimer.record(() -> {
+            log.info("Creating new subscription for plan: {}", subscription.getPlanId());
 
-        // 验证套餐是否存在且可用
-        BillPlan plan = planMapper.selectById(subscription.getPlanId());
-        if (plan == null) {
-            throw new BusinessException("套餐不存在: " + subscription.getPlanId());
-        }
-        if (!plan.isAvailable()) {
-            throw new BusinessException("套餐不可用: " + plan.getName());
-        }
-
-        // 生成唯一订阅编号
-        String subNo = generateSubscriptionNo();
-        while (subscriptionMapper.existsBySubNo(subNo)) {
-            subNo = generateSubscriptionNo();
-        }
-        subscription.setSubNo(subNo);
-
-        // 设置默认值
-        if (subscription.getQuantity() == null) {
-            subscription.setQuantity(1);
-        }
-        if (subscription.getAutoRenew() == null) {
-            subscription.setAutoRenew(true);
-        }
-        if (subscription.getCancelAtPeriodEnd() == null) {
-            subscription.setCancelAtPeriodEnd(false);
-        }
-
-        // 设置计费周期
-        LocalDateTime now = LocalDateTime.now();
-        subscription.setStartTime(now);
-        subscription.setCurrentPeriodStartTime(now);
-        
-        // 根据套餐计费模式设置周期结束时间
-        LocalDateTime periodEndTime = calculatePeriodEndTime(now, plan);
-        subscription.setCurrentPeriodEndTime(periodEndTime);
-        subscription.setNextBillingTime(periodEndTime);
-
-        // 如果套餐支持试用且用户申请试用，设置为试用状态
-        if (plan.getTrialEnabled() && subscription.isTrial()) {
-            subscription.setStatus(SubscriptionStatus.TRIAL);
-            // 试用期结束时间
-            if (plan.getTrialDays() != null && plan.getTrialDays() > 0) {
-                subscription.setEndTime(now.plusDays(plan.getTrialDays()));
+            // 验证套餐是否存在且可用
+            BillPlan plan = planMapper.selectById(subscription.getPlanId());
+            if (plan == null) {
+                throw new BusinessException("套餐不存在: " + subscription.getPlanId());
             }
-        } else {
-            subscription.setStatus(SubscriptionStatus.ACTIVE);
-        }
+            if (!plan.isAvailable()) {
+                throw new BusinessException("套餐不可用: " + plan.getName());
+            }
 
-        // 保存订阅
-        subscriptionMapper.insert(subscription);
-        log.info("Subscription created successfully: id={}, subNo={}", 
-                subscription.getId(), subscription.getSubNo());
+            // 生成唯一订阅编号
+            String subNo = generateSubscriptionNo();
+            while (subscriptionMapper.existsBySubNo(subNo)) {
+                subNo = generateSubscriptionNo();
+            }
+            subscription.setSubNo(subNo);
 
-        return subscription;
+            // 设置默认值
+            if (subscription.getQuantity() == null) {
+                subscription.setQuantity(1);
+            }
+            if (subscription.getAutoRenew() == null) {
+                subscription.setAutoRenew(true);
+            }
+            if (subscription.getCancelAtPeriodEnd() == null) {
+                subscription.setCancelAtPeriodEnd(false);
+            }
+
+            // 设置计费周期
+            LocalDateTime now = LocalDateTime.now();
+            subscription.setStartTime(now);
+            subscription.setCurrentPeriodStartTime(now);
+            
+            // 根据套餐计费模式设置周期结束时间
+            LocalDateTime periodEndTime = calculatePeriodEndTime(now, plan);
+            subscription.setCurrentPeriodEndTime(periodEndTime);
+            subscription.setNextBillingTime(periodEndTime);
+
+            // 如果套餐支持试用且用户申请试用，设置为试用状态
+            if (plan.getTrialEnabled() && subscription.isTrial()) {
+                subscription.setStatus(SubscriptionStatus.TRIAL);
+                // 试用期结束时间
+                if (plan.getTrialDays() != null && plan.getTrialDays() > 0) {
+                    subscription.setEndTime(now.plusDays(plan.getTrialDays()));
+                }
+            } else {
+                subscription.setStatus(SubscriptionStatus.ACTIVE);
+            }
+
+            // 保存订阅
+            subscriptionMapper.insert(subscription);
+            log.info("Subscription created successfully: id={}, subNo={}", 
+                    subscription.getId(), subscription.getSubNo());
+
+            return subscription;
+        });
     }
 
     /**
