@@ -18,6 +18,7 @@
     <module>rose-iam-service</module>
     <module>rose-notice-service</module>
     <module>rose-application</module>
+    <module>rose-billing-service</module>
   </modules>
 
 </project>

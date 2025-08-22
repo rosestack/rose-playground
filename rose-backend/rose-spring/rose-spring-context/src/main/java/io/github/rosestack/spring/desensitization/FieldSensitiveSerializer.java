@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import io.github.rosestack.core.util.SensitiveUtils;
-import io.github.rosestack.spring.annotation.FieldSensitive;
+import io.github.rosestack.spring.annotation.Sensitive;
 import io.github.rosestack.spring.expression.SpringExpressionResolver;
 
 import java.io.IOException;
@@ -19,35 +19,35 @@ import java.util.Objects;
  */
 public class FieldSensitiveSerializer extends JsonSerializer<String> implements ContextualSerializer {
 
-	private FieldSensitive fieldSensitive;
+	private Sensitive sensitive;
 
-	public FieldSensitiveSerializer(FieldSensitive fieldSensitive) {
-		this.fieldSensitive = fieldSensitive;
+	public FieldSensitiveSerializer(Sensitive sensitive) {
+		this.sensitive = sensitive;
 	}
 
 	public FieldSensitiveSerializer() {
 	}
 
-	private String handler(FieldSensitive fieldSensitive, String origin) {
-		Object disable = SpringExpressionResolver.getInstance().resolve(fieldSensitive.expression());
+	private String handler(Sensitive sensitive, String origin) {
+		Object disable = SpringExpressionResolver.getInstance().resolve(sensitive.expression());
 		if (Boolean.TRUE.equals(disable)) {
 			return origin;
 		}
 
-		return SensitiveUtils.mask(origin, fieldSensitive.type());
+		return SensitiveUtils.mask(origin, sensitive.type());
 	}
 
 	@Override
 	public void serialize(
 		final String origin, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
 		throws IOException {
-		jsonGenerator.writeString(handler(fieldSensitive, origin));
+		jsonGenerator.writeString(handler(sensitive, origin));
 	}
 
 	@Override
 	public JsonSerializer<?> createContextual(
 		final SerializerProvider serializerProvider, final BeanProperty beanProperty) throws JsonMappingException {
-		FieldSensitive annotation = beanProperty.getAnnotation(FieldSensitive.class);
+		Sensitive annotation = beanProperty.getAnnotation(Sensitive.class);
 		if (Objects.nonNull(annotation)
 			&& Objects.equals(String.class, beanProperty.getType().getRawClass())) {
 			return new FieldSensitiveSerializer(annotation);

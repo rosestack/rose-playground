@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @JacksonAnnotationsInside
 @JsonSerialize(using = FieldSensitiveSerializer.class)
-public @interface FieldSensitive {
+public @interface Sensitive {
 
 	SensitiveType type() default SensitiveType.CUSTOM;
 

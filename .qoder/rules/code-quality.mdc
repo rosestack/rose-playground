@@ -1,5 +1,6 @@
 ---
-type: "always_apply"
+trigger: always_on
+alwaysApply: true
 ---
 
 # 开发规范与代码质量
@@ -138,9 +139,8 @@ type: "always_apply"
 
 ### 2. Mapper 与 XML
 
-* Mapper 类严禁使用注解式 SQL（@Select/@Update/@Delete/@Insert 等）；统一使用 MyBatis-Plus 提供的方法与 Wrapper 条件构造。
-* 严禁编写 Mapper XML 文件与动态 SQL。
-* 保持持久层简单、可维护、与数据库弱绑定。
+* 严禁使用注解式 SQL（@Select/@Update/@Delete/@Insert 等）；统一使用 MyBatis-Plus 提供的方法与 Wrapper 条件构造。
+* 严禁编写 Mapper XML 与动态 SQL；保持持久层简单、可维护、与数据库弱绑定。
 
 ### 3. 查询与分页
 

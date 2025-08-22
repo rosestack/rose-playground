@@ -6,10 +6,10 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.util.Arrays;
 import org.passay.*;
 
-public class PasswordConstraintValidator implements ConstraintValidator<ValidPassword, String> {
+public class PasswordStrengthValidator implements ConstraintValidator<PasswordStrength, String> {
 
     @Override
-    public void initialize(final ValidPassword arg0) {}
+    public void initialize(final PasswordStrength arg0) {}
 
     @Override
     public boolean isValid(final String password, final ConstraintValidatorContext context) {
