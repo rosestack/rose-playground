@@ -8,17 +8,12 @@ import io.github.rosestack.billing.domain.enums.OutboxEventType;
 import io.github.rosestack.billing.domain.outbox.OutboxEvent;
 import io.github.rosestack.billing.domain.outbox.OutboxEventMapper;
 import io.github.rosestack.core.exception.BusinessException;
-import io.github.rosestack.core.util.IdUtils;
+import io.github.rosestack.core.util.Uuids;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -63,7 +58,7 @@ public class OutboxEventService {
                              Object eventData, Map<String, Object> metadata) {
         try {
             OutboxEvent event = new OutboxEvent();
-            event.setEventId(IdUtils.fastSimpleUUID());
+            event.setEventId(Uuids.getUUID().toString());
             event.setTenantId(tenantId);
             event.setEventType(eventType);
             event.setAggregateType(aggregateType);
@@ -347,14 +342,9 @@ public class OutboxEventService {
         // 发布配额相关事件，通常需要发送通知
         log.info("Publishing quota event: {}", event.getEventType());
 
-        try {
-            // 发送配额超限通知
-            notificationService.sendQuotaExceededNotification(
-                    event.getTenantId(), event.getEventData());
-        } catch (Exception e) {
-            log.error("Failed to send quota notification", e);
-            throw e;
-        }
+        // 配额事件的具体处理逻辑将在后续实现
+        // 当前版本只是记录日志，不执行实际的通知发送
+        log.debug("Quota event would be processed here with data: {}", event.getEventData());
     }
 
     private void publishTrialEvent(OutboxEvent event) {
