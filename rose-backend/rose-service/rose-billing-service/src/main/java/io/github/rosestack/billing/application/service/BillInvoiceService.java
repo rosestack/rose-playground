@@ -7,6 +7,7 @@ import io.github.rosestack.billing.domain.subscription.BillSubscription;
 import io.github.rosestack.billing.domain.subscription.BillSubscriptionMapper;
 import io.github.rosestack.core.exception.BusinessException;
 import io.micrometer.core.instrument.Timer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class BillInvoiceService {
 
     private final BillInvoiceMapper invoiceMapper;
@@ -35,18 +37,6 @@ public class BillInvoiceService {
     private final BillUsageService usageService;
     private final BillingEngineService billingEngineService;
     private final Timer invoiceGenerationTimer;
-
-    public BillInvoiceService(BillInvoiceMapper invoiceMapper,
-                           BillSubscriptionMapper subscriptionMapper,
-                           BillUsageService usageService,
-                           BillingEngineService billingEngineService,
-                           Timer invoiceGenerationTimer) {
-        this.invoiceMapper = invoiceMapper;
-        this.subscriptionMapper = subscriptionMapper;
-        this.usageService = usageService;
-        this.billingEngineService = billingEngineService;
-        this.invoiceGenerationTimer = invoiceGenerationTimer;
-    }
 
     /**
      * 创建账单
@@ -106,13 +96,13 @@ public class BillInvoiceService {
     @Transactional(rollbackFor = Exception.class)
     public BillInvoice generateBillForSubscription(Long subscriptionId, LocalDate periodStart, LocalDate periodEnd) {
         return invoiceGenerationTimer.record(() -> {
-            log.info("Generating bill for subscription: {}, period: {} to {}", 
+            log.info("Generating bill for subscription: {}, period: {} to {}",
                     subscriptionId, periodStart, periodEnd);
 
             // 检查是否已有该周期的账单
             BillInvoice existingBill = invoiceMapper.findBySubscriptionAndPeriod(subscriptionId, periodStart, periodEnd);
             if (existingBill != null) {
-                log.warn("Bill already exists for subscription {} and period {} to {}", 
+                log.warn("Bill already exists for subscription {} and period {} to {}",
                         subscriptionId, periodStart, periodEnd);
                 return existingBill;
             }
@@ -150,7 +140,7 @@ public class BillInvoiceService {
 
         bill.publish();
         invoiceMapper.updateById(bill);
-        
+
         log.info("Bill published successfully: {}", billId);
         return bill;
     }
@@ -198,7 +188,7 @@ public class BillInvoiceService {
         bill.voidBill();
         bill.setRemark(reason);
         invoiceMapper.updateById(bill);
-        
+
         log.info("Bill voided successfully: {}", billId);
     }
 
@@ -259,7 +249,7 @@ public class BillInvoiceService {
 
         // 获取所有活跃订阅
         List<BillSubscription> activeSubscriptions = subscriptionMapper.findActiveSubscriptions();
-        
+
         int generatedCount = 0;
         for (BillSubscription subscription : activeSubscriptions) {
             // 检查是否在计费周期内
@@ -322,14 +312,14 @@ public class BillInvoiceService {
      * 计算账单金额
      */
     private BigDecimal calculateBillAmount(Long subscriptionId, LocalDate periodStart, LocalDate periodEnd) {
-        log.debug("Calculating bill amount for subscription: {}, period: {} to {}", 
+        log.debug("Calculating bill amount for subscription: {}, period: {} to {}",
                 subscriptionId, periodStart, periodEnd);
-        
+
         try {
             // 使用计费引擎计算费用
             BillingEngineService.BillingResult billingResult = billingEngineService.calculateBilling(
                     subscriptionId, periodStart, periodEnd);
-            
+
             return billingResult.getTotalAmount();
         } catch (Exception e) {
             log.error("Failed to calculate bill amount for subscription: {}", subscriptionId, e);
@@ -346,7 +336,7 @@ public class BillInvoiceService {
             // 使用计费引擎生成详细账单
             BillingEngineService.BillingResult billingResult = billingEngineService.calculateBilling(
                     subscriptionId, periodStart, periodEnd);
-            
+
             // 将计费结果转换为JSON（简化处理）
             StringBuilder details = new StringBuilder();
             details.append("{");
@@ -371,13 +361,13 @@ public class BillInvoiceService {
             details.append("\"generated_time\":\"")
                    .append(LocalDateTime.now()).append("\"");
             details.append("}");
-            
+
             return details.toString();
         } catch (Exception e) {
             log.error("Failed to generate bill details for subscription: {}", subscriptionId, e);
             // 降级处理：返回简单详情
             return String.format(
-                "{\"subscription_id\":%d,\"period_start\":\"%s\",\"period_end\":\"%s\",\"generated_time\":\"%s\"}", 
+                "{\"subscription_id\":%d,\"period_start\":\"%s\",\"period_end\":\"%s\",\"generated_time\":\"%s\"}",
                 subscriptionId, periodStart, periodEnd, LocalDateTime.now()
             );
         }

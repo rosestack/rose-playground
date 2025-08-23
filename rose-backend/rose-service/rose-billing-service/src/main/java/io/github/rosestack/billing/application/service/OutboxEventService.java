@@ -35,6 +35,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class OutboxEventService {
 
     private final OutboxEventMapper outboxEventMapper;
@@ -42,18 +43,6 @@ public class OutboxEventService {
     private final BillingNotificationService notificationService;
     private final Timer outboxEventProcessingTimer;
     private final BillingConfiguration.BillingProperties billingProperties;
-
-    public OutboxEventService(OutboxEventMapper outboxEventMapper,
-                            ObjectMapper objectMapper,
-                            BillingNotificationService notificationService,
-                            Timer outboxEventProcessingTimer,
-                            BillingConfiguration.BillingProperties billingProperties) {
-        this.outboxEventMapper = outboxEventMapper;
-        this.objectMapper = objectMapper;
-        this.notificationService = notificationService;
-        this.outboxEventProcessingTimer = outboxEventProcessingTimer;
-        this.billingProperties = billingProperties;
-    }
 
     /**
      * 创建并保存 Outbox 事件

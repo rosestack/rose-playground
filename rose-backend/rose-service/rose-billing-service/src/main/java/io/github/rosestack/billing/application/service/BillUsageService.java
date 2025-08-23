@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class BillUsageService {
 
     private final BillUsageMapper usageMapper;
@@ -38,18 +39,6 @@ public class BillUsageService {
     private final BillSubscriptionMapper subscriptionMapper;
     private final BillFeatureMapper featureMapper;
     private final Timer quotaCheckTimer;
-
-    public BillUsageService(BillUsageMapper usageMapper,
-                          BillingEngineService billingEngineService,
-                          BillSubscriptionMapper subscriptionMapper,
-                          BillFeatureMapper featureMapper,
-                          Timer quotaCheckTimer) {
-        this.usageMapper = usageMapper;
-        this.billingEngineService = billingEngineService;
-        this.subscriptionMapper = subscriptionMapper;
-        this.featureMapper = featureMapper;
-        this.quotaCheckTimer = quotaCheckTimer;
-    }
 
     /**
      * 记录用量

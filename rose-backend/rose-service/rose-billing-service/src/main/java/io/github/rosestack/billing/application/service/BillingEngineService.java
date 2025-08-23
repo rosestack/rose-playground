@@ -1,5 +1,9 @@
 package io.github.rosestack.billing.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.rosestack.billing.domain.enums.FeatureType;
 import io.github.rosestack.billing.domain.feature.BillFeature;
 import io.github.rosestack.billing.domain.feature.BillFeatureMapper;
 import io.github.rosestack.billing.domain.plan.BillPlan;
@@ -8,10 +12,7 @@ import io.github.rosestack.billing.domain.plan.BillPlanFeatureMapper;
 import io.github.rosestack.billing.domain.plan.BillPlanMapper;
 import io.github.rosestack.billing.domain.subscription.BillSubscription;
 import io.github.rosestack.billing.domain.subscription.BillSubscriptionMapper;
-import io.github.rosestack.billing.domain.usage.BillUsage;
 import io.github.rosestack.billing.domain.usage.BillUsageMapper;
-import io.github.rosestack.billing.domain.exception.QuotaException;
-import io.github.rosestack.billing.domain.enums.FeatureType;
 import io.github.rosestack.core.exception.BusinessException;
 import io.micrometer.core.instrument.Timer;
 import lombok.Data;
@@ -19,14 +20,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +39,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class BillingEngineService {
 
 	private final BillSubscriptionMapper subscriptionMapper;
@@ -52,22 +49,6 @@ public class BillingEngineService {
 	private final BillUsageMapper usageMapper;
 	private final ObjectMapper objectMapper;
 	private final Timer billingCalculationTimer;
-
-	public BillingEngineService(BillSubscriptionMapper subscriptionMapper,
-							  BillPlanMapper planMapper,
-							  BillFeatureMapper featureMapper,
-							  BillPlanFeatureMapper planFeatureMapper,
-							  BillUsageMapper usageMapper,
-							  ObjectMapper objectMapper,
-							  Timer billingCalculationTimer) {
-		this.subscriptionMapper = subscriptionMapper;
-		this.planMapper = planMapper;
-		this.featureMapper = featureMapper;
-		this.planFeatureMapper = planFeatureMapper;
-		this.usageMapper = usageMapper;
-		this.objectMapper = objectMapper;
-		this.billingCalculationTimer = billingCalculationTimer;
-	}
 
 	/**
 	 * 预估计费
@@ -500,60 +481,6 @@ public class BillingEngineService {
 	}
 
 	/**
-	 * 消费配额
-	 */
-	public boolean consumeQuota(Long subscriptionId, Long featureId, BigDecimal amount, String description) {
-		log.debug("消费配额: subscriptionId={}, featureId={}, amount={}", subscriptionId, featureId, amount);
-
-		try {
-			// 获取订阅信息
-			BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
-			if (subscription == null) {
-				log.error("订阅不存在: {}", subscriptionId);
-				return false;
-			}
-
-			// 获取功能信息
-			BillFeature feature = featureMapper.selectById(featureId);
-			if (feature == null) {
-				log.error("功能不存在: {}", featureId);
-				return false;
-			}
-
-			// 记录使用量
-			BillUsage usage = new BillUsage();
-			usage.setTenantId(subscription.getTenantId());
-			usage.setSubscriptionId(subscriptionId);
-			usage.setFeatureId(featureId);
-			usage.setUsageTime(LocalDateTime.now());
-			usage.setUsageAmount(amount);
-			usage.setUnit(feature.getUnit());
-			usage.setBillingPeriod(LocalDate.now().withDayOfMonth(1));
-
-			// 设置元数据
-			Map<String, Object> metadata = new HashMap<>();
-			metadata.put("description", description != null ? description : "配额消费");
-			metadata.put("featureId", featureId);
-			try {
-				usage.setMetadata(objectMapper.writeValueAsString(metadata));
-			} catch (Exception e) {
-				log.warn("设置使用量元数据失败", e);
-			}
-
-			usageMapper.insert(usage);
-
-			log.debug("配额消费成功: subscriptionId={}, featureId={}, amount={}",
-				subscriptionId, featureId, amount);
-			return true;
-
-		} catch (Exception e) {
-			log.error("配额消费失败: subscriptionId={}, featureId={}, amount={}",
-				subscriptionId, featureId, amount, e);
-			return false;
-		}
-	}
-
-	/**
 	 * 获取配额使用情况
 	 */
 	public QuotaUsageInfo getQuotaUsage(Long subscriptionId, Long featureId) {
@@ -614,79 +541,6 @@ public class BillingEngineService {
 			return null;
 		}
 	}
-
-    /**
-     * 获取订阅的计费周期信息
-     */
-    public BillingPeriodInfo getBillingPeriodInfo(Long subscriptionId) {
-        BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
-        if (subscription == null) {
-            throw new IllegalArgumentException("订阅不存在: " + subscriptionId);
-        }
-
-        BillingPeriodInfo info = new BillingPeriodInfo();
-        info.setSubscriptionId(subscriptionId);
-        info.setCurrentPeriodStart(subscription.getCurrentPeriodStartTime());
-        info.setCurrentPeriodEnd(subscription.getCurrentPeriodEndTime());
-        info.setNextBillingTime(subscription.getNextBillingTime());
-        info.setAutoRenew(subscription.getAutoRenew());
-        
-        return info;
-    }
-
-    /**
-     * 计算订阅席位变更的费用
-     */
-    public SeatChangeCalculation calculateSeatChangeCost(Long subscriptionId, int newQuantity) {
-        BillSubscription subscription = subscriptionMapper.selectById(subscriptionId);
-        if (subscription == null) {
-            throw new IllegalArgumentException("订阅不存在: " + subscriptionId);
-        }
-
-        // 获取当前计费周期剩余天数
-        LocalDate now = LocalDate.now();
-        LocalDate periodEnd = subscription.getCurrentPeriodEndTime().toLocalDate();
-        long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(now, periodEnd);
-        
-        // 获取计费周期总天数
-        LocalDate periodStart = subscription.getCurrentPeriodStartTime().toLocalDate();
-        long totalDays = java.time.temporal.ChronoUnit.DAYS.between(periodStart, periodEnd);
-        
-        if (totalDays <= 0) {
-            throw new IllegalArgumentException("计费周期无效");
-        }
-        
-        // 按比例计算费用
-        BigDecimal prorationRate = BigDecimal.valueOf(remainingDays).divide(BigDecimal.valueOf(totalDays), 6, BigDecimal.ROUND_HALF_UP);
-        
-        // 获取套餐价格
-        try {
-            JsonNode pricingSnapshot = objectMapper.readTree(subscription.getPricingSnapshot());
-            BigDecimal basePrice = getJsonDecimal(pricingSnapshot.path("plan_pricing"), "price", BigDecimal.ZERO);
-            
-            // 计算席位变更费用
-            int currentQuantity = subscription.getQuantity();
-            int quantityDiff = newQuantity - currentQuantity;
-            
-            BigDecimal seatChangeCost = basePrice
-                .multiply(BigDecimal.valueOf(quantityDiff))
-                .multiply(prorationRate)
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
-            
-            SeatChangeCalculation calculation = new SeatChangeCalculation();
-            calculation.setSubscriptionId(subscriptionId);
-            calculation.setCurrentQuantity(currentQuantity);
-            calculation.setNewQuantity(newQuantity);
-            calculation.setQuantityDiff(quantityDiff);
-            calculation.setProrationRate(prorationRate);
-            calculation.setSeatChangeCost(seatChangeCost);
-            
-            return calculation;
-        } catch (Exception e) {
-            log.error("Failed to calculate seat change cost for subscription: {}", subscriptionId, e);
-            throw new BusinessException("billing.calculation.failed", "席位变更费用计算失败");
-        }
-    }
 
 	/**
 	 * 计费结果
@@ -766,31 +620,6 @@ public class BillingEngineService {
 		private String unit;
 		private LocalDate periodStart;
 		private boolean enabled;
-	}
-
-	/**
-	 * 计费周期信息
-	 */
-	@Data
-	public static class BillingPeriodInfo {
-		private Long subscriptionId;
-		private LocalDateTime currentPeriodStart;
-		private LocalDateTime currentPeriodEnd;
-		private LocalDateTime nextBillingTime;
-		private Boolean autoRenew;
-	}
-
-	/**
-	 * 席位变更费用计算结果
-	 */
-	@Data
-	public static class SeatChangeCalculation {
-		private Long subscriptionId;
-		private int currentQuantity;
-		private int newQuantity;
-		private int quantityDiff;
-		private BigDecimal prorationRate;
-		private BigDecimal seatChangeCost;
 	}
 
 }

@@ -7,6 +7,7 @@ import io.github.rosestack.billing.domain.subscription.BillSubscription;
 import io.github.rosestack.billing.domain.subscription.BillSubscriptionMapper;
 import io.github.rosestack.core.exception.BusinessException;
 import io.micrometer.core.instrument.Timer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,19 +27,12 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class BillSubscriptionService {
 
     private final BillSubscriptionMapper subscriptionMapper;
     private final BillPlanMapper planMapper;
     private final Timer subscriptionCreationTimer;
-
-    public BillSubscriptionService(BillSubscriptionMapper subscriptionMapper,
-                                 BillPlanMapper planMapper,
-                                 Timer subscriptionCreationTimer) {
-        this.subscriptionMapper = subscriptionMapper;
-        this.planMapper = planMapper;
-        this.subscriptionCreationTimer = subscriptionCreationTimer;
-    }
 
     /**
      * 创建新订阅
@@ -79,7 +73,7 @@ public class BillSubscriptionService {
             LocalDateTime now = LocalDateTime.now();
             subscription.setStartTime(now);
             subscription.setCurrentPeriodStartTime(now);
-            
+
             // 根据套餐计费模式设置周期结束时间
             LocalDateTime periodEndTime = calculatePeriodEndTime(now, plan);
             subscription.setCurrentPeriodEndTime(periodEndTime);
@@ -98,7 +92,7 @@ public class BillSubscriptionService {
 
             // 保存订阅
             subscriptionMapper.insert(subscription);
-            log.info("Subscription created successfully: id={}, subNo={}", 
+            log.info("Subscription created successfully: id={}, subNo={}",
                     subscription.getId(), subscription.getSubNo());
 
             return subscription;
@@ -129,7 +123,7 @@ public class BillSubscriptionService {
         LocalDateTime now = LocalDateTime.now();
         BillPlan plan = planMapper.selectById(subscription.getPlanId());
         LocalDateTime periodEndTime = calculatePeriodEndTime(now, plan);
-        
+
         subscription.setCurrentPeriodStartTime(now);
         subscription.setCurrentPeriodEndTime(periodEndTime);
         subscription.setNextBillingTime(periodEndTime);
@@ -190,7 +184,7 @@ public class BillSubscriptionService {
 
         subscription.suspend();
         subscriptionMapper.updateById(subscription);
-        
+
         log.info("Subscription suspended: {}", subscriptionId);
     }
 
@@ -208,7 +202,7 @@ public class BillSubscriptionService {
 
         subscription.cancel();
         subscriptionMapper.updateById(subscription);
-        
+
         log.info("Subscription cancelled gracefully: {}", subscriptionId);
     }
 
@@ -226,7 +220,7 @@ public class BillSubscriptionService {
 
         subscription.cancelImmediately();
         subscriptionMapper.updateById(subscription);
-        
+
         log.info("Subscription cancelled immediately: {}", subscriptionId);
     }
 
@@ -248,7 +242,7 @@ public class BillSubscriptionService {
 
         subscription.activate();
         subscriptionMapper.updateById(subscription);
-        
+
         log.info("Subscription reactivated: {}", subscriptionId);
         return subscription;
     }
