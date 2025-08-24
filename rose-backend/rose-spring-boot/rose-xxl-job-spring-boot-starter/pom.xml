@@ -28,7 +28,7 @@
     <dependency>
       <groupId>com.xuxueli</groupId>
       <artifactId>xxl-job-core</artifactId>
-      <version>3.1.1</version>
+      <version>3.2.0</version>
     </dependency>
 
     <!-- AOP 指标改为可选依赖，避免强绑定 -->
